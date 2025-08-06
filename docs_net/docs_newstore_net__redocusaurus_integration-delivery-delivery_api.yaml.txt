@@ -1,0 +1,2692 @@
+openapi: 3.0.0
+tags:
+  - name: Configuration
+    description: configuration
+  - name: Delivery
+    description: delivery
+  - name: Tracking
+    description: tracking
+info:
+  title: Delivery API
+  description: Enables shipment of items inside NewStore Platform.
+  version: v0
+  contact:
+    name: team delivery
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+security:
+  - newStoreAccessToken: []
+paths:
+  /delivery_options/shipping_option_token_key_pair:
+    post:
+      tags:
+        - Configuration
+      summary: Create or update a shipping option token key pair
+      operationId: create-update-shipping-option-token-key-pair
+      description: >
+        Create or update the public/private key pair used to generate shipping
+        offer tokens.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: A shipping option public/private key pair.
+              required:
+                - public_key
+                - private_key
+              properties:
+                public_key:
+                  description: A PEM formatted RSA public key
+                  type: string
+                  minLength: 1
+                private_key:
+                  description: A PEM formatted RSA private key
+                  type: string
+                  minLength: 1
+            examples:
+              Generate public/private token key pair:
+                description: >
+                  This is not needed anymore. Please do not create any shipping
+                  option token key pair.
+                value:
+                  public_key: DO NOT PROVIDE ANY KEY
+                  private_key: DO NOT PROVIDE ANY KEY
+      responses:
+        '200':
+          description: Token was successfully updated.
+  /delivery_options/shipping_option_token_public_key:
+    get:
+      tags:
+        - Configuration
+      summary: Get the public key for a shipping option token
+      operationId: get-shipping-option-token-public-key
+      description: >
+        Gets the public key for a shipping option token.
+
+        Although the creation of a shipping option token key pair is not needed
+        anymore,
+
+        NewStore maintains a key for BOPIS orders only.
+      parameters:
+        - in: header
+          name: tenant
+          description: Request retailer.
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: The public key was retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A shipping option token public key.
+                required:
+                  - public
+                properties:
+                  public_key:
+                    description: A PEM formatted RSA public key
+                    type: string
+                    minLength: 1
+        '404':
+          description: The key doesn't exist for the tenant
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A shipping option public/private key pair.
+                required:
+                  - message
+                  - request_id
+                  - error_code
+                properties:
+                  message:
+                    type: string
+                    minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                  error_code:
+                    type: string
+                    minLength: 1
+              example:
+                message: Unable to find the public key for the tenant
+                request_id: '123456'
+                error_code: internal_error
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A shipping option public/private key pair.
+                required:
+                  - message
+                  - request_id
+                  - error_code
+                properties:
+                  message:
+                    type: string
+                    minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                  error_code:
+                    type: string
+                    minLength: 1
+              example:
+                message: Internal server error.
+                request_id: '123456'
+                error_code: internal_error
+  /routing_options:
+    post:
+      tags:
+        - Delivery
+      summary: Create routing options
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: The list of possible routing options is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - routing_options
+                properties:
+                  routing_options:
+                    type: array
+                    description: >-
+                      The order can be fulfilled from one or more fulfillment
+                      locations with different service levels. This is an array
+                      of possible routing options sorted by priority. Each
+                      routing option can point to one or more fulfillment nodes
+                      depending if the order is split or not.
+                    items:
+                      description: >-
+                        An option to route products in an order. This specifies
+                        assignments of fulfillment nodes to all products in an
+                        order with the service level at which they can be
+                        fulfilled from the fulfillment nodes.
+                      type: array
+                      items:
+                        type: object
+                        description: >-
+                          A routing option that assigns the fulfillment location
+                          from where an item can be shipped.
+                        required:
+                          - fulfillment_node_id
+                          - fulfillment_node
+                          - products
+                          - shipping_options
+                          - routing_strategy
+                        properties:
+                          fulfillment_node:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                description: Fulfillment Node ID
+                              store_id:
+                                oneOf:
+                                  - description: Fulfillment Node is a Store
+                                    type: string
+                                  - description: Fulfillment Node is a DC
+                                    nullable: true
+                                    enum:
+                                      - null
+                              address:
+                                description: Base address object
+                                type: object
+                                required:
+                                  - country_code
+                                properties:
+                                  address_line_1:
+                                    type: string
+                                    maxLength: 256
+                                  address_line_2:
+                                    type: string
+                                    maxLength: 256
+                                  country_code:
+                                    description: >-
+                                      Country code for this address. Must be
+ISO-3166
+                                      reference
+type: string
+                                    minLength: 2
+                                    maxLength: 2
+                                  city:
+                                    type: string
+                                    maxLength: 256
+                                  zip_code:
+                                    type: string
+                                    maxLength: 32
+                                  state:
+                                    type: string
+                          fulfillment_node_id:
+                            type: string
+                            minLength: 1
+                            description: The identifier of the fulfillment node.
+                          products:
+                            type: array
+                            description: >-
+                              The products to be fulfilled from this location,
+                              as an array of objects.
+                            items:
+                              type: object
+                              description: >-
+                                Product information for the items to be
+                                fulfilled.
+                              required:
+                                - product_id
+                                - quantity
+                              properties:
+                                product_id:
+                                  type: string
+                                  minLength: 1
+                                  description: The identifier of the product.
+                                quantity:
+                                  minimum: 0
+                                  type: integer
+                                  description: >-
+                                    The quantity available at the fulfillment
+                                    location.
+                          routing_strategy:
+                            properties:
+                              strategy:
+                                description: >-
+                                  The strategy used to route to this location
+                                  for fulfillment.
+                                enum:
+                                  - prerouted
+                                  - default
+                                type: string
+                                default: default
+                            type: object
+                          shipping_options:
+                            description: >-
+                              The list of shipping options available for this
+                              assignment.
+                            type: array
+                            items:
+                              type: object
+                              description: Information related to the shipping offer.
+                              required:
+                                - shipping_offer_token
+                                - price
+                                - currency
+                                - display_name
+                              properties:
+                                shipping_option_token:
+                                  type: string
+                                  minLength: 1
+                                  maxLength: 8192
+                                  description: Same as shipping_offer_token
+                                shipping_offer_token:
+                                  type: string
+                                  minLength: 1
+                                  maxLength: 8192
+                                  description: >-
+                                    Token is the ID of the option, which needs
+                                    to be returned as the selected option for
+                                    the shipment.
+                                price:
+                                  type: number
+                                  description: >-
+                                    The price of the shipping option before
+                                    discounts. It might include taxes depending
+                                    on the tax method.
+                                  minimum: 0
+                                currency:
+                                  type: string
+                                  minLength: 3
+                                  maxLength: 3
+                                  description: >-
+                                    The currency used to book the delivery, in
+                                    ISO 4217 format
+                                display_name:
+                                  type: string
+                                  description: >-
+                                    Consumer-facing name of the shipping
+                                    service.
+                                delivery_time:
+                                  type: string
+                                  description: >-
+                                    Estimated delivery time as a human-readable
+                                    string.
+                                service_level_identifier:
+                                  type: string
+                                  description: >-
+                                    The service level for the shipping options.
+                                    This field is required for prerouted and
+                                    ignored for default.
+                                provider_rate_identifier:
+                                  type: string
+                                  description: >-
+                                    Rate of shipping option as provided by
+                                    carrier.
+                                delivery_window:
+                                  type: object
+                                  description: >-
+                                    The delivery time slot information, if a
+                                    time slot is offered.
+                                  required:
+                                    - starts_at
+                                    - ends_at
+                                  properties:
+                                    starts_at:
+                                      type: string
+                                      description: >-
+                                        The beginning of the delivery window
+                                        time interval.
+                                    ends_at:
+                                      type: string
+                                      description: >-
+                                        The end of the delivery window time
+                                        interval.
+                                shipping_type:
+                                  type: string
+                                  enum:
+                                    - traditional_carrier
+                                    - same_day_delivery
+                                    - in_store_pick_up
+                                shipping_carrier:
+                                  type: string
+                                  description: >-
+                                    The carrier that will be used for this
+                                    option
+                                remorse_period:
+                                  type: number
+                                tax_class:
+                                  type: string
+        '400':
+          description: The input data is invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error_code
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    enum:
+                      - items_not_available
+                      - price_not_rounded_error
+                      - address_not_covered
+                      - shipping_address_not_serviced
+                      - no_fulfillment_node_with_service_levels_found
+                      - shipping_address_not_supported
+                      - shipping_provider_communication_error
+                      - configuration_not_found
+                      - unexpected_error
+                  error_description:
+                    type: string
+                  error_type:
+                    type: string
+        '500':
+          description: An internal error occurred.
+      description: >
+        Calculates routing and retrieves options based on the destination
+
+        address and the list of products, in an order.
+
+
+        Any combination of route/shipping option always provide enough options
+        to ship all products,
+
+        in the desired quantity. However it is up to the consumer of this API to
+        select the options that will
+
+        fulfill the correct amount of products: one route can provide more
+        options than needed. This happens when
+
+        different service levels apply for a same route for example.
+
+
+        The price is required for international shipments and for
+
+        [NewStore Shipping Options
+        Webhooks](/api/webhooks/delivery_options_hook/#operation/get_customized_provider_rates_for_an_order).
+
+
+        **Note:** This method does not get routing options for in-store pickup
+        orders.
+
+        To calculate routing options for
+
+        in-store pickup orders, use the [Get in-store pickup
+        options](/newstore-cloud/store_operations/in_store_pickup.html)
+
+        method instead.
+
+
+        **Note:** The validity of a shipping offer token can vary based on the
+        shipping
+
+        provider and shipping offer.
+      operationId: GetRoutingOptions
+      requestBody:
+        content:
+          application/json:
+            example:
+              external_order_id: CustomerOrderID0001
+              shipping_address:
+                country: US
+                zip_code: '75008'
+              shopping_cart:
+                catalog:
+                  shop_id: store-catalog-en
+                  shop_locale: en-US
+                items:
+                  - product_id: '1003001'
+                    price:
+                      amount: 150
+                      currency: USD
+                  - product_id: '1003002'
+                    price:
+                      amount: 150
+                      currency: USD
+                    is_preorder: false
+                    online_from: '2021-07-13T20:18:25'
+            schema:
+              properties:
+                external_order_id:
+                  description: >-
+                    The external order ID, as seen by the customer, for which we
+                    want shipping options.
+                  type: string
+                  minLength: 1
+                shipping_address:
+                  required:
+                    - country
+                  properties:
+                    country:
+                      type: string
+                      description: Destination country code for the shipment.
+                      minLength: 2
+                      maxLength: 2
+                    zip_code:
+                      type: string
+                      description: Destination zip code for the shipment.
+                  type: object
+                shopping_cart:
+                  type: object
+                  description: An array of flat items from the shopping cart.
+                  required:
+                    - catalog
+                    - items
+                  properties:
+                    catalog:
+                      description: The catalog containing the products of the order.
+                      type: object
+                      required:
+                        - shop_id
+                        - shop_locale
+                      properties:
+                        shop_id:
+                          description: The shop the products belong to.
+                          type: string
+                          minLength: 1
+                        shop_locale:
+                          description: The locale used for the shop, in RFC 5646.
+                          type: string
+                          minLength: 1
+                    routing_strategy:
+                      type: object
+                      description: >-
+                        The routing strategy for the requested shipping options.
+                        If this field is omitted, `default` is used
+                      required:
+                        - strategy
+                      properties:
+                        strategy:
+                          type: string
+                          enum:
+                            - prerouted
+                            - default
+                          default: default
+                          description: >-
+                            The strategy for routing orders. For prerouted, only
+                            the fulfillment nodes and service levels defined for
+                            the strategy are used. For default, items are routed
+                            based on settings in the fulfillment config.
+                        service_level_identifier:
+                          type: string
+                          minLength: 1
+                          maxLength: 256
+                          description: >-
+                            The service level for the shipping options. This
+                            field is required for prerouted and ignored for
+                            default.
+                        fulfillment_node_ids:
+                          type: array
+                          description: >-
+                            The fulfillment node IDs used to generate shipping
+                            options. This field is required for prerouted and
+                            ignored for default.
+                          items:
+                            type: string
+                    items:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        required:
+                          - product_id
+                        properties:
+                          product_id:
+                            type: string
+                            minLength: 1
+                          price:
+                            type: object
+                            description: >-
+                              Product net price after discounts. If
+                              customization adapter is enabled, this field might
+                              be required.
+                            required:
+                              - amount
+                              - currency
+                            properties:
+                              amount:
+                                type: number
+                                description: Product price value.
+                              currency:
+                                type: string
+                                description: >-
+                                  The currency used for this item, in ISO 4217
+                                  format.
+                                minLength: 3
+                                maxLength: 3
+                          is_preorder:
+                            type: boolean
+                            description: >-
+                              Set to true if product can be pre-ordered. This
+                              means that the product is in stock and a
+                              preorder_start date is set between the current
+                              date and the online_from date.
+                          online_from:
+                            description: >-
+                              Determines the date-time (inclusive) when the
+                              product is available for sale. The datetime must
+                              be UTC and formatted with YYYY-MM-DDThh:mm:ss
+                            type: string
+                            format: date-time
+              type: object
+              required:
+                - shipping_address
+                - shopping_cart
+        required: true
+  /shipments:
+    get:
+      tags:
+        - Delivery
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              example:
+                shipments:
+                  - tracking_code: XY200189925RV
+                    status: in_transit
+                    carrier_code: CHRONOPOST
+                  - tracking_code: XY200202096RV
+                    status: created
+                    carrier_code: CHRONOPOST
+                  - tracking_code: XY200329517RV
+                    status: created
+                    carrier_code: CHRONOPOST
+                  - tracking_code: XY200206212RV
+                    status: created
+                    carrier_code: CHRONOPOST
+                  - tracking_code: XY200189899RV
+                    status: in_transit
+                    carrier_code: CHRONOPOST
+                  - tracking_code: XY200189117RV
+                    status: in_transit
+                    carrier_code: CHRONOPOST
+              schema:
+                title: A list of shipments
+                description: Response schema for getting shipments with a given status
+                type: object
+                required:
+                  - shipments
+                properties:
+                  shipments:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - tracking_code
+                        - carrier_code
+                        - status
+                      properties:
+                        tracking_code:
+                          type: string
+                          maxLength: 256
+                          minLength: 1
+                        carrier_code:
+                          type: string
+                          maxLength: 256
+                          minLength: 1
+                        status:
+                          type: string
+                          enum:
+                            - created
+                            - updated
+                            - assigned
+                            - out_for_delivery
+                            - in_transit
+                            - delivered
+                            - canceled
+        '400':
+          description: Bad Request.
+        '500':
+          description: Internal Server Error.
+      description: Retrieves a list of shipments for a provider and status.
+      summary: List shipments
+      operationId: list-shipments
+      parameters:
+        - name: carrier_code
+          in: query
+          required: true
+          description: The carrier code for the shipping provider.
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: true
+          description: >
+            The status of the shipments to retrieve. The `open` status includes
+            all shipments not yet delivered or canceled.
+          schema:
+            default: open
+            enum:
+              - open
+            type: string
+  /book_delivery:
+    post:
+      x-internal: true
+      tags:
+        - Delivery
+      operationId: book-delivery
+      description: >-
+        asynchronously book a delivery by accepting the request and emitting
+        package.delivery_booked events
+      summary: Book a Delivery
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  description: Delivery booking request
+                  required:
+                    - delivery_request_id
+                    - shipping_option_token
+                    - external_order_id
+                    - fulfillment_node_id
+                    - shipping_address
+                  properties:
+                    packages:
+                      oneOf:
+                        - nullable: true
+                        - type: array
+                          items:
+                            type: object
+                            required:
+                              - package_option
+                              - items
+                              - item_ids
+                              - customs
+                            properties:
+                              external_package_id:
+                                oneOf:
+                                  - nullable: true
+                                  - type: string
+                                    minLength: 1
+                                    description: >-
+                                      An optional, unique ID to identify the
+                                      package externally
+                              package_option:
+                                description: Specifications of the package
+                                oneOf:
+                                  - description: Specification of a package
+                                    type: object
+                                    required:
+                                      - weight
+                                      - weight_unit
+                                      - length
+                                      - width
+                                      - height
+                                      - length_unit
+                                    properties:
+                                      weight:
+                                        type: number
+                                        minimum: 0
+                                        exclusiveMinimum: true
+                                      weight_unit:
+                                        type: string
+                                        enum:
+                                          - lb
+                                          - oz
+                                          - kg
+                                          - g
+                                      length:
+                                        type: number
+                                        minimum: 0
+                                        exclusiveMinimum: true
+                                      width:
+                                        type: number
+                                        minimum: 0
+                                        exclusiveMinimum: true
+                                      height:
+                                        type: number
+                                        minimum: 0
+                                        exclusiveMinimum: true
+                                      length_unit:
+                                        type: string
+                                        enum:
+                                          - mm
+                                          - cm
+                                          - m
+                                          - in
+                                          - ft
+                                  - nullable: true
+                              items:
+                                type: array
+                                description: List of product identifiers inside the package
+                                items:
+                                  description: The unique identifier of a product
+                                  type: string
+                                  minLength: 1
+                              item_ids:
+                                type: array
+                                description: >-
+                                  List of sales order item identifiers inside
+                                  the package
+                                items:
+                                  description: The unique sales order item identifier
+                                  type: string
+                                  minLength: 1
+                              customs:
+                                description: Information needed for customs
+                                type: object
+                                properties:
+                                  itn:
+                                    description: >-
+                                      The ITN number for international shipments
+                                      if order>$2500
+                                    oneOf:
+                                      - type: string
+                                      - nullable: true
+                                  customs_signer:
+                                    type: string
+                                    description: >-
+                                      Full name of the person responsible for
+                                      signing customs document, usually an
+                                      associate name
+                    book_return:
+                      type: boolean
+                      default: false
+                    callback_url:
+                      type: string
+                      nullable: true
+                    shipping_option_token:
+                      type: string
+                      nullable: false
+                    delivery_request_id:
+                      type: string
+                      nullable: false
+                      description: delivery request UUID
+                    external_order_id:
+                      type: string
+                      nullable: false
+                      description: Order ID
+                    fulfillment_node_id:
+                      type: string
+                      nullable: false
+                    shipping_address:
+                      type: object
+                      additionalProperties: false
+                      required:
+                        - first_name
+                        - last_name
+                        - country_code
+                        - city
+                        - address_line_1
+                        - address_line_2
+                        - phone
+                      properties:
+                        first_name:
+                          type: string
+                          maxLength: 256
+                        last_name:
+                          type: string
+                          maxLength: 256
+                        country_code:
+                          description: >-
+                            Country code for this address. Must be
+ISO-3166
+                            reference
+type: string
+                          minLength: 2
+                          maxLength: 2
+                        city:
+                          type: string
+                          maxLength: 256
+                        zip_code:
+                          oneOf:
+                            - type: string
+                              maxLength: 32
+                            - nullable: true
+                        state:
+                          type: string
+                        address_line_1:
+                          type: string
+                          maxLength: 256
+                        address_line_2:
+                          oneOf:
+                            - type: string
+                              maxLength: 256
+                            - nullable: true
+                          maxLength: 256
+                        email:
+                          oneOf:
+                            - type: string
+                              maxLength: 256
+                            - nullable: true
+                        phone:
+                          type: string
+                          maxLength: 256
+                - type: object
+                  description: Delivery booking request
+                  required:
+                    - fulfillment_request_id
+                  properties:
+                    fulfillment_request_id:
+                      type: string
+                      minLength: 1
+                    packages:
+                      oneOf:
+                        - nullable: true
+                        - type: array
+                          items:
+                            type: object
+                            required:
+                              - package_option
+                              - items
+                              - item_ids
+                              - customs
+                            properties:
+                              external_package_id:
+                                oneOf:
+                                  - nullable: true
+                                  - type: string
+                                    minLength: 1
+                                    description: >-
+                                      An optional, unique ID to identify the
+                                      package externally
+                              package_option:
+                                description: Specifications of the package
+                                oneOf:
+                                  - description: Specification of a package
+                                    type: object
+                                    required:
+                                      - weight
+                                      - weight_unit
+                                      - length
+                                      - width
+                                      - height
+                                      - length_unit
+                                    properties:
+                                      weight:
+                                        type: number
+                                        minimum: 0
+                                        exclusiveMinimum: true
+                                      weight_unit:
+                                        type: string
+                                        enum:
+                                          - lb
+                                          - oz
+                                          - kg
+                                          - g
+                                      length:
+                                        type: number
+                                        minimum: 0
+                                        exclusiveMinimum: true
+                                      width:
+                                        type: number
+                                        minimum: 0
+                                        exclusiveMinimum: true
+                                      height:
+                                        type: number
+                                        minimum: 0
+                                        exclusiveMinimum: true
+                                      length_unit:
+                                        type: string
+                                        enum:
+                                          - mm
+                                          - cm
+                                          - m
+                                          - in
+                                          - ft
+                                  - nullable: true
+                              items:
+                                type: array
+                                description: List of product identifiers inside the package
+                                items:
+                                  description: The unique identifier of a product
+                                  type: string
+                                  minLength: 1
+                              item_ids:
+                                type: array
+                                description: >-
+                                  List of sales order item identifiers inside
+                                  the package
+                                items:
+                                  description: The unique sales order item identifier
+                                  type: string
+                                  minLength: 1
+                              customs:
+                                description: Information needed for customs
+                                type: object
+                                properties:
+                                  itn:
+                                    description: >-
+                                      The ITN number for international shipments
+                                      if order>$2500
+                                    oneOf:
+                                      - type: string
+                                      - nullable: true
+                                  customs_signer:
+                                    type: string
+                                    description: >-
+                                      Full name of the person responsible for
+                                      signing customs document, usually an
+                                      associate name
+                    book_return:
+                      type: boolean
+                      default: false
+                    callback_url:
+                      type: string
+                      nullable: true
+      responses:
+        '202':
+          description: Delivery booking request accepted
+        '400':
+          description: Invalid request
+  /book_delivery/{fulfillment_request_id}:
+    post:
+      x-internal: true
+      tags:
+        - Delivery
+      operationId: book-delivery-with-ffr
+      description: >-
+        asynchronously book a delivery by accepting the request and emitting
+        package.delivery_booked events
+      summary: Book a Delivery
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Delivery booking request
+              required:
+                - fulfillment_request_id
+              properties:
+                fulfillment_request_id:
+                  type: string
+                  minLength: 1
+                packages:
+                  oneOf:
+                    - nullable: true
+                    - type: array
+                      items:
+                        type: object
+                        required:
+                          - package_option
+                          - items
+                          - item_ids
+                          - customs
+                        properties:
+                          external_package_id:
+                            oneOf:
+                              - nullable: true
+                              - type: string
+                                minLength: 1
+                                description: >-
+                                  An optional, unique ID to identify the package
+                                  externally
+                          package_option:
+                            description: Specifications of the package
+                            oneOf:
+                              - description: Specification of a package
+                                type: object
+                                required:
+                                  - weight
+                                  - weight_unit
+                                  - length
+                                  - width
+                                  - height
+                                  - length_unit
+                                properties:
+                                  weight:
+                                    type: number
+                                    minimum: 0
+                                    exclusiveMinimum: true
+                                  weight_unit:
+                                    type: string
+                                    enum:
+                                      - lb
+                                      - oz
+                                      - kg
+                                      - g
+                                  length:
+                                    type: number
+                                    minimum: 0
+                                    exclusiveMinimum: true
+                                  width:
+                                    type: number
+                                    minimum: 0
+                                    exclusiveMinimum: true
+                                  height:
+                                    type: number
+                                    minimum: 0
+                                    exclusiveMinimum: true
+                                  length_unit:
+                                    type: string
+                                    enum:
+                                      - mm
+                                      - cm
+                                      - m
+                                      - in
+                                      - ft
+                              - nullable: true
+                          items:
+                            type: array
+                            description: List of product identifiers inside the package
+                            items:
+                              description: The unique identifier of a product
+                              type: string
+                              minLength: 1
+                          item_ids:
+                            type: array
+                            description: >-
+                              List of sales order item identifiers inside the
+                              package
+                            items:
+                              description: The unique sales order item identifier
+                              type: string
+                              minLength: 1
+                          customs:
+                            description: Information needed for customs
+                            type: object
+                            properties:
+                              itn:
+                                description: >-
+                                  The ITN number for international shipments if
+                                  order>$2500
+                                oneOf:
+                                  - type: string
+                                  - nullable: true
+                              customs_signer:
+                                type: string
+                                description: >-
+                                  Full name of the person responsible for
+                                  signing customs document, usually an associate
+                                  name
+                book_return:
+                  type: boolean
+                  default: false
+                callback_url:
+                  type: string
+                  nullable: true
+      responses:
+        '202':
+          description: Delivery booking request accepted
+        '400':
+          description: Invalid request
+      parameters:
+        - name: fulfillment_request_id
+          description: Fulfillment Request ID
+          in: path
+          required: true
+          schema:
+            type: string
+  /manifests:
+    post:
+      x-internal: true
+      tags:
+        - Delivery
+      operationId: create-manifest
+      description: >-
+        regroup several packages under a manifest, or scanform, in order to ease
+        handover to the carrier.
+      summary: Create a Manifest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: Create Manifest Request
+              type: object
+              required:
+                - external_package_ids
+              properties:
+                external_package_ids:
+                  description: List of External Package IDs
+                  type: array
+                  minLength: 2
+                  items:
+                    type: string
+                    minLength: 1
+      responses:
+        '200':
+          description: Manifest created
+          content:
+            application/json:
+              schema:
+                description: Manifest created
+                type: object
+                properties:
+                  manifest:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: our ID for this manifest
+                      carrier_id:
+                        type: string
+                        description: the raw carrier id of the manifest.
+                      carrier_code:
+                        type: string
+                        description: carrier code used to create this manifest.
+                      document_url:
+                        type: string
+                        description: >-
+                          the URL where to find the manifest document to be
+                          printed.
+        '400':
+          description: Invalid request
+  /cancel/{delivery_request_id}:
+    post:
+      x-internal: true
+      tags:
+        - Delivery
+      operationId: cancel-delivery-by-delivery-request-id
+      description: cancel delivery bookings for a delivery request id.
+      summary: Cancel Delivery for Delivery Request ID
+      parameters:
+        - name: delivery_request_id
+          description: Delivery Request ID/UUID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: delivery has been cancelled successfully
+        '400':
+          description: cannot proceed
+        '404':
+          description: missing data such as Delivery required to process cancellation
+  /_/v0/support/orders/{sales_order_uuid}/booking_status:
+    get:
+      x-internal: true
+      tags:
+        - Support endpoints
+      responses:
+        '200':
+          description: Contains a list of all shipments and their booking statuses.
+          content:
+            application/json:
+              example:
+                booking_status:
+                  - fulfillment_request_id: 76ba2c90-c413-438e-8040-a3585a2db770
+                    status: pending
+                  - fulfillment_request_id: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                    status: booked
+                  - fulfillment_request_id: 27a39710-4b2d-43fd-b636-5f7aed3073a2
+                    status: failed
+                    error_type: not_booked
+              schema:
+                type: object
+                required:
+                  - booking_status
+                properties:
+                  adapter_calls:
+                    type: array
+                    description: >
+                      List of outgoing calls made to an adapter, with the
+                      answer.
+
+                      The initial query is not revealed to avoid leaking
+                      personal information.
+                    items:
+                      type: object
+                      properties:
+                        requested_at:
+                          type: string
+                          description: When the request was performed
+                        method:
+                          type: string
+                          description: HTTP method used
+                        url:
+                          type: string
+                          description: HTTP URL called
+                        status_code:
+                          type: number
+                          description: >-
+                            HTTP Response Code.
+                            https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+                        raw_response:
+                          type: string
+                          description: >
+                            Raw response. It is usually a JSON payload, in which
+                            case it is serialized in a string.
+
+                            Such "stringified" JSON can be deserialized, however
+                            it is not the intended approach.
+
+                            We strongly recommend to use the information as it
+                            is, for manual investigations rather
+
+                            than automated processing.
+                  shipping_address_overwrite:
+                    oneOf:
+                      - type: string
+                        description: >-
+                          Human readable message about the shipping address
+                          overwrite
+                      - type: object
+                        description: The latest shipping address overwrite
+                        properties:
+                          updated_at:
+                            type: string
+                            description: Update date of the shipping address overwrite
+                          address_line_1:
+                            type: string
+                            description: Address Line 1
+                          address_line_2:
+                            type: string
+                            description: Address Line 2
+                          city:
+                            type: string
+                            description: City
+                          state:
+                            type: string
+                            description: State
+                          country_code:
+                            type: string
+                            description: country code
+                          zip_code:
+                            type: string
+                            description: zip code
+                          email:
+                            enum:
+                              - redacted
+                              - empty
+                            description: masked email of the user
+                          first_name:
+                            enum:
+                              - redacted
+                              - empty
+                            description: masked first name of the user
+                          last_name:
+                            enum:
+                              - redacted
+                              - empty
+                            description: masked last name of the user
+                          phone:
+                            enum:
+                              - redacted
+                              - empty
+                            description: masked phone number of the user
+                  booking_status:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - fulfillment_request_id
+                        - booked_packages
+                        - status
+                      properties:
+                        created_at:
+                          type: string
+                          description: >-
+                            Date and time at which the delivery was first
+                            registered and attempted
+                        updated_at:
+                          type: string
+                          description: >
+                            Date and time where the delivery was updated. This
+                            can happen after another delivery
+
+                            attempt, or shipping externally for example.
+                        auto_retry_count:
+                          type: number
+                          description: >-
+                            Number of times the delivery was retried
+                            automatically.
+                        shipped_outside_newstore:
+                          type: boolean
+                          description: If the delivery was shipped externally.
+                        booked_packages:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              label_url:
+                                type: string
+                                description: URL to the shipping label document
+                              package_id:
+                                type: string
+                                description: Delivery internal ID for this package
+                              external_package_id:
+                                type: string
+                                description: >-
+                                  External ID of the package, for example, from
+                                  Store Fulfillment
+                        fulfillment_request_id:
+                          type: string
+                          minLength: 36
+                          maxLength: 36
+                          description: The unique ID of the fulfillment request.
+                        status:
+                          type: string
+                          enum:
+                            - booking
+                            - booked
+                            - failed
+                            - status_not_available
+                          description: The status of the delivery booking.
+                        error_type:
+                          type: string
+                          minLength: 1
+                          description: >-
+                            The type of error which caused the delivery booking
+                            to fail.
+                        booking_errors:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              delivery_id:
+                                type: string
+                                description: Internal delivery ID
+                              request_id:
+                                type: string
+                                description: Request ID when the error happened
+                              created_at:
+                                type: string
+                                description: Creation date of the shipment error
+                              data:
+                                type: string
+                                description: Optional, Extra information
+                              error_message:
+                                type: string
+                                description: >-
+                                  Error details from the adapter. It will
+                                  possibly be wrapped by delivery's internal
+                                  error handling messages
+                              error_type:
+                                type: string
+                                description: Delivery's internal error code
+                              external_order_id:
+                                type: string
+                                description: external order ID
+                              sales_order_uuid:
+                                type: string
+                                description: Sales Order UUID
+                              shipping_option_token:
+                                type: string
+                                description: Shipping Option Token
+                        book_delivery_status_history:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              created_at:
+                                type: string
+                                description: Creation date of the shipment error
+                              status:
+                                enum:
+                                  - booking
+                                  - booked
+                                  - failed
+                                  - status_not_available
+                                description: The status of the delivery booking.
+        '404':
+          description: Order not found.
+        '500':
+          description: An internal server error happened.
+      description: >
+        Retrieves the shipment booking status along with history of possible
+        errors and retries.
+
+
+        Please note that this endpoint is meant for human review only: it is
+        strictly reserved to help
+
+        support and integrators to get information about what is the status of a
+        booking along with error messages as
+
+        we get them from adapters for example.
+
+
+        We are still working on this endpoint and others that will help you to
+        understand what is happening in case
+
+        there is an issue with booking.
+      summary: Get booking status
+      operationId: get-booking-status
+      parameters:
+        - name: sales_order_uuid
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique ID of the order.
+  /shipments/{tracking_code}/package_tracking:
+    post:
+      tags:
+        - Tracking
+      responses:
+        '200':
+          description: The shipment tracking information was updated.
+        '400':
+          description: Bad Request. Something went wrong with this request.
+        '404':
+          description: The tracking code was not found.
+      description: >
+        Updates the shipment tracking information.
+
+
+        Only the information provided in the body is considered. No data is
+        deleted if you do not use all the fields
+
+        that the body allows.
+      summary: Update shipment tracking details
+      operationId: update-shipment-tracking-details
+      requestBody:
+        content:
+          application/json:
+            example:
+              updated_at: '2018-09-28T14:30:06.000Z'
+              courier:
+                name: Jay DoubleYou
+                photo_url: http://www.photourl.com/jdoubleyou
+                phone: +55 55 5555 5555
+              vehicle:
+                license_plate: CYG 1222
+              coordinates:
+                longitude: '2.3653740882873535'
+                latitude: '48.90086364746094'
+            schema:
+              title: Package tracking location
+              type: object
+              description: An updated representation of the delivery courier location
+              required:
+                - updated_at
+              properties:
+                coordinates:
+                  type: object
+                  description: Latest coordinates of this package.
+                  required:
+                    - longitude
+                    - latitude
+                  properties:
+                    longitude:
+                      description: The longitude value from the coordinates of the package.
+                      type: string
+                    latitude:
+                      description: The latitude value from the coordinates of the package.
+                      type: string
+                courier:
+                  type: object
+                  description: Information about the driver.
+                  properties:
+                    name:
+                      type: string
+                    photo_url:
+                      type: string
+                    phone:
+                      type: string
+                vehicle:
+                  type: object
+                  description: Information about the vehicle.
+                  properties:
+                    license_plate:
+                      type: string
+                updated_at:
+                  description: The datetime when the tracking data was collected.
+                  type: string
+                  format: date-time
+        required: true
+      parameters:
+        - name: tracking_code
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The delivery tracking code provided when booking the shipment.
+  /shipments/{tracking_code}/delivery_status:
+    post:
+      tags:
+        - Tracking
+      responses:
+        '200':
+          description: The shipment status was updated.
+        '400':
+          description: Something went wrong with the request.
+        '404':
+          description: The shipment was not found.
+        '409':
+          description: Conflicting shipment status.
+      description: Notifies NewStore of an updated status for shipment tracking.
+      summary: Set shipment status
+      operationId: set-shipment-status
+      requestBody:
+        content:
+          application/json:
+            example:
+              status: delivered
+              reason: delivered
+              updated_at: '2018-09-29T15:30:06.000Z'
+            schema:
+              title: Schema for updating the status of a delivery
+              type: object
+              required:
+                - status
+                - updated_at
+              properties:
+                status:
+                  description: The updated status of a given delivery.
+                  type: string
+                  enum:
+                    - assigned
+                    - canceled
+                    - delivered
+                    - in_transit
+                    - out_for_delivery
+                    - returned
+                reason:
+                  description: Represents additional information of the status.
+                  type: string
+                  nullable: true
+                updated_at:
+                  description: The timestamp of when the event happened.
+                  type: string
+                  format: date-time
+        required: true
+      parameters:
+        - name: tracking_code
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The delivery tracking code provided when booking the shipment.
+  /config/delivery/carriers:
+    post:
+      tags:
+        - Configuration
+      operationId: set-carrier-config
+      responses:
+        '200':
+          description: The carrier config has been created/updated.
+        '400':
+          description: Incorrect payload for config (validation failed).
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: Update failed for carrier config due to lost race.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+      description: >
+        Creates/Updates the carrier config for the tenant.
+
+        This allows configuration for the carrier by specifying `api_base_url`
+        (webhook), `api_key`,
+
+        `booking_includes_return` and `return_deliveries_should_be_canceled`.
+      summary: Add/Update carrier config.
+      requestBody:
+        content:
+          application/json:
+            examples:
+              Generic:
+                summary: >-
+                  Generic carrier configuration, here with FEDEX as carrier
+                  identifier
+                value:
+                  value:
+                    FEDEX:
+                      booking_includes_return: true
+                      api_base_url: http://example.newstore.com
+                      return_deliveries_should_be_canceled: true
+            schema:
+              title: Schema for setting the config of carriers
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  type: object
+                  description: configuration payload
+                  additionalProperties:
+                    type: object
+                    description: 'Name of shipment carrier, Ex: FEDEX'
+                    required:
+                      - api_base_url
+                    properties:
+                      booking_includes_return:
+                        description: >-
+                          If true the return delivery is booked in the same call
+                          as the outbound delivery.
+                        type: boolean
+                      api_base_url:
+                        description: The shipping provider adapter URL.
+                        type: string
+                      api_key:
+                        description: >-
+                          Optional API key used to validate against the shipping
+                          provider adapter URL.
+                        type: string
+                      return_deliveries_should_be_canceled:
+                        description: >-
+                          Set to true in order to cancel the return delivery
+                          along with the outbound delivery.
+                        type: boolean
+        required: true
+    get:
+      tags:
+        - Configuration
+      operationId: get-carrier-config
+      summary: Get carrier config
+      description: |
+        Gets the current tenant config for `carriers`.
+      responses:
+        '200':
+          description: Retrieve the carrier config
+          content:
+            application/json:
+              schema:
+                title: Schema for setting the config of carriers
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    additionalProperties:
+                      type: object
+                      description: 'Name of shipment carrier, Ex: FEDEX'
+                      required:
+                        - api_base_url
+                      properties:
+                        booking_includes_return:
+                          description: >-
+                            If true the return delivery is booked in the same
+                            call as the outbound delivery.
+                          type: boolean
+                        api_base_url:
+                          description: The shipping provider adapter URL.
+                          type: string
+                        return_deliveries_should_be_canceled:
+                          description: >-
+                            If the return deliveries will not be canceled the
+                            value will be false.
+                          type: boolean
+                  updated_at:
+                    type: string
+                    format: date-time
+              example:
+                value:
+                  FEDEX:
+                    booking_includes_return: true
+                    api_base_url: http://example.newstore.com
+                    return_deliveries_should_be_canceled: true
+                updated_at: '2021-07-13T20:18:25Z'
+        '404':
+          description: >-
+            Config key does not exist (it is not a case when key exists but just
+            not set)
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+  /config/delivery/fulfillment_node_customs_info:
+    post:
+      tags:
+        - Configuration
+      operationId: set-customs-config
+      responses:
+        '200':
+          description: The customs config has been created/updated.
+        '400':
+          description: Incorrect payload for config (validation failed).
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: Update failed for customs config due to lost race.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+      description: >
+        Creates/Updates tenant config for `fulfillment_node_customs_config` i.e.
+
+        the customs information for fulfillment nodes. This alllows
+        configurartion for `customs_signer`
+      summary: Add/Update customs config.
+      requestBody:
+        content:
+          application/json:
+            examples:
+              US01 and 02:
+                summary: Customs signer for US01 and US02 fulfillment nodes
+                value:
+                  value:
+                    US01:
+                      customs_signer: John Doe
+                    US02:
+                      customs_signer: John Doe Jr.
+            schema:
+              title: Schema to set customs configuration.
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  type: object
+                  description: config payload
+                  additionalProperties:
+                    type: object
+                    description: ID of the fulfillment node. Ex. US01
+                    required:
+                      - customs_signer
+                    properties:
+                      customs_signer:
+                        description: >-
+                          A name of the person who is certifying that the
+                          information provided on the customs form is accurate.
+                        type: string
+    get:
+      tags:
+        - Configuration
+      operationId: get-customs-config
+      summary: Get customs config.
+      description: |
+        Gets the current tenant config for `fulfillment_node_customs_config`.
+      responses:
+        '200':
+          description: Retrieve the customs config
+          content:
+            application/json:
+              schema:
+                title: Schema to set customs configuration.
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      description: ID of the fulfillment node. Ex. US01
+                      required:
+                        - customs_signer
+                      properties:
+                        customs_signer:
+                          description: >-
+                            A name of the person who is certifying that the
+                            information provided on the customs form is
+                            accurate.
+                          type: string
+                  updated_at:
+                    type: string
+                    format: date-time
+              example:
+                value:
+                  US01:
+                    customs_signer: John Doe
+                updated_at: '2021-07-13T20:18:25Z'
+        '404':
+          description: >-
+            Config key does not exist (it is not a case when key exists but just
+            not set)
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+  /config/delivery/adapter_http_timeout:
+    post:
+      tags:
+        - Configuration
+      operationId: set-http-adapter-timeout
+      responses:
+        '200':
+          description: Timeout in seconds for HTTP adapters
+        '400':
+          description: Incorrect payload for config (validation failed).
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: Update failed for http adapter config due to lost race.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+      description: |
+        Creates/Updates tenant config for `adapter_http_timeout` i.e.
+        the timeout for HTTP adapters in delivery service
+      summary: Add/Update timeout value for HTTP adapters.
+      requestBody:
+        content:
+          application/json:
+            example:
+              value: 50
+            schema:
+              title: Set timeout in seconds for HTTP adapters
+              description: Sets the tenant config for HTTP adapters' timeout in seconds
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  description: HTTP adapter timeout. Default value of this config is 20.0
+                  type: number
+    get:
+      tags:
+        - Configuration
+      operationId: get-http-adapter-timeout
+      summary: Get timeout value for HTTP adapters
+      description: |
+        Retrieve tenant config for `adapter_http_timeout` i.e.
+        the timeout for HTTP adapters in delivery service.
+      responses:
+        '200':
+          description: >-
+            Retrieve the timeout for HTTP adapters in delivery service
+            successfully
+          content:
+            application/json:
+              schema:
+                title: Get timeout in seconds for HTTP adapters
+                description: Gets the tenant configuration for timeout of HTTP adapters
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    description: >-
+                      Timeout for HTTP adapters in delivery service, after this
+                      the request will be canceled.
+                    type: number
+                  updated_at:
+                    type: string
+                    description: >-
+                      Contains datetime in ISO8601 UTC when config updated last
+                      time. Can be null if config value wasn't set yet
+              example:
+                value: 50
+                updated_at: '2021-07-13T20:18:25Z'
+        '404':
+          description: >-
+            Config key does not exist (it is not a case when key exists but just
+            not set)
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreateManifestRequest:
+      description: Create Manifest Request
+      type: object
+      required:
+        - external_package_ids
+      properties:
+        external_package_ids:
+          description: List of External Package IDs
+          type: array
+          minLength: 2
+          items:
+            type: string
+            minLength: 1
+    CreateManifestResponse:
+      description: Manifest created
+      type: object
+      properties:
+        manifest:
+          type: object
+          properties:
+            id:
+              type: string
+              description: our ID for this manifest
+            carrier_id:
+              type: string
+              description: the raw carrier id of the manifest.
+            carrier_code:
+              type: string
+              description: carrier code used to create this manifest.
+            document_url:
+              type: string
+              description: the URL where to find the manifest document to be printed.
+    PackageCustoms:
+      description: Information needed for customs
+      type: object
+      properties:
+        itn:
+          description: The ITN number for international shipments if order>$2500
+          oneOf:
+            - type: string
+            - nullable: true
+        customs_signer:
+          type: string
+          description: >-
+            Full name of the person responsible for signing customs document,
+            usually an associate name
+    PackageOption:
+      description: Specification of a package
+      type: object
+      required:
+        - weight
+        - weight_unit
+        - length
+        - width
+        - height
+        - length_unit
+      properties:
+        weight:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        weight_unit:
+          type: string
+          enum:
+            - lb
+            - oz
+            - kg
+            - g
+        length:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        width:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        height:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        length_unit:
+          type: string
+          enum:
+            - mm
+            - cm
+            - m
+            - in
+            - ft
+    ShippingAddress:
+      type: object
+      additionalProperties: false
+      required:
+        - first_name
+        - last_name
+        - country_code
+        - city
+        - address_line_1
+        - address_line_2
+        - phone
+      properties:
+        first_name:
+          type: string
+          maxLength: 256
+        last_name:
+          type: string
+          maxLength: 256
+        country_code:
+          description: >-
+            Country code for this address. Must be
+ISO-3166
+            reference
+type: string
+          minLength: 2
+          maxLength: 2
+        city:
+          type: string
+          maxLength: 256
+        zip_code:
+          oneOf:
+            - type: string
+              maxLength: 32
+            - nullable: true
+        state:
+          type: string
+        address_line_1:
+          type: string
+          maxLength: 256
+        address_line_2:
+          oneOf:
+            - type: string
+              maxLength: 256
+            - nullable: true
+          maxLength: 256
+        email:
+          oneOf:
+            - type: string
+              maxLength: 256
+            - nullable: true
+        phone:
+          type: string
+          maxLength: 256
+    BookDeliveryPackage:
+      type: object
+      required:
+        - package_option
+        - items
+        - item_ids
+        - customs
+      properties:
+        external_package_id:
+          oneOf:
+            - nullable: true
+            - type: string
+              minLength: 1
+              description: An optional, unique ID to identify the package externally
+        package_option:
+          description: Specifications of the package
+          oneOf:
+            - description: Specification of a package
+              type: object
+              required:
+                - weight
+                - weight_unit
+                - length
+                - width
+                - height
+                - length_unit
+              properties:
+                weight:
+                  type: number
+                  minimum: 0
+                  exclusiveMinimum: true
+                weight_unit:
+                  type: string
+                  enum:
+                    - lb
+                    - oz
+                    - kg
+                    - g
+                length:
+                  type: number
+                  minimum: 0
+                  exclusiveMinimum: true
+                width:
+                  type: number
+                  minimum: 0
+                  exclusiveMinimum: true
+                height:
+                  type: number
+                  minimum: 0
+                  exclusiveMinimum: true
+                length_unit:
+                  type: string
+                  enum:
+                    - mm
+                    - cm
+                    - m
+                    - in
+                    - ft
+            - nullable: true
+        items:
+          type: array
+          description: List of product identifiers inside the package
+          items:
+            description: The unique identifier of a product
+            type: string
+            minLength: 1
+        item_ids:
+          type: array
+          description: List of sales order item identifiers inside the package
+          items:
+            description: The unique sales order item identifier
+            type: string
+            minLength: 1
+        customs:
+          description: Information needed for customs
+          type: object
+          properties:
+            itn:
+              description: The ITN number for international shipments if order>$2500
+              oneOf:
+                - type: string
+                - nullable: true
+            customs_signer:
+              type: string
+              description: >-
+                Full name of the person responsible for signing customs
+                document, usually an associate name
+    BookDeliveryWithFFRRequest:
+      type: object
+      description: Delivery booking request
+      required:
+        - fulfillment_request_id
+      properties:
+        fulfillment_request_id:
+          type: string
+          minLength: 1
+        packages:
+          oneOf:
+            - nullable: true
+            - type: array
+              items:
+                type: object
+                required:
+                  - package_option
+                  - items
+                  - item_ids
+                  - customs
+                properties:
+                  external_package_id:
+                    oneOf:
+                      - nullable: true
+                      - type: string
+                        minLength: 1
+                        description: >-
+                          An optional, unique ID to identify the package
+                          externally
+                  package_option:
+                    description: Specifications of the package
+                    oneOf:
+                      - description: Specification of a package
+                        type: object
+                        required:
+                          - weight
+                          - weight_unit
+                          - length
+                          - width
+                          - height
+                          - length_unit
+                        properties:
+                          weight:
+                            type: number
+                            minimum: 0
+                            exclusiveMinimum: true
+                          weight_unit:
+                            type: string
+                            enum:
+                              - lb
+                              - oz
+                              - kg
+                              - g
+                          length:
+                            type: number
+                            minimum: 0
+                            exclusiveMinimum: true
+                          width:
+                            type: number
+                            minimum: 0
+                            exclusiveMinimum: true
+                          height:
+                            type: number
+                            minimum: 0
+                            exclusiveMinimum: true
+                          length_unit:
+                            type: string
+                            enum:
+                              - mm
+                              - cm
+                              - m
+                              - in
+                              - ft
+                      - nullable: true
+                  items:
+                    type: array
+                    description: List of product identifiers inside the package
+                    items:
+                      description: The unique identifier of a product
+                      type: string
+                      minLength: 1
+                  item_ids:
+                    type: array
+                    description: List of sales order item identifiers inside the package
+                    items:
+                      description: The unique sales order item identifier
+                      type: string
+                      minLength: 1
+                  customs:
+                    description: Information needed for customs
+                    type: object
+                    properties:
+                      itn:
+                        description: >-
+                          The ITN number for international shipments if
+                          order>$2500
+                        oneOf:
+                          - type: string
+                          - nullable: true
+                      customs_signer:
+                        type: string
+                        description: >-
+                          Full name of the person responsible for signing
+                          customs document, usually an associate name
+        book_return:
+          type: boolean
+          default: false
+        callback_url:
+          type: string
+          nullable: true
+    BookDeliveryRequest:
+      type: object
+      description: Delivery booking request
+      required:
+        - delivery_request_id
+        - shipping_option_token
+        - external_order_id
+        - fulfillment_node_id
+        - shipping_address
+      properties:
+        packages:
+          oneOf:
+            - nullable: true
+            - type: array
+              items:
+                type: object
+                required:
+                  - package_option
+                  - items
+                  - item_ids
+                  - customs
+                properties:
+                  external_package_id:
+                    oneOf:
+                      - nullable: true
+                      - type: string
+                        minLength: 1
+                        description: >-
+                          An optional, unique ID to identify the package
+                          externally
+                  package_option:
+                    description: Specifications of the package
+                    oneOf:
+                      - description: Specification of a package
+                        type: object
+                        required:
+                          - weight
+                          - weight_unit
+                          - length
+                          - width
+                          - height
+                          - length_unit
+                        properties:
+                          weight:
+                            type: number
+                            minimum: 0
+                            exclusiveMinimum: true
+                          weight_unit:
+                            type: string
+                            enum:
+                              - lb
+                              - oz
+                              - kg
+                              - g
+                          length:
+                            type: number
+                            minimum: 0
+                            exclusiveMinimum: true
+                          width:
+                            type: number
+                            minimum: 0
+                            exclusiveMinimum: true
+                          height:
+                            type: number
+                            minimum: 0
+                            exclusiveMinimum: true
+                          length_unit:
+                            type: string
+                            enum:
+                              - mm
+                              - cm
+                              - m
+                              - in
+                              - ft
+                      - nullable: true
+                  items:
+                    type: array
+                    description: List of product identifiers inside the package
+                    items:
+                      description: The unique identifier of a product
+                      type: string
+                      minLength: 1
+                  item_ids:
+                    type: array
+                    description: List of sales order item identifiers inside the package
+                    items:
+                      description: The unique sales order item identifier
+                      type: string
+                      minLength: 1
+                  customs:
+                    description: Information needed for customs
+                    type: object
+                    properties:
+                      itn:
+                        description: >-
+                          The ITN number for international shipments if
+                          order>$2500
+                        oneOf:
+                          - type: string
+                          - nullable: true
+                      customs_signer:
+                        type: string
+                        description: >-
+                          Full name of the person responsible for signing
+                          customs document, usually an associate name
+        book_return:
+          type: boolean
+          default: false
+        callback_url:
+          type: string
+          nullable: true
+        shipping_option_token:
+          type: string
+          nullable: false
+        delivery_request_id:
+          type: string
+          nullable: false
+          description: delivery request UUID
+        external_order_id:
+          type: string
+          nullable: false
+          description: Order ID
+        fulfillment_node_id:
+          type: string
+          nullable: false
+        shipping_address:
+          type: object
+          additionalProperties: false
+          required:
+            - first_name
+            - last_name
+            - country_code
+            - city
+            - address_line_1
+            - address_line_2
+            - phone
+          properties:
+            first_name:
+              type: string
+              maxLength: 256
+            last_name:
+              type: string
+              maxLength: 256
+            country_code:
+              description: >-
+                Country code for this address. Must be
+ISO-3166
+                reference
+type: string
+              minLength: 2
+              maxLength: 2
+            city:
+              type: string
+              maxLength: 256
+            zip_code:
+              oneOf:
+                - type: string
+                  maxLength: 32
+                - nullable: true
+            state:
+              type: string
+            address_line_1:
+              type: string
+              maxLength: 256
+            address_line_2:
+              oneOf:
+                - type: string
+                  maxLength: 256
+                - nullable: true
+              maxLength: 256
+            email:
+              oneOf:
+                - type: string
+                  maxLength: 256
+                - nullable: true
+            phone:
+              type: string
+              maxLength: 256
+    ShippingOptionTokenErrorResponse:
+      type: object
+      description: A shipping option public/private key pair.
+      required:
+        - message
+        - request_id
+        - error_code
+      properties:
+        message:
+          type: string
+          minLength: 1
+        request_id:
+          type: string
+          minLength: 1
+        error_code:
+          type: string
+          minLength: 1
+    ShippingOptionTokenKeyPair:
+      type: object
+      description: A shipping option public/private key pair.
+      required:
+        - public_key
+        - private_key
+      properties:
+        public_key:
+          description: A PEM formatted RSA public key
+          type: string
+          minLength: 1
+        private_key:
+          description: A PEM formatted RSA private key
+          type: string
+          minLength: 1
+    ShippingOptionTokenPublicKey:
+      type: object
+      description: A shipping option token public key.
+      required:
+        - public
+      properties:
+        public_key:
+          description: A PEM formatted RSA public key
+          type: string
+          minLength: 1
+    PackageTrackingUpdateRequest:
+      title: Package tracking location
+      type: object
+      description: An updated representation of the delivery courier location
+      required:
+        - updated_at
+      properties:
+        coordinates:
+          type: object
+          description: Latest coordinates of this package.
+          required:
+            - longitude
+            - latitude
+          properties:
+            longitude:
+              description: The longitude value from the coordinates of the package.
+              type: string
+            latitude:
+              description: The latitude value from the coordinates of the package.
+              type: string
+        courier:
+          type: object
+          description: Information about the driver.
+          properties:
+            name:
+              type: string
+            photo_url:
+              type: string
+            phone:
+              type: string
+        vehicle:
+          type: object
+          description: Information about the vehicle.
+          properties:
+            license_plate:
+              type: string
+        updated_at:
+          description: The datetime when the tracking data was collected.
+          type: string
+          format: date-time
+    PackageStatusUpdateRequest:
+      title: Schema for updating the status of a delivery
+      type: object
+      required:
+        - status
+        - updated_at
+      properties:
+        status:
+          description: The updated status of a given delivery.
+          type: string
+          enum:
+            - assigned
+            - canceled
+            - delivered
+            - in_transit
+            - out_for_delivery
+            - returned
+        reason:
+          description: Represents additional information of the status.
+          type: string
+          nullable: true
+        updated_at:
+          description: The timestamp of when the event happened.
+          type: string
+          format: date-time
+    ConfigRequestValidationFailed:
+      title: Config validation/parsing failed
+      type: object
+      required:
+        - messages
+        - request_id
+      properties:
+        messages:
+          type: array
+          description: A list of validation errors
+          items:
+            type: string
+            description: >-
+              An validation/parsing error which explains why we can't set this
+              config
+        request_id:
+          type: string
+    ConfigGetErrorResponse:
+      title: Internal error response while getting config
+      type: object
+      required:
+        - message
+        - request_id
+      properties:
+        message:
+          type: string
+          description: A human readable description of the error
+        request_id:
+          type: string

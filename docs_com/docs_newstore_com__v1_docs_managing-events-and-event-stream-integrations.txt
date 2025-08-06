@@ -1,0 +1,281 @@
+Managing events and Event Stream integrations
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Managing events and Event Stream integrations
+Updated on
+Apr 14, 2025
+Published on Oct 1, 2024
+5 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Permission required
+This action can be performed by users with the View tools permission.
+NewStore allows you to receive near real-time data from the NewStore platform via NewStore
+Event Stream
+. The event stream consists of all the
+events
+emitted by the
+entities
+of the platform. Each event contains data that can be integrated, persisted and aggregated in your data warehouse.
+Entity
+: Represents a business concept that emits events. Example:
+order
+,
+return
+or
+fulfillment request
+.
+Event
+: Represents a key moment of the life time of an entity. Example:
+order created
+,
+order canceled
+or
+fulfillment request assigned
+. All the events are described in detail in the
+Event stream webhooks
+documentation.
+For more information on Event Stream and how it works with integrations at NewStore, see the
+integration guide
+.
+Omnichannel Manager allows you to view all your integrations set up to work with Event Stream, and also allows you to create new integrations that can consume NewStore events for data aggregation and processing.
+Viewing integrations
+To view all existing Event Stream integrations that you have set up for your business, log into NOM and go to
+Tools
+>
+Event Stream
+. All integrations are displayed in the
+All
+section.
+To view all active Event Stream integrations, click
+Active
+, and to view all paused or inactive Event Stream integrations, click
+Paused
+.
+To switch an Event Stream integration to
+Active
+state or to
+Pause
+it, click the toggle button on the right for the relevant integration.
+To delete an Event stream integration, click
+Delete
+for the relevant integration.
+Viewing integration events and logs
+For every integration, you can view the list of events involved in the integration, including rejected events, and the logs for the integration.
+Viewing events
+For an Event stream integration, from the
+Actions
+drop-down menu, click
+View Events
+. The list of events published by NewStore for the integration is displayed. This list can be filtered by the
+Domain Entity ID
+, the status of the event, as well as a specific time period.
+The page has the following columns:
+Event
+: The ID and type of event, such as
+471278c7-dee8-4de5-8383-d8e50ede1c3f
+as the ID and
+fulfillment_request.assigned
+as the type of event.
+Domain Entity ID
+: The domain-specific ID of the event in the platform. For example, for orders this is specified as the order ID.
+Status
+: Can either be
+Success
+or
+Failure
+, based on whether the event was emitted successfully by the platform or not.
+Attempted at
+: The time when the event was emitted by the platform.
+Viewing and replaying rejected events
+To view events rejected by your integration, click the
+Actions
+drop-down menu of your integration and select
+View Rejected Events
+. The page displays a list of events that were rejected by the ERP or data warehouse configured to consume events emitted by NewStore. You can use this information to audit events that were missing or not processed in your integration and replay them.
+This functionality is especially helpful when events fail due to transient network issues, incorrect mappings, or endpoint misconfigurations that have since been resolved.
+The
+Rejected Events
+page includes the following columns:
+ID
+: The unique identifier of the rejected event.
+Note
+This does not match the
+ID
+of the original event.
+Attempted at
+: The timestamp when the event was rejected.
+Inspect & Replay
+: Click this button to view the event details or to replay the event if needed.
+Viewing integration logs
+For an Event stream integration, from the
+Actions
+drop-down menu, click
+View Logs
+. The logs for the integration are displayed, which includes these columns:
+Action
+: Displays whether the integration was stopped or started.
+Reason
+: Why and how the integration was started or stopped.
+Created at
+: The time when the log for the integration was created.
+Creating a new integration
+To create an Event Stream integration, click
+New Integration
+and follow these steps:
+In the
+Integration Details
+area:
+In
+Integration ID
+, specify a unique ID for the integration.
+In
+Integration Type
+, specify if the integration is
+Permanent
+or
+Temporary
+.
+Note
+A
+Permanent
+integration has no
+End Date
+specified, but a
+Temporary
+integration will stop consuming events on a specific date.
+In the
+Events
+area, select the preferred events you want the integration to consume as emitted by NewStore, and make available for viewing in NOM later.
+For example, select
+order
+to add all (currently supported) order related events, or select specific order events such as
+order.created
+and
+order.completed
+from the list.
+Note
+You can add as many events as you want to an integration, but we recommend that for each integration, you only add relevant and related events to make it easier to audit and view later. For example, create an integration that consumes all
+order
+and
+return
+related events, and a separate integration that consumes all
+fulfillment_request
+related events.
+In the
+Integration Target
+area, select the integration target that will consume events. This can be either a
+Webhook
+or an AWS
+S3
+bucket. See
+this guide
+for more information on which integration target to choose.
+For a webhook, specify the
+Callback URL
+and the required
+API Key
+for the integration to be able to consumer and retain events.
+For an AWS S3 bucket, specify the
+AWS Access Key
+,
+AWS Secret Key
+,
+AWS Region
+, the name of the S3 bucket in
+S3 Bucket Name
+, and the
+Key Prefix
+.
+Click
+Create
+to finish setting up the integration and start consuming NewStore events.
+Selecting the right integration target
+We recommend using AWS S3 buckets to deliver events, and S3 as the default option when possible. NewStore prepares events in batches, which are delivered when they either total 50 megabytes in size, or 5 minutes have elapsed since the previous batch was sent. This allows the S3 integration target to send large amounts of events to your data warehouse with a manageable latency. The more events you have, the faster you'll get them.
+HTTP webhooks have a performance target to be delivered within 15 minutes, but the vast majority of events are delivered within only a few seconds. This makes the integration type most suitable for lower volumes of events that you want to process as soon as possible. As event volumes increase, your capacity to receive them must increase too. NewStore uses limited concurrency to send multiple events in parallel. However, the connection latency limits the amount of total events NewStore can send per second, before delays start building up.
+Updating an existing integration
+To update an existing integration, from the
+Actions
+drop-down menu, click
+Edit Integration Details
+.
+When updating an integration, you can only update the events you want to consume and the AWS or webhook details, based on what you chose as an integration target space when creating the integration.
+Related topics
+Receiving real-time data
+Managing inventory sync with the Event stream
+Event stream webhook documentation
+Was this article helpful?
+Yes
+No
+Tags
+api
+developer
+event stream
+events
+integration
+newstore platform
+omnichannel manager
+order
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

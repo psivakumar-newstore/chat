@@ -1,0 +1,10705 @@
+Backend API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Backend API
+Events API
+Studio API
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+Image Resizing
+Accounts
+get
+View account
+post
+Create account
+patch
+Update account
+put
+Set password
+get
+Password Reset URL
+post
+Reset Password
+Augmentations
+post
+Address
+Authentication
+get
+Get Url to Auth provider
+post
+Cookies
+post
+Token endpoint
+Branded Media
+get
+Get Branded Media
+Cachewarmer
+post
+Cancel Job
+get
+List Jobs
+post
+Purge the cache
+post
+Refresh the cache
+post
+Warm the cache
+Carts
+post
+Create a cart
+get
+View a cart
+put
+Update a cart
+post
+Transfer a cart
+Categories
+get
+Root
+get
+Tree
+get
+ID
+Checkout
+post
+Start Checkout
+get
+View Checkout
+patch
+Update Checkout
+post
+Finalize Checkout
+get
+Available Payment Methods
+get
+Available Shipping Methods
+get
+Checkout configuration
+post
+Apple Pay
+get
+Webcheckout URL
+Content Pages
+get
+Get a list of content pages
+Deeplink
+Filter parameters
+get
+Resolve applink
+Jobs
+post
+Reindex categories
+post
+Stock Notifications
+Lookbooks
+get
+Get Lookbooks
+get
+Get Looks
+Loyalty Membership
+get
+View membership
+post
+Create membership
+del
+Remove memberbership
+Voucher
+get
+View vouchers
+LoyaltyOrders
+get
+History
+Messages
+get
+Get Messages
+Products
+Notes
+get
+Featured
+get
+Search
+get
+Details
+get
+Availability
+get
+Related
+get
+Store Availability
+Push Notifications
+post
+Register a device to recieve push notifications
+patch
+Update push notification settings
+post
+Track a notification open event
+Stock Subscriptions
+post
+Create subscription
+Storefronts
+get
+Select storefront
+get
+List of Storefronts
+get
+View storefront
+get
+Countries
+Stores
+get
+Find nearby stores
+get
+Find Store by id
+Visitor
+post
+Create Visitor ID
+Wall
+Content
+Configuration
+TODO
+get
+Home
+Wishlists
+get
+Fetch wishlist
+post
+Add wishlist item
+del
+Delete wishlist item
+Changelog
+4.0 - 2020-08-19
+4.0 - 2019-08-02
+4.0 - 2019-07-19
+4.0 - 2019-07-11
+4.0 - 2019-04-11
+Added
+3.9 - 2018-06-13
+3.9 - 2018-06-19
+3.9 - 2018-05-09
+3.8 - 2018-04-11
+3.7 - 2018-02-13
+3.6 - 2017-09-06
+Orders
+get
+Order Summary
+get
+Order Detail
+API docs by Redocly
+Backend API
+(
+3.9
+)
+Download OpenAPI specification
+:
+Download
+This is the WIP documentation for the Highstreet API.
+Image Resizing
+Most image URLs returned by the Highstreet API can be requested in specific
+sizes by appending query string parameters. There are parameters for the
+width and height of the image. Aspect ratio's will not be distorted by
+resizing.
+The names of the width and height parameters can differ per merchant. They
+are exposed in the
+Storefront Configuration
+under the
+image_url_params
+key.
+In practice
+In practice the apps do
+not
+respect the
+image_url_params
+but instead
+hard-code the names of the parameters inside the app.
+Accounts
+The account resource represents a customer's account.
+Loyalty Programs
+When a loyalty program is active the customer's e-mail address
+may
+already
+exist in the system. This can happen, for example, when the customer signed
+up for the loyalty program in a physical store.
+To protect the customer's
+privacy and their collected rewards creating an account will be refused
+for e-mails that already exist in the system.
+After the refusal a verification e-mail will be sent to the e-mail address.
+The e-mail will contain a link to a web page where the customer can verify
+the e-mail address. Through an applink this webpage may be opened in the
+app. The
+Set password
+endpoint can be used to verify ownership of the
+account.
+The app link looks as follows:
+hs
+:
+/
+/
+account
+/
+password
+?
+token
+=
+{
+verification
+-
+token
+}
+&
+handle
+=
+{
+handle
+}
+View account
+Even though we require a
+first_name
+on registration, Demandware does not. The
+first_name
+may be empty for accounts registered on the merchant’s website.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Authorization
+required
+string
+Access token
+Responses
+200
+Success
+401
+Access token is missing, invalid or expired.
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/account
+/account
+Response samples
+200
+401
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"custom"
+:
+{ }
+,
+"custom_identifiers"
+:
+{
+"google_analytics"
+:
+"8a51ca1dcb24d5e489e35d20922b810e"
+}
+,
+"email"
+:
+"bobby@tables.com"
+,
+"first_name"
+:
+"Robert'); DROP"
+,
+"handle"
+:
+"bobby@tables.com"
+,
+"id"
+:
+"57982b5fecc2"
+,
+"last_name"
+:
+"TABLE Students;--"
+}
+Create account
+The
+email
+field is optional. When it is omitted the server assumes
+handle
+is an e-mail address and use it as such.
+NOTE
+:
+When verification is required an e-mail is sent out to the customer
+.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Authorization
+string
+Access token
+Request Body schema:
+application/json
+custom
+object
+Default:
+{}
+Custom account attributes
+email
+string
+<
+email
+>
+non-empty
+E-mail address
+first_name
+required
+string
+non-empty
+First name
+handle
+required
+string
+non-empty
+The login identifier, usually an e-mail address.
+last_name
+required
+string
+non-empty
+Last name
+password
+required
+string
+>= 8 characters
+Desired password
+Responses
+201
+Account was successfully created
+400
+Request body has invalid or missing properties
+401
+Access token is missing, invalid or expired.
+403
+Verification required
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/account
+/account
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"custom"
+:
+{ }
+,
+"email"
+:
+"bobby@tables.com"
+,
+"first_name"
+:
+"Robert'); DROP"
+,
+"handle"
+:
+"bobby@tables.com"
+,
+"last_name"
+:
+"TABLE Students;--"
+,
+"password"
+:
+"pwpwpwpw"
+}
+Response samples
+201
+400
+401
+403
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"custom"
+:
+{ }
+,
+"custom_identifiers"
+:
+{
+"google_analytics"
+:
+"8a51ca1dcb24d5e489e35d20922b810e"
+}
+,
+"email"
+:
+"bobby@tables.com"
+,
+"first_name"
+:
+"Robert'); DROP"
+,
+"handle"
+:
+"bobby@tables.com"
+,
+"id"
+:
+"57982b5fecc2"
+,
+"last_name"
+:
+"TABLE Students;--"
+}
+Update account
+Authorizations:
+AccessToken
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Request Body schema:
+application/json
+address
+object
+(
+Address
+)
+An address
+card_barcode
+object
+(
+Barcode
+)
+Description of a barcode.
+custom
+object
+Default:
+{}
+Custom account attributes
+customer_identifiers
+object
+A map of third party customer identifiers
+email
+required
+string
+<
+email
+>
+non-empty
+The customer's e-mail address.
+first_name
+string
+non-empty
+Customer's first name
+handle
+required
+string
+non-empty
+The login identifier, usually an e-mail address.
+id
+string
+non-empty
+Unique identifier for the account
+last_name
+required
+string
+non-empty
+Customer's last name
+wishlist_id
+string
+The identifier of the customer's wishlist.
+Responses
+200
+Success
+400
+Request body has invalid or missing properties
+401
+Access token is missing, invalid or expired.
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+patch
+/account
+/account
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"custom"
+:
+{ }
+,
+"custom_identifiers"
+:
+{
+"google_analytics"
+:
+"8a51ca1dcb24d5e489e35d20922b810e"
+}
+,
+"email"
+:
+"bobby@tables.com"
+,
+"first_name"
+:
+"Robert'); DROP"
+,
+"handle"
+:
+"bobby@tables.com"
+,
+"id"
+:
+"57982b5fecc2"
+,
+"last_name"
+:
+"TABLE Students;--"
+}
+Response samples
+200
+400
+401
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"custom"
+:
+{ }
+,
+"custom_identifiers"
+:
+{
+"google_analytics"
+:
+"8a51ca1dcb24d5e489e35d20922b810e"
+}
+,
+"email"
+:
+"bobby@tables.com"
+,
+"first_name"
+:
+"Robert'); DROP"
+,
+"handle"
+:
+"bobby@tables.com"
+,
+"id"
+:
+"57982b5fecc2"
+,
+"last_name"
+:
+"TABLE Students;--"
+}
+Set password
+Sets the customer's password. This operation is not available for all merchants.
+NOTE
+:
+When the token has expired a new e-mail will be sent to the customer.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Request Body schema:
+application/json
+handle
+required
+string
+<
+email
+>
+non-empty
+The login identifier, usually an e-mail address.
+password
+required
+string
+>= 8 characters
+The customer's desired password
+token
+required
+string
+non-empty
+A password reset token
+Responses
+204
+Success
+400
+Request body has invalid or missing properties
+500
+An internal server error occured
+501
+Endpoint is not implemented for current merchant.
+503
+An error occured when connecting to an upstream service
+put
+/account/password
+/account/password
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"handle"
+:
+"bobby@tables.com"
+,
+"password"
+:
+"pwpwpwpw"
+,
+"token"
+:
+"522e8e46-e2d4-466d-937b-bbb1cbef986f"
+}
+Response samples
+400
+500
+501
+503
+Content type
+application/json
+Copy
+{
+"code"
+:
+"invalid"
+,
+"field"
+:
+"token"
+,
+"message"
+:
+"reset token is invalid or expired"
+}
+Password Reset URL
+Redirects to a password reset form hosted by the merchant.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+302
+Redirect to a url containing a password reset form
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/account/reset
+/account/reset
+Response samples
+500
+503
+Content type
+application/json
+Copy
+{
+"code"
+:
+"convert_error"
+,
+"message"
+:
+"can't convert Basket to cart"
+}
+Reset Password
+This implements the forgot password flow. Not all merchants have a
+forgot password API so it is for that reason that this endpoint can either
+return a 204 and the e-commerce platform will send a password reset email
+to the specified handle or it will return a redirect to the merchant's
+password reset form on their website.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Request Body schema:
+application/json
+handle
+required
+string
+non-empty
+The login identifier, usually an e-mail address.
+Responses
+204
+Account was reset
+302
+Redirect to a url containing a password reset form
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/account/reset
+/account/reset
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"handle"
+:
+"bobby@tables.com"
+}
+Response samples
+500
+503
+Content type
+application/json
+Copy
+{
+"code"
+:
+"convert_error"
+,
+"message"
+:
+"can't convert Basket to cart"
+}
+Augmentations
+Address
+Adds additional information to a partial address. The fields sent in the
+request will always be sent back.
+Authorizations:
+AccessToken
+Request Body schema:
+application/json
+address
+required
+object
+(
+PartialAddress
+)
+An address
+addition
+string
+non-empty
+Addition
+city
+string
+non-empty
+The city name
+company
+string
+non-empty
+The company name of the recipient
+country_id
+string
+(
+CountryCode
+)
+= 2 characters
+A two character
+ISO 3166-1 Alpha-2
+country code.
+first_name
+string
+non-empty
+The recipient's first name
+house_number
+string
+non-empty
+House number
+last_name
+string
+non-empty
+The recipient's last name
+postal_code
+string
+non-empty
+Postal or ZIP code
+state
+string
+non-empty
+The state code.
+street
+string
+non-empty
+Street name
+telephone
+string
+non-empty
+The phone number of the recipient
+Responses
+200
+OK
+204
+No additional data available
+400
+Invalid address
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/augmentations/addresses
+/augmentations/addresses
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"address"
+:
+{
+"country_id"
+:
+"NL"
+,
+"house_number"
+:
+"154"
+,
+"postal_code"
+:
+"3514 AZ"
+}
+}
+Response samples
+200
+400
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"address"
+:
+{
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"house_number"
+:
+"154"
+,
+"postal_code"
+:
+"3514 AZ"
+,
+"street"
+:
+"Hooghiemstraplein"
+}
+}
+Authentication
+The Highstreet API uses OAuth 2.0 for authentication.
+Get Url to Auth provider
+Endpoint to fetch the authorization URL of an authentication provider
+such as Facebook. This URL should be opened in a web browser.
+This endpoint is only available for customers with Single Sign-On.
+Authorizations:
+AccessToken
+path
+Parameters
+provider
+required
+string
+Enum
+:
+"facebook"
+"google"
+"stijlpas"
+"twitter"
+Identifier of the authentication provider.
+NOTE
+:
+"stijlpas"
+is a Shoeby specific provider.
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+URL successfully found
+403
+Single Sign-On is disabled
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/auth/{provider}
+/auth/{provider}
+Response samples
+200
+403
+500
+503
+Content type
+application/json
+Copy
+{
+"url"
+:
+"
+https://facebook.com/login.html
+"
+}
+Cookies
+Gets cookies using the customer's access token. The cookies can be used
+to continue the session on the web. This allows the user to view
+personal content that requires that would require a session.
+Authorizations:
+AccessToken
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+401
+Access token is missing, invalid or expired.
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/cookies
+/cookies
+Response samples
+200
+401
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"cookies"
+:
+[
+"frontend=foo; expires=Wed, 30-May-2018 13:52:19 GMT; Max-Age=2592000; path=/; domain=merchant.com; HttpOnly"
+,
+"frontend_cid=bar; expires=Wed, 30-May-2018 13:52:19 GMT; Max-Age=2592000; path=/; domain=merchant.com; secure; HttpOnly"
+,
+"dwsecuretoken_wookie; Path=/; HttpOnly; Secure"
+,
+"dwsid=r2d2; Path=/; HttpOnly"
+,
+"__cq_dnt=0; Path=/"
+,
+"dw_dnt=0; Path=/"
+,
+"dwanonymous_c3p0; Path=/; Max-Age=15552000"
+]
+}
+Token endpoint
+Requests an access token.
+NOTE
+: The grant type
+authorization_code
+is only available for
+customers with single sign-on enabled.
+NOTE
+: The grant type
+sign_in_with_apple
+is only available for
+customers with Sign in with Apple enabled.
+Authorizations:
+AccessToken
+Request Body schema:
+application/json
+An OAuth 2.0 Access Token Request encoded as form data
+grant_type
+required
+string
+authorization_code
+guest
+password
+refresh_token
+sign_in_with_apple
+authorization_code
+code
+required
+string
+The authorization code the app that obtained through the applink.
+Responses
+200
+OK
+400
+Bad Request
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/token
+/token
+Request samples
+Payload
+Content type
+application/json
+Example
+authorization_code
+guest
+password
+refresh_token
+sign_in_with_apple
+authorization_code
+Copy
+{
+"grant_type"
+:
+"authorization_code"
+,
+"code"
+:
+"string"
+}
+Response samples
+200
+400
+500
+503
+Content type
+application/json
+Copy
+{
+"access_token"
+:
+"string"
+,
+"expires_in"
+:
+0
+,
+"refresh_token"
+:
+"string"
+,
+"token_type"
+:
+"bearer"
+}
+Branded Media
+Branded Media used by mobile apps while launching (splash screen) or when showing account view
+Get Branded Media
+Authorizations:
+AccessToken
+query
+Parameters
+media_type
+required
+string
+Enum
+:
+"splash_screen"
+"account_header"
+Type of the Branded Media. Can only be splash_screen or account_header
+device
+required
+string
+Enum
+:
+"phone"
+"tablet"
+The device for which the branded media should be returned
+format
+string
+Enum
+:
+"blurred"
+"compressed"
+The format of the branded media, if not set the default is "compressed"
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+get
+/branded_media
+/branded_media
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"url"
+:
+"string"
+}
+Cachewarmer
+Controls the cachewarmer by scheduling and cancelling jobs
+Cancel Job
+Cancel a job (either Refresh, Flush or Warm)
+Authorizations:
+AccessToken
+header
+Parameters
+X-Purge-Secret
+required
+string
+A secret that provides access to the cachewarmer functionality.
+Request Body schema:
+application/json
+job_id
+required
+string
+Responses
+200
+Cancelled
+post
+/cancel
+/cancel
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"job_id"
+:
+"abc-def-ghi"
+}
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"status"
+:
+"CANCELLED"
+}
+List Jobs
+Get a list of jobs currently in the queue and their scheduled time from across all DCs
+Authorizations:
+AccessToken
+header
+Parameters
+X-Purge-Secret
+required
+string
+A secret that provides access to the cachewarmer functionality.
+Responses
+200
+JobListResponse
+get
+/jobs
+/jobs
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"jobs"
+:
+[
+{
+"args"
+:
+[
+"string"
+]
+,
+"class"
+:
+"Catalog2::Cache::Warmer"
+,
+"created_at"
+:
+1611810515
+,
+"jid"
+:
+"99a6c322c6ac41dae20b295e"
+,
+"queue"
+:
+"default"
+,
+"retry"
+:
+true
+,
+"scheduled_at"
+:
+1611810515
+}
+]
+}
+Purge the cache
+Purges the cache for the merchant
+You may send through the X-Selected-Storefront parameter to flush only one storefront.
+at_timestamp must be set in the JSON body, a value of 0 means flush immediatey.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+string
+Identifier of the selected storefront
+X-Purge-Secret
+required
+string
+A secret that provides access to the cachewarmer functionality.
+Request Body schema:
+application/json
+at_timestamp
+required
+integer
+Responses
+200
+Purged
+post
+/purge
+/purge
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"at_timestamp"
+:
+0
+}
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"status"
+:
+"string"
+}
+Refresh the cache
+Refresh (Flush and Warm) the cache for a merchant
+You may send through the X-Selected-Storefront parameter to warm only one storefront.
+at_timestamp must be set in the JSON body, a value of 0 means warm immediatey.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+string
+Identifier of the selected storefront
+X-Purge-Secret
+required
+string
+A secret that provides access to the cachewarmer functionality.
+Request Body schema:
+application/json
+at_timestamp
+required
+integer
+Responses
+200
+Refreshing
+post
+/refresh
+/refresh
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"at_timestamp"
+:
+0
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"job_ids"
+:
+[
+[
+"abc-def-ghi"
+]
+]
+,
+"status"
+:
+"SCHEDULED"
+}
+Warm the cache
+Warm the cache for the merchant
+You may send through the X-Selected-Storefront parameter to warm only one storefront.
+at_timestamp must be set in the JSON body, a value of 0 means warm immediatey.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+string
+Identifier of the selected storefront
+X-Purge-Secret
+required
+string
+A secret that provides access to the cachewarmer functionality.
+Request Body schema:
+application/json
+at_timestamp
+required
+integer
+Responses
+200
+Warming
+post
+/warm
+/warm
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"at_timestamp"
+:
+0
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"job_ids"
+:
+[
+[
+"abc-def-ghi"
+]
+]
+,
+"status"
+:
+"SCHEDULED"
+}
+Carts
+The cart resource represents a customer's cart.
+Each cart contains coupon codes, items and vouchers.
+Items
+The
+items
+property contains a list of items the customer has added to their
+cart. Items consist of an identifier (
+id
+), a quantity (
+quantity
+), a product
+(
+product_id
+) and optionally a product configuration (
+configuration
+and
+bundle configuration
+).
+Item identifiers are assigned to an item by the server. When the identifier of
+an item is not known yet (e.g. when adding a new product), the client
+must
+send a temporary identifier (
+temp_id
+). The server will return this temporary
+identifier along with the real identifier (
+id
+) to ensure client and server
+are working with the same item.
+Once an identifier has been assigned the client should stop using the temporary
+identifier.
+Coupon codes
+Coupon codes are currently ignored entirely.
+Vouchers
+When the merchant has a loyalty program it is possible to redeem vouchers in
+the cart. To redeem a voucher it can be added to the
+vouchers
+list by its
+ID.
+Also see the
+GET /loyalty/vouchers
+call.
+State and data races
+It could be the case that two clients are managing the same cart at the same
+time, causing the clients to fall out of sync.
+Clients can notice this situation using the
+If-Match
+and
+ETag
+headers. Using
+this mechanism an error will be returned in case the client and server state are
+out of sync. The request header
+If-Match
+is
+optional
+: when it's not present
+the server ensures the state of the client will be that as specified by the
+client, possibly overriding the state set previously by another client.
+In case of a conflict the client is responsible for resolving it. When a
+conflict occurs, the server will respond with a
+412 Precondition failed
+and
+provide the current state of the cart as known by the server.
+Errors
+Each cart contains a list of errors (
+_errors
+). Errors provide feedback on the
+client's request and inform the client of failed actions performed by the
+server.
+NOTE
+: The list of errors
+ephemeral
+(i.e. not persisted). In practice this
+means that the errors will be available in
+POST
+and
+PUT
+responses
+only
+.
+Each error has an error type (
+type
+) and an error code (
+code
+). The following
+error
+types
+are available:
+refer to:
+cart_error
+refers to the cart as a whole.
+Example
+: clients tries to add
+too many items to the cart.
+cart_item_error
+refers to a specific items. The server will return an
+id
+or
+temp_id
+to identify the item exactly.
+Example
+: client tries to add a
+product that does not exist.
+coupon_code_error
+refers to a coupon code.
+Example
+: client tries to add
+a coupon code that is invalid in combination with another coupon code.
+voucher_error
+refers to a voucher.
+Example
+: client tries to redeem a
+non-existing voucher.
+The following error
+codes
+are available:
+cart_full
+: Client attempted to add more than the maximum number of items.
+product_unavailable
+: Client attempted to add a product that is unavailable.
+quantity_changed
+: Desired quantity was not available and was lowered by the
+server.
+unknown_item
+: Client referred to an item with an identifier (
+id
+) that does
+not exist (anymore).
+invalid_coupon
+: Client attempted to add an invalid coupon code.
+expired_coupon
+: Client attempted to add an expired coupon code.
+too_many_coupons
+: Client reached maximum amount of coupon codes.
+TODO: voucher error codes.
+Create a cart
+Create a cart
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+coupon_codes
+required
+Array of
+objects
+(
+CartCouponCode
+)
+items
+required
+Array of
+objects
+(
+CartItem
+)
+vouchers
+required
+Array of
+objects
+(
+CartVoucher
+)
+Responses
+201
+Success
+401
+Access token is missing, invalid or expired.
+403
+The customer already has a cart.
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/cart
+/cart
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"coupon_codes"
+:
+[ ]
+,
+"items"
+:
+[ ]
+,
+"vouchers"
+:
+[ ]
+}
+Response samples
+201
+401
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[ ]
+,
+"_messages"
+:
+[ ]
+,
+"id"
+:
+"59166f6b52f6"
+,
+"items"
+:
+[ ]
+,
+"tax_included"
+:
+true
+,
+"totals"
+:
+{
+"discount"
+:
+0
+,
+"grand_total"
+:
+0
+,
+"shipping"
+:
+0
+,
+"sub_total"
+:
+0
+,
+"tax"
+:
+0
+}
+,
+"vouchers"
+:
+[ ]
+}
+View a cart
+View a cart
+Authorizations:
+AccessToken
+path
+Parameters
+cart_id
+required
+string
+Unique identifier of the cart.
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+Success
+401
+Access token is missing, invalid or expired.
+404
+The cart with this
+id
+does not exist or belongs to another user.
+get
+/cart/{cart_id}
+/cart/{cart_id}
+Response samples
+200
+401
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[ ]
+,
+"_messages"
+:
+[ ]
+,
+"coupon_codes"
+:
+[ ]
+,
+"id"
+:
+"59166f6b52f6"
+,
+"items"
+:
+[
+{
+"configuration"
+:
+{
+"child_product_id"
+:
+"simple-6fadecdb"
+}
+,
+"id"
+:
+"269b06181dfd"
+,
+"prices"
+:
+{
+"custom"
+:
+{ }
+,
+"effective"
+:
+12
+,
+"effective_tax_free"
+:
+10
+,
+"original"
+:
+12
+,
+"total"
+:
+24
+}
+,
+"product_id"
+:
+"configurable-21e3f6a7"
+,
+"quantity"
+:
+2
+}
+,
+{
+"bundle_configuration"
+:
+[
+{
+"option"
+:
+12
+,
+"quantity"
+:
+1
+,
+"selection"
+:
+"simple-41f64298"
+}
+]
+,
+"id"
+:
+"646d9734c0bc"
+,
+"prices"
+:
+{
+"custom"
+:
+{ }
+,
+"effective"
+:
+109.99
+,
+"effective_tax_free"
+:
+91.65
+,
+"original"
+:
+109.99
+,
+"total"
+:
+109.99
+}
+,
+"product_id"
+:
+"bundle-0332f5af"
+,
+"quantity"
+:
+1
+}
+]
+,
+"loyalty_totals"
+:
+{
+"discount"
+:
+10
+}
+,
+"tax_included"
+:
+true
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"grand_total"
+:
+116.94
+,
+"shipping"
+:
+2.95
+,
+"sub_total"
+:
+133.99
+,
+"tax"
+:
+19.33
+}
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"c0822948-717e-4fde-8f7a-09d6dee9e29a"
+,
+"voucher_id"
+:
+"100000231"
+}
+]
+}
+Update a cart
+Update a cart
+Authorizations:
+AccessToken
+path
+Parameters
+cart_id
+required
+string
+Unique identifier of the cart.
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+If-Match
+string
+The If-Match header.
+TODO
+Link to spec.
+Request Body schema:
+application/json
+coupon_codes
+required
+Array of
+objects
+(
+CartCouponCode
+)
+items
+required
+Array of
+objects
+(
+CartItem
+)
+vouchers
+required
+Array of
+objects
+(
+CartVoucher
+)
+Responses
+200
+Success
+401
+Access token is missing, invalid or expired.
+404
+The cart with this
+id
+does not exist or belongs to another user.
+412
+Cart is not in the expected state
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+put
+/cart/{cart_id}
+/cart/{cart_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"coupon_codes"
+:
+[ ]
+,
+"items"
+:
+[
+{
+"product_id"
+:
+"simple-b58057e5"
+,
+"quantity"
+:
+1
+,
+"temp_id"
+:
+"af993a0d-0263-436f-a300-1bfd2931ee90"
+}
+,
+{
+"configuration"
+:
+{
+"child_product_id"
+:
+"simple-6fadecdb"
+}
+,
+"id"
+:
+"269b06181dfd"
+,
+"product_id"
+:
+"configurable-21e3f6a7"
+,
+"quantity"
+:
+2
+}
+,
+{
+"bundle_configuration"
+:
+{
+"option"
+:
+12
+,
+"quantity"
+:
+1
+,
+"selection"
+:
+"simple-41f64298"
+}
+,
+"id"
+:
+"646d9734c0bc"
+,
+"product_id"
+:
+"bundle-0332f5af"
+,
+"quantity"
+:
+2
+}
+,
+{
+"product_id"
+:
+"unavailable-2d78c0cd"
+,
+"quantity"
+:
+1
+,
+"temp_id"
+:
+"ce4c66ed-6673-4f3f-b205-751de9716015"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"c0822948-717e-4fde-8f7a-09d6dee9e29a"
+,
+"voucher_id"
+:
+"100000231"
+}
+,
+{
+"temp_id"
+:
+"0dc8dd5e-c9d1-4c11-b0d0-373c673ee281"
+,
+"voucher_id"
+:
+"100000553"
+}
+]
+}
+Response samples
+200
+401
+412
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"code"
+:
+"product_unavailable"
+,
+"id"
+:
+null
+,
+"message"
+:
+"the product 'unavailable-2d78c0cd' is not available"
+,
+"temp_id"
+:
+"ce4c66ed-6673-4f3f-b205-751de9716015"
+,
+"type"
+:
+"cart_item_error"
+}
+,
+{
+"code"
+:
+"quantity_changed"
+,
+"id"
+:
+"bundle-0332f5af"
+,
+"message"
+:
+"quantity 2 too high, reset to 1"
+,
+"type"
+:
+"cart_item_error"
+}
+,
+{
+"code"
+:
+"invalid_voucher"
+,
+"message"
+:
+"voucher '100000553' has expired"
+,
+"temp_id"
+:
+"0dc8dd5e-c9d1-4c11-b0d0-373c673ee281"
+,
+"type"
+:
+"voucher_error"
+}
+]
+,
+"_messages"
+:
+[ ]
+,
+"coupon_codes"
+:
+[ ]
+,
+"id"
+:
+"59166f6b52f6"
+,
+"items"
+:
+[
+{
+"id"
+:
+"10186974b313"
+,
+"prices"
+:
+{
+"custom"
+:
+{ }
+,
+"effective"
+:
+49.95
+,
+"effective_tax_free"
+:
+41.63
+,
+"original"
+:
+59.95
+,
+"total"
+:
+49.95
+}
+,
+"product_id"
+:
+"simple-b58057e5"
+,
+"quantity"
+:
+1
+,
+"temp_id"
+:
+"af993a0d-0263-436f-a300-1bfd2931ee90"
+}
+,
+{
+"configuration"
+:
+{
+"child_product_id"
+:
+"simple-6fadecdb"
+}
+,
+"id"
+:
+"269b06181dfd"
+,
+"prices"
+:
+{
+"custom"
+:
+{ }
+,
+"effective"
+:
+12
+,
+"effective_tax_free"
+:
+10
+,
+"original"
+:
+12
+,
+"total"
+:
+24
+}
+,
+"product_id"
+:
+"configurable-21e3f6a7"
+,
+"quantity"
+:
+2
+}
+,
+{
+"bundle_configuration"
+:
+[
+{
+"option"
+:
+12
+,
+"quantity"
+:
+1
+,
+"selection"
+:
+"simple-41f64298"
+}
+]
+,
+"id"
+:
+"646d9734c0bc"
+,
+"prices"
+:
+{
+"custom"
+:
+{ }
+,
+"effective"
+:
+109.99
+,
+"effective_tax_free"
+:
+91.65
+,
+"original"
+:
+109.99
+,
+"total"
+:
+109.99
+}
+,
+"product_id"
+:
+"bundle-0332f5af"
+,
+"quantity"
+:
+1
+}
+]
+,
+"tax_included"
+:
+true
+,
+"totals"
+:
+{
+"discount"
+:
+30
+,
+"grand_total"
+:
+166.89
+,
+"shipping"
+:
+2.95
+,
+"sub_total"
+:
+183.94
+,
+"tax"
+:
+27.82
+}
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"c0822948-717e-4fde-8f7a-09d6dee9e29a"
+,
+"voucher_id"
+:
+"100000231"
+}
+]
+}
+Transfer a cart
+Transfer the contents of a cart from a session belonging to a guest to a
+session belonging to a registered user. Transferring in the opposite
+direction (from registered to guest session) is not supported.
+Authorizations:
+AccessToken
+path
+Parameters
+cart_id
+required
+string
+Unique identifier of the cart.
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Request Body schema:
+application/json
+access_token
+required
+string
+non-empty
+Access token of the session this cart should be transferred to.
+Responses
+200
+Success
+401
+Access token is missing, invalid or expired.
+404
+The cart with this
+id
+does not exist or belongs to another user.
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/cart/{cart_id}/transfer
+/cart/{cart_id}/transfer
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"access_token"
+:
+"string"
+}
+Response samples
+200
+401
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"message"
+:
+"string"
+,
+"type"
+:
+"string"
+}
+]
+,
+"_messages"
+:
+[ ]
+,
+"coupon_codes"
+:
+[
+{
+"code"
+:
+"100EUROOFF"
+,
+"id"
+:
+"a1b2c3d4e5f6"
+,
+"temp_id"
+:
+"string"
+}
+]
+,
+"id"
+:
+"a1b2c3d4e5f6"
+,
+"items"
+:
+[
+{
+"bundle_configuration"
+:
+[
+{
+"option"
+:
+12
+,
+"quantity"
+:
+1
+,
+"selection"
+:
+"12345_A"
+}
+]
+,
+"configuration"
+:
+{
+"child_product_id"
+:
+"6f5e4d3c2b1a"
+}
+,
+"custom"
+:
+{ }
+,
+"id"
+:
+"string"
+,
+"prices"
+:
+{
+"custom"
+:
+{ }
+,
+"effective"
+:
+0
+,
+"effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"total"
+:
+0
+}
+,
+"product_id"
+:
+"string"
+,
+"promotional_item_id"
+:
+"string"
+,
+"promotions"
+:
+[
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+}
+]
+,
+"quantity"
+:
+0
+,
+"temp_id"
+:
+"string"
+}
+]
+,
+"loyalty_totals"
+:
+{
+"discount"
+:
+10
+}
+,
+"promotional_items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"product_ids"
+:
+[
+"string"
+]
+}
+]
+,
+"tax_included"
+:
+true
+,
+"totals"
+:
+{
+"discount"
+:
+0
+,
+"grand_total"
+:
+104.95
+,
+"shipping"
+:
+4.95
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+20
+}
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"10000034"
+}
+]
+}
+Categories
+The category tree is used as the bases of the navigation within the app.
+The root category can also be referred to as the category tree. With each
+category having a number of children.
+Root
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+Success
+404
+Not Found
+get
+/categories
+/categories
+Response samples
+200
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"children"
+:
+[
+{ }
+]
+,
+"id"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"include_in_menu"
+:
+true
+,
+"position"
+:
+0
+,
+"product_count"
+:
+0
+,
+"recommendations"
+:
+{
+"recommender_id"
+:
+"string"
+,
+"title"
+:
+"string"
+}
+,
+"title"
+:
+"string"
+}
+Tree
+Returns the complete category tree. The response is identical to the
+single category call invoked with the :id of the root category.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+Success
+404
+Not Found
+get
+/categories/tree
+/categories/tree
+Response samples
+200
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"children"
+:
+[
+{
+"id"
+:
+"4"
+,
+"include_in_menu"
+:
+true
+,
+"position"
+:
+0
+,
+"product_count"
+:
+8
+,
+"title"
+:
+"tops"
+}
+,
+{
+"children"
+:
+[
+{
+"id"
+:
+"99"
+,
+"include_in_menu"
+:
+true
+,
+"position"
+:
+0
+,
+"product_count"
+:
+8
+,
+"title"
+:
+"jeans"
+}
+,
+{
+"id"
+:
+"105"
+,
+"include_in_menu"
+:
+true
+,
+"position"
+:
+0
+,
+"product_count"
+:
+8
+,
+"title"
+:
+"chinos"
+}
+]
+,
+"id"
+:
+"9"
+,
+"include_in_menu"
+:
+true
+,
+"position"
+:
+0
+,
+"product_count"
+:
+8
+,
+"title"
+:
+"bottoms"
+}
+,
+{
+"id"
+:
+"8"
+,
+"include_in_menu"
+:
+true
+,
+"position"
+:
+0
+,
+"product_count"
+:
+8
+,
+"title"
+:
+"shoes"
+}
+]
+,
+"id"
+:
+"root"
+,
+"include_in_menu"
+:
+true
+,
+"position"
+:
+0
+,
+"product_count"
+:
+8
+,
+"title"
+:
+"Women"
+}
+ID
+Returns and Category and it's children
+Authorizations:
+AccessToken
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+Success
+404
+Not Found
+get
+/categories/{id}
+/categories/{id}
+Response samples
+200
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"children"
+:
+[
+{ }
+]
+,
+"id"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"include_in_menu"
+:
+true
+,
+"position"
+:
+0
+,
+"product_count"
+:
+0
+,
+"recommendations"
+:
+{
+"recommender_id"
+:
+"string"
+,
+"title"
+:
+"string"
+}
+,
+"title"
+:
+"string"
+}
+Checkout
+The checkout resource exposes endpoints to manage a checkout session.
+Addresses
+The shipping address for a checkout session can be set to the billing
+address by setting a
+billing_address
+and setting the
+shipping_address
+to
+null
+.
+{
+"addresses"
+:
+{
+"billing_address"
+:
+{
+...
+}
+,
+"shipping_address"
+:
+null
+}
+}
+NOTE
+: In response bodies the shipping address will be
+null
+both when
+it's missing and when it's set to the billing address. The list of
+_errors
+can be used to tell the difference (i.e. there will be an error with code
+missing
+and field
+shipping_address
+).
+Data dependencies
+Updating one piece of information may invalidate a previously valid piece of
+information. The list of available payment and shipping methods tends to
+depend on the billing or shipping address for example. The list of
+_errors
+should be checked every time the checkout session has been updated.
+Notes
+Invalid data (such as an invalid address) is persisted on some e-commerce
+platforms and discarded on others.
+None of the checkout endpoints currently check for the
+If-Match
+request
+header, even though an
+Etag
+response header is returned.
+Order tracking
+Start Checkout
+Starts a checkout session.
+Details
+may
+be pre-filled by the server or remembered from a previous
+session.
+Authorizations:
+AccessToken
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Request Body schema:
+application/json
+cart_etag
+required
+string
+non-empty
+The last seen
+ETag
+value of the cart
+cart_id
+required
+string
+non-empty
+The identifier of the cart to start a checkout session for.
+flow
+string
+Value
+:
+"applepay"
+The checkout flow that will be used
+Responses
+201
+Created
+400
+Cart ID is missing or Apple Pay is disabled
+401
+Access token is missing, invalid or expired.
+403
+An error with the cart
+404
+Cart does not exist
+409
+Cart ETag is outdated
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/checkout
+/checkout
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"cart_etag"
+:
+"a836e7d92648956ga39895fd38e93f785e"
+,
+"cart_id"
+:
+"a1b2c3d4e5f6"
+}
+Response samples
+201
+400
+401
+403
+404
+409
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"code"
+:
+"missing"
+,
+"field"
+:
+"shipping_method"
+}
+,
+{
+"code"
+:
+"missing"
+,
+"field"
+:
+"payment_method"
+}
+]
+,
+"addresses"
+:
+{
+"billing_address"
+:
+{
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"first_name"
+:
+"App"
+,
+"house_number"
+:
+"154"
+,
+"last_name"
+:
+"Tester"
+,
+"postal_code"
+:
+"3514 AZ"
+,
+"street"
+:
+"Hooghiemstraplein"
+,
+"telephone"
+:
+"030-2769165"
+}
+,
+"shipping_address"
+:
+null
+}
+,
+"coupon_codes"
+:
+[ ]
+,
+"email"
+:
+"test@highstreetapp.com"
+,
+"id"
+:
+"a1b2c3d4e5f6"
+,
+"payment_method"
+:
+null
+,
+"shipping_method"
+:
+null
+,
+"tax_included"
+:
+true
+,
+"totals"
+:
+{
+"discount"
+:
+0
+,
+"grand_total"
+:
+104.95
+,
+"shipping"
+:
+4.95
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+20
+}
+}
+View Checkout
+Views the current state of the checkout.
+Authorizations:
+AccessToken
+path
+Parameters
+checkout_id
+required
+string
+Checkout ID.
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+Success
+401
+Access token is missing, invalid or expired.
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/checkout/{checkout_id}
+/checkout/{checkout_id}
+Response samples
+200
+401
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"code"
+:
+"missing"
+,
+"field"
+:
+"billing_address"
+}
+]
+,
+"addresses"
+:
+{
+"billing_address"
+:
+{
+"addition"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"first_name"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"telephone"
+:
+"string"
+}
+,
+"shipping_address"
+:
+{
+"addition"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"first_name"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"telephone"
+:
+"string"
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"string"
+}
+]
+,
+"custom"
+:
+{ }
+,
+"email"
+:
+"user@example.com"
+,
+"id"
+:
+"string"
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"options"
+:
+[
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+,
+"price"
+:
+0
+}
+,
+"shipping_method"
+:
+{
+"code"
+:
+"string"
+,
+"options"
+:
+[
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+,
+"price"
+:
+0
+}
+,
+"tax_included"
+:
+true
+,
+"totals"
+:
+{
+"discount"
+:
+0
+,
+"grand_total"
+:
+104.95
+,
+"shipping"
+:
+4.95
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+20
+}
+}
+Update Checkout
+Updates the checkout session. Each top-level property can be updated
+individually.
+NOTE
+: Some data implicitly depend on one another. The validity of
+the selected shipping or payment methods, for example, may depend on the
+customer's address. In other words:
+the absense of an error does not
+mean the error has been permanently
+.
+Authorizations:
+AccessToken
+path
+Parameters
+checkout_id
+required
+string
+Checkout ID.
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Request Body schema:
+application/json
+non-empty
+addresses
+object
+(
+CheckoutAddresses
+)
+The customer's billing and shipping addresses.
+NOTE
+:
+If the
+shipping_address
+is
+null
+and the list of
+_errors
+does not contain an error referencing the
+shipping_address
+field, the billing address will be used as the shipping address
+.
+coupon_codes
+Array of
+objects
+(
+CouponList
+)
+List of coupons used in the checkout session
+custom
+object
+email
+string
+<
+email
+>
+(
+Email
+)
+non-empty
+E-mail address of the customer
+payment_method
+object or null
+(
+PaymentMethod
+)
+The chosen payment method
+shipping_method
+object or null
+(
+ShippingMethod
+)
+The chosen payment method
+Responses
+200
+Success
+401
+Access token is missing, invalid or expired.
+409
+An error with the cart
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+patch
+/checkout/{checkout_id}
+/checkout/{checkout_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"addresses"
+:
+{
+"billing_address"
+:
+{
+"addition"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"first_name"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"telephone"
+:
+"string"
+}
+,
+"shipping_address"
+:
+{
+"addition"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"first_name"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"telephone"
+:
+"string"
+}
+}
+,
+"coupon_codes"
+:
+[
+{
+"code"
+:
+"string"
+}
+]
+,
+"custom"
+:
+{ }
+,
+"email"
+:
+"user@example.com"
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"options"
+:
+[
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+,
+"price"
+:
+0
+}
+,
+"shipping_method"
+:
+{
+"code"
+:
+"string"
+,
+"options"
+:
+[
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+,
+"price"
+:
+0
+}
+}
+Response samples
+200
+401
+409
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"code"
+:
+"missing"
+,
+"field"
+:
+"billing_address"
+}
+]
+,
+"addresses"
+:
+{
+"billing_address"
+:
+{
+"addition"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"first_name"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"telephone"
+:
+"string"
+}
+,
+"shipping_address"
+:
+{
+"addition"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"first_name"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"telephone"
+:
+"string"
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"string"
+}
+]
+,
+"custom"
+:
+{ }
+,
+"email"
+:
+"user@example.com"
+,
+"id"
+:
+"string"
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"options"
+:
+[
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+,
+"price"
+:
+0
+}
+,
+"shipping_method"
+:
+{
+"code"
+:
+"string"
+,
+"options"
+:
+[
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+,
+"price"
+:
+0
+}
+,
+"tax_included"
+:
+true
+,
+"totals"
+:
+{
+"discount"
+:
+0
+,
+"grand_total"
+:
+104.95
+,
+"shipping"
+:
+4.95
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+20
+}
+}
+Finalize Checkout
+Finalizes a checkout session. After finalization clients are expected to interact with a PSP (Payment Processor).
+Starting the interaction with the PSP is done through a HTTP
+GET
+request.
+The Server expects a json hash containing tracking configuration from the app. Currently
+tracking with facebook and google is supported. A request to track both of these would look
+like the following:
+{
+"analytics"
+:
+[
+{
+"ga_ul"
+:
+"en-nl"
+,
+"ga_sr"
+:
+"750x1334"
+,
+"ga_av"
+:
+"2.31.10"
+,
+"ga_cid"
+:
+"8407a770-ad5a-480a-a723-f00adc399789"
+,
+"ga_an"
+:
+"MarliesDekkers"
+,
+"ga_tid"
+:
+"UA-49257414-1"
+,
+"hs_type"
+:
+"GA"
+}
+,
+{
+"fb_app_id"
+:
+"UA-49257414-1"
+,
+"fb_ad_id"
+:
+"1111-1111-1111-1111"
+"hs_type"
+:
+"facebook"
+}
+]
+}
+Authorizations:
+AccessToken
+path
+Parameters
+checkout_id
+required
+string
+Checkout ID.
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Request Body schema:
+application/json
+analytics
+required
+Array of
+objects
+Array
+hs_type
+required
+string
+Enum
+:
+"GA"
+"facebook"
+The analytics tracker type.
+Responses
+200
+Success
+400
+Not ready for finalizing
+401
+Access token is missing, invalid or expired.
+409
+An error with the cart
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/checkout/{checkout_id}/finalize
+/checkout/{checkout_id}/finalize
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"analytics"
+:
+[
+{
+"ga_an"
+:
+"Whitelabel"
+,
+"ga_av"
+:
+"2.14.0"
+,
+"ga_cid"
+:
+"a1b2c3d4e5f6"
+,
+"ga_sr"
+:
+"1920x1080"
+,
+"ga_tid"
+:
+"a1b2c3d4e5f6"
+,
+"ga_ul"
+:
+"nl-NL"
+,
+"hs_type"
+:
+"GA"
+}
+]
+}
+Response samples
+200
+400
+401
+409
+500
+503
+Content type
+application/json
+Copy
+{
+"hpp"
+:
+"
+http://example.com
+"
+,
+"order_id"
+:
+"string"
+}
+Available Payment Methods
+Gets the list of available payment methods for the given checkout
+session.
+Authorizations:
+AccessToken
+path
+Parameters
+checkout_id
+required
+string
+Checkout ID.
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+Success
+401
+Access token is missing, invalid or expired.
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/checkout/{checkout_id}/payment_methods
+/checkout/{checkout_id}/payment_methods
+Response samples
+200
+401
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"payment_methods"
+:
+[
+{
+"code"
+:
+"adyen_ideal"
+,
+"options"
+:
+[
+{
+"code"
+:
+"001"
+,
+"image"
+:
+"
+https://adyen.com/imgs/ideal_ing.png
+"
+,
+"price"
+:
+0
+,
+"title"
+:
+"ING"
+}
+,
+{
+"code"
+:
+"002"
+,
+"image"
+:
+"
+https://adyen.com/imgs/ideal_abn.png
+"
+,
+"price"
+:
+0
+,
+"title"
+:
+"ABN Amro"
+}
+]
+,
+"price"
+:
+0
+,
+"title"
+:
+"iDeal"
+}
+]
+}
+Available Shipping Methods
+Gets the list of available shipping methods for the given checkout
+session.
+Pick up in store
+The special shipping method code
+hs.pick-up-in-store
+indicates that
+customers can pick up the products in a brick and mortar store, rather
+than have it shipped to an address.
+The pick up in store shipping method does
+not
+have any sub options.
+Instead, the
+GET /stores
+endpoint can be
+used to fetch a list of stores close to a location. The list of stores
+can be treated as a list of sub options. The
+id
+of a Store can be used
+as a sub option code.
+Example:
+{
+"shipping_method"
+:
+{
+"code"
+:
+"hs.pick-up-in-store"
+,
+"options"
+:
+[
+{
+"code"
+:
+"02-ANTWERPEN"
+}
+]
+}
+}
+Authorizations:
+AccessToken
+path
+Parameters
+checkout_id
+required
+string
+Checkout ID.
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+Success
+401
+Access token is missing, invalid or expired.
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/checkout/{checkout_id}/shipping_methods
+/checkout/{checkout_id}/shipping_methods
+Response samples
+200
+401
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"shipping_methods"
+:
+[
+{
+"code"
+:
+"postnl"
+,
+"image"
+:
+"
+https://postnl.nl/logo.png
+"
+,
+"options"
+:
+[
+{
+"code"
+:
+"a53d"
+,
+"title"
+:
+"Ochtend"
+}
+,
+{
+"code"
+:
+"a53e"
+,
+"title"
+:
+"Middag"
+}
+,
+{
+"code"
+:
+"a53f"
+,
+"title"
+:
+"Avond"
+}
+]
+,
+"price"
+:
+1.95
+,
+"title"
+:
+"Post NL"
+}
+]
+}
+Checkout configuration
+Gets configuration options for the (native) checkout.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+404
+Storefront does not exist
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/nativecheckout
+/nativecheckout
+Response samples
+200
+404
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"security_icons"
+:
+[
+"
+https://www.image-host.com/thuiswinkel-waarborg.jpg
+"
+]
+,
+"terms"
+:
+"
+https://www.merchant.com/terms-and-conditions
+"
+,
+"url_patterns"
+:
+{
+"cancellation"
+:
+[
+{
+"host"
+:
+"www.merchant.com"
+,
+"path"
+:
+"/../checkout/cancelled"
+}
+]
+,
+"dismissal"
+:
+[
+{
+"host"
+:
+"www.merchant.com"
+,
+"path"
+:
+"/../checkout/dismissed"
+}
+]
+,
+"failure"
+:
+[
+{
+"host"
+:
+"www.merchant.com"
+,
+"path"
+:
+"/../checkout/failed"
+}
+]
+,
+"success"
+:
+[
+{
+"host"
+:
+"www.merchant.com"
+,
+"path"
+:
+"/../checkout/success"
+}
+]
+}
+}
+Apple Pay
+Authorizations:
+AccessToken
+path
+Parameters
+order_id
+required
+string
+Order ID.
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Request Body schema:
+application/json
+ApplePay token
+payload
+object
+token
+string
+The apple pay token
+Responses
+200
+Payment processed
+403
+Apple pay is disabled
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/orders/{order_id}/applepay
+/orders/{order_id}/applepay
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"payload"
+:
+{
+"token"
+:
+"string"
+}
+}
+Response samples
+200
+403
+500
+503
+Content type
+application/json
+Copy
+{
+"status"
+:
+"success"
+}
+Webcheckout URL
+Get the URL of the web checkout.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+403
+Webcheckout disabled
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/webcheckout
+/webcheckout
+Response samples
+200
+403
+500
+503
+Content type
+application/json
+Copy
+{
+"url"
+:
+"
+https://checkout.highstreetapp-services.com/scotch.html
+"
+}
+Content Pages
+Content pages are web pages hosted by the merchant.
+Get a list of content pages
+Returns a list of content pages. As of API version 3.9 content pages
+can also be personal. This is indicated by the value of
+personal
+.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+500
+An internal server error occured
+get
+/contentpages
+/contentpages
+Response samples
+200
+500
+Content type
+application/json
+Example
+page
+separator
+toc
+page
+Copy
+Expand all
+Collapse all
+{
+"0"
+:
+{
+"items"
+:
+[
+{
+"personal"
+:
+false
+,
+"show_guest"
+:
+false
+,
+"show_registered_user"
+:
+true
+,
+"title"
+:
+"About Us"
+,
+"type"
+:
+"page"
+,
+"url"
+:
+"
+https://merchant.com/nl-nl/about-us
+"
+}
+,
+{
+"personal"
+:
+false
+,
+"show_guest"
+:
+true
+,
+"show_registered_user"
+:
+true
+,
+"title"
+:
+"Terms & Conditions"
+,
+"type"
+:
+"page"
+,
+"url"
+:
+"
+https://merchant.com/nl-nl/terms
+"
+}
+,
+{
+"personal"
+:
+true
+,
+"show_guest"
+:
+true
+,
+"show_registered_user"
+:
+true
+,
+"title"
+:
+"Track & Trace"
+,
+"type"
+:
+"page"
+,
+"url"
+:
+"
+https://merchant.com/nl-nl/track-and-trace
+"
+}
+,
+{
+"type"
+:
+"separator"
+}
+,
+{
+"personal"
+:
+false
+,
+"show_guest"
+:
+true
+,
+"show_registered_user"
+:
+true
+,
+"title"
+:
+"About This App"
+,
+"type"
+:
+"page"
+,
+"url"
+:
+"
+https://highstreetmobile.com/about-this-app
+"
+}
+]
+,
+"title"
+:
+"Content Pages"
+,
+"type"
+:
+"toc"
+}
+,
+"icon"
+:
+"string"
+,
+"logged_in"
+:
+false
+,
+"personal"
+:
+false
+,
+"title"
+:
+"string"
+,
+"url"
+:
+"
+http://example.com
+"
+,
+"type"
+:
+"page"
+}
+Deeplink
+Webpages can (sometimes) be translated to an applink. The following applinks
+are supported:
+Account
+hs://account/activate?token={verification-token}&handle={handle}
+Cart
+hs://cart
+Content extension
+hs://contentextension?url={base64-encoded-url}&title={urlencoded-title}
+Categories
+hs://categories/{category-id}
+hs://categories/{category-id}/search/{query}
+Checkout (completion screens)
+hs://checkout/completion/success
+hs://checkout/completion/failure
+hs://checkout/completion/cancelled
+Favorites
+hs://favorites
+Home
+hs://home
+hs://home/promotions/{promotion-id}
+(
+DEPRECATED
+)
+Lookbooks
+hs://lookbooks/{lookbook-id}
+Orders
+hs://account/orders
+hs://account/orders/{order-id}
+Products
+hs://products/{product-id}
+hs://categories/{category-id}/products/{product-id}
+This deeplink supports filter parameters (see below).
+Search
+hs://search/{query}
+This deeplink supports filter parameters (see below).
+Vouchers
+hs://loyalty/vouchers
+hs://loyalty/vouchers/{voucher-id}
+Filter parameters
+The following deeplinks accept filters:
+hs://categories/{category-id}
+: links to the products within a category.
+hs://categories/{category-id}/search/{query}
+: links to a product search
+ within a category.
+hs://search/{query}
+: links to a global product search query.
+A filter consists of at least 2 query string parameters. The first parameter
+describes the attribute being filtered on:
+filter
+[
+$i
+]
+[
+attribute
+]
+=
+$attribute
+The additional parameters describe the acceptable value or values. At least one
+acceptable value is required:
+filter
+[
+$i
+]
+[
+in
+]
+[
+$j
+]
+=
+$value
+Filters are numbered, starting from
+0
+(
+$i
+). Acceptable values (
+$value
+) are
+also numbered, starting from
+0
+(
+$j
+).
+Example
+: only return green or blue products.
+hs
+:
+/
+/
+products
+/
+{
+search
+}
+?
+filter
+[
+0
+]
+[
+attribute
+]
+=
+color
+&
+filter
+[
+0
+]
+[
+in
+]
+[
+0
+]
+=
+green
+&
+filter
+[
+0
+]
+[
+in
+]
+[
+1
+]
+=
+blue
+Example
+: only return red products made from cotton.
+hs
+:
+/
+/
+categories
+/
+{
+category
+-
+id
+}
+/
+search
+/
+{
+search
+}
+?
+filter
+[
+0
+]
+[
+attribute
+]
+=
+color
+&
+filter
+[
+0
+]
+[
+in
+]
+[
+0
+]
+=
+red
+&
+filter
+[
+1
+]
+[
+attribute
+]
+=
+material
+&
+filter
+[
+1
+]
+[
+in
+]
+[
+0
+]
+=
+cotton
+NOTE
+:
+The schema
+hs
+will be replaced by the merchant specific schema
+.
+Resolve applink
+Authorizations:
+AccessToken
+path
+Parameters
+encoded_url
+required
+string
+URL-safe base64 encoded URL.
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+Success
+400
+The provided URL is invalid
+404
+Webpage does not contain an applink
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/links/deeplinks/{encoded_url}
+/links/deeplinks/{encoded_url}
+Response samples
+200
+400
+404
+500
+503
+Content type
+application/json
+Copy
+{
+"deeplink"
+:
+"justbrands://products/16352"
+}
+Jobs
+Endpoints to schedule jobs.
+These endpoints are available on the following domain:
+MERCHANTID
+-
+MERCHANT_ENV
+.api.highstreetapp.com
+MERCHANTID
+= the configured merchant id in the app.
+MERCHANT_ENV
+= the applicable environment of the Merchant's backend. eg
+staging
+.
+Note that when the
+-MERCHANT_ENV
+is omitted then the production environment is assumed.
+Also note the
+-
+that should be present between
+MERCHANTID
+and
+MERCHANT_ENV
+. When
+MERCHANT_ENV
+is omitted then the
+-
+should also be omitted.
+Reindex categories
+Schedules a job that refreshes the order of products within categories.
+Note that this job only refreshes the
+order
+of products. The product
+data itself (such as pricing) is not refreshed.
+Authorizations:
+basic_auth
+header
+Parameters
+Authorization
+required
+string
+Authorization header. This endpoint expects Basic Authentication
+Request Body schema:
+application/json
+Request body to schedule a job to reindex categories
+countries
+required
+Array of
+strings
+(
+CountryCode
+)
+[ items
+= 2 characters
+]
+List of country codes
+Responses
+202
+Accepted
+400
+Bad Request
+401
+Unauthorized
+500
+An internal server error occured
+post
+/jobs/reindex-categories
+/jobs/reindex-categories
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"countries"
+:
+[
+"NL"
+,
+"BE"
+]
+}
+Response samples
+202
+400
+401
+500
+Content type
+application/json
+Copy
+{
+"job_id"
+:
+"d02b7e035bd31021168e7557"
+}
+Stock Notifications
+Schedules a job to send back in stock notifications to customers that
+registered to receive one.
+This endpoint can be called any time the stock of a product changes from
+0 (out of stock) to greater than 0 (back in stock).
+This endpoint should only be called with product IDs of fully configured
+products. The following products types are supported:
+Platform
+Product types
+Magento 1 & Magento 2
+simple
+Salesforce Commerce Cloud
+item
+and
+variant
+Self-implemented
+fixed
+and
+variant
+Partially configured products are not supported.
+After receiving a back in stock notification the user will not receive
+a second notification for the same product (unless they explicitly
+register again).
+Authorizations:
+basic_auth
+header
+Parameters
+Authorization
+required
+string
+Authorization header. This endpoint expects Basic Authentication
+Request Body schema:
+application/json
+Request body for scheduling back in stock notifications
+countries
+required
+Array of
+strings
+[ items
+= 2 characters
+]
+One or more countries that the product has come back in stock in. If
+a product has come back in stock in The Netherlands (
+NL
+) but not in
+the United States (
+US
+) then
+US
+should not be included in the list.
+delivery_time
+string
+The date and time the notification should be delivered to the customer
+in ISO 8601 standard format. Notifications will be sent as soon as
+possible by default.
+max_recipients
+number
+>= 1
+The maximum number of customers that will receive a notification. If
+the number of customers that want to receive a notification is higher
+than the maximum number of recipients the users that registered first
+are prioritised. Notifications are sent to all interested customers by
+default.
+message_translations
+required
+Array of
+objects
+(
+Translation
+)
+Translations for the body of the notification. All languages for the
+given
+countries
+should be included.
+product_id
+required
+string
+The ID of the product that has come back in stock.
+title_translations
+required
+Array of
+objects
+(
+Translation
+)
+Translations for the title of the notification. All languages for the
+given
+countries
+should be included.
+Responses
+202
+Accepted
+400
+Bad Request
+401
+Unauthorized
+500
+An internal server error occured
+post
+/jobs/stock_notifications
+/jobs/stock_notifications
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"countries"
+:
+[
+"NL"
+]
+,
+"delivery_time"
+:
+"2019-11-04T13:25:34+00:00"
+,
+"max_receivers"
+:
+24
+,
+"message_translations"
+:
+[
+{
+"language"
+:
+"en"
+,
+"text"
+:
+"The Skim - Washed Up is back in stock. Be quick!"
+}
+,
+{
+"language"
+:
+"nl"
+,
+"text"
+:
+"De Skim - Washed Up is terug. Wees er snel bij!"
+}
+]
+,
+"product_id"
+:
+"1234_AB-S"
+,
+"title_translations"
+:
+[
+{
+"language"
+:
+"en"
+,
+"text"
+:
+"Guess What?"
+}
+,
+{
+"language"
+:
+"nl"
+,
+"text"
+:
+"Goed nieuws"
+}
+]
+}
+Response samples
+202
+400
+401
+500
+Content type
+application/json
+Copy
+{
+"id"
+:
+"03b6c7d6bfa2"
+}
+Lookbooks
+Lookbooks are used by merchants to showcase their products
+Get Lookbooks
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/lookbooks
+/lookbooks
+Response samples
+200
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"display_categories"
+:
+[
+"string"
+]
+,
+"front_images"
+:
+{
+"background-568h@2x~iphone"
+:
+"string"
+,
+"background-667h@2x~iphone"
+:
+"string"
+,
+"background-667h@3x~iphone"
+:
+"string"
+,
+"background-736h@3x~iphone"
+:
+"string"
+,
+"background@2x~ipad"
+:
+"string"
+,
+"background@2x~iphone"
+:
+"string"
+,
+"background@2x~watch"
+:
+"string"
+,
+"background~ipad"
+:
+"string"
+}
+,
+"id"
+:
+"string"
+,
+"title"
+:
+"string"
+}
+]
+Get Looks
+Authorizations:
+AccessToken
+path
+Parameters
+lookbook_id
+required
+string
+Lookbook ID.
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/lookbooks/{lookbook_id}/looks
+/lookbooks/{lookbook_id}/looks
+Response samples
+200
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"hotspots"
+:
+[
+{
+"position"
+:
+{
+"x"
+:
+0
+,
+"y"
+:
+0
+}
+,
+"product_slots"
+:
+[
+"string"
+]
+}
+]
+,
+"id"
+:
+"string"
+,
+"image"
+:
+{
+"0x"
+:
+"string"
+,
+"1x"
+:
+"string"
+}
+,
+"image_key"
+:
+"string"
+,
+"images"
+:
+{
+"background-568h@2x~iphone"
+:
+"string"
+,
+"background-667h@2x~iphone"
+:
+"string"
+,
+"background-667h@3x~iphone"
+:
+"string"
+,
+"background-736h@3x~iphone"
+:
+"string"
+,
+"background@2x~ipad"
+:
+"string"
+,
+"background@2x~iphone"
+:
+"string"
+,
+"background@2x~watch"
+:
+"string"
+,
+"background~ipad"
+:
+"string"
+}
+,
+"lookbook_id"
+:
+"string"
+}
+]
+Loyalty Membership
+When signing up for a loyalty membership, the loyalty program
+may
+require
+the customer to confirm their membership through, for example, an e-mail.
+The API will indicate this on all loyalty related enpoints.
+Some loyalty programs don't require the customer to opt-in to a loyalty
+membership, but create a membership for you when an E-commerce account is
+created.
+Changelog
+19-06-2018
+Introduce
+membership_level
+Replace
+membership_barcode
+with
+card_barcode
+.
+Introduce
+confirmed
+flag.
+Introduce
+points_balance
+(optional).
+Introduce
+collection_counters
+object (optional).
+View membership
+Authorizations:
+AccessToken
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+Success
+401
+Access token is missing, invalid or expired.
+403
+Customer does not have a confirmed loyalty membership
+404
+Customer does not have a loyalty membership
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/account/loyalty
+/account/loyalty
+Response samples
+200
+401
+403
+404
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"card_barcode"
+:
+{
+"type"
+:
+"code128"
+,
+"value"
+:
+"10000000123"
+}
+,
+"collection_counters"
+:
+{
+"amount_spent"
+:
+350
+,
+"facebook_likes"
+:
+1
+,
+"orders_placed"
+:
+3
+,
+"twitter_retweets"
+:
+3
+}
+,
+"confirmed"
+:
+true
+,
+"membership_level"
+:
+{
+"id"
+:
+"MBL1"
+,
+"title"
+:
+"Gold"
+}
+,
+"points_balance"
+:
+350
+}
+Create membership
+Loyalty programs may require additional information such as the gender
+or date of birth of a customer in order to better target customers.
+When required, this data should be set on the E-commerce account
+resource
+before
+creating a membership.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Authorization
+required
+string
+Access token
+Responses
+201
+Membership was successfully created
+202
+The customer must verify their membership
+401
+Access token is missing, invalid or expired.
+404
+The loyalty program feature is disabled
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/account/loyalty
+/account/loyalty
+Response samples
+201
+202
+401
+404
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"card_barcode"
+:
+{
+"type"
+:
+"code128"
+,
+"value"
+:
+"10000000123"
+}
+,
+"collection_counters"
+:
+{
+"amount_spent"
+:
+350
+,
+"facebook_likes"
+:
+1
+,
+"orders_placed"
+:
+3
+,
+"twitter_retweets"
+:
+3
+}
+,
+"confirmed"
+:
+true
+,
+"membership_level"
+:
+{
+"id"
+:
+"MBL1"
+,
+"title"
+:
+"Gold"
+}
+,
+"points_balance"
+:
+350
+}
+Remove memberbership
+Removes the customer's membership when the customer no longer wishes to
+participate in the loyalty program.
+Loyalty programs may require the customer to confirm through, for example,
+e-mail.
+Authorizations:
+AccessToken
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+Membership was removed
+401
+Access token is missing, invalid or expired.
+403
+Customer does not have a confirmed loyalty membership
+404
+Customer does not have a loyalty membership
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+delete
+/account/loyalty
+/account/loyalty
+Response samples
+200
+401
+403
+404
+500
+503
+Content type
+application/json
+Copy
+{
+"verification_required"
+:
+false
+}
+Voucher
+The Voucher resource exposes loyalty vouchers and campaigns.
+View vouchers
+Lists the customer's collected vouchers and the currently running
+campaigns.
+Authorizations:
+AccessToken
+query
+Parameters
+cart_id
+string
+A cart ID. When given, only the
+vouchers
+that can be used in a cart
+will be returned.
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+Success
+401
+Access token is missing, invalid or expired.
+403
+Customer does not have a confirmed loyalty membership
+404
+Customer does not have a loyalty membership
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/loyalty/vouchers
+/loyalty/vouchers
+Response samples
+200
+401
+403
+404
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"collectable"
+:
+[
+{
+"barcode"
+:
+{
+"type"
+:
+"code128"
+,
+"value"
+:
+"1000000193"
+}
+,
+"conditions"
+:
+[
+{
+"threshold"
+:
+550
+,
+"type"
+:
+"amount_spent"
+}
+]
+,
+"description"
+:
+{
+"long"
+:
+"This is the long description"
+,
+"short"
+:
+"This is a summary"
+,
+"title"
+:
+"20% discount on your next order"
+}
+,
+"id"
+:
+"1000000193"
+,
+"reward"
+:
+{
+"product_id"
+:
+"1234_A-B"
+,
+"type"
+:
+"bonus_product"
+}
+,
+"validity"
+:
+{
+"start"
+:
+1495432718
+}
+}
+]
+,
+"collected"
+:
+[
+{
+"barcode"
+:
+{
+"type"
+:
+"code128"
+,
+"value"
+:
+"1000000192"
+}
+,
+"description"
+:
+{
+"image"
+:
+"
+http://images.com/voucher-1000000192.jpg
+"
+,
+"long"
+:
+"This is the long description"
+,
+"short"
+:
+"This is a summary"
+,
+"title"
+:
+"20% discount on your next order"
+}
+,
+"id"
+:
+"1000000192"
+,
+"reserved_in_cart"
+:
+"7ce9814d"
+,
+"reward"
+:
+{
+"product_id"
+:
+"1234_A-B"
+,
+"type"
+:
+"bonus_product"
+}
+,
+"validity"
+:
+{
+"end"
+:
+1498327436
+,
+"start"
+:
+1498731956
+}
+}
+]
+}
+LoyaltyOrders
+The Order resource exposes a customer's order history.
+Changelog
+Add a
+currency_code
+to display the correct currency symbol.
+Add a
+prices_include_tax
+to pick the correct totals.
+Replace
+date
+with
+creation_date
+(note that
+creation_date
+is optional)
+Replace
+status
+object with a string (note that
+status
+is optional)
+Replace
+price
+of an order
+items
+with
+full_price
+Remove
+bundle_configuration
+for order
+items
+Replace
+shipping_address
+with
+shipments
+Replace
+shipping_method
+with
+shipments
+Replace
+payment_method
+with
+payments
+NOTE
+: There can be multiple
+shipments
+and multiple
+payments
+.
+History
+Lists all orders made by the customer
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Authorization
+required
+string
+Access token
+Responses
+200
+success
+401
+Access token is missing, invalid or expired.
+403
+Customer does not have a confirmed loyalty membership
+404
+Customer does not have a loyalty membership
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/loyalty/orders
+/loyalty/orders
+Response samples
+200
+401
+403
+404
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"orders"
+:
+[
+{
+"billing_address"
+:
+{
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"first_name"
+:
+"App"
+,
+"house_number"
+:
+"154"
+,
+"last_name"
+:
+"Tester"
+,
+"postal_code"
+:
+"3514 AZ"
+,
+"street"
+:
+"Hooghiemstraplein"
+,
+"telephone"
+:
+"030-2769165"
+}
+,
+"creation_date"
+:
+1500460060
+,
+"currency_code"
+:
+"EUR"
+,
+"id"
+:
+"PNZfEiFcNM"
+,
+"items"
+:
+[
+{
+"configuration"
+:
+[
+{
+"name"
+:
+"color"
+,
+"value"
+:
+"white"
+}
+,
+{
+"name"
+:
+"size"
+,
+"value"
+:
+"M"
+}
+]
+,
+"full_price"
+:
+19.99
+,
+"product_id"
+:
+"1234_001-M"
+,
+"product_image"
+:
+"
+https://images.com/basic-tshirt.jpg
+"
+,
+"product_name"
+:
+"Basic T-Shirt"
+,
+"quantity"
+:
+2
+}
+]
+,
+"number"
+:
+"EU000027546"
+,
+"payments"
+:
+[
+{
+"amount"
+:
+19.99
+,
+"method_name"
+:
+"iDeal (ING)"
+,
+"status"
+:
+"paid"
+}
+]
+,
+"prices_include_tax"
+:
+true
+,
+"shipments"
+:
+[
+{
+"address"
+:
+{
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"first_name"
+:
+"App"
+,
+"house_number"
+:
+"154"
+,
+"last_name"
+:
+"Tester"
+,
+"postal_code"
+:
+"3514 AZ"
+,
+"street"
+:
+"Hooghiemstraplein"
+,
+"telephone"
+:
+"030-2769165"
+}
+,
+"method_name"
+:
+"UPS Ground Shipping"
+,
+"status"
+:
+"shipped"
+}
+]
+,
+"source"
+:
+"app"
+,
+"status"
+:
+"created"
+,
+"totals"
+:
+{
+"discount"
+:
+19.99
+,
+"grand_total"
+:
+21.94
+,
+"shipping"
+:
+1.95
+,
+"sub_total"
+:
+19.99
+,
+"tax"
+:
+0
+}
+}
+]
+}
+Messages
+Messages are used by merchants to comunicate with their uses on specific parts of the application.
+Get Messages
+Authorizations:
+AccessToken
+query
+Parameters
+placement
+string
+Placement where the message will be shown.
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Authorization
+required
+string
+Access token
+Responses
+200
+OK
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/messages
+/messages
+Response samples
+200
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+{
+"body"
+:
+"string"
+,
+"id"
+:
+"string"
+,
+"placements"
+:
+[
+"cart"
+]
+,
+"publish_at"
+:
+0
+,
+"title"
+:
+"string"
+,
+"unpublish_at"
+:
+0
+,
+"visual"
+:
+{
+"type"
+:
+"string"
+}
+}
+]
+}
+Products
+Notes
+The
+GET /categories/:id/products
+endpoint has been deprecated in favour
+of a query string on product search.
+Featured
+Fetches a list of (personalized) recommended products.
+Note that not all recommenders support restricting results to a single
+category.
+Authorizations:
+AccessToken
+path
+Parameters
+recommender_id
+required
+string
+Identifier of the recommender to use
+query
+Parameters
+visitor_id
+required
+string
+Unique visitor ID.
+cat
+string
+The category to restrict results to.
+header
+Parameters
+Authorization
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+400
+Bad Request
+404
+Not Found
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/featured_products/{recommender_id}
+/featured_products/{recommender_id}
+Response samples
+200
+400
+404
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"results"
+:
+[
+{
+"available"
+:
+true
+,
+"caption"
+:
+"Summer collection"
+,
+"custom_attributes"
+:
+[
+{
+"id"
+:
+"product_type"
+,
+"name"
+:
+"Product Soort"
+,
+"value"
+:
+"Sweater"
+}
+]
+,
+"id"
+:
+"1234"
+,
+"labels"
+:
+[
+{
+"id"
+:
+"sale"
+}
+]
+,
+"media_item"
+:
+{
+"type"
+:
+"img"
+,
+"url"
+:
+"
+https://img.com/blue-sweater-front.jpg
+"
+}
+,
+"name"
+:
+"Sweater"
+,
+"pricing"
+:
+{
+"effective"
+:
+19.95
+,
+"original"
+:
+24.95
+}
+,
+"sku"
+:
+"1234"
+}
+]
+}
+Search
+Searching and filtering products.
+Filters
+Products can be filtered by attribute. Three filter types are currently
+supported:
+The
+set membership filter
+(
+in
+) only yields products where the
+value of a given attribute is present in a set of given values.
+Example: only products in the color red or orange.
+The
+range filter
+(
+range
+) only yields products where the value of
+a particular attribute falls between a minimum and maximum.
+Example: only products in the price range 50 to 100 euros.
+The
+equality filter
+(
+eq
+) only yields products with a particular
+value for a particular attribute.
+Example: only products with from the brand "H&M".
+The available list of attributes, the filter type and their possible
+values can be found under the
+filters
+property.
+Notes
+product_count
+will not be guaranteed to be there any more.
+Authorizations:
+AccessToken
+query
+Parameters
+q
+string
+<= 50 characters
+A search query
+cat
+string
+The category to restrict results to.
+cursor
+number
+Default:
+0
+The cursor position
+size
+number
+Default:
+20
+Maximum number of results
+sort
+string
+The sort option. Value will be an id of a sorting option returned in the product search
+result
+{attr}:in
+string
+Set membership filter. Replace
+{attr}
+with an attribute code. Values
+are separated by a pipe (
+|
+).
+Example:
+c_size:in=S|M
+.
+{attr}:range
+string
+<
+^[0-9]+,[0-9]+$
+>
+Range filter. Replace
+{attr}
+with an attribute code. The minimum and
+maximum are separated by a comma (
+,
+).
+Example:
+price:range=50,100
+.
+{attr}:eq
+string
+Equality filter. Replace
+{attr}
+with an attribute code.
+Example:
+brand:eq=637
+.
+header
+Parameters
+Authorization
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/products
+/products
+Response samples
+200
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"filters"
+:
+[
+{
+"code"
+:
+"c_size"
+,
+"name"
+:
+"Size"
+,
+"type"
+:
+"in"
+,
+"values"
+:
+[
+{
+"name"
+:
+"Small"
+,
+"product_count"
+:
+9
+,
+"value"
+:
+"S"
+}
+,
+{
+"name"
+:
+"Medium"
+,
+"product_count"
+:
+14
+,
+"value"
+:
+"29/32"
+}
+,
+{
+"name"
+:
+"Large"
+,
+"product_count"
+:
+17
+,
+"value"
+:
+"29/32"
+}
+]
+}
+]
+,
+"product_count"
+:
+46
+,
+"results"
+:
+[
+{
+"available"
+:
+true
+,
+"caption"
+:
+"Summer collection"
+,
+"custom_attributes"
+:
+[
+{
+"id"
+:
+"product_type"
+,
+"name"
+:
+"Product Soort"
+,
+"value"
+:
+"Sweater"
+}
+]
+,
+"id"
+:
+"1234"
+,
+"labels"
+:
+[
+{
+"id"
+:
+"sale"
+}
+]
+,
+"media_item"
+:
+{
+"type"
+:
+"img"
+,
+"url"
+:
+"
+https://img.com/blue-sweater-front.jpg
+"
+}
+,
+"name"
+:
+"Sweater"
+,
+"pricing"
+:
+{
+"effective"
+:
+19.95
+,
+"original"
+:
+24.95
+}
+,
+"sku"
+:
+"1234"
+}
+]
+,
+"sorting_options"
+:
+[
+{
+"id"
+:
+"hightolow"
+,
+"name"
+:
+"Price (High-Low)"
+}
+]
+}
+Details
+Products in detail.
+Authorizations:
+AccessToken
+path
+Parameters
+product_id
+required
+string
+A product ID
+header
+Parameters
+Authorization
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+404
+Not Found
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/products/{product_id}
+/products/{product_id}
+Response samples
+200
+404
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"analytics_attributes"
+:
+{
+"firebase"
+:
+{
+"item_color"
+:
+"001"
+,
+"item_on_sale"
+:
+true
+}
+}
+,
+"available"
+:
+true
+,
+"caption"
+:
+"Summer Collection"
+,
+"custom_attributes"
+:
+[
+{
+"id"
+:
+"brand"
+,
+"name"
+:
+"Brand"
+,
+"value"
+:
+"Whitelabel"
+}
+]
+,
+"description"
+:
+"<em>You</em> can read me if you want to."
+,
+"id"
+:
+"1234"
+,
+"labels"
+:
+[
+{
+"background_color"
+:
+[
+255
+,
+255
+,
+255
+,
+0.5
+]
+,
+"custom"
+:
+{
+"placement"
+:
+"top-left"
+}
+,
+"display_text"
+:
+"Brand New"
+,
+"id"
+:
+"new"
+,
+"text_color"
+:
+[
+0
+,
+0
+,
+0
+,
+1
+]
+}
+]
+,
+"media"
+:
+[
+{
+"type"
+:
+"img"
+,
+"url"
+:
+"
+https://merchant.imgix.net/blue-shirt-front.jpg
+"
+}
+,
+{
+"type"
+:
+"img"
+,
+"url"
+:
+"
+https://merchant.imgix.net/blue-shirt-back.jpg
+"
+}
+,
+{
+"large"
+:
+"
+https://vimeo.com/large.mp4
+"
+,
+"small"
+:
+"
+https://vimeo.com/small.mp4
+"
+,
+"type"
+:
+"vid"
+}
+]
+,
+"name"
+:
+"Sweater"
+,
+"pricing"
+:
+{
+"custom"
+:
+{
+"member_effective"
+:
+45
+,
+"member_original"
+:
+89.99
+}
+,
+"effective"
+:
+45
+,
+"original"
+:
+109.99
+}
+,
+"size_guide_url"
+:
+"
+https://merchant.com/size-guide.html
+"
+,
+"sku"
+:
+"CS-4632-0001"
+,
+"specifications"
+:
+"<ul><li>Crew Neck</li><li>100% Cotton</li></ul>"
+,
+"stock_notifications"
+:
+false
+,
+"store_availability"
+:
+false
+,
+"web_url"
+:
+"
+https://merchant.com/products/1234
+"
+,
+"configuration"
+:
+{
+"variants"
+:
+[
+{
+"analytics_attributes"
+:
+{
+"firebase"
+:
+{
+"item_color"
+:
+"001"
+,
+"item_on_sale"
+:
+true
+}
+}
+,
+"available"
+:
+true
+,
+"caption"
+:
+"Summer Collection"
+,
+"custom_attributes"
+:
+[
+{
+"id"
+:
+"brand"
+,
+"name"
+:
+"Brand"
+,
+"value"
+:
+"Whitelabel"
+}
+]
+,
+"description"
+:
+"<em>You</em> can read me if you want to."
+,
+"id"
+:
+"1234"
+,
+"labels"
+:
+[
+{
+"background_color"
+:
+[
+255
+,
+255
+,
+255
+,
+0.5
+]
+,
+"custom"
+:
+{
+"placement"
+:
+"top-left"
+}
+,
+"display_text"
+:
+"Brand New"
+,
+"id"
+:
+"new"
+,
+"text_color"
+:
+[
+0
+,
+0
+,
+0
+,
+1
+]
+}
+]
+,
+"media"
+:
+[
+{
+"type"
+:
+"img"
+,
+"url"
+:
+"
+https://merchant.imgix.net/blue-shirt-front.jpg
+"
+}
+,
+{
+"type"
+:
+"img"
+,
+"url"
+:
+"
+https://merchant.imgix.net/blue-shirt-back.jpg
+"
+}
+,
+{
+"large"
+:
+"
+https://vimeo.com/large.mp4
+"
+,
+"small"
+:
+"
+https://vimeo.com/small.mp4
+"
+,
+"type"
+:
+"vid"
+}
+]
+,
+"name"
+:
+"Sweater"
+,
+"pricing"
+:
+{
+"custom"
+:
+{
+"member_effective"
+:
+45
+,
+"member_original"
+:
+89.99
+}
+,
+"effective"
+:
+45
+,
+"original"
+:
+109.99
+}
+,
+"size_guide_url"
+:
+"
+https://merchant.com/size-guide.html
+"
+,
+"sku"
+:
+"CS-4632-0001"
+,
+"specifications"
+:
+"<ul><li>Crew Neck</li><li>100% Cotton</li></ul>"
+,
+"stock_notifications"
+:
+false
+,
+"store_availability"
+:
+false
+,
+"web_url"
+:
+"
+https://merchant.com/products/1234
+"
+,
+"variation_attribute_values"
+:
+{
+"color"
+:
+"001"
+,
+"size"
+:
+"m"
+}
+}
+]
+,
+"variation_attributes"
+:
+[
+{
+"id"
+:
+"color"
+,
+"name"
+:
+"Color"
+,
+"values"
+:
+[
+{
+"id"
+:
+"001"
+,
+"name"
+:
+"Blue"
+}
+,
+{
+"id"
+:
+"002"
+,
+"name"
+:
+"Red"
+}
+]
+}
+,
+{
+"id"
+:
+"size"
+,
+"name"
+:
+"Size"
+,
+"values"
+:
+[
+{
+"id"
+:
+"s"
+,
+"name"
+:
+"Small"
+}
+,
+{
+"id"
+:
+"m"
+,
+"name"
+:
+"Medium"
+}
+,
+{
+"id"
+:
+"l"
+,
+"name"
+:
+"Large"
+}
+]
+}
+]
+}
+,
+"prefill_bucket"
+:
+"6a473d3e"
+,
+"promotions"
+:
+[
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+}
+]
+,
+"variation_attribute_values"
+:
+{
+"color"
+:
+"001"
+,
+"size"
+:
+"m"
+}
+}
+Availability
+Fetches up-to-date availability and pricing for a product.
+Authorizations:
+AccessToken
+path
+Parameters
+product_id
+required
+string
+A product ID
+header
+Parameters
+Authorization
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+404
+Not Found
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/products/{product_id}/availability
+/products/{product_id}/availability
+Response samples
+200
+404
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"availabilities"
+:
+[
+{
+"available"
+:
+true
+,
+"id"
+:
+"1234_AB-S"
+,
+"message"
+:
+"Delivered in two weeks"
+,
+"pricing"
+:
+{
+"effective"
+:
+14.95
+}
+,
+"qty"
+:
+23
+,
+"qty_max"
+:
+3
+}
+]
+}
+Related
+Fetch products related to a particular product. Multiple types of
+relations, such as recommendations, cross-sell, up-sell are supported.
+Authorizations:
+AccessToken
+path
+Parameters
+product_id
+required
+string
+A product ID
+header
+Parameters
+Authorization
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/products/{product_id}/related
+/products/{product_id}/related
+Response samples
+200
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"related_product_groups"
+:
+[
+{
+"product_count"
+:
+1
+,
+"results"
+:
+[
+{
+"available"
+:
+true
+,
+"caption"
+:
+"Summer collection"
+,
+"custom_attributes"
+:
+[
+{
+"id"
+:
+"product_type"
+,
+"name"
+:
+"Product Soort"
+,
+"value"
+:
+"Sweater"
+}
+]
+,
+"id"
+:
+"1234"
+,
+"labels"
+:
+[
+{
+"id"
+:
+"sale"
+}
+]
+,
+"media_item"
+:
+{
+"type"
+:
+"img"
+,
+"url"
+:
+"
+https://img.com/blue-sweater-front.jpg
+"
+}
+,
+"name"
+:
+"Sweater"
+,
+"pricing"
+:
+{
+"effective"
+:
+19.95
+,
+"original"
+:
+24.95
+}
+,
+"sku"
+:
+"1234"
+}
+]
+,
+"type"
+:
+"cross-sell"
+}
+]
+}
+Store Availability
+Fetches the availability of a product in nearby stores. Only Product IDs
+of fully configured products (i.e.
+fixed
+or
+variant
+products ) are
+supported.
+This endpoint requires a location as either a (partial) address
+(
+address
+) or as coordinates (
+latitude
++
+longitude
+).
+Authorizations:
+AccessToken
+path
+Parameters
+product_id
+required
+string
+A product ID
+query
+Parameters
+address
+string
+A single line address query
+max_distance
+number
+Require stores to be at most
+maximum_distance
+kilometres from the
+reference location. The default value is
+100
+.
+longitude
+number
+The longitude in which to search (overrides address)
+latitude
+number
+The latitude in which to search (overrides address)
+header
+Parameters
+Authorization
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+400
+Bad Request
+404
+Not Found
+500
+An internal server error occured
+501
+Endpoint is not implemented for current merchant.
+503
+An error occured when connecting to an upstream service
+get
+/products/{product_id}/store-availability
+/products/{product_id}/store-availability
+Response samples
+200
+400
+404
+500
+501
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"reference_location"
+:
+{
+"latitude"
+:
+52.0986345
+,
+"longitude"
+:
+5.1251368
+}
+,
+"results"
+:
+[
+{
+"availability"
+:
+{
+"available"
+:
+true
+,
+"id"
+:
+"1234_AB-S"
+,
+"message"
+:
+"Delivered in two weeks"
+,
+"pricing"
+:
+{
+"effective"
+:
+14.95
+}
+,
+"qty"
+:
+23
+,
+"qty_max"
+:
+3
+}
+,
+"store"
+:
+{
+"address"
+:
+{
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"postal_code"
+:
+"3511 KK"
+,
+"street"
+:
+"Choorstraat 7"
+,
+"telephone"
+:
+"00 31 303004120"
+}
+,
+"coordinates"
+:
+{
+"latitude"
+:
+5.1197
+,
+"longitude"
+:
+52.09123
+}
+,
+"id"
+:
+"ff5e5f52-d62e-e511-80c8-02bfac10024b"
+,
+"name"
+:
+"Scotch & Soda"
+}
+}
+]
+}
+Push Notifications
+Registers a device to receive push Notifications. A endpoint to record
+push notification open events is also provided.
+Currently Highstreet has an integration with Onesignal and for some clients
+Marketing Cloud. The registration endpoint will register the device with
+Onesignal and if configured Marketing Cloud.
+Register a device to recieve push notifications
+Registers a device with a push provider.
+Authorizations:
+AccessToken
+Request Body schema:
+application/json
+appIdentifier
+string
+The app identifer eg com.denhamjeans.highstreet.app
+appName
+string
+The name of the app eg Denham
+appVersion
+string
+The version of the app
+appVersionString
+string
+The semantic version of the app
+backInStockNotificationsEnabled
+boolean
+DEPRECATED
+: Can the device receive back in stock notifications? This
+flag is unused.
+debug
+boolean
+Marks the device to accept test notifications
+deviceModel
+string
+The brand of the device. eg iPhone
+deviceToken
+string
+The unique identifier of the app
+deviceType
+string
+The operating system of the device eg ios
+email
+string
+The email adress of the user if they are logged in
+language
+string
+The 2 digit language code of the device
+locale
+string
+The 4 digit local code of the device. Eg country_LANGUAGE
+notificationsEnabled
+boolean
+Can the device recieve notifications or not
+selectedStorefront
+string
+The selected highstreet storefront
+supportsSilentNotifications
+boolean
+timeZone
+string
+The time zone of the device
+Responses
+200
+Success
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/push_notifications/installations
+/push_notifications/installations
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"appIdentifier"
+:
+"com.denhamjeans.highstreet.app"
+,
+"appName"
+:
+"Denham"
+,
+"appVersion"
+:
+"29"
+,
+"appVersionString"
+:
+"2.50.0"
+,
+"backInStockNotificationsEnabled"
+:
+false
+,
+"debug"
+:
+false
+,
+"deviceModel"
+:
+"iPhone"
+,
+"deviceToken"
+:
+"29d3b2b3a603971d732df3d479e274f6497b35293dc71a3e0d3fd56da2c1f2d8"
+,
+"deviceType"
+:
+"ios"
+,
+"email"
+:
+"r2d2@highstreetmobile.com"
+,
+"language"
+:
+"en"
+,
+"locale"
+:
+"en_NL"
+,
+"notificationsEnabled"
+:
+true
+,
+"selectedStorefront"
+:
+"en-NL"
+,
+"supportsSilentNotifications"
+:
+false
+,
+"timeZone"
+:
+"Europe/Amsterdam"
+}
+Response samples
+200
+500
+503
+Content type
+application/json
+Copy
+{
+"id"
+:
+"HS_eyJvbmVzaWduYWwiOiI5=="
+}
+Update push notification settings
+Updates the device info/settings with a push provider. For example
+if a user no longer wishes to recieve push notifications.
+Authorizations:
+AccessToken
+path
+Parameters
+installation_id
+required
+string
+Request Body schema:
+application/json
+appIdentifier
+string
+The app identifer eg com.denhamjeans.highstreet.app
+appName
+string
+The name of the app eg Denham
+appVersion
+string
+The version of the app
+appVersionString
+string
+The semantic version of the app
+backInStockNotificationsEnabled
+boolean
+DEPRECATED
+: Can the device receive back in stock notifications? This
+flag is unused.
+debug
+boolean
+Marks the device to accept test notifications
+deviceModel
+string
+The brand of the device. eg iPhone
+deviceToken
+string
+The unique identifier of the app
+deviceType
+string
+The operating system of the device eg ios
+email
+string
+The email adress of the user if they are logged in
+language
+string
+The 2 digit language code of the device
+locale
+string
+The 4 digit local code of the device. Eg country_LANGUAGE
+notificationsEnabled
+boolean
+Can the device recieve notifications or not
+selectedStorefront
+string
+The selected highstreet storefront
+supportsSilentNotifications
+boolean
+timeZone
+string
+The time zone of the device
+Responses
+200
+Success
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+patch
+/push_notifications/installations/{installation_id}
+/push_notifications/installations/{installation_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"appIdentifier"
+:
+"com.denhamjeans.highstreet.app"
+,
+"appName"
+:
+"Denham"
+,
+"appVersion"
+:
+"29"
+,
+"appVersionString"
+:
+"2.50.0"
+,
+"backInStockNotificationsEnabled"
+:
+false
+,
+"debug"
+:
+false
+,
+"deviceModel"
+:
+"iPhone"
+,
+"deviceToken"
+:
+"29d3b2b3a603971d732df3d479e274f6497b35293dc71a3e0d3fd56da2c1f2d8"
+,
+"deviceType"
+:
+"ios"
+,
+"email"
+:
+"r2d2@highstreetmobile.com"
+,
+"language"
+:
+"en"
+,
+"locale"
+:
+"en_NL"
+,
+"notificationsEnabled"
+:
+true
+,
+"selectedStorefront"
+:
+"en-NL"
+,
+"supportsSilentNotifications"
+:
+false
+,
+"timeZone"
+:
+"Europe/Amsterdam"
+}
+Response samples
+200
+500
+503
+Content type
+application/json
+Copy
+{
+"id"
+:
+"HS_eyJvbmVzaWduYWwiOiI5=="
+}
+Track a notification open event
+This endpoint consumes data related to a push notifcation and sends
+an event to the relevant push provider to track an open event.
+Authorizations:
+AccessToken
+Request Body schema:
+application/json
+installation_id
+string
+The installation id of the device
+notification
+object
+Responses
+200
+OK
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/push_notifications/open
+/push_notifications/open
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"installation_id"
+:
+"89yfo947fhyo8w7hgo9we97hfo8er7hvedbweb=="
+,
+"notification"
+:
+{
+"_h"
+:
+"tL1oxqk6wih2S2aOE0KfEwAAAAAA"
+,
+"_m"
+:
+"MToxMTQ6MA"
+,
+"_mt"
+:
+1
+,
+"_r"
+:
+"17009c0b-0bf7-4b5a-b494-b5c91069a9c5"
+,
+"_sid"
+:
+"SFMC"
+,
+"aps"
+:
+{
+"alert"
+:
+{
+"body"
+:
+"Message body"
+,
+"subtitle"
+:
+null
+,
+"title"
+:
+"Message title"
+}
+,
+"mutable-content"
+:
+1
+,
+"sound"
+:
+"default"
+}
+,
+"hs.body"
+:
+"Message body"
+,
+"hs.dl"
+:
+"hs://home"
+,
+"hs.title"
+:
+"Message title"
+}
+}
+Response samples
+500
+503
+Content type
+application/json
+Copy
+{
+"code"
+:
+"convert_error"
+,
+"message"
+:
+"can't convert Basket to cart"
+}
+Stock Subscriptions
+Create subscription
+Registers a customer for receiving a push notification when a product
+comes back in stock.
+Authorizations:
+AccessToken
+header
+Parameters
+Authorization
+required
+string
+Access token
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Request Body schema:
+application/json
+email
+string
+<
+email
+>
+Customer's email address
+installation_id
+required
+string
+Customer's push notification installation ID.
+product_id
+required
+string
+A product ID. Only fully configured products are supported.
+Responses
+201
+Stock subscription was successfully created
+400
+Invalid input
+500
+An internal server error occured
+post
+/stock_subscriptions
+/stock_subscriptions
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"email"
+:
+"test@highstreetmobile.com"
+,
+"installation_id"
+:
+"HS_eyJtYXJrZXRpbmdfY2xvdWQiOiI5YzdlMWI3ZS02Yzc1LTRjODMtYTZkOS0wYWYzMjlhYTBhNWEiLCJvbmVzaWduYWwiOiJjYzM5YWZkOS0zMzM5LTRiOWYtYTJiNS02ZjUyOTQ5Mzk3MmQifQ=="
+,
+"product_id"
+:
+"1234_AB-S"
+}
+Response samples
+201
+400
+500
+Content type
+application/json
+Copy
+{
+"id"
+:
+"Y2MzOWFmZDktMzMzOS00YjlmLWEyYjUtNmY1Mjk0OTM5NzJkLjEyMzRfQUItUw=="
+}
+Storefronts
+Exposes configuration settings.
+Select storefront
+Selects the best matching storefront based on language and locale.
+The locale is given more weight in the selection than the language.
+Authorizations:
+AccessToken
+query
+Parameters
+lang
+required
+string
+Language
+locale
+required
+string
+Locale
+Responses
+200
+Success
+400
+Invalid
+lang
+or
+locale
+parameter
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/storefront
+/storefront
+Response samples
+200
+400
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"fallback"
+:
+"string"
+,
+"storefronts"
+:
+[
+{
+"countries"
+:
+[
+"NL"
+,
+"BE"
+]
+,
+"id"
+:
+"nl-NL"
+,
+"language"
+:
+"nl"
+}
+]
+}
+List of Storefronts
+Gets a list of all available storefronts from a Merchant
+Authorizations:
+AccessToken
+Responses
+200
+Success
+500
+An internal server error occured
+get
+/storefronts
+/storefronts
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"fallback"
+:
+"string"
+,
+"storefronts"
+:
+[
+{
+"countries"
+:
+[
+"NL"
+,
+"BE"
+]
+,
+"id"
+:
+"nl-NL"
+,
+"language"
+:
+"nl"
+}
+]
+}
+View storefront
+Gets the configuration for a storefront by ID. The country parameter is
+required as Storefront settings can vary depending on the country.
+Specifically in the case of Apple Pay.
+Authorizations:
+AccessToken
+path
+Parameters
+storefront_id
+required
+string
+Storefront identifier
+query
+Parameters
+country
+required
+string
+The country identifer
+Responses
+200
+Success
+404
+Storefront does not exist
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/storefronts/{storefront_id}
+/storefronts/{storefront_id}
+Response samples
+200
+404
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"configuration"
+:
+{
+"address_field_blacklist"
+:
+[
+"string"
+]
+,
+"address_field_order"
+:
+[
+"street"
+,
+"house_number"
+,
+"addition"
+,
+"city"
+,
+"postal_code"
+]
+,
+"analytics"
+:
+[
+{
+"type"
+:
+"string"
+}
+]
+,
+"app_store_id"
+:
+1234567890
+,
+"appearance_attributes_filter"
+:
+[
+"color"
+]
+,
+"apple_pay"
+:
+{
+"capabilities"
+:
+[
+"3ds"
+,
+"emv"
+,
+"debit"
+,
+"credit"
+]
+,
+"country_code"
+:
+"GB"
+,
+"currency_code"
+:
+"GBP"
+,
+"merchant_id"
+:
+"merchant.com.scotchsoda.highstreet.app"
+,
+"networks"
+:
+[
+"amex"
+,
+"discover"
+,
+"mastercard"
+,
+"privatelabel"
+,
+"visa"
+]
+}
+,
+"associated_product_types"
+:
+[
+"related"
+,
+"cross_sell"
+]
+,
+"category_view"
+:
+{
+"column_width_to_screensize_ratio"
+:
+0.6
+,
+"image_aspect_ratio"
+:
+1
+,
+"labels_height"
+:
+65
+}
+,
+"checkout"
+:
+"external"
+,
+"checkout_external"
+:
+false
+,
+"configurable_item_buttons_always_visible"
+:
+true
+,
+"content"
+:
+{
+"terms"
+:
+"
+http://example.com
+"
+}
+,
+"country"
+:
+"st"
+,
+"currency_locale"
+:
+"nl_NL"
+,
+"debug_analytics"
+:
+[
+{
+"type"
+:
+"string"
+}
+]
+,
+"default_address_country"
+:
+"st"
+,
+"event_tracking_host"
+:
+"events-staging.higshtreetapp-services.com:8080"
+,
+"feature_accounts"
+:
+false
+,
+"feature_apple_pay"
+:
+true
+,
+"feature_back_in_stock_notifications"
+:
+false
+,
+"feature_barcode_scanner"
+:
+false
+,
+"feature_favorite_icon_on_product_lists"
+:
+true
+,
+"feature_favorite_syncing"
+:
+true
+,
+"feature_inspirational_layout"
+:
+true
+,
+"feature_loyalty"
+:
+true
+,
+"feature_narrowcasting"
+:
+false
+,
+"feature_order_history"
+:
+false
+,
+"feature_personal_recommendations"
+:
+true
+,
+"feature_store_availability"
+:
+false
+,
+"feature_store_locator"
+:
+false
+,
+"firebase_cloud_messaging"
+:
+{
+"api_key"
+:
+"AIzaSyDTpLUQU9wiG9EsRI5DXRoFY4r6VHPh5"
+,
+"application_id"
+:
+"lolaliza-5d32d"
+,
+"gcm_sender_id"
+:
+332905290874
+}
+,
+"language"
+:
+"en"
+,
+"layout"
+:
+{
+"home_wall"
+:
+{
+"background_color"
+:
+[
+255
+,
+255
+,
+255
+,
+255
+]
+,
+"gutter_size"
+:
+2
+,
+"horizontal_margin"
+:
+0
+,
+"shadow_alpha"
+:
+0
+,
+"tile_corner_radius"
+:
+0
+,
+"vertical_margin"
+:
+2
+}
+,
+"image_gallery"
+:
+{
+"horizontal_margin"
+:
+0
+,
+"vertical_margin"
+:
+0
+,
+"video_content_mode"
+:
+"fit"
+}
+}
+,
+"loyalty"
+:
+{
+"feature_points_balance"
+:
+true
+,
+"feature_vouchers"
+:
+true
+,
+"feature_vouchers_in_cart"
+:
+false
+,
+"usps"
+:
+[
+{
+"description"
+:
+"Very nice point"
+,
+"title"
+:
+"First Unique Selling Point"
+}
+]
+}
+,
+"max_number_of_coupons"
+:
+1
+,
+"name"
+:
+"Elabelz"
+,
+"navigation"
+:
+{
+"tab_items"
+:
+[
+{
+"content"
+:
+{
+"personal"
+:
+true
+,
+"title"
+:
+"string"
+,
+"url"
+:
+"string"
+}
+,
+"icon"
+:
+"string"
+,
+"id"
+:
+"string"
+,
+"title"
+:
+"string"
+,
+"type"
+:
+"string"
+}
+]
+}
+,
+"onboarding_timing"
+:
+{
+"account"
+:
+5
+,
+"loyalty"
+:
+0
+,
+"push"
+:
+3
+}
+,
+"parse_application_id"
+:
+"deprecated"
+,
+"parse_client_id"
+:
+"deprecated"
+,
+"play_store_id"
+:
+"be.bluestores.lolaliza.highstreet.app"
+,
+"prefer_child_product_price"
+:
+true
+,
+"prefer_numeric_availability_info"
+:
+false
+,
+"prefillable_attributes_filter"
+:
+[
+"color_code"
+]
+,
+"price_decimals"
+:
+2
+,
+"root_category"
+:
+"2"
+,
+"search_in_category"
+:
+true
+,
+"sso"
+:
+{
+"account_creation"
+:
+[
+"facebook"
+]
+,
+"account_login"
+:
+[
+"facebook"
+]
+,
+"feature_external_account_creation"
+:
+true
+}
+,
+"user_agent_id"
+:
+"Merchant_Highstreet"
+,
+"website"
+:
+"
+https://www.merchant.com
+"
+}
+,
+"identifier"
+:
+"nl-NL"
+}
+Countries
+Gets the list of countries a storefront covers. For each country some
+address details are provided to help build address forms.
+Available since API version 3.7.
+Authorizations:
+AccessToken
+path
+Parameters
+storefront_id
+required
+string
+Storefront identifier
+Responses
+200
+Ok
+404
+Storefront does not exist
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/storefronts/{storefront_id}/countries
+/storefronts/{storefront_id}/countries
+Response samples
+200
+404
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"countries"
+:
+[
+[
+{
+"address_field_config"
+:
+{
+"blacklist"
+:
+[
+"vat_number"
+,
+"company"
+]
+,
+"order"
+:
+[
+"house_number"
+,
+"street"
+,
+"addition"
+,
+"postal_code"
+,
+"city"
+]
+}
+,
+"code"
+:
+"US"
+,
+"name"
+:
+"United States"
+,
+"states"
+:
+[
+{
+"code"
+:
+"CA"
+,
+"name"
+:
+"California"
+}
+]
+}
+]
+]
+}
+Stores
+Exposes endpoints to find stores in the real world.
+Find nearby stores
+Find stores close to a postal code. It's possible to fetch a list of
+stores filtered by their purpose. Currently the only purpose is "pick up
+in store".
+Pagination
+Demandware does not support filtering stores by attribute. To support
+fetching a filtered list of stores the plan is as follows:
+add a
+start
+query string parameter
+add a
+length
+/
+size
+query string parameter
+add query string parameters for the latitude and longitude
+Response bodies will include a key
+next
+in the response holding a URL
+that clients can use to fetch the next batch of
+length
+stores with the
+middleware making sure unwanted stores are filtered out.
+Most likely we'll also want to avoid fetching the latitude and longitude
+on the next page. The URL in
+next
+can add the longitude and latitude
+to the query string to avoid that.
+Pagination will not be part of the initial implementation.
+The above
+are notes on how this will be implemented.
+Authorizations:
+AccessToken
+query
+Parameters
+address
+string
+A single line address query
+max_distance
+number
+Require stores to be at most
+maximum_distance
+kilometres from the
+reference location. The default value is
+100
+.
+longitude
+number
+The longitude in which to search (overrides address)
+latitude
+number
+The latitude in which to search (overrides address)
+tags
+string
+A comma separated list of tags on which to search a store by
+store_type
+string
+Value
+:
+"pick_up_in_store"
+Limit the stores to a particular type. Omit the parameter to fetch all
+types of stores.
+postal_code
+string
+Postal code.
+DEPRECATED
+use
+address
+.
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+400
+Invalid or missing input parameters
+500
+An internal server error occured
+501
+Endpoint is not implemented for current merchant.
+503
+An error occured when connecting to an upstream service
+get
+/stores
+/stores
+Response samples
+200
+400
+500
+501
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"reference_location"
+:
+{
+"latitude"
+:
+52.0986345
+,
+"longitude"
+:
+5.1251368
+}
+,
+"stores"
+:
+[
+{
+"address"
+:
+{
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"postal_code"
+:
+"3511 KK"
+,
+"street"
+:
+"Choorstraat 7"
+,
+"telephone"
+:
+"00 31 303004120"
+}
+,
+"coordinates"
+:
+{
+"latitude"
+:
+5.1197
+,
+"longitude"
+:
+52.09123
+}
+,
+"distance"
+:
+0.9
+,
+"id"
+:
+"ff5e5f52-d62e-e511-80c8-02bfac10024b"
+,
+"name"
+:
+"Scotch & Soda"
+}
+]
+}
+Find Store by id
+Finds a store by it's id.
+Authorizations:
+AccessToken
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Responses
+200
+OK
+400
+Invalid or missing input parameters
+500
+An internal server error occured
+501
+Endpoint is not implemented for current merchant.
+503
+An error occured when connecting to an upstream service
+get
+/stores/{id}
+/stores/{id}
+Response samples
+200
+400
+500
+501
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"address"
+:
+{
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"postal_code"
+:
+"3511 KK"
+,
+"street"
+:
+"Choorstraat 7"
+,
+"telephone"
+:
+"00 31 303004120"
+}
+,
+"coordinates"
+:
+{
+"latitude"
+:
+5.1197
+,
+"longitude"
+:
+52.09123
+}
+,
+"id"
+:
+"ff5e5f52-d62e-e511-80c8-02bfac10024b"
+,
+"name"
+:
+"Scotch & Soda"
+}
+Visitor
+Information regarding a visitor. These endpoints are used in the personal recommendaions flow.
+Create Visitor ID
+A personal recommendation engine will require a unique identifier for a visitor.
+This identifier will be used in the tracking of events as well as of course for fetching
+product recommendations. The  origin of the unique identifier will be the middleware as it
+will depend on the recommendation platform as to how this identifier is fetched / generated.
+The app should get a visitor identifier from the following endpoint. This identifier should
+then be stored by the app.
+The endpoint expects the user's access token to be present in the Authorization header.
+In the case of a login event the current visitor id should be passed in the request body.
+Depending on the recommendation engine this could be used to sync accounts.
+Authorizations:
+AccessToken
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Authorization
+string
+Access token
+Request Body schema:
+application/json
+visitor_id
+string
+non-empty
+Unique identifier for the visitor
+Responses
+201
+Visitor ID successully created
+401
+Access token is missing, invalid or expired.
+403
+Feature disabled
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+post
+/visitor_id
+/visitor_id
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"visitor_id"
+:
+"string"
+}
+Response samples
+201
+401
+403
+500
+503
+Content type
+application/json
+Copy
+{
+"visitor_id"
+:
+"1234-5678-9012-1234"
+}
+Wall
+The home wall is a collection of rows that are displayed below each other.
+A
+row
+is a grid of blocks. The grid is 12 blocks wide and a variable
+number of blocks tall. The grid is used to place "tiles" on.
+A
+tile
+is a rectangle that displays content and can optionally link to
+another screen in the app (such as a category).
+The position and size of a tile are expressed as numbers:
+[x, y, w, h]
+.
+x
+: the top left corner's X position on the grid
+y
+: the top left corner's Y position on the grid
+w
+: the width of the tile in blocks
+h
+: the height of the tile in blocks
+Content
+There are different types of tiles for different kinds of content:
+An
+img
+tile to display an image
+A
+video
+tile to display a video (since version 3.7)
+A
+look
+tile to display an image from a lookbook, including the hotspots
+(since version 3.8).
+A
+product_list
+tile to display a list of products. The products to
+display are described by the
+content
+key.
+Tiles can be linked to a
+resource
+. A resource is another screen in the
+app. When a customer taps on a tile that is linked to a resource the app
+opens that screen. There are different types of resources:
+The
+category
+type links a tile a specific category
+The
+product
+type links a tile to a specific product
+The
+lookbook
+type links a tile to a specific lookbook
+The
+lookbook_look
+type links a tile a specific look
+within
+a specific
+lookbook
+The
+url
+type links a tile to webpage in the in-app browser
+The
+contentextension
+type links a tile to a webpage opened as if it is
+native content (available since version 3.6)
+Configuration
+The look and feel of the home wall can be controlled remotely. The following
+aspects can be configured:
+The background color
+The distance between tiles in a grid (the "gutter size")
+The distance between the top and bottom of rows (the "horizontal margin")
+The distance between the rows and the edges of the screen (the "vertical
+margin")
+The corner radius of the tiles
+The amount of shadow a tile has
+TODO
+Gutter size: does the gutter size on get storefronts take precedence?
+What is the
+meta
+field for resources? Does the app use it? What fields
+does it hold?
+Home
+Fetches the home wall
+Authorizations:
+AccessToken
+Responses
+200
+OK
+get
+/wall
+/wall
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"gutter_size"
+:
+2
+,
+"rows"
+:
+[
+{
+"config"
+:
+{
+"height"
+:
+3
+}
+,
+"tiles"
+:
+[
+{
+"content"
+:
+{
+"parallax"
+:
+true
+,
+"url"
+:
+"
+https://content.highstreet-static.com/38388293.jpg
+"
+}
+,
+"id"
+:
+"1"
+,
+"rect"
+:
+[
+0
+,
+0
+,
+12
+,
+3
+]
+,
+"resource"
+:
+{
+"id"
+:
+"sale"
+,
+"type"
+:
+"category"
+}
+,
+"type"
+:
+"img"
+}
+]
+,
+"type"
+:
+"grid"
+}
+,
+{
+"config"
+:
+{
+"height"
+:
+12
+}
+,
+"tiles"
+:
+[
+{
+"content"
+:
+{
+"url"
+:
+"
+https://content.highstreet-static.com/3883627882.jpg
+"
+}
+,
+"id"
+:
+"2"
+,
+"rect"
+:
+[
+0
+,
+0
+,
+6
+,
+6
+]
+,
+"resource"
+:
+{
+"id"
+:
+"sale-women"
+,
+"title"
+:
+"Women"
+,
+"type"
+:
+"category"
+}
+,
+"type"
+:
+"img"
+}
+,
+{
+"content"
+:
+{
+"url"
+:
+"
+https://content.highstreet-static.com/883663272.jpg
+"
+}
+,
+"id"
+:
+"3"
+,
+"rect"
+:
+[
+0
+,
+6
+,
+6
+,
+6
+]
+,
+"resource"
+:
+{
+"id"
+:
+"sale-men"
+,
+"title"
+:
+"Men"
+,
+"type"
+:
+"category"
+}
+,
+"type"
+:
+"img"
+}
+,
+{
+"content"
+:
+{
+"url"
+:
+"
+https://content.highstreet-static.com/3783992673.jpg
+"
+}
+,
+"id"
+:
+"4"
+,
+"rect"
+:
+[
+6
+,
+0
+,
+6
+,
+12
+]
+,
+"resource"
+:
+{
+"id"
+:
+"sale-kids"
+,
+"title"
+:
+"Kids"
+,
+"type"
+:
+"category"
+}
+,
+"type"
+:
+"img"
+}
+]
+,
+"type"
+:
+"grid"
+}
+,
+{
+"config"
+:
+{
+"height"
+:
+12
+}
+,
+"tiles"
+:
+[
+{
+"content"
+:
+{
+"placeholder"
+:
+"
+https://studio.highstreet-static.com/73773182.jpg
+"
+,
+"videos"
+:
+{
+"mp4_360"
+:
+"
+https://studio.highstreet-static.com/v/00037362-360.mp4
+"
+,
+"mp4_480"
+:
+"
+https://studio.highstreet-static.com/v/00037362-480.mp4
+"
+,
+"mp4_720"
+:
+"
+https://studio.highstreet-static.com/v/00037362-720.mp4
+"
+}
+}
+,
+"id"
+:
+"5"
+,
+"rect"
+:
+[
+0
+,
+0
+,
+12
+,
+12
+]
+,
+"type"
+:
+"video"
+}
+]
+,
+"type"
+:
+"grid"
+}
+,
+{
+"config"
+:
+{
+"height"
+:
+12
+}
+,
+"tiles"
+:
+[
+{
+"content"
+:
+{
+"hotspots"
+:
+[
+{
+"position"
+:
+{
+"x"
+:
+0.75
+,
+"y"
+:
+0.23
+}
+,
+"product_slots"
+:
+[
+{
+"products"
+:
+[
+"118842"
+]
+}
+,
+{
+"products"
+:
+[
+"832362"
+]
+}
+]
+}
+]
+,
+"image"
+:
+"
+https://studio.highstreet-static.com/7763465238.jpg
+"
+,
+"look"
+:
+32
+,
+"lookbook"
+:
+19
+}
+,
+"id"
+:
+"6"
+,
+"rect"
+:
+[
+0
+,
+0
+,
+4
+,
+6
+]
+,
+"type"
+:
+"look"
+}
+,
+{
+"content"
+:
+{
+"parallax"
+:
+false
+,
+"url"
+:
+"
+https://studio.highstreet-static.com/55277811.jpg
+"
+}
+,
+"id"
+:
+"7"
+,
+"rect"
+:
+[
+4
+,
+0
+,
+4
+,
+6
+]
+,
+"type"
+:
+"img"
+}
+,
+{
+"content"
+:
+{
+"parallax"
+:
+false
+,
+"url"
+:
+"
+https://studio.highstreet-static.com/88466283.jpg
+"
+}
+,
+"id"
+:
+"8"
+,
+"rect"
+:
+[
+8
+,
+0
+,
+4
+,
+6
+]
+,
+"type"
+:
+"look"
+}
+]
+,
+"type"
+:
+"grid"
+}
+]
+}
+Wishlists
+Wishlists are lists of products that registered customers can maintain. They
+can be used to implement, for example, favorites or gift registries.
+Fetch wishlist
+Authorizations:
+AccessToken
+path
+Parameters
+id
+required
+string
+Unique identifier of the wishlist
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Authorization
+required
+string
+Access token
+Responses
+200
+Success
+401
+Access token is missing, invalid or expired.
+404
+Wishlist doesn't exist
+get
+/wishlists/{id}
+/wishlists/{id}
+Response samples
+200
+401
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"item_count"
+:
+1
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"product"
+:
+{
+"available"
+:
+true
+,
+"caption"
+:
+"Summer collection"
+,
+"custom_attributes"
+:
+[
+{
+"id"
+:
+"product_type"
+,
+"name"
+:
+"Product Soort"
+,
+"value"
+:
+"Sweater"
+}
+]
+,
+"id"
+:
+"1234"
+,
+"labels"
+:
+[
+{
+"id"
+:
+"sale"
+}
+]
+,
+"media_item"
+:
+{
+"type"
+:
+"img"
+,
+"url"
+:
+"
+https://img.com/blue-sweater-front.jpg
+"
+}
+,
+"name"
+:
+"Sweater"
+,
+"pricing"
+:
+{
+"effective"
+:
+19.95
+,
+"original"
+:
+24.95
+}
+,
+"sku"
+:
+"1234"
+}
+}
+]
+}
+Add wishlist item
+Adds a product to a wishlist. The items is added at the end of the
+existing wishlist.
+Authorizations:
+AccessToken
+path
+Parameters
+id
+required
+string
+Unique identifier of the wishlist
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+Wishlist item
+item
+required
+object
+Item to add to the wishlist
+product_id
+required
+string
+The ID of the product to add to the wishlist
+Responses
+201
+Success
+401
+Access token is missing, invalid or expired.
+404
+Wishlist doesn't exist
+422
+Invalid request
+post
+/wishlists/{id}/items
+/wishlists/{id}/items
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"item"
+:
+{
+"product_id"
+:
+"1234_AB/S"
+}
+}
+Response samples
+401
+404
+422
+Content type
+application/json
+Copy
+{
+"code"
+:
+"invalid"
+,
+"message"
+:
+"invalid or expired token"
+}
+Delete wishlist item
+Delete an item from a wishlist. If the item doesn't exist on the server
+the operations is treated as a success.
+Authorizations:
+AccessToken
+path
+Parameters
+id
+required
+string
+Unique identifier of the wishlist
+item_id
+required
+string
+Unique identifier of an item on a wishlist
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Authorization
+required
+string
+Access token
+Responses
+204
+Success
+401
+Access token is missing, invalid or expired.
+404
+Wishlist doesn't exist
+delete
+/wishlists/{id}/items/{item_id}
+/wishlists/{id}/items/{item_id}
+Response samples
+401
+404
+Content type
+application/json
+Copy
+{
+"code"
+:
+"invalid"
+,
+"message"
+:
+"invalid or expired token"
+}
+Changelog
+4.0 - 2020-08-19
+Added
+Introduce
+promotions
+into the CartItem and ProductResult.
+4.0 - 2019-08-02
+Added
+Introduce
+events_tracking_host
+and
+feature_personal_recommendations
+to
+the storefront config. Available on all API versions.
+4.0 - 2019-07-19
+Added
+Introduce
+max_number_of_coupons
+to the storefront config. Available on
+all API versions.
+4.0 - 2019-07-11
+Added
+Introduce the error code
+item_id_changed
+for
+cart_item_error
+.
+4.0 - 2019-04-11
+Changed
+GET /wall
+: add the tile type
+product_list
+.
+Added
+Introduce
+GET /featured_products/{id}
+endpoint.
+Introduce
+POST /visitor_id
+endpoint.
+Introduce
+POST /jobs/reindex-categories
+endpoint. Available on all API
+versions.
+3.9 - 2018-06-13
+Changed
+GET /stores
+: deprecate
+postal_code
+parameter in favour of
+address
+.
+3.9 - 2018-06-19
+Added
+Introduce
+membership_level
+on
+GET /account/loyalty
+3.9 - 2018-05-09
+Added
+Introduce
+POST /cookies
+endpoint.
+Introduce
+GET /auth/{provider}
+endpoint.
+Changed
+POST /token
+: support the grant type
+authorization_code
+.
+GET /contentpages
+: add the personal, show_guest, show_registered_user and icon properties.
+3.8 - 2018-04-11
+Added
+GET /wall
+: introduce tiles of type 'look'.
+3.7 - 2018-02-13
+Changed
+GET /storefront
+: deprecate
+checkout_external
+in favor of
+checkout
+.
+GET /wall
+: introduce tiles of type
+video
+.
+Example
+{
+"rect"
+:
+[
+0
+,
+0
+,
+12
+,
+12
+]
+,
+"content"
+:
+{
+"videos"
+:
+{
+"mp4_720"
+:
+"http://highstreet.video.staging.com.global.prod.fastly.net/scotch-uk/walls/video/ilq366NPW-e8iNc08ZjWtg/video/generic_720"
+,
+"mp4_480"
+:
+"http://highstreet.video.staging.com.global.prod.fastly.net/scotch-uk/walls/video/ilq366NPW-e8iNc08ZjWtg/video/generic_480"
+,
+"mp4_360"
+:
+"http://highstreet.video.staging.com.global.prod.fastly.net/scotch-uk/walls/video/ilq366NPW-e8iNc08ZjWtg/video/generic_360"
+}
+,
+"placeholder"
+:
+"http://cms-staging-highstreetapp.imgix.net/scotch-uk/walls/video/ilq366NPW-e8iNc08ZjWtg/placeholder?fit=crop\u0026fm=jpg\u0026q=50"
+}
+,
+"type"
+:
+"video"
+,
+"resource"
+:
+{
+"type"
+:
+"category"
+,
+"id"
+:
+"5"
+}
+}
+3.6 - 2017-09-06
+Added
+GET /wall
+: introduce tiles of type 'contextextension'.
+Example
+{
+"rect"
+:
+[
+0
+,
+0
+,
+12
+,
+12
+]
+,
+"content"
+:
+{
+"url"
+:
+"http://cms-staging-highstreetapp.imgix.net/scotch-uk/promotions/4GNKm7WosspYSgVdYbVf6Q_source?fit=crop\u0026fm=jpg\u0026q=50"
+,
+"parallax"
+:
+true
+}
+,
+"type"
+:
+"img"
+,
+"resource"
+:
+{
+"type"
+:
+"contentextension"
+,
+"title"
+:
+"Stories"
+,
+"url"
+:
+"https://www.scotch-soda.com/nl/nl/FW17-ABLAUNCH.html"
+}
+}
+Orders
+Order Summary
+Lists all orders in summary format
+Authorizations:
+AccessToken
+query
+Parameters
+status
+string
+Value
+:
+"ready_for_pick_up_in_store"
+Filter orders by their status
+store_id
+string
+Filter orders by store they were placed in or can be picked up in
+header
+Parameters
+X-Selected-Storefront
+required
+string
+Identifier of the selected storefront
+Authorization
+required
+string
+Access token
+Responses
+200
+success
+401
+Access token is missing, invalid or expired.
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/orders
+/orders
+Response samples
+200
+401
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"next_cursor"
+:
+0
+,
+"orders"
+:
+[
+{
+"barcode"
+:
+{
+"type"
+:
+"code128"
+,
+"value"
+:
+"100302107016259158"
+}
+,
+"creation_date"
+:
+1500460060
+,
+"id"
+:
+"PNZfEiFcNM"
+,
+"items"
+:
+[
+{
+"full_price"
+:
+19.99
+,
+"product_id"
+:
+"1234_001-M"
+,
+"product_image"
+:
+"
+https://images.com/basic-tshirt.jpg
+"
+,
+"product_name"
+:
+"Basic T-Shirt"
+,
+"quantity"
+:
+2
+}
+]
+,
+"number"
+:
+"EU000027546"
+,
+"status"
+:
+"cancelled"
+}
+]
+}
+Order Detail
+Shows a single order in detail
+Authorizations:
+AccessToken
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+200
+OK
+401
+Access token is missing, invalid or expired.
+500
+An internal server error occured
+503
+An error occured when connecting to an upstream service
+get
+/orders/{id}
+/orders/{id}
+Response samples
+200
+401
+500
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"barcode"
+:
+{
+"type"
+:
+"code128"
+,
+"value"
+:
+"100302107016259158"
+}
+,
+"billing_address"
+:
+{
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"first_name"
+:
+"App"
+,
+"house_number"
+:
+"154"
+,
+"last_name"
+:
+"Tester"
+,
+"postal_code"
+:
+"3514 AZ"
+,
+"street"
+:
+"Hooghiemstraplein"
+,
+"telephone"
+:
+"030-2769165"
+}
+,
+"creation_date"
+:
+1500460060
+,
+"currency_code"
+:
+"EUR"
+,
+"id"
+:
+"PNZfEiFcNM"
+,
+"items"
+:
+[
+{
+"full_price"
+:
+19.99
+,
+"product_id"
+:
+"1234_001-M"
+,
+"product_image"
+:
+"
+https://images.com/basic-tshirt.jpg
+"
+,
+"product_name"
+:
+"Basic T-Shirt"
+,
+"quantity"
+:
+2
+}
+]
+,
+"number"
+:
+"EU000027546"
+,
+"payments"
+:
+[
+{
+"amount"
+:
+19.99
+,
+"method_name"
+:
+"iDeal (ING)"
+,
+"status"
+:
+"paid"
+}
+]
+,
+"prices_include_tax"
+:
+true
+,
+"shipments"
+:
+[
+{
+"address"
+:
+{
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"first_name"
+:
+"App"
+,
+"house_number"
+:
+"154"
+,
+"last_name"
+:
+"Tester"
+,
+"postal_code"
+:
+"3514 AZ"
+,
+"street"
+:
+"Hooghiemstraplein"
+,
+"telephone"
+:
+"030-2769165"
+}
+,
+"method_name"
+:
+"UPS Ground Shipping"
+,
+"status"
+:
+"shipped"
+}
+]
+,
+"source"
+:
+"app"
+,
+"status"
+:
+"cancelled"
+,
+"totals"
+:
+{
+"discount"
+:
+19.99
+,
+"grand_total"
+:
+21.94
+,
+"shipping"
+:
+1.95
+,
+"sub_total"
+:
+19.99
+,
+"tax"
+:
+0
+}
+}
+Previous
+Import Data API
+Next
+Events API
+Copyright © 2025 NewStore, Inc.

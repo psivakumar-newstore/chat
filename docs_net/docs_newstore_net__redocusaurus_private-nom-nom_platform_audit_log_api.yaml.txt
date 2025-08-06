@@ -1,0 +1,178 @@
+openapi: 3.0.1
+info:
+  title: Audit Log API
+  version: '2022-11-16T09:42:10Z'
+  description: API for the audit log service
+  license:
+    name: Private License
+    url: https://newstore.com
+servers:
+  - url: >-
+      https://a5wu1vqyth-vpce-07318ba140d0f33b9.execute-api.us-east-1.amazonaws.com/{basePath}
+    description: Production environment
+    variables:
+      basePath:
+        default: /production
+    x-amazon-apigateway-endpoint-configuration:
+      vpcEndpointIds:
+        - vpce-07318ba140d0f33b9
+  - url: >-
+      https://507t4967dl-vpce-03ab5a25bdddf6f73.execute-api.us-east-1.amazonaws.com/{basePath}
+    description: Staging environment
+    variables:
+      basePath:
+        default: /staging
+    x-amazon-apigateway-endpoint-configuration:
+      vpcEndpointIds:
+        - vpce-03ab5a25bdddf6f73
+paths:
+  /logs:
+    post:
+      summary: Create a new audit log
+      description: Create a new audit log
+      operationId: createLog
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+        - name: X-Amz-Target
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditLogRequest'
+        required: true
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empty'
+        '400':
+          description: 400 Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empty'
+      x-amazon-apigateway-request-validator: AuditLogRequestValidator
+      x-amazon-apigateway-integration:
+        type: aws
+        credentials: >-
+          arn:aws:iam::295774135412:role/audit-log/audit-log-ApiGatewayEventBridgeRole-10PE8XBB4JX2Y
+        httpMethod: POST
+        uri: arn:aws:apigateway:us-east-1:events:action/PutEvents
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates:
+              application/json: |-
+                #set($inputRoot = $input.path('$'))
+                {
+                }
+        requestTemplates:
+          application/json: >-
+            #set($context.requestOverride.header.X-Amz-Target =
+            "AWSEvents.PutEvents")
+
+            #set($context.requestOverride.header.Content-Type =
+            "application/x-amz-json-1.1")            
+
+            #set($input = $input.json('$')) 
+
+            { 
+              "Entries": [
+                {
+                  "Detail": "$util.escapeJavaScript($input).replaceAll("\\'","'")",
+                  "DetailType": "Audit log event",
+                  "EventBusName": "audit_log",
+                  "Source":"com.newstore.twp.audit_log"
+                }
+              ]
+            }
+        passthroughBehavior: when_no_templates
+components:
+  schemas:
+    Empty:
+      title: Empty Schema
+      type: object
+    AuditLogRequest:
+      title: AuditLogEvent
+      required:
+        - action
+        - domain
+        - event_name
+        - occurred_on
+        - owner
+        - payload
+        - system
+        - target
+        - tenant
+      type: object
+      properties:
+        owner:
+          type: string
+          description: The username, uuid, API token name of the account taking the action.
+        metadata:
+          type: object
+          description: The metadata that is associated with the event.
+        event_id:
+          type: string
+          description: >-
+            Correlation Id for the event that can be used to filter down to
+            similar events.
+        system:
+          type: string
+          description: >-
+            The fully qualified service name(com.newstore.
+.
+).
+        occurred_on:
+          type: string
+          description: The server time when the event happened.
+        action_type:
+          type: string
+          description: The corresponding 'C' 'R' 'U' 'D' category.
+        payload:
+          type: object
+          description: The new state of the target.
+        domain:
+          type: string
+          description: >-
+            The domain or bounded context that the actor is a member
+            of(mobile-platform, order-management, web-platform).
+        action:
+          type: string
+          description: >-
+            The way in which the object was changed (the verb). E.g.
+            config.tenant.update / template.update
+        event_name:
+          type: string
+          description: >-
+            Common name or description of the event. E.g. Associate App tenant
+            configuration has been updated / template
+was updated
+        tenant:
+          type: string
+          description: The tenant name.
+        target:
+          type: string
+          description: The object or underlying resource that is being changed.
+x-amazon-apigateway-policy:
+  Version: '2012-10-17'
+  Statement:
+    - Effect: Allow
+      Principal: '*'
+      Action: execute-api:Invoke
+      Resource: arn:aws:execute-api:us-east-1:295774135412:a5wu1vqyth/*
+      Condition:
+        StringEquals:
+          aws:sourceVpce: vpce-07318ba140d0f33b9
+x-amazon-apigateway-request-validators:
+  AuditLogRequestValidator:
+    validateRequestParameters: false
+    validateRequestBody: true

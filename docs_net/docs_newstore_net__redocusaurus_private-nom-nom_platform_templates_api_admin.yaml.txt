@@ -1,0 +1,85 @@
+openapi: 3.0.0
+info:
+  title: Templates Admin API
+  version: v0
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+paths:
+  /templates/templates/{template}/render:
+    post:
+      responses:
+        '200':
+          description: The rendered template
+        '400':
+          description: Missing input parameters
+        '404':
+          description: No template with the requested name exists
+        '500':
+          description: Error while rendering the template
+      description: >
+        Renders an existing template with the provided data and returns the
+        output.
+
+        Use this method to test the ``render_template`` RPC procedure during
+        development.
+      operationId: Preview_template
+      summary: Preview_template
+      requestBody:
+        content:
+          application/json:
+            example:
+              template_id: packing_slip
+              data:
+                name_var: John Doe
+                phonenum_var: 202-555-0109
+              locale: en_US
+              content_type: html
+            schema:
+              title: Render a template
+              required:
+                - template_id
+                - data
+              description: Request for rendering a template.
+              type: object
+              properties:
+                template_id:
+                  description: The id of the template.
+                  type: string
+                data:
+                  description: The data to feed to the template.
+                  type: object
+                locale:
+                  description: >-
+                    The locale used to select the template according to language
+                    and region. Example: en_DE, de_DE, english, EN etc.
+                  type: string
+                content_type:
+                  default: text
+                  description: The format of the generated content.
+                  enum:
+                    - html
+                    - text
+                    - pdf
+                  type: string
+        required: true
+    parameters:
+      - name: template
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The ID of the template. To retrieve the ID, use the
+
+          [List templates
+          method](/newstore-cloud/newstore.html#/templates-list-templates).
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}

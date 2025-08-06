@@ -1,0 +1,393 @@
+Setting up NewStore Checkout with Adyen Pay By Link
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Setting up NewStore Checkout with Adyen Pay By Link
+Updated on
+Dec 27, 2024
+Published on Oct 1, 2024
+11 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+To configure and activate
+NewStore Checkout
+, you have to work jointly with NewStore and Adyen.
+Important
+Before proceeding, ensure that you have set up the
+Core Adyen integration
+prior to configuring NewStore Checkout, and build this integration as an additional measure.
+NewStore Checkout uses the merchant accounts and store mapping from
+Additional settings to process payments with Adyen terminals
+.
+When these integrations are ready, start setting up the NewStore Checkout configuration.
+Overview
+The NewStore platform leverages NewStore Checkout to allow customers to pay for in-store transactions or for items bought via remote selling or clienteling transactions. NewStore Checkout enables retailers to accept payments via an integration with the Adyen's
+Pay By Link
+feature. Customers can use their phones or digital devices to pay for orders instead of relying on the store's payment device. Associate App displays a QR code that customers can scan to begin the payment process.
+Retailers must also have NewStore Checkout configured to enable payment during remote selling or clienteling operations. Customers who buy items via remote selling or clienteling transactions are redirected to a payment page URL on their device (digital, laptop, or PC) where they can complete the payment process.
+When using NewStore Checkout, note that these payment transactions are handled within the Adyen system as
+CARD-NOT-PRESENT
+transactions and follow an eCommerce flow within Adyen, and are. stored within the Adyen customer area as
+eCommerce transactions
+. However, they are also displayed in the
+Merchants POS
+account section and are attributed to the specific store location from where the transaction has originated.
+Remote payment links introduce a certain level of risk around payment fraud, similar to eCommerce transactions. For remote selling and clienteling transactions, the customer is not physically present with the associate, which means there is a higher risk for payment fraud. NewStore recommends that you work with your Adyen account manager to properly set up and configure
+Adyen Pay by Link
+and
+Risk
+settings within the
+Customer Area
+, and use risk management tools such as such as AVS (address verification service) and other fraud checks.
+Important
+NewStore recommends that you enable these options in Adyen when using NewStore Checkout with
+Adyen Pay By Link
+:
+AVS (Address Verification System)
+- This requires the customer to enter the billing address associated with the credit card being used for payment, if
+Credit Card
+is enabled as a payment method.
+NewStore does not mandate associates to capture billing address information from customers in Associate App. The app only needs a shipping address to ship an item. NewStore sends the shipping address for each transaction to Adyen, which can then be used for AVS verification if this is enabled.
+Name on Card
+- This requires the customer to enter the name as it appears on the credit card when
+Credit Card
+is selected as a payment method.
+Note
+Discuss additional fraud and risk settings for Adyen Pay by Link with Adyen directly.
+Getting Started
+NewStore Checkout enables store associates to offer customers an innovative payment method where the customer can pay via their phone with wallets generally available for e-commerce. This includes Apple Pay, Google Pay, PayPal and Direct card.
+To configure NewStore Checkout you have to work jointly with NewStore and Adyen. It is important that the configuration on NewStore and Adyen side are aligned to avoid payment errors.
+Contact Adyen support to ensure that the POS merchant account can accept both of the following shopper interactions:
+e-commerce
+POS
+To contact Adyen and speed up the processing of your request, use the following template.
+Note
+If you rely on Adyen's support portal to contact them, select:
+Issue type
+:
+I have an Adyen merchant account
+Type of inquiry
+:
+Technical
+Subject
+:
+Reference the Merchant Account in the Subject Field
+Dear Adyen Support:
+
+This support request relates to a NewStore Checkout integration. With this type of
+integration a POS account is used to perform eCommerce transactions using the Adyen Pay
+By Link capabilities and the Adyen Checkout API.
+
+Our POS Merchant Account needs to be configured to accept eCommerce processing.
+
+Each payment method that is configured needs to be activated as eCom and it should be
+generically available for all stores of the account.
+
+Integrator: NewStore
+
+Feature: NewStore Checkout and Adyen Pay By Link
+
+MerchantAccount: <INSERT THE MERCHANT ACCOUNT HERE>
+
+<for troubleshooting requests you can also include payloads>
+Within the
+Adyen Customer Area
+, ensure your Adyen web service user has the
+Merchant Recurring role
+and the
+Checkout webservice role
+settings activated so that NewStore Checkout can also perform transactions using the same merchant account.
+Important
+Both roles are required in order to activate NewStore Checkout.
+Note
+To set up the corresponding credentials, see
+Configuring the Adyen API credentials
+.
+Ensure that the default capture delay (in addition to the POS capture delay) for this merchant account is set consistently with your Adyen integration.
+Send the web service user credentials to your contact point at NewStore and request NewStore Checkout activation.
+Important
+Copy the full web service username, it should look like
+ws_<12345>@Company.newstore
+. See
+Configuring NewStore Checkout in the platform
+.
+Configuring NewStore Checkout in the platform
+The following configuration activates the NewStore Checkout integration with Adyen.
+Ensure that you have set up the corresponding credentials for Adyen. See
+Configuring the Adyen API credentials
+.
+Retrieve the current Adyen configuration using the
+Get PSP Adyen configuration
+method.
+Specify the following values for the
+checkout_api
+property:
+Feature/Property
+Configuration setting
+base_url
+the Adyen payment processing API base URL. In a
+test
+environment this URL should be set to
+https://checkout-test.adyen.com/v53
+. In a
+live
+environment a unique URL is provided to every retailer. The live URL will have the following structure:
+<https://{random}-{company name}-checkout-live.adyenpayments.com/checkout/v53>
+<https://8abc203-retailer-checkout-live.adyenpayments.com/checkout/v53>
+Information about finding the live Adyen endpoint is available on the
+Adyen support portal.
+Ensure that the base version of the URL is v53 or higher.
+environment
+Determines if the payment processing is happening in a production or test environment.
+Apply the updated configuration using the
+Update PSP Adyen configuration
+method.
+Complete the NewStore configuration by adding the
+NewStore Checkout
+payment option to store configurations.
+Use
+Update payment options configuration
+method.
+Add
+adyen_pay_by_link
+in
+payment_options
+for each of the stores that will use NewStore Checkout.
+While you can also add NewStore Checkout on a global level, setting this up at a store level allows for better control and fraud prevention in your stores. Stores that do not have
+adyen_pay_by_link
+set in
+payment_options
+will not be able to use NewStore Checkout.
+NewStore Checkout is now enabled.
+Completing the NewStore Checkout configuration in Adyen
+After you have set up and configured NewStore Checkout in the platform, access the
+Adyen Customer Area
+and navigate to the
+Adyen Pay by Link
+section within the
+Merchant account
+that will use NewStore Checkout with Adyen Pay by Link.
+Note
+This section describes setting up NewStore Checkout options in Adyen. For detailed steps or more information on this process, see the official
+Adyen documentation for Pay By Link
+.
+Select
+Themes
+and create a custom theme for the Adyen Pay By Link payment page. You can specify a display name, a company logo, a background image, and the background color for the payment page that will be sent to the customer during the payment process.
+Save this as the default theme, which will then be used for all Newstore Checkout transactions in Associate App.
+Go to
+Settings
+in your Adyen account and complete the following configuration steps:
+Legal
+: Specify the URL for the T&Cs that govern Shopper acceptance for using Adyen Pay by Link. The Merchant account MUST mandatorily provide this to use Adyen Pay By Link.
+eMail
+- Enter the email address for the merchant account where notifications will be sent when a Adyen Pay by Link payment link is created manually.
+Credit card settings
+:
+Name on Card
+- Ensure that you enable this option if you will use Adyen Fraud and Risk management tools. This ensures that the cardholder's name is sent to Adyen for all Pay By link purchases. NewStore recommends that you enable this setting for ALL use cases to ensure fraud prevention.
+AVS (Address Verification Service)
+- Ensure that you enable this option if you will use Adyen Fraud and Risk management tools. This ensures that the customer provides their billing address when performing a Pay by Link purchase. NewStore recommends that you enable this setting for ALL use cases to ensure fraud prevention.
+Enable Gift Cards
+-
+Not
+supported by NewStore. This option MUST be disabled.
+Installments Rules
+-
+Not
+supported by NewStore. This option MUST be disabled.
+Tokenization
+:
+Not
+supported by NewStore. This option MUST be disabled.
+Configure Payment Methods in Adyen Customer Area:
+NewStore Checkout can support multiple payment methods that are available within Adyen. When using NewStore Checkout with Adyen Pay by Link, additional payment methods may be made available on the payment pages.  When configuring payment methods within Adyen, Merchants should consult with their Adyen account rep to understand how payment methods are displayed within the payment page based on where the payment methods are defined (at the store level or the merchant level).
+Note
+NewStore merchants who are using earlier versions of NewStore Checkout (via the web-drop in) and want to migrate to Pay by Link
+must open a support ticket with Adyen
+to delete the Apple Pay payment method for the Merchant Account that is intended to use the updated version of NewStore Checkout.
+Add Apple Pay as a payment method again with the updated configuration
+after
+the existing Apple Pay configurations have been deleted from the Merchant account.
+Any payment methods defined at the store level will
+ALWAYS
+be available via the NewStore Checkout and Adyen Pay by Link payment pages. For example, even if a retailer does not want to offer credit cards as a payment option via NewStore Checkout, specific credit card payment methods will still be available to customers in the app if they have already been assigned to a specific store.
+For
+production
+environments, in the Adyen Customer area, go to
+Settings
+>
+Payment Methods
+:
+Add Apple Pay as a payment method for each store where NewStore Checkout will be supported. Enter the FQDN as
+https://eu.adyen.link
+within the prompt.
+This defaults as the FQDN for all Pay By Link pages for Apple Pay.
+Add Google Pay as a payment method. Enter the FQDN as
+https://eu.adyen.link
+to your Google Payments Console configuration.
+Add PayPal as a payment method for each store where NewStore Checkout will be supported. When prompted, specify the required information to complete the PayPal configuration.
+For
+staging
+environments, in the Adyen Customer area, go to
+Settings
+>
+Payment Methods
+:
+Add Apple Pay as a payment method for each store where NewStore Checkout will be supported. Enter the FQDN as
+https://TEST.adyen.link
+within the prompt.
+This defaults as the FQDN for all Pay By Link pages for Apple Pay.
+Add Google Pay as a payment method. Enter the FQDN as
+https://TEST.adyen.link
+to your Google Payments Console configuration.
+Add PayPal as a payment method for each store where NewStore Checkout will be supported. When prompted, specify the required information to complete the PayPal configuration.
+Important
+NewStore and Adyen recommend
+NOT
+to use alternative payment methods that allow payments in installments. These methods can introduce significant delays in receiving payment confirmation and processing payment requests, causing them to fail.
+In the Adyen Customer Area, go to
+Settings
+>
+Checkout Settings
+:
+Select each country where there is a physical store that will offer NewStore Checkout and Adyen Pay by Link.
+Select the appropriate payment and checkout configuration options to be displayed to customers. When using NewStore Checkout as an in-store payment method for remote selling opportunities (where a payment link is sent to shoppers remotely, either via text message or email), the Adyen Pay by Link payment pages use the
+Store Country Code
+to control which payment methods are displayed to customers on the payment page.
+ALL RETAILERS USING NEWSTORE CLIENTELING
+will display
+all available payment methods
+configured for the Merchant Account for the store within Adyen.
+When sharing a remote cart via clienteling messages, customers in your business will see and be able to select any payment methods that are available within the Adyen merchant account configuration. This may actually be more than what is displayed if you are using the
+Country Code
+to control visibility of payment methods.
+Note
+Any payment methods defined at the store level are
+ALWAYS
+displayed to the customer, even if the payment method has been moved to the
+Other Configured Payment Options
+section.
+To learn how to use the payment methods in Associate App, see
+Choosing a payment option
+.
+Configuring Associate App to add NewStore Checkout as a payment method
+You have to configure NewStore Checkout in NewStore Associate App.
+Configuring options to share the NewStore Checkout link via the app
+If enabled for your business, you can use NewStore Checkout to receive payments for orders in NewStore Associate App. When enabled, the payment options include a
+Customer Phone
+button, which you can tap and send a link to the customer to initiate payment.
+You can also configure NewStore Checkout to provide associates with different options to send a link for payment, when the associate taps
+Customer Phone
+>
+Send Checkout Link
+button in NewStore Associate App.
+You can configure the following options to send a payment link to the customer using NewStore Checkout:
+Use the
+Update app configuration
+method.
+In
+customizations
+>
+newstore_checkout_button_share_configuration
+specify the list of options as an array, containing any of the following options:
+EMAIL
+: Allows an associate to send the link via an email.
+SMS
+: Allows an associate to send the link to the customer via an SMS
+CLIPBOARD
+: Allows an associate to copy the NewStore Checkout link to the phone's keyboard, which can be shared with the customer later.
+Important
+If you specify only 1 value, NewStore Associate App uses it as the default option when an associate taps
+Customer Phone
+>
+Send Checkout Link
+.
+After this configuration is enabled, a
+Send Checkout Link
+button is displayed in the
+Customer phone
+screen, which when tapped, displays the list of configured options to share the payment link.
+Configuring NewStore Checkout in Associate App
+You can enable NewStore Associate App to display NewStore Checkout as one of the options for payment, and also configure how associates will share the NewStore Checkout link with customers.
+Note
+To understand how to pay via NewStore Checkout in Associate App, see
+Choosing a payment option
+.
+Was this article helpful?
+Yes
+No
+Tags
+Adyen
+api
+Associate App
+Associate App configuration
+integration
+NewStore checkout
+payment
+payment device
+payment options
+platform
+store associate
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

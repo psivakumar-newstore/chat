@@ -1,0 +1,2839 @@
+Taxes Configuration API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Configuration APIs
+Inventory and fulfillment
+Fulfillment requests
+Order management
+Checkout
+Payment
+NOM and app
+Fiscalization and taxes
+Taxes Configuration API
+Promotions
+Webhooks
+New Generation APIs
+Definitions
+Store tax configuration
+post
+Create tax configuration for a store
+get
+List store tax configurations
+get
+Get tax configuration of a store
+patch
+Partially update tax configuration of a store
+del
+Delete tax configuration of a store
+Tenant tax configuration
+post
+Create tax configuration
+get
+Get tax configuration
+patch
+Partially update tax configuration
+API docs by Redocly
+Taxes Configuration API
+(
+1.0.0
+)
+Download OpenAPI specification
+:
+Download
+Use this API to set tenant/store level tax configuration.
+Definitions
+Tax related definitions that can impact your calculations.
+Store tax configuration
+Set up tax calculation configuration for specific stores in your business.
+Create tax configuration for a store
+Create tax calculation configuration for the given store identifier.
+Authorizations:
+newStoreAccessToken
+header
+Parameters
+x-request-id
+string
+Request identifier.
+Request Body schema:
+application/json
+store_id
+required
+string
+Store identifier within the NewStore platform.
+country_code
+required
+string
+Enum
+:
+"AF"
+"AX"
+"AL"
+"DZ"
+"AS"
+"AD"
+"AO"
+"AI"
+"AQ"
+"AG"
+"AR"
+"AM"
+"AW"
+"AU"
+"AT"
+"AZ"
+"BS"
+"BH"
+"BD"
+"BB"
+"BY"
+"BE"
+"BZ"
+"BJ"
+"BM"
+"BT"
+"BO"
+"BA"
+"BW"
+"BV"
+"BR"
+"IO"
+"BN"
+"BG"
+"BF"
+"BI"
+"KH"
+"CM"
+"CA"
+"CV"
+"KY"
+"CF"
+"TD"
+"CL"
+"CN"
+"CX"
+"CC"
+"CO"
+"KM"
+"CG"
+"CD"
+"CK"
+"CR"
+"CI"
+"HR"
+"CU"
+"CY"
+"CZ"
+"DK"
+"DJ"
+"DM"
+"DO"
+"EC"
+"EG"
+"SV"
+"GQ"
+"ER"
+"EE"
+"ET"
+"FK"
+"FO"
+"FJ"
+"FI"
+"FR"
+"GF"
+"PF"
+"TF"
+"GA"
+"GM"
+"GE"
+"DE"
+"GH"
+"GI"
+"GR"
+"GL"
+"GD"
+"GP"
+"GU"
+"GT"
+"GG"
+"GN"
+"GW"
+"GY"
+"HT"
+"HM"
+"VA"
+"HN"
+"HK"
+"HU"
+"IS"
+"IN"
+"ID"
+"IR"
+"IQ"
+"IE"
+"IM"
+"IL"
+"IT"
+"JM"
+"JP"
+"JE"
+"JO"
+"KZ"
+"KE"
+"KI"
+"KR"
+"KW"
+"KG"
+"LA"
+"LV"
+"LB"
+"LS"
+"LR"
+"LY"
+"LI"
+"LT"
+"LU"
+"MO"
+"MK"
+"MG"
+"MW"
+"MY"
+"MV"
+"ML"
+"MT"
+"MH"
+"MQ"
+"MR"
+"MU"
+"YT"
+"MX"
+"FM"
+"MD"
+"MC"
+"MN"
+"ME"
+"MS"
+"MA"
+"MZ"
+"MM"
+"NA"
+"NR"
+"NP"
+"NL"
+"AN"
+"NC"
+"NZ"
+"NI"
+"NE"
+"NG"
+"NU"
+"NF"
+"MP"
+"NO"
+"OM"
+"PK"
+"PW"
+"PS"
+"PA"
+"PG"
+"PY"
+"PE"
+"PH"
+"PN"
+"PL"
+"PT"
+"PR"
+"QA"
+"RE"
+"RO"
+"RU"
+"RW"
+"BL"
+"SH"
+"KN"
+"LC"
+"MF"
+"PM"
+"VC"
+"WS"
+"SM"
+"ST"
+"SA"
+"SN"
+"RS"
+"SC"
+"SL"
+"SG"
+"SK"
+"SI"
+"SB"
+"SO"
+"ZA"
+"GS"
+"ES"
+"LK"
+"SD"
+"SR"
+"SJ"
+"SZ"
+"SE"
+"CH"
+"SY"
+"TW"
+"TJ"
+"TZ"
+"TH"
+"TL"
+"TG"
+"TK"
+"TO"
+"TT"
+"TN"
+"TR"
+"TM"
+"TC"
+"TV"
+"UG"
+"UA"
+"AE"
+"GB"
+"US"
+"UM"
+"UY"
+"UZ"
+"VU"
+"VE"
+"VN"
+"VG"
+"VI"
+"WF"
+"EH"
+"YE"
+"ZM"
+"ZW"
+Country code in upper-case ISO 3166 Alpha-2 format.
+tax_calculation_strategy
+string
+Enum
+:
+"fixedrate"
+"fixed_rate_per_country"
+"avalara"
+"vertex"
+"custom"
+Tax calculation strategy.
+fixed_rate
+object
+Fixed rate configuration.
+If the tax calculation strategy is set to
+fixedrate
+, the specified tax rate will be used.
+For the other tax calculation strategies, the specified rate will be used as a fallback if the tax calculation fails (e.g. if the tax provider is not reachable).
+The specified rate will be used as a fallback by the Associate App in offline-mode.
+fixed_rate_per_country
+object
+Fixed rate configuration per country.
+Uses ISO 3166 Alpha-2 format as the key in upper-case.
+Fixed rate specification can be defined under each country key for the desired countries.
+If the tax calculation strategy is set to
+fixed_rate_per_country
+:
+Fixed rate configuration must be configured.
+The specified tax rate will be used if the country code of the store has a fixed rate configuration.
+The tax calculation will fail if the country code of the store does not have a fixed rate configuration.
+avalara
+object
+Avalara configuration.
+Required if the
+tax_calculation_strategy
+is set to
+avalara
+.
+If the tax calculation strategy is set to
+avalara
+, the given configuration will be used.
+If the Avalara configuration is defined, the configuration will be validated through a ping request to Avalara, which will validate the authenticity of Avalara credentials.
+vertex
+object
+Vertex configuration.
+Required if the
+tax_calculation_strategy
+is set to
+vertex
+.
+If the tax calculation strategy is set to
+vertex
+, the given configuration will be used.
+If the Vertex configuration is defined, the configuration will be validated through a ping request to Vertex, which will validate the authenticity of Vertex credentials.
+custom
+object
+Custom provider configuration.
+Required if the
+tax_calculation_strategy
+is set to
+custom
+.
+If the tax calculation strategy is set to
+custom
+, the given configuration will be used.
+Responses
+201
+Tax configuration of the store.
+400
+Bad request.
+401
+Unauthorized.
+403
+Forbidden.
+409
+Tax configuration for the given store was already created.
+default
+Unexpected error.
+post
+/config/stores
+NewStore Tax Service
+/api/v2/f11n/taxes
+/config/stores
+Local development server
+/config/stores
+Request samples
+Payload
+Content type
+application/json
+Example
+Tax strategy override
+Fixed rate provider override
+Fixed rate per country provider override
+Avalara/AvaTax provider override
+Vertex provider override
+Custom provider V1 override
+Custom provider V1 with authentication override
+Custom provider V0 (Avalara) override
+Tax strategy override
+Example configuration setting the tax calculation strategy to be used for this store. Overrides the strategy set on the tenant level.
+Copy
+{
+"store_id"
+:
+"123e4567-e89b-12d3-a456-426614174000"
+,
+"country_code"
+:
+"AT"
+,
+"tax_calculation_strategy"
+:
+"fixedrate"
+}
+Response samples
+201
+400
+401
+403
+409
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"store_id"
+:
+"123"
+,
+"country_code"
+:
+"DE"
+,
+"tax_calculation_strategy"
+:
+"fixedrate"
+,
+"fixed_rate"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"fixed_rate_per_country"
+:
+{
+"AT"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"DE"
+:
+{
+"tax_rate"
+:
+0.19
+,
+"tax_name"
+:
+"Standard VAT rate for Germany"
+}
+}
+,
+"avalara"
+:
+{
+"account_number"
+:
+"2000123456"
+,
+"company_code"
+:
+"NEWSTOREINC"
+,
+"default_customer_code"
+:
+"Anonymous customer"
+,
+"license_key"
+:
+"C1234567890ABCFE"
+,
+"environment"
+:
+"sandbox"
+}
+,
+"vertex"
+:
+{
+"company_code"
+:
+"1234"
+,
+"division_code"
+:
+"1234"
+,
+"soap_url"
+:
+"
+https://sandboxap2.na1.ondemand.vertexinc.com/vertex-ws/services/CalculateTax90
+"
+,
+"login_type"
+:
+"trusted_id"
+,
+"trusted_id"
+:
+"9SDPdc9bo3"
+,
+"flexible_fields"
+:
+[
+{
+"extended_attribute_name"
+:
+"productClass"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_code_field"
+}
+,
+{
+"extended_attribute_name"
+:
+"shoeSize"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_numeric_field"
+}
+]
+,
+"administrative_origin"
+:
+{
+"street_address_1"
+:
+"Potsdamer Str. 7"
+,
+"street_address_2"
+:
+"Potsdamer Platz"
+,
+"city"
+:
+"Berlin"
+,
+"main_division"
+:
+"Berlin"
+,
+"postal_code"
+:
+"10785"
+,
+"country"
+:
+"DE"
+,
+"currency_code"
+:
+"EUR"
+,
+"currency_value"
+:
+1.1
+}
+}
+,
+"custom"
+:
+{
+"api_version"
+:
+"v1"
+,
+"base_url"
+:
+"
+https://my-custom-tax-url.com
+"
+}
+,
+"tenant"
+:
+"dodici"
+,
+"version"
+:
+1
+,
+"created_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_by"
+:
+"2136871599"
+,
+"is_deleted"
+:
+false
+}
+List store tax configurations
+List store tax calculation configurations with the given query.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+limit
+required
+integer
+[ 1 .. 100 ]
+Default:
+10
+Example:
+limit=10
+Limit number of results to this value.
+tax_calculation_strategy
+string
+Enum
+:
+"fixedrate"
+"fixed_rate_per_country"
+"avalara"
+"vertex"
+"custom"
+Example:
+tax_calculation_strategy=fixedrate
+Tax calculation strategy to filter by.
+next_page_key
+string
+Key to be used to get the next page of results.
+header
+Parameters
+x-request-id
+string
+Request identifier.
+Responses
+200
+List of tax configurations of stores.
+400
+Bad request.
+401
+Unauthorized.
+403
+Forbidden.
+default
+Unexpected error.
+get
+/config/stores
+NewStore Tax Service
+/api/v2/f11n/taxes
+/config/stores
+Local development server
+/config/stores
+Response samples
+200
+400
+401
+403
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"store_id"
+:
+"123"
+,
+"country_code"
+:
+"DE"
+,
+"tax_calculation_strategy"
+:
+"fixedrate"
+,
+"fixed_rate"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"fixed_rate_per_country"
+:
+{
+"AT"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"DE"
+:
+{
+"tax_rate"
+:
+0.19
+,
+"tax_name"
+:
+"Standard VAT rate for Germany"
+}
+}
+,
+"avalara"
+:
+{
+"account_number"
+:
+"2000123456"
+,
+"company_code"
+:
+"NEWSTOREINC"
+,
+"default_customer_code"
+:
+"Anonymous customer"
+,
+"license_key"
+:
+"C1234567890ABCFE"
+,
+"environment"
+:
+"sandbox"
+}
+,
+"vertex"
+:
+{
+"company_code"
+:
+"1234"
+,
+"division_code"
+:
+"1234"
+,
+"soap_url"
+:
+"
+https://sandboxap2.na1.ondemand.vertexinc.com/vertex-ws/services/CalculateTax90
+"
+,
+"login_type"
+:
+"trusted_id"
+,
+"trusted_id"
+:
+"9SDPdc9bo3"
+,
+"flexible_fields"
+:
+[
+{
+"extended_attribute_name"
+:
+"productClass"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_code_field"
+}
+,
+{
+"extended_attribute_name"
+:
+"shoeSize"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_numeric_field"
+}
+]
+,
+"administrative_origin"
+:
+{
+"street_address_1"
+:
+"Potsdamer Str. 7"
+,
+"street_address_2"
+:
+"Potsdamer Platz"
+,
+"city"
+:
+"Berlin"
+,
+"main_division"
+:
+"Berlin"
+,
+"postal_code"
+:
+"10785"
+,
+"country"
+:
+"DE"
+,
+"currency_code"
+:
+"EUR"
+,
+"currency_value"
+:
+1.1
+}
+}
+,
+"custom"
+:
+{
+"api_version"
+:
+"v1"
+,
+"base_url"
+:
+"
+https://my-custom-tax-url.com
+"
+}
+,
+"tenant"
+:
+"dodici"
+,
+"version"
+:
+1
+,
+"created_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_by"
+:
+"2136871599"
+,
+"is_deleted"
+:
+false
+}
+]
+,
+"next_page_key"
+:
+"string"
+,
+"scan_count"
+:
+1
+}
+Get tax configuration of a store
+Get tax configuration for the given store identifier.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+Store identifier.
+query
+Parameters
+version
+integer
+<
+int32
+>
+>= 0
+Specific configuration version number to fetch. If left empty, the latest version of the configuration will be returned.
+merged_tenant_fallback
+boolean
+Default:
+true
+Example:
+merged_tenant_fallback=false
+Flag that indicates if the store configuration should be merged with the tenant configuration to provide tenant level fallbacks to the store. This flag defaults to true if it is not sent.
+header
+Parameters
+x-request-id
+string
+Request identifier.
+Responses
+200
+Tax configuration of the store.
+If the
+merged_tenant_fallback
+is set to
+false
+, the response will contain a store configuration
+StoreConfigDto
+.
+If the
+merged_tenant_fallback
+is set to
+true
+or not sent, the response will contain a merged store configuration and tenant configuration
+ConfigDto
+.
+400
+Bad request.
+401
+Unauthorized.
+403
+Forbidden.
+404
+Tax configuration not found.
+default
+Unexpected error.
+get
+/config/stores/{id}
+NewStore Tax Service
+/api/v2/f11n/taxes
+/config/stores/{id}
+Local development server
+/config/stores/{id}
+Response samples
+200
+400
+401
+403
+404
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"tax_calculation_strategy"
+:
+"fixedrate"
+,
+"tax_committing_enabled"
+:
+true
+,
+"fixed_rate"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"fixed_rate_per_country"
+:
+{
+"AT"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"DE"
+:
+{
+"tax_rate"
+:
+0.19
+,
+"tax_name"
+:
+"Standard VAT rate for Germany"
+}
+}
+,
+"avalara"
+:
+{
+"account_number"
+:
+"2000123456"
+,
+"company_code"
+:
+"NEWSTOREINC"
+,
+"default_customer_code"
+:
+"Anonymous customer"
+,
+"license_key"
+:
+"C1234567890ABCFE"
+,
+"environment"
+:
+"sandbox"
+}
+,
+"vertex"
+:
+{
+"company_code"
+:
+"1234"
+,
+"division_code"
+:
+"1234"
+,
+"soap_url"
+:
+"
+https://sandboxap2.na1.ondemand.vertexinc.com/vertex-ws/services/CalculateTax90
+"
+,
+"login_type"
+:
+"trusted_id"
+,
+"trusted_id"
+:
+"9SDPdc9bo3"
+,
+"flexible_fields"
+:
+[
+{
+"extended_attribute_name"
+:
+"productClass"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_code_field"
+}
+,
+{
+"extended_attribute_name"
+:
+"shoeSize"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_numeric_field"
+}
+]
+,
+"administrative_origin"
+:
+{
+"street_address_1"
+:
+"Potsdamer Str. 7"
+,
+"street_address_2"
+:
+"Potsdamer Platz"
+,
+"city"
+:
+"Berlin"
+,
+"main_division"
+:
+"Berlin"
+,
+"postal_code"
+:
+"10785"
+,
+"country"
+:
+"DE"
+,
+"currency_code"
+:
+"EUR"
+,
+"currency_value"
+:
+1.1
+}
+}
+,
+"custom"
+:
+{
+"api_version"
+:
+"v1"
+,
+"base_url"
+:
+"
+https://my-custom-tax-url.com
+"
+}
+}
+Partially update tax configuration of a store
+Partially update the tax configuration of a store by merging the given fields with the existing fields.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+Store identifier.
+header
+Parameters
+x-request-id
+string
+Request identifier.
+Request Body schema:
+application/json
+country_code
+string
+Enum
+:
+"AF"
+"AX"
+"AL"
+"DZ"
+"AS"
+"AD"
+"AO"
+"AI"
+"AQ"
+"AG"
+"AR"
+"AM"
+"AW"
+"AU"
+"AT"
+"AZ"
+"BS"
+"BH"
+"BD"
+"BB"
+"BY"
+"BE"
+"BZ"
+"BJ"
+"BM"
+"BT"
+"BO"
+"BA"
+"BW"
+"BV"
+"BR"
+"IO"
+"BN"
+"BG"
+"BF"
+"BI"
+"KH"
+"CM"
+"CA"
+"CV"
+"KY"
+"CF"
+"TD"
+"CL"
+"CN"
+"CX"
+"CC"
+"CO"
+"KM"
+"CG"
+"CD"
+"CK"
+"CR"
+"CI"
+"HR"
+"CU"
+"CY"
+"CZ"
+"DK"
+"DJ"
+"DM"
+"DO"
+"EC"
+"EG"
+"SV"
+"GQ"
+"ER"
+"EE"
+"ET"
+"FK"
+"FO"
+"FJ"
+"FI"
+"FR"
+"GF"
+"PF"
+"TF"
+"GA"
+"GM"
+"GE"
+"DE"
+"GH"
+"GI"
+"GR"
+"GL"
+"GD"
+"GP"
+"GU"
+"GT"
+"GG"
+"GN"
+"GW"
+"GY"
+"HT"
+"HM"
+"VA"
+"HN"
+"HK"
+"HU"
+"IS"
+"IN"
+"ID"
+"IR"
+"IQ"
+"IE"
+"IM"
+"IL"
+"IT"
+"JM"
+"JP"
+"JE"
+"JO"
+"KZ"
+"KE"
+"KI"
+"KR"
+"KW"
+"KG"
+"LA"
+"LV"
+"LB"
+"LS"
+"LR"
+"LY"
+"LI"
+"LT"
+"LU"
+"MO"
+"MK"
+"MG"
+"MW"
+"MY"
+"MV"
+"ML"
+"MT"
+"MH"
+"MQ"
+"MR"
+"MU"
+"YT"
+"MX"
+"FM"
+"MD"
+"MC"
+"MN"
+"ME"
+"MS"
+"MA"
+"MZ"
+"MM"
+"NA"
+"NR"
+"NP"
+"NL"
+"AN"
+"NC"
+"NZ"
+"NI"
+"NE"
+"NG"
+"NU"
+"NF"
+"MP"
+"NO"
+"OM"
+"PK"
+"PW"
+"PS"
+"PA"
+"PG"
+"PY"
+"PE"
+"PH"
+"PN"
+"PL"
+"PT"
+"PR"
+"QA"
+"RE"
+"RO"
+"RU"
+"RW"
+"BL"
+"SH"
+"KN"
+"LC"
+"MF"
+"PM"
+"VC"
+"WS"
+"SM"
+"ST"
+"SA"
+"SN"
+"RS"
+"SC"
+"SL"
+"SG"
+"SK"
+"SI"
+"SB"
+"SO"
+"ZA"
+"GS"
+"ES"
+"LK"
+"SD"
+"SR"
+"SJ"
+"SZ"
+"SE"
+"CH"
+"SY"
+"TW"
+"TJ"
+"TZ"
+"TH"
+"TL"
+"TG"
+"TK"
+"TO"
+"TT"
+"TN"
+"TR"
+"TM"
+"TC"
+"TV"
+"UG"
+"UA"
+"AE"
+"GB"
+"US"
+"UM"
+"UY"
+"UZ"
+"VU"
+"VE"
+"VN"
+"VG"
+"VI"
+"WF"
+"EH"
+"YE"
+"ZM"
+"ZW"
+Country code in upper-case ISO 3166 Alpha-2 format.
+tax_calculation_strategy
+string
+Enum
+:
+"fixedrate"
+"fixed_rate_per_country"
+"avalara"
+"vertex"
+"custom"
+Tax calculation strategy.
+fixed_rate
+object
+Fixed rate configuration.
+If the tax calculation strategy is set to
+fixedrate
+, the specified tax rate will be used.
+For the other tax calculation strategies, the specified rate will be used as a fallback if the tax calculation fails (e.g. if the tax provider is not reachable).
+The specified rate will be used as a fallback by the Associate App in offline-mode.
+fixed_rate_per_country
+object
+Fixed rate configuration per country.
+Uses ISO 3166 Alpha-2 format as the key in upper-case.
+Fixed rate specification can be defined under each country key for the desired countries.
+If the tax calculation strategy is set to
+fixed_rate_per_country
+:
+Fixed rate configuration must be configured.
+The specified tax rate will be used if the country code of the store has a fixed rate configuration.
+The tax calculation will fail if the country code of the store does not have a fixed rate configuration.
+avalara
+object
+Avalara configuration.
+Required if the
+tax_calculation_strategy
+is set to
+avalara
+.
+If the tax calculation strategy is set to
+avalara
+, the given configuration will be used.
+If the Avalara configuration is defined, the configuration will be validated through a ping request to Avalara, which will validate the authenticity of Avalara credentials.
+vertex
+object
+Vertex configuration.
+Required if the
+tax_calculation_strategy
+is set to
+vertex
+.
+If the tax calculation strategy is set to
+vertex
+, the given configuration will be used.
+If the Vertex configuration is defined, the configuration will be validated through a ping request to Vertex, which will validate the authenticity of Vertex credentials.
+custom
+object
+Custom provider configuration.
+Required if the
+tax_calculation_strategy
+is set to
+custom
+.
+If the tax calculation strategy is set to
+custom
+, the given configuration will be used.
+Responses
+200
+Tax configuration of the store.
+401
+Unauthorized.
+403
+Forbidden.
+404
+Tax configuration not found.
+default
+Unexpected error.
+patch
+/config/stores/{id}
+NewStore Tax Service
+/api/v2/f11n/taxes
+/config/stores/{id}
+Local development server
+/config/stores/{id}
+Request samples
+Payload
+Content type
+application/json
+Example
+Tax calculation strategy updates
+Country code updates
+Fixed rate provider updates
+Fixed rate per country provider updates
+Avalara/AvaTax provider updates
+Vertex provider updates
+Custom provider V1 updates
+Custom provider V1 with authentication updates
+Custom provider V0 (Avalara) updates
+Tax calculation strategy updates
+Example configuration updating the tax calculation strategy.
+Copy
+{
+"tax_calculation_strategy"
+:
+"fixedrate"
+}
+Response samples
+200
+401
+403
+404
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"store_id"
+:
+"123"
+,
+"country_code"
+:
+"DE"
+,
+"tax_calculation_strategy"
+:
+"fixedrate"
+,
+"fixed_rate"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"fixed_rate_per_country"
+:
+{
+"AT"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"DE"
+:
+{
+"tax_rate"
+:
+0.19
+,
+"tax_name"
+:
+"Standard VAT rate for Germany"
+}
+}
+,
+"avalara"
+:
+{
+"account_number"
+:
+"2000123456"
+,
+"company_code"
+:
+"NEWSTOREINC"
+,
+"default_customer_code"
+:
+"Anonymous customer"
+,
+"license_key"
+:
+"C1234567890ABCFE"
+,
+"environment"
+:
+"sandbox"
+}
+,
+"vertex"
+:
+{
+"company_code"
+:
+"1234"
+,
+"division_code"
+:
+"1234"
+,
+"soap_url"
+:
+"
+https://sandboxap2.na1.ondemand.vertexinc.com/vertex-ws/services/CalculateTax90
+"
+,
+"login_type"
+:
+"trusted_id"
+,
+"trusted_id"
+:
+"9SDPdc9bo3"
+,
+"flexible_fields"
+:
+[
+{
+"extended_attribute_name"
+:
+"productClass"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_code_field"
+}
+,
+{
+"extended_attribute_name"
+:
+"shoeSize"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_numeric_field"
+}
+]
+,
+"administrative_origin"
+:
+{
+"street_address_1"
+:
+"Potsdamer Str. 7"
+,
+"street_address_2"
+:
+"Potsdamer Platz"
+,
+"city"
+:
+"Berlin"
+,
+"main_division"
+:
+"Berlin"
+,
+"postal_code"
+:
+"10785"
+,
+"country"
+:
+"DE"
+,
+"currency_code"
+:
+"EUR"
+,
+"currency_value"
+:
+1.1
+}
+}
+,
+"custom"
+:
+{
+"api_version"
+:
+"v1"
+,
+"base_url"
+:
+"
+https://my-custom-tax-url.com
+"
+}
+,
+"tenant"
+:
+"dodici"
+,
+"version"
+:
+1
+,
+"created_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_by"
+:
+"2136871599"
+,
+"is_deleted"
+:
+false
+}
+Delete tax configuration of a store
+Delete tax configuration for the given store identifier.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+Store identifier.
+header
+Parameters
+x-request-id
+string
+Request identifier.
+Responses
+204
+Tax configuration deleted for the given store identifier.
+401
+Unauthorized.
+403
+Forbidden.
+404
+Tax configuration not found.
+default
+Unexpected error.
+delete
+/config/stores/{id}
+NewStore Tax Service
+/api/v2/f11n/taxes
+/config/stores/{id}
+Local development server
+/config/stores/{id}
+Response samples
+401
+403
+404
+default
+Content type
+application/problem+json
+Copy
+{
+"status_code"
+:
+500
+,
+"error"
+:
+"Internal server error"
+}
+Tenant tax configuration
+Set up tax calculation configuration for your business.
+Create tax configuration
+Create tax calculation configuration for your business.
+Authorizations:
+newStoreAccessToken
+header
+Parameters
+x-request-id
+string
+Request identifier.
+Request Body schema:
+application/json
+tax_calculation_strategy
+required
+string
+Enum
+:
+"fixedrate"
+"fixed_rate_per_country"
+"avalara"
+"vertex"
+"custom"
+Tax calculation strategy.
+fixed_rate
+required
+object
+Fixed rate configuration.
+If the tax calculation strategy is set to
+fixedrate
+, the specified tax rate will be used.
+For the other tax calculation strategies, the specified rate will be used as a fallback if the tax calculation fails (e.g. if the tax provider is not reachable).
+The specified rate will be used as a fallback by the Associate App in offline-mode.
+fixed_rate_per_country
+object
+Fixed rate configuration per country.
+Uses ISO 3166 Alpha-2 format as the key in upper-case.
+Fixed rate specification can be defined under each country key for the desired countries.
+If the tax calculation strategy is set to
+fixed_rate_per_country
+:
+Fixed rate configuration must be configured.
+The specified tax rate will be used if the country code of the store has a fixed rate configuration.
+The tax calculation will fail if the country code of the store does not have a fixed rate configuration.
+avalara
+object
+Avalara configuration.
+Required if the
+tax_calculation_strategy
+is set to
+avalara
+.
+If the tax calculation strategy is set to
+avalara
+, the given configuration will be used.
+If the Avalara configuration is defined, the configuration will be validated through a ping request to Avalara, which will validate the authenticity of Avalara credentials.
+vertex
+object
+Vertex configuration.
+Required if the
+tax_calculation_strategy
+is set to
+vertex
+.
+If the tax calculation strategy is set to
+vertex
+, the given configuration will be used.
+If the Vertex configuration is defined, the configuration will be validated through a ping request to Vertex, which will validate the authenticity of Vertex credentials.
+custom
+object
+Custom provider configuration.
+Required if the
+tax_calculation_strategy
+is set to
+custom
+.
+If the tax calculation strategy is set to
+custom
+, the given configuration will be used.
+tax_committing_enabled
+boolean
+Enable tax committing to the selected tax calculation strategy. The tax committing feature is only supported for in-store orders.
+Responses
+201
+Tax configuration of the tenant.
+400
+Bad request.
+401
+Unauthorized.
+403
+Forbidden.
+409
+Tax configuration was already created.
+default
+Unexpected error.
+post
+/config
+NewStore Tax Service
+/api/v2/f11n/taxes
+/config
+Local development server
+/config
+Request samples
+Payload
+Content type
+application/json
+Example
+Fixed rate provider
+Fixed rate per country provider
+Avalara/AvaTax provider
+Vertex provider
+Custom provider V1
+Custom provider V1 with authentication
+Custom provider V0 (Avalara)
+Fixed rate provider
+Example configuration using fixed rate strategy.
+Copy
+Expand all
+Collapse all
+{
+"tax_calculation_strategy"
+:
+"fixedrate"
+,
+"fixed_rate"
+:
+{
+"tax_name"
+:
+"Standard VAT rate for Austria"
+,
+"tax_rate"
+:
+0.2
+,
+"exemption_classes"
+:
+[
+{
+"exemption_class"
+:
+"CUSTOM_ITALY_1"
+,
+"valid_countries"
+:
+[
+"IT"
+]
+,
+"display_text"
+:
+{
+"en"
+:
+"Diplomatic sales"
+,
+"it"
+:
+"Vendite diplomatiche"
+}
+}
+,
+{
+"exemption_class"
+:
+"CUSTOM_CANADA_1"
+,
+"valid_countries"
+:
+[
+"CA"
+]
+,
+"display_text"
+:
+{
+"en"
+:
+"First Nation Citizen"
+,
+"fr"
+:
+"Premières Nations"
+}
+}
+]
+}
+}
+Response samples
+201
+400
+401
+403
+409
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"tax_calculation_strategy"
+:
+"fixedrate"
+,
+"fixed_rate"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"fixed_rate_per_country"
+:
+{
+"AT"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"DE"
+:
+{
+"tax_rate"
+:
+0.19
+,
+"tax_name"
+:
+"Standard VAT rate for Germany"
+}
+}
+,
+"avalara"
+:
+{
+"account_number"
+:
+"2000123456"
+,
+"company_code"
+:
+"NEWSTOREINC"
+,
+"default_customer_code"
+:
+"Anonymous customer"
+,
+"license_key"
+:
+"C1234567890ABCFE"
+,
+"environment"
+:
+"sandbox"
+}
+,
+"vertex"
+:
+{
+"company_code"
+:
+"1234"
+,
+"division_code"
+:
+"1234"
+,
+"soap_url"
+:
+"
+https://sandboxap2.na1.ondemand.vertexinc.com/vertex-ws/services/CalculateTax90
+"
+,
+"login_type"
+:
+"trusted_id"
+,
+"trusted_id"
+:
+"9SDPdc9bo3"
+,
+"flexible_fields"
+:
+[
+{
+"extended_attribute_name"
+:
+"productClass"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_code_field"
+}
+,
+{
+"extended_attribute_name"
+:
+"shoeSize"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_numeric_field"
+}
+]
+,
+"administrative_origin"
+:
+{
+"street_address_1"
+:
+"Potsdamer Str. 7"
+,
+"street_address_2"
+:
+"Potsdamer Platz"
+,
+"city"
+:
+"Berlin"
+,
+"main_division"
+:
+"Berlin"
+,
+"postal_code"
+:
+"10785"
+,
+"country"
+:
+"DE"
+,
+"currency_code"
+:
+"EUR"
+,
+"currency_value"
+:
+1.1
+}
+}
+,
+"custom"
+:
+{
+"api_version"
+:
+"v1"
+,
+"base_url"
+:
+"
+https://my-custom-tax-url.com
+"
+}
+,
+"tax_committing_enabled"
+:
+true
+,
+"tenant"
+:
+"dodici"
+,
+"version"
+:
+1
+,
+"created_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_by"
+:
+"2136871599"
+,
+"is_deleted"
+:
+false
+}
+Get tax configuration
+Get tax calculation configuration of your business.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+version
+integer
+<
+int32
+>
+>= 0
+Specific configuration version number to fetch. If left empty, the latest version of the configuration will be returned.
+header
+Parameters
+x-request-id
+string
+Request identifier.
+Responses
+200
+Tax configuration of the tenant.
+400
+Bad request.
+401
+Unauthorized.
+403
+Forbidden.
+404
+Tax configuration not found.
+default
+Unexpected error.
+get
+/config
+NewStore Tax Service
+/api/v2/f11n/taxes
+/config
+Local development server
+/config
+Response samples
+200
+400
+401
+403
+404
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"tax_calculation_strategy"
+:
+"fixedrate"
+,
+"fixed_rate"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"fixed_rate_per_country"
+:
+{
+"AT"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"DE"
+:
+{
+"tax_rate"
+:
+0.19
+,
+"tax_name"
+:
+"Standard VAT rate for Germany"
+}
+}
+,
+"avalara"
+:
+{
+"account_number"
+:
+"2000123456"
+,
+"company_code"
+:
+"NEWSTOREINC"
+,
+"default_customer_code"
+:
+"Anonymous customer"
+,
+"license_key"
+:
+"C1234567890ABCFE"
+,
+"environment"
+:
+"sandbox"
+}
+,
+"vertex"
+:
+{
+"company_code"
+:
+"1234"
+,
+"division_code"
+:
+"1234"
+,
+"soap_url"
+:
+"
+https://sandboxap2.na1.ondemand.vertexinc.com/vertex-ws/services/CalculateTax90
+"
+,
+"login_type"
+:
+"trusted_id"
+,
+"trusted_id"
+:
+"9SDPdc9bo3"
+,
+"flexible_fields"
+:
+[
+{
+"extended_attribute_name"
+:
+"productClass"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_code_field"
+}
+,
+{
+"extended_attribute_name"
+:
+"shoeSize"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_numeric_field"
+}
+]
+,
+"administrative_origin"
+:
+{
+"street_address_1"
+:
+"Potsdamer Str. 7"
+,
+"street_address_2"
+:
+"Potsdamer Platz"
+,
+"city"
+:
+"Berlin"
+,
+"main_division"
+:
+"Berlin"
+,
+"postal_code"
+:
+"10785"
+,
+"country"
+:
+"DE"
+,
+"currency_code"
+:
+"EUR"
+,
+"currency_value"
+:
+1.1
+}
+}
+,
+"custom"
+:
+{
+"api_version"
+:
+"v1"
+,
+"base_url"
+:
+"
+https://my-custom-tax-url.com
+"
+}
+,
+"tax_committing_enabled"
+:
+true
+,
+"tenant"
+:
+"dodici"
+,
+"version"
+:
+1
+,
+"created_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_by"
+:
+"2136871599"
+,
+"is_deleted"
+:
+false
+}
+Partially update tax configuration
+Partially update the tax configuration of your business by merging the given fields with the existing fields.
+Authorizations:
+newStoreAccessToken
+header
+Parameters
+x-request-id
+string
+Request identifier.
+Request Body schema:
+application/json
+tax_calculation_strategy
+string
+Enum
+:
+"fixedrate"
+"fixed_rate_per_country"
+"avalara"
+"vertex"
+"custom"
+Tax calculation strategy.
+fixed_rate
+object
+Fixed rate configuration.
+If the tax calculation strategy is set to
+fixedrate
+, the specified tax rate will be used.
+For the other tax calculation strategies, the specified rate will be used as a fallback if the tax calculation fails (e.g. if the tax provider is not reachable).
+The specified rate will be used as a fallback by the Associate App in offline-mode.
+fixed_rate_per_country
+object
+Fixed rate configuration per country.
+Uses ISO 3166 Alpha-2 format as the key in upper-case.
+Fixed rate specification can be defined under each country key for the desired countries.
+If the tax calculation strategy is set to
+fixed_rate_per_country
+:
+Fixed rate configuration must be configured.
+The specified tax rate will be used if the country code of the store has a fixed rate configuration.
+The tax calculation will fail if the country code of the store does not have a fixed rate configuration.
+avalara
+object
+Avalara configuration.
+Required if the
+tax_calculation_strategy
+is set to
+avalara
+.
+If the tax calculation strategy is set to
+avalara
+, the given configuration will be used.
+If the Avalara configuration is defined, the configuration will be validated through a ping request to Avalara, which will validate the authenticity of Avalara credentials.
+vertex
+object
+Vertex configuration.
+Required if the
+tax_calculation_strategy
+is set to
+vertex
+.
+If the tax calculation strategy is set to
+vertex
+, the given configuration will be used.
+If the Vertex configuration is defined, the configuration will be validated through a ping request to Vertex, which will validate the authenticity of Vertex credentials.
+custom
+object
+Custom provider configuration.
+Required if the
+tax_calculation_strategy
+is set to
+custom
+.
+If the tax calculation strategy is set to
+custom
+, the given configuration will be used.
+tax_committing_enabled
+boolean
+Enable tax committing to the selected tax calculation strategy. The tax committing feature is only supported for in-store orders.
+Responses
+200
+Tax configuration of the tenant.
+401
+Unauthorized.
+403
+Forbidden.
+404
+Tax configuration not found.
+default
+Unexpected error.
+patch
+/config
+NewStore Tax Service
+/api/v2/f11n/taxes
+/config
+Local development server
+/config
+Request samples
+Payload
+Content type
+application/json
+Example
+Tax calculation strategy updates
+Fixed rate provider updates
+Fixed rate per country provider updates
+Avalara/AvaTax provider updates
+Vertex provider updates
+Custom provider V1 updates
+Custom provider V1 with authentication updates
+Custom provider V0 (Avalara) updates
+Tax calculation strategy updates
+Example configuration updating the tax calculation strategy.
+Copy
+{
+"tax_calculation_strategy"
+:
+"fixedrate"
+}
+Response samples
+200
+401
+403
+404
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"tax_calculation_strategy"
+:
+"fixedrate"
+,
+"fixed_rate"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"fixed_rate_per_country"
+:
+{
+"AT"
+:
+{
+"tax_rate"
+:
+0.2
+,
+"tax_name"
+:
+"Standard VAT rate for Austria"
+}
+,
+"DE"
+:
+{
+"tax_rate"
+:
+0.19
+,
+"tax_name"
+:
+"Standard VAT rate for Germany"
+}
+}
+,
+"avalara"
+:
+{
+"account_number"
+:
+"2000123456"
+,
+"company_code"
+:
+"NEWSTOREINC"
+,
+"default_customer_code"
+:
+"Anonymous customer"
+,
+"license_key"
+:
+"C1234567890ABCFE"
+,
+"environment"
+:
+"sandbox"
+}
+,
+"vertex"
+:
+{
+"company_code"
+:
+"1234"
+,
+"division_code"
+:
+"1234"
+,
+"soap_url"
+:
+"
+https://sandboxap2.na1.ondemand.vertexinc.com/vertex-ws/services/CalculateTax90
+"
+,
+"login_type"
+:
+"trusted_id"
+,
+"trusted_id"
+:
+"9SDPdc9bo3"
+,
+"flexible_fields"
+:
+[
+{
+"extended_attribute_name"
+:
+"productClass"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_code_field"
+}
+,
+{
+"extended_attribute_name"
+:
+"shoeSize"
+,
+"target_field_id"
+:
+1
+,
+"target_field_type"
+:
+"flexible_numeric_field"
+}
+]
+,
+"administrative_origin"
+:
+{
+"street_address_1"
+:
+"Potsdamer Str. 7"
+,
+"street_address_2"
+:
+"Potsdamer Platz"
+,
+"city"
+:
+"Berlin"
+,
+"main_division"
+:
+"Berlin"
+,
+"postal_code"
+:
+"10785"
+,
+"country"
+:
+"DE"
+,
+"currency_code"
+:
+"EUR"
+,
+"currency_value"
+:
+1.1
+}
+}
+,
+"custom"
+:
+{
+"api_version"
+:
+"v1"
+,
+"base_url"
+:
+"
+https://my-custom-tax-url.com
+"
+}
+,
+"tax_committing_enabled"
+:
+true
+,
+"tenant"
+:
+"dodici"
+,
+"version"
+:
+1
+,
+"created_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_at"
+:
+"2023-02-28T16:58:46.961Z"
+,
+"updated_by"
+:
+"2136871599"
+,
+"is_deleted"
+:
+false
+}
+Previous
+Printers API
+Next
+Deprecated promotions Configuration API
+Copyright © 2025 NewStore, Inc.

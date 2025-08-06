@@ -1,0 +1,264 @@
+Receiving real-time data
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Receiving real-time data
+Updated on
+Jun 5, 2025
+Published on Oct 1, 2024
+5 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+NewStore allows you to receive near real-time data from NewStore Omnichannel Cloud via NewStore
+Event Stream
+. The event stream consists of all the
+events
+emitted by the
+entities
+of NewStore Omnichannel Cloud. Each event contains data that can be integrated, persisted and aggregated in your data warehouse.
+Entity
+: Represents a business concept that emits events. Example:
+order
+,
+return
+or
+fulfillment request
+.
+Event
+: Represents a key moment of the life time of an entity. Example:
+order created
+,
+order canceled
+or
+fulfillment request assigned
+. All the events are described in
+Event stream webhooks
+.
+API vs event stream
+An API and the event stream differ fundamentally: an API is a
+pull
+system, which means that you decide when to query the API. The event stream is a
+push
+system, which means that you receive a continuous flow of data sent by NewStore. See
+Subscribing to the event stream
+for more information.
+The event stream is designed to be used along other APIs. NewStore offers the following APIs:
+API Explorer
+Configuration APIs
+GraphQL API
+Entity model
+The stream contains data about various entities. To process the data according to your requirements, see the following diagram showing the entity relationships and events:
+The entity model contains all events that can be emitted. Each event is emitted when an order/item reaches a specific step in the order management workflow.
+Each event is described in
+Event stream webhooks
+.
+Note
+The same entity is used for the
+GraphQL API
+.
+Exchanges in the event stream
+In the case of an
+item exchange
+, NewStore will create a new order. You can recognize an exchange order when the
+is_exchange
+property is set to
+true
+in the
+order created
+and
+order opened
+events.
+Payment account events are published in case of uneven exchanges where the customer pays or receives a refund.
+Subscribing to the event stream
+Event stream supports 2 ways of consuming the events: via a
+webhook
+or S3 export.
+The webhook way provides the data in real-time. The S3 export integration stores the events in the S3 bucket of your choice so you can process them at any time.
+To subscribe to the event stream:
+Create a new configuration using the
+Register new integration
+method.
+Choose between receiving the data via
+webhook
+(real time) or via
+file upload
+to the S3 bucket of your choice.
+Implement the
+Event stream webhooks
+.
+The event stream service emitting the events expects a response from the client. If no
+200
+response is received after retrying, the service stops emitting, assuming the receiving side must be fixed. To get the current status of your integration you can use
+Get integration
+. Events that do not receive a successful 2xx HTTP response will be retried up to 10 times, using an exponential back-off strategy over approximately 20 minutes. Special handling applies to 400 responses, which are detailed in the next section.
+Once the integration is working again, call the
+Start integration
+method to have the service emit events again, picking up where it stopped earlier.
+If you want to stop the integration you can use
+Stop integration
+.
+Managing rejected events
+When an integration responds with a
+400
+status code, the latest event is considered
+rejected
+. It is stored in a database to be processed later. The number of rejected events
+is limited
+. The integration receives events until the limit is reached. When the limit is reached, the integration is automatically stopped.
+When an integration is stopped, we recommend you perform the following steps:
+Call
+List integration log entries
+to learn why the integration was stopped.
+Call
+List rejected events
+to retrieve the list of rejected events for the integration.
+Handle the rejected events with one of the following actions:
+Retry them using the
+Retry rejected event
+method.
+Permanently delete them using the
+Delete rejected event
+method.
+Note
+Each rejected event must be handled individually. If your integration was stopped because too many events were rejected, it is recommended to first handle all rejected events from the list before restarting the integration. Otherwise the integration will get stopped instantly with the next rejected event.
+Managing duplicate events
+You can receive data from NewStore via
+Event stream webhooks
+, as NewStore supports emitting data at least once to your integration point. However,
+Event stream webhooks
+sometimes deliver events more than once.
+As an integrator, it is
+your
+responsibility to check and minimize the impact of duplicate events on the systems collecting and persisting data from the event stream (such as
+NetSuite
+). When you integrate with NewStore Omnichannel Cloud, it is essential that you follow these best practices to ensure your implementation is
+idempotent
+:
+Make the idempotency implementation part of your product design process.
+Use an environment variable to enable or disable idempotency in your implementation. If you disable idempotency, the events that are emitted again can pass through to your integrated system.
+When a duplicate event is detected, create a log entry but do not initiate an error as duplicate events are expected.
+Store the idempotency data in AWS DynamoDB (or a similar database from another provider) as it has a high throughput. Use TTLs (30 days) to automatically delete the expired data.
+Sometimes the idempotency key of an event is composed of multiple event attributes. Ensure that the order of event attributes does not impact the idempotency key.
+Managing payment events
+Retailers and partners who consume events via the Event Stream will also receive the payment account events as part of the data. Within the
+payment_account
+events, the rounded amounts are used when rounding is part of the configuration. When a cash transaction is completed, and a rounded total of say
+AU $233.90
+is captured within the cash drawer, this amount is also reflected within the
+payment_account.amount_authorized
+event for that transaction.
+A new property (
+rounded_amount
+) is now added to the
+payment_account.amount_authorized
+event payload in the
+extended_attributes
+section of a transaction. See the schema
+here
+.
+This new property represents the
+rounded_amount
+value, which indicates the result of the rounding logic for a given transaction, the rounded total of the cash transaction. For example, if the amount of a transaction is
+AU $233.87
+and the
+rounded_amount
+displays
+AU $233.90
+, this would indicate that 3 cents was rounded up on the transaction. If the
+rounded_amount
+displays
+AU $233.85
+this would indicate that 2 cents was rounded down on the transaction.
+::: note
+If there is no cash rounding done for the transaction, the
+rounded_amount
+property is not present.
+:::
+The
+rounded_amount
+value is the order amount received into the platform.
+Related topics
+Event stream webhooks
+Managing inventory sync with the Event stream
+Syncing inventory after a receiving transaction
+GraphQL API
+Event stream webhook integrations
+Get integration
+Start integration
+Stop integration
+Was this article helpful?
+Yes
+No
+Tags
+api
+data import
+developer
+event stream
+events
+integration
+newstore platform
+order
+order details
+platform
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

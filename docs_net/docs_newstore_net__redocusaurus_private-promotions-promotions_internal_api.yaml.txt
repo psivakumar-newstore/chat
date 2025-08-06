@@ -1,0 +1,2109 @@
+openapi: 3.1.0
+info:
+  title: Automatic Promotions
+  description: >-
+    Use this API to manage automatic promotions in NewStore.
+
+    For a guide on how to use automatic promotions via NewStore Omnichannel
+    Manager, see [this
+    guide](https://docs.newstore.com/docs/creating-automatic-promotions).
+  termsOfService: https://www.newstore.com/terms-of-use/
+  license:
+    name: Open API Specification - OAS
+    url: https://spec.openapis.org/oas/v3.1.0
+  version: v1.0
+servers:
+  - url: http://localhost:8000/v0
+    description: The local development server
+  - url: https://dodici.x.newstore.net/v0/promotions
+tags:
+  - name: Manage promotions
+    description: >
+      Use this resource to manage automatic promotions in NewStore, such as
+      creating, retrieving,
+
+      or updating promotions.
+
+
+      You can use these methods to create automatic promotions for specific
+      products or for the
+
+      whole cart, which are applied automatically during checkout in NewStore
+      Associate App. This
+
+      includes creating promotions for both, percentage or fixed amount
+      discounts.
+
+
+      For more information on automatic promotions, see the [process
+      documentation](https://docs.newstore.com/docs/set-up-promotions)
+
+      or [this
+      guide](https://docs.newstore.com/docs/creating-automatic-promotions).
+  - name: Apply promotions to a cart
+    description: >
+      Use this resource to apply existing promotions to a cart to view how
+      pricing during checkout
+
+      will be calculated based on these promotions.
+
+
+      **Important**: This resource does not impact the cart pricing or items in
+      NewStore Associate App.
+
+      Use this method only to validate if promotions are being calculated
+      correctly for products
+
+      added to a cart.
+paths:
+  /promotion:
+    parameters:
+      - name: x-request-id
+        in: header
+        schema:
+          type: string
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+        required: true
+    post:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Manage promotions
+      summary: Create promotion
+      description: >
+        Use this method to create an automatic promotion. You can create
+        promotions for specific
+
+        products or for the whole cart in the order.
+
+
+        You can create promotions that apply percentage discounts or fixed
+        amount discounts on
+
+        specified products or the cart. For more information, see the [process
+        documentation](/docs/processes/about-discounts-promotions.html)
+
+        or [this
+        guide](https://docs.newstore.com/docs/creating-automatic-promotions).
+      operationId: createPromotion
+      requestBody:
+        description: a new promotion
+        content:
+          application/json:
+            schema:
+              description: A new promotion
+              type: object
+              properties: &ref_42
+                active:
+                  type: boolean
+                  example: true
+                  description: Indicates whether the promotion is active or not
+                name:
+                  type: string
+                  example: My Amazing Promotion
+                  description: The name of the promotion
+                description:
+                  type: string
+                  example: This promotion is amazing
+                localizedTimezone:
+                  type: boolean
+                  example: true
+                  description: >-
+                    Optional, this property determines local timezone validity
+                    for the promotion. If true, UTC is assumed with no timezone
+                    required in "validFrom" and "validTo". If false, timezone
+                    must be specified in those fields.
+                validFrom:
+                  type: string
+                  pattern: >-
+                    (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                  description: >-
+                    The date the promotion becomes valid. If localizedTimezone
+                    is false, timezone can be indicated at the end of the
+                    string.
+                  example: '2021-01-01T00:00:00+01:00'
+                validTo:
+                  type: string
+                  pattern: >-
+                    (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                  example: '2021-01-01T00:00:00+01:00'
+                  description: >-
+                    The date the promotion becomes invalid. If localizedTimezone
+                    is false, timezone can be indicated at the end of the
+                    string.
+                currencies:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        format: /\w{3}/
+                        description: A ISO4217 currency code.
+                        example: EUR
+                      minimumCartValue:
+                        type: number
+                        example: 5215432
+                category:
+                  type: object
+                  oneOf:
+                    - allOf: &ref_7
+                        - description: Base object for promotion categories
+                          type: object
+                          properties: &ref_0
+                            kind:
+                              type: string
+                              enum:
+                                - CartLevelPercentage
+                                - ProductLevelPercentage
+                                - BogoPercentage
+                                - FreeShippingPercentage
+                                - BundlePercentage
+                                - CartLevelFixed
+                                - ProductLevelFixed
+                                - BogoFixed
+                                - BundleFixed
+                          discriminator: &ref_1
+                            propertyName: kind
+                      description: >
+                        A promotion which is applied as a % discount to the
+                        entire cart
+                      type: object
+                      required: &ref_8
+                        - kind
+                      properties: &ref_9
+                        discount:
+                          type: integer
+                          format: int32
+                          description: The % discount applied to the cart, from 0 to 100
+                        kind:
+                          type: string
+                          pattern: ^CartLevelPercentage$
+                    - allOf: &ref_10
+                        - description: Base object for promotion categories
+                          type: object
+                          properties: *ref_0
+                          discriminator: *ref_1
+                      description: A product level percentage promotion
+                      type: object
+                      properties: &ref_11
+                        shopId:
+                          type: string
+                        locale:
+                          type: string
+                        includedCategories:
+                          type: array
+                          items:
+                            description: a product category
+                            type: object
+                            properties: &ref_2
+                              path:
+                                type: array
+                                items:
+                                  type: string
+                        includedProducts:
+                          type: array
+                          items:
+                            type: string
+                        excludedProducts:
+                          type: array
+                          items:
+                            type: string
+                        discount:
+                          type: integer
+                          format: int32
+                          description: The % discount applied to the cart, from 0 to 100
+                        kind:
+                          type: string
+                          pattern: ^ProductLevelPercentage$
+                    - allOf: &ref_12
+                        - description: Base object for promotion categories
+                          type: object
+                          properties: *ref_0
+                          discriminator: *ref_1
+                      description: >
+                        a promotion which is applied as a percentage BOGO to the
+                        cart
+                      type: object
+                      properties: &ref_13
+                        shopId:
+                          type: string
+                        locale:
+                          type: string
+                        discount:
+                          type: integer
+                          format: int32
+                          description: The % discount applied to the cart, from 0 to 100
+                        kind:
+                          type: string
+                          pattern: ^BogoFixed$
+                        buy:
+                          description: >-
+                            base object to define buy and get conditions for
+                            BOGO
+                          type: object
+                          properties: &ref_3
+                            quantity:
+                              type: number
+                              description: The quantity of items to satisfy the condition
+                            includedCategories:
+                              type: array
+                              items:
+                                description: a product category
+                                type: object
+                                properties: *ref_2
+                            includedProducts:
+                              type: array
+                              items:
+                                type: string
+                            excludedProducts:
+                              type: array
+                              items:
+                                type: string
+                        get:
+                          description: >-
+                            base object to define buy and get conditions for
+                            BOGO
+                          type: object
+                          properties: *ref_3
+                    - allOf: &ref_14
+                        - description: Base object for promotion categories
+                          type: object
+                          properties: *ref_0
+                          discriminator: *ref_1
+                      description: >
+                        a promotion which is applied as a FreeShipping to the
+                        cart
+                      type: object
+                      properties: &ref_15
+                        shopId:
+                          type: string
+                        locale:
+                          type: string
+                        shippingOptions:
+                          type: array
+                          items:
+                            type: string
+                        kind:
+                          type: string
+                          pattern: ^FreeShippingPercentage$
+                    - allOf: &ref_16
+                        - description: Base object for promotion categories
+                          type: object
+                          properties: *ref_0
+                          discriminator: *ref_1
+                      description: >
+                        a promotion which is applied as percentage of Bundle to
+                        the cart
+                      type: object
+                      properties: &ref_17
+                        shopId:
+                          type: string
+                        locale:
+                          type: string
+                        discount:
+                          type: integer
+                          format: int32
+                          description: The % discount applied to the cart, from 0 to 100
+                        bundles:
+                          description: base object to define bundle matches for Bundle
+                          type: object
+                          properties: &ref_6
+                            includedCategories:
+                              type: array
+                              items:
+                                description: a bundle category
+                                type: object
+                                properties: &ref_31
+                                  path:
+                                    type: array
+                                    items:
+                                      type: string
+                                  quantity:
+                                    type: number
+                                    description: >-
+                                      The quantity of categories to satisfy the
+                                      bundle
+                            includedProducts:
+                              type: array
+                              items:
+                                description: a bundle product
+                                type: object
+                                properties: &ref_32
+                                  productId:
+                                    type: array
+                                    items:
+                                      type: string
+                                  quantity:
+                                    type: number
+                                    description: >-
+                                      The quantity of products to satisfy the
+                                      bundle
+                            excludedProducts:
+                              type: array
+                              items:
+                                type: string
+                        kind:
+                          type: string
+                          pattern: ^BundlePercentage$
+                    - allOf: &ref_18
+                        - description: Base object for promotion categories
+                          type: object
+                          properties: *ref_0
+                          discriminator: *ref_1
+                      description: >
+                        A promotion which is applied as a fixed amount discount
+                        to the entire cart
+                      type: object
+                      properties: &ref_19
+                        discounts:
+                          type: array
+                          items:
+                            description: A fixed amount discount
+                            type: object
+                            required: &ref_4
+                              - amount
+                              - currency
+                            properties: &ref_5
+                              amount:
+                                description: >-
+                                  The amount of the discount, to 5 decimal
+                                  places of accuracy
+                                type: number
+                              currency:
+                                description: The currency of the discount
+                                type: string
+                        kind:
+                          type: string
+                          pattern: ^CartLevelFixed$
+                    - allOf: &ref_20
+                        - description: Base object for promotion categories
+                          type: object
+                          properties: *ref_0
+                          discriminator: *ref_1
+                      description: >
+                        A promotion which is applied as a fixed amount discount
+                        to the entire cart
+                      type: object
+                      properties: &ref_21
+                        discounts:
+                          type: array
+                          items:
+                            description: A fixed amount discount
+                            type: object
+                            required: *ref_4
+                            properties: *ref_5
+                        kind:
+                          type: string
+                          pattern: ^ProductLevelFixed$
+                    - allOf: &ref_22
+                        - description: Base object for promotion categories
+                          type: object
+                          properties: *ref_0
+                          discriminator: *ref_1
+                      description: >
+                        a promotion which is applied as a fixed amount BOGO to
+                        the cart
+                      type: object
+                      properties: &ref_23
+                        shopId:
+                          type: string
+                        locale:
+                          type: string
+                        discounts:
+                          type: array
+                          items:
+                            description: A fixed amount discount
+                            type: object
+                            required: *ref_4
+                            properties: *ref_5
+                        kind:
+                          type: string
+                          pattern: ^BogoFixed$
+                        buy:
+                          description: >-
+                            base object to define buy and get conditions for
+                            BOGO
+                          type: object
+                          properties: *ref_3
+                        get:
+                          description: >-
+                            base object to define buy and get conditions for
+                            BOGO
+                          type: object
+                          properties: *ref_3
+                    - allOf: &ref_24
+                        - description: Base object for promotion categories
+                          type: object
+                          properties: *ref_0
+                          discriminator: *ref_1
+                      description: >
+                        a promotion which is applied as price point value of
+                        Bundle to the cart
+                      type: object
+                      properties: &ref_25
+                        shopId:
+                          type: string
+                        locale:
+                          type: string
+                        values:
+                          type: array
+                          items:
+                            description: A price point value
+                            type: object
+                            required: &ref_33
+                              - amount
+                              - currency
+                            properties: &ref_34
+                              amount:
+                                description: >-
+                                  The amount of the price point value, to 5
+                                  decimal places of accuracy
+                                type: number
+                              currency:
+                                description: The currency of the price point value
+                                type: string
+                        bundles:
+                          description: base object to define bundle matches for Bundle
+                          type: object
+                          properties: *ref_6
+                        kind:
+                          type: string
+                          pattern: ^BundleFixed$
+                  discriminator:
+                    propertyName: kind
+                    mapping:
+                      CartLevelPercentage: '#/schemas/CartLevelPercentageCategory'
+                      ProductLevelPercentage: '#/schemas/ProductLevelPercentageCategory'
+                      BogoPercentage: '#/schemas/BogoPercentageCategory'
+                      FreeShippingPercentage: '#/schemas/FreeShippingPercentageCategory'
+                      BundlePercentage: '#/schemas/BundlePercentageCategory'
+                      CartLevelFixed: '#/schemas/CartLevelFixedCategory'
+                      ProductLevelFixed: '#/schemas/ProductLevelFixedCategory'
+                      BogoFixed: '#/schemas/BogoFixedCategory'
+                      BundleFixed: '#/schemas/BundleFixedCategory'
+                stores:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - st-01
+                    - st-02
+                    - st-03
+                  description: >-
+                    Indicates in which stores the promotion can be used. A list
+                    of IDs states that the promotion can be used in the given
+                    stores while an empty array states that the promotion can be
+                    used in any store.
+              required: &ref_43
+                - name
+                - validFrom
+                - category
+            examples:
+              cart_level_percentage:
+                value: &ref_52
+                  name: Cart level percentage promotion
+                  description: A promotion with type CartLevelPercentage
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                summary: Cart Level Percentage Promotion
+              product_level_percentage:
+                value: &ref_53
+                  name: Product level percentage promotion
+                  description: A promotion with type ProductLevelPercentage
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    shopId: ''
+                    locale: EN
+                    includedCategories:
+                      - path:
+                          - Clothes
+                          - Hoodies
+                    includedProducts:
+                      - P0001
+                      - P0002
+                    excludedProducts:
+                      - P0003
+                      - P0004
+                    kind: ProductLevelPercentage
+                    discount: 10
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                summary: Product Level Percentage Promotion
+              bogo_percentage:
+                value: &ref_54
+                  name: BOGO percentage promotion
+                  description: A promotion with type BogoPercentage
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    shopId: ''
+                    locale: EN
+                    kind: BogoPercentage
+                    discount: 100
+                    buy:
+                      quantity: 2
+                      includedCategories:
+                        - path:
+                            - Clothes
+                            - Hoodies
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      excludedProducts:
+                        - P0003
+                        - P0004
+                    get:
+                      quantity: 1
+                      includedCategories:
+                        - path:
+                            - Clothes
+                            - Hoodies
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      excludedProducts:
+                        - P0003
+                        - P0004
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                summary: BOGO Percentage Promotion
+              free_shipping:
+                value: &ref_55
+                  name: Free Shipping promotion
+                  description: A promotion with type FreeShipping
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    shopId: storefront-catalog-en
+                    locale: EN
+                    kind: FreeShippingPercentage
+                    shippingOptions:
+                      - Standard
+                      - Next Day
+                summary: Free Shipping Promotion
+              bundle_percentage:
+                value: &ref_56
+                  name: Bundle percentage promotion
+                  description: A promotion with type BundlePercentage
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    shopId: storefront-catalog-en
+                    locale: EN
+                    kind: BundlePercentage
+                    discount: 50
+                    bundles:
+                      - includedCategories:
+                          - path:
+                              - Shop
+                              - Accessories
+                            quantity: 2
+                          - path:
+                              - Shop
+                              - Shoes
+                            quantity: 1
+                        includedProducts:
+                          - productId:
+                              - P0001
+                              - P0002
+                            quantity: 2
+                        excludedProducts:
+                          - P0003
+                          - P0004
+                      - includedCategories:
+                          - path:
+                              - Clothes
+                              - Hoodies
+                            quantity: 2
+                        includedProducts:
+                          - productId:
+                              - P0005
+                              - P0006
+                              - P0007
+                            quantity: 2
+                        excludedProducts:
+                          - P0008
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 0
+                summary: Bundle Percentage Promotion
+              cart_level_fixed:
+                value: &ref_57
+                  name: Cart level fixed promotion
+                  description: A promotion with type CartLevelFixed
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                    - code: USD
+                      minimumCartValue: 0
+                summary: Cart Level Fixed Promotion
+              product_level_fixed:
+                value: &ref_58
+                  name: Product level fixed promotion
+                  description: A promotion with type ProductLevelFixed
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    kind: ProductLevelFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: AED
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                    - code: AED
+                      minimumCartValue: 13
+                summary: Product Level Fixed Promotion
+              bogo_fixed:
+                value: &ref_59
+                  name: BOGO fixed promotion
+                  description: A promotion with type BogoFixed
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    shopId: ''
+                    locale: EN
+                    kind: BogoFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                    buy:
+                      quantity: 2
+                      includedCategories:
+                        - path:
+                            - Clothes
+                            - Hoodies
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      excludedProducts:
+                        - P0003
+                        - P0004
+                    get:
+                      quantity: 1
+                      includedCategories:
+                        - path:
+                            - Clothes
+                            - Hoodies
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      excludedProducts:
+                        - P0003
+                        - P0004
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                summary: BOGO Fixed Promotion
+              bundle_fixed:
+                value: &ref_60
+                  name: Bundle fixed promotion
+                  description: A promotion with type BundleFixed
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    shopId: storefront-catalog-en
+                    locale: EN
+                    kind: BundleFixed
+                    values:
+                      - amount: 10
+                        currency: EUR
+                    bundles:
+                      - includedCategories:
+                          - path:
+                              - Shop
+                              - Accessories
+                            quantity: 2
+                          - path:
+                              - Shop
+                              - Shoes
+                            quantity: 1
+                        includedProducts:
+                          - productId:
+                              - P0001
+                              - P0002
+                            quantity: 2
+                        excludedProducts:
+                          - P0003
+                          - P0004
+                      - includedCategories:
+                          - path:
+                              - Clothes
+                              - Hoodies
+                            quantity: 2
+                        includedProducts:
+                          - productId:
+                              - P0005
+                              - P0006
+                              - P0007
+                            quantity: 2
+                        excludedProducts:
+                          - P0008
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 0
+                summary: Bundle Fixed Promotion
+      responses:
+        '201':
+          description: Promotion created successfully
+          content:
+            application/json:
+              schema:
+                description: A promotion plus HATEOAS fields
+                type: object
+                properties: &ref_28
+                  promotion:
+                    type: object
+                    description: A Promotion
+                    required: &ref_35
+                      - id
+                      - active
+                      - createdAt
+                      - createdBy
+                      - updatedAt
+                      - updatedBy
+                      - tenant
+                      - version
+                      - name
+                      - validFrom
+                      - category
+                    properties: &ref_36
+                      id:
+                        type: string
+                        readOnly: true
+                      createdAt:
+                        type: string
+                        format: date-time
+                        readOnly: true
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        readOnly: true
+                      createdBy:
+                        type: string
+                        readOnly: true
+                      updatedBy:
+                        type: string
+                        readOnly: true
+                      tenant:
+                        type: string
+                      version:
+                        type: string
+                      active:
+                        type: boolean
+                        example: true
+                        description: Indicates whether the promotion is active or not
+                      name:
+                        type: string
+                        example: My Amazing Promotion
+                        description: The name of the promotion
+                      description:
+                        type: string
+                        example: This promotion is amazing
+                      localizedTimezone:
+                        type: boolean
+                        example: true
+                        description: >-
+                          Optional, this property determines local timezone
+                          validity for the promotion. If true, UTC is assumed
+                          with no timezone required in "validFrom" and
+                          "validTo". If false, timezone must be specified in
+                          those fields.
+                      validFrom:
+                        type: string
+                        pattern: >-
+                          (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                        description: >-
+                          The date the promotion becomes valid. If
+                          localizedTimezone is false, timezone can be indicated
+                          at the end of the string.
+                        example: '2021-01-01T00:00:00+01:00'
+                      validTo:
+                        type: string
+                        pattern: >-
+                          (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                        example: '2021-01-01T00:00:00+01:00'
+                        description: >-
+                          The date the promotion becomes invalid. If
+                          localizedTimezone is false, timezone can be indicated
+                          at the end of the string.
+                      currencies:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              format: /\w{3}/
+                              description: A ISO4217 currency code.
+                              example: EUR
+                            minimumCartValue:
+                              type: number
+                              example: 5215432
+                      category:
+                        type: object
+                        oneOf:
+                          - allOf: *ref_7
+                            description: >
+                              A promotion which is applied as a % discount to
+                              the entire cart
+                            type: object
+                            required: *ref_8
+                            properties: *ref_9
+                          - allOf: *ref_10
+                            description: A product level percentage promotion
+                            type: object
+                            properties: *ref_11
+                          - allOf: *ref_12
+                            description: >
+                              a promotion which is applied as a percentage BOGO
+                              to the cart
+                            type: object
+                            properties: *ref_13
+                          - allOf: *ref_14
+                            description: >
+                              a promotion which is applied as a FreeShipping to
+                              the cart
+                            type: object
+                            properties: *ref_15
+                          - allOf: *ref_16
+                            description: >
+                              a promotion which is applied as percentage of
+                              Bundle to the cart
+                            type: object
+                            properties: *ref_17
+                          - allOf: *ref_18
+                            description: >
+                              A promotion which is applied as a fixed amount
+                              discount to the entire cart
+                            type: object
+                            properties: *ref_19
+                          - allOf: *ref_20
+                            description: >
+                              A promotion which is applied as a fixed amount
+                              discount to the entire cart
+                            type: object
+                            properties: *ref_21
+                          - allOf: *ref_22
+                            description: >
+                              a promotion which is applied as a fixed amount
+                              BOGO to the cart
+                            type: object
+                            properties: *ref_23
+                          - allOf: *ref_24
+                            description: >
+                              a promotion which is applied as price point value
+                              of Bundle to the cart
+                            type: object
+                            properties: *ref_25
+                        discriminator:
+                          propertyName: kind
+                          mapping:
+                            CartLevelPercentage: '#/schemas/CartLevelPercentageCategory'
+                            ProductLevelPercentage: '#/schemas/ProductLevelPercentageCategory'
+                            BogoPercentage: '#/schemas/BogoPercentageCategory'
+                            FreeShippingPercentage: '#/schemas/FreeShippingPercentageCategory'
+                            BundlePercentage: '#/schemas/BundlePercentageCategory'
+                            CartLevelFixed: '#/schemas/CartLevelFixedCategory'
+                            ProductLevelFixed: '#/schemas/ProductLevelFixedCategory'
+                            BogoFixed: '#/schemas/BogoFixedCategory'
+                            BundleFixed: '#/schemas/BundleFixedCategory'
+                      stores:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - st-01
+                          - st-02
+                          - st-03
+                        description: >-
+                          Indicates in which stores the promotion can be used. A
+                          list of IDs states that the promotion can be used in
+                          the given stores while an empty array states that the
+                          promotion can be used in any store.
+                  links:
+                    type: object
+                    description: Object links
+                    required: &ref_37
+                      - self
+                    properties: &ref_38
+                      self:
+                        type: string
+                        description: the link in object pointing to the same object
+                        readOnly: true
+              example:
+                promotion: &ref_29
+                  id: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                  active: false
+                  name: Promotion for hoodies
+                  description: A promotion for hoodies
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                  createdAt: '2021-12-31T00:00:00'
+                  updatedAt: '2021-12-31T00:00:00'
+                  createdBy: store-employee-1
+                  updatedBy: store-employee-1
+                  tenant: newstore
+                  stores: []
+                  version: '2'
+                links: &ref_30
+                  self: /promotion/7c9f2605-9fb3-5444-8fee-47fe51608efe
+        '400':
+          description: The payload was invalid and the promotion could not be created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: &ref_26
+                  - message
+                  - status
+                properties: &ref_27
+                  message:
+                    type: string
+                  status:
+                    type: integer
+                  causes:
+                    type: array
+                    items:
+                      type: string
+                  id:
+                    type: string
+                  type:
+                    type: string
+                  code:
+                    type: string
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+    get:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Manage promotions
+      summary: List promotions
+      description: >
+        Retrieves all automatic promotions created for your business via
+        NewStore Omnichannel
+
+        Manager or the [create promotion](#operation/createPromotion) method.
+      operationId: getPromotions
+      parameters:
+        - name: count
+          in: query
+          description: The number of promotions to get at once
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: The page number
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A page of promotions and the links for the previous and next pages
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A Page of promotions
+                properties: &ref_41
+                  items:
+                    type: array
+                    items:
+                      description: A promotion plus HATEOAS fields
+                      type: object
+                      properties: *ref_28
+                  links:
+                    type: object
+                    description: Pagination links
+                    properties: &ref_39
+                      next:
+                        type: string
+                        description: >-
+                          the link in a pagination response pointing to the next
+                          page
+                        readOnly: true
+                      previous:
+                        type: string
+                        description: >-
+                          the link in a pagination response pointing to the
+                          previous page
+                        readOnly: true
+                  pagination:
+                    type: object
+                    description: Pagination response fields
+                    properties: &ref_40
+                      count:
+                        type: integer
+                        description: echoes the 'count' value that was used
+                      page:
+                        type: integer
+                        description: echoes the 'page' value that was used
+                      total:
+                        type: integer
+                        description: the total number of resources matching the query
+              example:
+                items:
+                  - promotion:
+                      id: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                      active: true
+                      name: Promotion for hoodies
+                      description: A promotion for hoodies
+                      localizedTimezone: false
+                      validFrom: '2022-01-01T00:00:00+01:00'
+                      validTo: '2022-04-01T00:00:00+01:00'
+                      category:
+                        kind: CartLevelPercentage
+                        discount: 5
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 10
+                      createdAt: '2021-12-31T00:00:00'
+                      updatedAt: '2021-12-31T00:00:00'
+                      createdBy: store-employee-1
+                      updatedBy: store-employee-1
+                      tenant: newstore
+                      version: '2'
+                    links:
+                      self: /promotion/7c9f2605-9fb3-5444-8fee-47fe51608efe
+                  - promotion:
+                      id: 6cxtew5ec-9fb3-5478-9cre6-8ue3289y
+                      active: false
+                      name: Promotion for t-shirts
+                      description: A promotion for t-shirts
+                      localizedTimezone: false
+                      validFrom: '2022-01-01T00:00:00+01:00'
+                      validTo: '2022-04-01T00:00:00+01:00'
+                      category:
+                        kind: CartLevelPercentage
+                        discount: 3
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 5
+                      createdAt: '2021-11-01T00:00:00'
+                      updatedAt: '2021-11-01T00:00:00'
+                      createdBy: store-employee-2
+                      updatedBy: store-employee-2
+                      tenant: newstore
+                      stores: []
+                      version: '1'
+                    links:
+                      self: /promotion/6cxtew5ec-9fb3-5478-9cre6-8ue3289y
+                links:
+                  next: /promotion/2189ey2-b624-7654-2v34-bd4672f425rfe
+                  previous: ''
+                pagination:
+                  count: 2
+                  page: 1
+                  total: 3
+        '400':
+          description: >-
+            The request was invalid (an invalid cursor, or neither cursor nor
+            count provided)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+  /promotion/{id}:
+    parameters:
+      - name: x-request-id
+        in: header
+        schema:
+          type: string
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Manage promotions
+      summary: Get promotion
+      description: >
+        Retrieves the specified automatic promotion by ID. To retrieve the
+        promotion ID,
+
+        use the [List promotions](#operation/getPromotions) method.
+      operationId: getPromotion
+      responses:
+        '200':
+          description: A promotion
+          content:
+            application/json:
+              schema:
+                description: A promotion plus HATEOAS fields
+                type: object
+                properties: *ref_28
+              example:
+                promotion:
+                  id: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                  active: false
+                  name: Promotion for hoodies
+                  description: A promotion for hoodies
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                  createdAt: '2021-12-31T00:00:00'
+                  updatedAt: '2021-12-31T00:00:00'
+                  createdBy: store-employee-1
+                  updatedBy: store-employee-1
+                  tenant: newstore
+                  stores: []
+                  version: '1'
+                links:
+                  self: /promotion/7c9f2605-9fb3-5444-8fee-47fe51608efe
+        '404':
+          description: The requested promotion was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+    put:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Manage promotions
+      summary: Update promotion
+      description: >
+        Updates the specified promotion with new information. Use this method to
+        switch
+
+        a promotion to an ``active`` state or change the currencies that the
+        promotion can be applied
+
+        to, and so on. Given the nature of the update via the PUT method the
+        complete object
+
+        has to be passed. The only property that cannot be updated is the
+        category.
+
+
+        To retrieve the promotion ID, use the [List
+        promotions](#operation/getPromotions) method.
+      operationId: updatePromotion
+      requestBody:
+        description: The updated promotion
+        content:
+          application/json:
+            schema:
+              type: object
+              description: An update of a Promotion
+              required: &ref_44
+                - version
+              properties: &ref_45
+                id:
+                  type: string
+                  readOnly: true
+                createdAt:
+                  type: string
+                  format: date-time
+                  readOnly: true
+                updatedAt:
+                  type: string
+                  format: date-time
+                  readOnly: true
+                createdBy:
+                  type: string
+                  readOnly: true
+                updatedBy:
+                  type: string
+                  readOnly: true
+                tenant:
+                  type: string
+                version:
+                  type: string
+                active:
+                  type: boolean
+                  example: true
+                  description: Indicates whether the promotion is active or not
+                name:
+                  type: string
+                  example: My Amazing Promotion
+                  description: The name of the promotion
+                description:
+                  type: string
+                  example: This promotion is amazing
+                localizedTimezone:
+                  type: boolean
+                  example: true
+                  description: >-
+                    Optional, this property determines local timezone validity
+                    for the promotion. If true, UTC is assumed with no timezone
+                    required in "validFrom" and "validTo". If false, timezone
+                    must be specified in those fields.
+                validFrom:
+                  type: string
+                  pattern: >-
+                    (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                  description: >-
+                    The date the promotion becomes valid. If localizedTimezone
+                    is false, timezone can be indicated at the end of the
+                    string.
+                  example: '2021-01-01T00:00:00+01:00'
+                validTo:
+                  type: string
+                  pattern: >-
+                    (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                  example: '2021-01-01T00:00:00+01:00'
+                  description: >-
+                    The date the promotion becomes invalid. If localizedTimezone
+                    is false, timezone can be indicated at the end of the
+                    string.
+                currencies:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        format: /\w{3}/
+                        description: A ISO4217 currency code.
+                        example: EUR
+                      minimumCartValue:
+                        type: number
+                        example: 5215432
+                category:
+                  type: object
+                  oneOf:
+                    - allOf: *ref_7
+                      description: >
+                        A promotion which is applied as a % discount to the
+                        entire cart
+                      type: object
+                      required: *ref_8
+                      properties: *ref_9
+                    - allOf: *ref_10
+                      description: A product level percentage promotion
+                      type: object
+                      properties: *ref_11
+                    - allOf: *ref_12
+                      description: >
+                        a promotion which is applied as a percentage BOGO to the
+                        cart
+                      type: object
+                      properties: *ref_13
+                    - allOf: *ref_14
+                      description: >
+                        a promotion which is applied as a FreeShipping to the
+                        cart
+                      type: object
+                      properties: *ref_15
+                    - allOf: *ref_16
+                      description: >
+                        a promotion which is applied as percentage of Bundle to
+                        the cart
+                      type: object
+                      properties: *ref_17
+                    - allOf: *ref_18
+                      description: >
+                        A promotion which is applied as a fixed amount discount
+                        to the entire cart
+                      type: object
+                      properties: *ref_19
+                    - allOf: *ref_20
+                      description: >
+                        A promotion which is applied as a fixed amount discount
+                        to the entire cart
+                      type: object
+                      properties: *ref_21
+                    - allOf: *ref_22
+                      description: >
+                        a promotion which is applied as a fixed amount BOGO to
+                        the cart
+                      type: object
+                      properties: *ref_23
+                    - allOf: *ref_24
+                      description: >
+                        a promotion which is applied as price point value of
+                        Bundle to the cart
+                      type: object
+                      properties: *ref_25
+                  discriminator:
+                    propertyName: kind
+                    mapping:
+                      CartLevelPercentage: '#/schemas/CartLevelPercentageCategory'
+                      ProductLevelPercentage: '#/schemas/ProductLevelPercentageCategory'
+                      BogoPercentage: '#/schemas/BogoPercentageCategory'
+                      FreeShippingPercentage: '#/schemas/FreeShippingPercentageCategory'
+                      BundlePercentage: '#/schemas/BundlePercentageCategory'
+                      CartLevelFixed: '#/schemas/CartLevelFixedCategory'
+                      ProductLevelFixed: '#/schemas/ProductLevelFixedCategory'
+                      BogoFixed: '#/schemas/BogoFixedCategory'
+                      BundleFixed: '#/schemas/BundleFixedCategory'
+                stores:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - st-01
+                    - st-02
+                    - st-03
+                  description: >-
+                    Indicates in which stores the promotion can be used. A list
+                    of IDs states that the promotion can be used in the given
+                    stores while an empty array states that the promotion can be
+                    used in any store.
+            example:
+              id: 62839b62-80ff-4000-8000-01b47275b241
+              name: My Promotion
+              description: My Promotion Description
+              localizedTimezone: false
+              validFrom: '2022-01-01T00:00:00+01:00'
+              validTo: '2022-04-01T00:00:00+01:00'
+              category:
+                - kind: CartLevelPercentage
+                  discount: 10
+              active: true
+              currencies:
+                - code: EUR
+                  minimumCartValue: '0.00000'
+              stores: []
+              version: 6f419b7b-1529-4c33-a5ba-a07762850db1
+      responses:
+        '200':
+          description: The updated promotion
+          content:
+            application/json:
+              schema:
+                description: A promotion plus HATEOAS fields
+                type: object
+                properties: *ref_28
+              example:
+                promotion: *ref_29
+                links: *ref_30
+        '400':
+          description: The proposed update is invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+        '404':
+          description: The call attempted to update a promotion which does not exist
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+        '409':
+          description: >
+            The version key is out of date and the call is attempting to update
+            a promotion
+
+            which has changed since it was last fetched by the caller
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+  /cart:
+    post:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Apply promotions to a cart
+      summary: Apply promotions to a cart
+      description: >
+        Use this method to apply existing promotions to a cart to view how
+        pricing during checkout
+
+        will be calculated based on these promotions.
+
+
+        This method returns a version of the cart (``DiscountedCart``) with all
+        specified promotions applied to it.
+
+        This method is idempotent, and does not change the state of the cart or
+        products added to
+
+        the cart.
+
+
+        The order of the discounts in the array of discounts attached to each
+        item in a ``DiscountedCart`` is important and should not be changed when
+        being used in other services or contexts.
+      operationId: apply
+      requestBody:
+        description: The cart without promotions applied
+        content:
+          application/json:
+            schema:
+              type: object
+              description: A shopping cart without promotions applied
+              properties: &ref_47
+                customerId:
+                  description: The customer id
+                  type: string
+                channelType:
+                  description: Typically web or store
+                  type: string
+                currency:
+                  description: The currency of the cart
+                  type: string
+                couponCodes:
+                  description: The coupon codes to be applied
+                  type: array
+                  items:
+                    type: string
+                storeId:
+                  description: The store ID
+                  type: string
+                shopId:
+                  description: The shop ID
+                  type: string
+                locale:
+                  description: The locale
+                  type: string
+                items:
+                  description: The individual items that the cart contains
+                  type: array
+                  items:
+                    type: object
+                    description: An individual item in the cart
+                    properties: &ref_46
+                      id:
+                        description: The ID of the item in the cart
+                        type: string
+                      productId:
+                        description: The Newstore ID of the product
+                        type: string
+                      price:
+                        description: The price of the item, accurate to 5 decimal places
+                        type: string
+                      type:
+                        description: >
+                          The type of item that the promotion is applied to.
+
+
+                          Currently, you can apply automatic promotions to
+                          specified products or shipping costs.
+
+
+                          Automatic promotions can also be applied to
+                          [merchandise](https://docs.newstore.com/docs/glossary#merchandise)
+
+                          that is chargeable to the customer, but not part of a
+                          product catalog to sell for
+
+                          your business, such as coffee to go in the retail
+                          store or gift wrap services.
+                        type: string
+                        enum:
+                          - Product
+                          - Shipping
+                          - NonMerchantable
+                      productCategories:
+                        type: array
+                        description: >-
+                          The product categories for which this promotion was
+                          applied
+                        items:
+                          type: array
+                          items:
+                            type: string
+                      discountForbidden:
+                        description: >-
+                          Indicate whether discount is forbidden or not for this
+                          item
+                        type: boolean
+            example:
+              customerId: ''
+              channelType: store
+              currency: USD
+              couponCodes:
+                - HAPPYVALENTINES
+              storeId: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+              shopId: storefront-catalog-en
+              locale: en-us
+              items:
+                - id: d2c083d2-35f0-4471-a499-73ea9ecbe644
+                  productId: '1000501'
+                  price: '100.00000'
+                  type: Product
+                  discountForbidden: false
+                  productCategories:
+                    - - Shop
+                      - Clothing
+                      - Dresses
+                    - - Shop
+                      - Clothing
+      responses:
+        '200':
+          description: The cart with promotions applied
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A shopping cart with promotion adjustments applied
+                properties: &ref_50
+                  customerId:
+                    description: The customer id
+                    type: string
+                  channelType:
+                    description: Typically web or store
+                    type: string
+                  currency:
+                    description: The currency
+                    type: string
+                  couponCodes:
+                    description: The coupon codes applied
+                    type: array
+                    items:
+                      type: string
+                  storeId:
+                    description: The store ID
+                    type: string
+                  shopId:
+                    description: The shop ID
+                    type: string
+                  locale:
+                    description: The locale
+                    type: string
+                  items:
+                    description: The individual discounted items of the cart
+                    type: array
+                    items:
+                      type: object
+                      description: An individual item with adjustments applied
+                      properties: &ref_49
+                        id:
+                          description: The ID of the item in the cart
+                          type: string
+                        productId:
+                          description: The Newstore ID of the product
+                          type: string
+                        price:
+                          description: The price of the item, accurate to 5 decimal places
+                          type: string
+                        type:
+                          description: >
+                            The type of item that the promotion is applied to.
+                            Currently, you can apply automatic
+
+                            promotions to specified products or shipping costs.
+                            Automatic promotions can also be
+
+                            applied to
+                            [merchandise](https://docs.newstore.com/docs/glossary#merchandise)
+
+                            that is chargeable to the customer, but not part of
+                            a product catalog to sell for
+
+                            your business, such as coffee to go in the retail
+                            store or gift wrap services.
+                          type: string
+                          enum:
+                            - Product
+                            - Shipping
+                            - NonMerchantable
+                        productCategories:
+                          type: array
+                          description: >-
+                            The product categories for which this promotion was
+                            applied
+                          items:
+                            type: array
+                            items:
+                              type: string
+                        discountForbidden:
+                          description: >-
+                            Indicate whether discount is forbidden or not for
+                            this item
+                          type: boolean
+                        adjustedPrice:
+                          description: The discounted price of the item
+                          type: string
+                        discounts:
+                          description: The discounts being applied
+                          type: array
+                          items:
+                            type: object
+                            properties: &ref_48
+                              id:
+                                description: The discount's id
+                                type: string
+                              name:
+                                description: The discount's name
+                                type: string
+                              description:
+                                description: The discount's description
+                                type: string
+                              kind:
+                                description: The discount's kind
+                                type: string
+                                enum:
+                                  - LegacyCartLevelPercentageCategory
+                                  - LegacyCartLevelFixedCategory
+                                  - LegacyProductLevelPercentageCategory
+                                  - LegacyProductLevelFixedCategory
+                                  - LegacyShippingPercentageCategory
+                                  - CartLevelPercentageCategory
+                                  - ProductLevelPercentageCategory
+                                  - CartLevelFixedCategory
+                                  - ProductLevelFixedCategory
+                              promotionType:
+                                description: >-
+                                  The discount's promotion type e.g. cart level
+                                  or product level
+                                type: string
+                                enum:
+                                  - Cart
+                                  - Product
+                              discountSource:
+                                description: >-
+                                  The source of the discount. For example,
+                                  ``Promotion`` implies that the discount is
+                                  based on automatic promotions, while
+                                  ``Coupon`` refers to discounts from coupons
+                                  and ``Legacy`` implies that the discount is
+                                  based on any other discount mechanism other
+                                  than coupons or automatic promotions.
+                                type: string
+                                enum:
+                                  - Promotion
+                                  - Coupon
+                                  - Legacy
+                              discount:
+                                description: >-
+                                  The value of the discount, to 5 decimal places
+                                  of accuracy
+                                type: string
+                              change:
+                                description: >-
+                                  The change in price resulting from this
+                                  discount, to 5 decimal places of accuracy
+                                type: string
+                              couponCode:
+                                description: >-
+                                  The coupon, if any, associated with this
+                                  discount
+                                type: string
+              example:
+                customerId: ''
+                channelType: store
+                currency: USD
+                storeId: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                shopId: storefront-catalog-en
+                locale: en-us
+                couponCodes:
+                  - HAPPYVALENTINES
+                items:
+                  - id: d2c083d2-35f0-4471-a499-73ea9ecbe644
+                    productId: '1000501'
+                    price: '100.00000'
+                    type: Product
+                    discountForbidden: false
+                    productCategories:
+                      - - Shop
+                        - Clothing
+                        - Dresses
+                      - - Shop
+                        - Clothing
+                    adjustedPrice: '65.00000'
+                    discounts:
+                      - id: 6215ff42-1b41-4000-8000-f0ca55bdc4da
+                        name: Valentine's Day 20%
+                        description: Discount of 20% for Valentine's Day
+                        kind: ProductLevelPercentageCategory
+                        promotionType: Product
+                        discountSource: Promotion
+                        discount: '20.00000'
+                        change: '-20.00000'
+                        couponCode: ''
+                      - id: 62164750-1b41-4000-8000-f0ca55bdc743
+                        name: Cart fixed 10
+                        description: Cart fixed 10
+                        kind: CartLevelFixedCategory
+                        promotionType: Cart
+                        discountSource: Promotion
+                        discount: '10.00000'
+                        change: '-10.00000'
+                        couponCode: ''
+                      - id: 0012e07d-534f-4cb9-8c1a-f9c25dcd07f8
+                        name: Valentine's Day
+                        description: 5% Coupon for Valentine's Day
+                        kind: LegacyCartLevelFixedCategory
+                        promotionType: Cart
+                        discountSource: Legacy
+                        discount: '5.00000'
+                        change: '-5.00000'
+                        couponCode: HAPPYVALENTINES
+        '400':
+          description: The provided cart is invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+  /code/redemption:
+    post:
+      security:
+        - newStoreAccessToken: []
+      summary: Create a coupon code redemption
+      description: >
+        Use this method to redeem a coupon code. It redeem the coupon for legacy
+        or for the stackable coupons
+
+        according to the internal configuration for the given tenant.
+
+
+        This method is not idempotent and should be called when the coupon was
+        used. If the order for which
+
+        this coupon was used failes, the coupon is unredeemed automatically at a
+        later stage.
+
+
+        After a successful execution a 200 status is returned.
+      operationId: redeemCoupon
+      requestBody:
+        description: The redemption request
+        content:
+          application/json:
+            schema:
+              type: object
+              description: A redemption request
+              properties: &ref_51
+                codes:
+                  type: array
+                  items:
+                    type: string
+                consumerId:
+                  type: string
+                channelType:
+                  type: string
+                catalogTotal:
+                  type: number
+                currency:
+                  type: string
+                orderId:
+                  type: string
+            example:
+              value:
+                codes:
+                  - SUMMER2022
+                  - DRESS10
+                consumerId: consumer-id-123
+                channelType: store
+                catalogTotal: 100
+                currency: USD
+                orderId: 2b89a5e0-1f1f-4374-b6d3-272341193cc7
+      responses:
+        '200':
+          description: The redemption was created successfully
+        '400':
+          description: Provided data are not as expected
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_26
+                properties: *ref_27
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    PromotionCategory:
+      description: Base object for promotion categories
+      type: object
+      properties: *ref_0
+      discriminator: *ref_1
+    CartLevelPercentageCategory:
+      allOf: *ref_7
+      description: |
+        A promotion which is applied as a % discount to the entire cart
+      type: object
+      required: *ref_8
+      properties: *ref_9
+    ProductCategory:
+      description: a product category
+      type: object
+      properties: *ref_2
+    ProductLevelPercentageCategory:
+      allOf: *ref_10
+      description: A product level percentage promotion
+      type: object
+      properties: *ref_11
+    BogoMatch:
+      description: base object to define buy and get conditions for BOGO
+      type: object
+      properties: *ref_3
+    BogoPercentageCategory:
+      allOf: *ref_12
+      description: |
+        a promotion which is applied as a percentage BOGO to the cart
+      type: object
+      properties: *ref_13
+    FreeShippingPercentageCategory:
+      allOf: *ref_14
+      description: |
+        a promotion which is applied as a FreeShipping to the cart
+      type: object
+      properties: *ref_15
+    BundleCategory:
+      description: a bundle category
+      type: object
+      properties: *ref_31
+    BundleProduct:
+      description: a bundle product
+      type: object
+      properties: *ref_32
+    BundleMatch:
+      description: base object to define bundle matches for Bundle
+      type: object
+      properties: *ref_6
+    BundlePercentageCategory:
+      allOf: *ref_16
+      description: |
+        a promotion which is applied as percentage of Bundle to the cart
+      type: object
+      properties: *ref_17
+    FixedDiscount:
+      description: A fixed amount discount
+      type: object
+      required: *ref_4
+      properties: *ref_5
+    CartLevelFixedCategory:
+      allOf: *ref_18
+      description: >
+        A promotion which is applied as a fixed amount discount to the entire
+        cart
+      type: object
+      properties: *ref_19
+    ProductLevelFixedCategory:
+      allOf: *ref_20
+      description: >
+        A promotion which is applied as a fixed amount discount to the entire
+        cart
+      type: object
+      properties: *ref_21
+    BogoFixedCategory:
+      allOf: *ref_22
+      description: |
+        a promotion which is applied as a fixed amount BOGO to the cart
+      type: object
+      properties: *ref_23
+    FixedValue:
+      description: A price point value
+      type: object
+      required: *ref_33
+      properties: *ref_34
+    BundleFixedCategory:
+      allOf: *ref_24
+      description: |
+        a promotion which is applied as price point value of Bundle to the cart
+      type: object
+      properties: *ref_25
+    Promotion:
+      type: object
+      description: A Promotion
+      required: *ref_35
+      properties: *ref_36
+    ObjectLinks:
+      type: object
+      description: Object links
+      required: *ref_37
+      properties: *ref_38
+    PromotionResponse:
+      description: A promotion plus HATEOAS fields
+      type: object
+      properties: *ref_28
+    PageLinks:
+      type: object
+      description: Pagination links
+      properties: *ref_39
+    Pagination:
+      type: object
+      description: Pagination response fields
+      properties: *ref_40
+    PromotionPage:
+      type: object
+      description: A Page of promotions
+      properties: *ref_41
+    Error:
+      type: object
+      required: *ref_26
+      properties: *ref_27
+    NewPromotion:
+      description: A new promotion
+      type: object
+      properties: *ref_42
+      required: *ref_43
+    UpdatePromotion:
+      type: object
+      description: An update of a Promotion
+      required: *ref_44
+      properties: *ref_45
+    Item:
+      type: object
+      description: An individual item in the cart
+      properties: *ref_46
+    Cart:
+      type: object
+      description: A shopping cart without promotions applied
+      properties: *ref_47
+    Discount:
+      type: object
+      properties: *ref_48
+    DiscountedItem:
+      type: object
+      description: An individual item with adjustments applied
+      properties: *ref_49
+    DiscountedCart:
+      type: object
+      description: A shopping cart with promotion adjustments applied
+      properties: *ref_50
+    NewCodeRedemption:
+      type: object
+      description: A redemption request
+      properties: *ref_51
+  examples:
+    post_promotion_cart_level_percentage:
+      value: *ref_52
+      summary: Cart Level Percentage Promotion
+    post_promotion_product_level_percentage:
+      value: *ref_53
+      summary: Product Level Percentage Promotion
+    post_promotion_bogo_percentage:
+      value: *ref_54
+      summary: BOGO Percentage Promotion
+    post_promotion_free_shipping:
+      value: *ref_55
+      summary: Free Shipping Promotion
+    post_promotion_bundle_percentage:
+      value: *ref_56
+      summary: Bundle Percentage Promotion
+    post_promotion_cart_level_fixed:
+      value: *ref_57
+      summary: Cart Level Fixed Promotion
+    post_promotion_product_level_fixed:
+      value: *ref_58
+      summary: Product Level Fixed Promotion
+    post_promotion_bogo_fixed:
+      value: *ref_59
+      summary: BOGO Fixed Promotion
+    post_promotion_bundle_fixed:
+      value: *ref_60
+      summary: Bundle Fixed Promotion
+x-annotation-crossOriginAllowed: true

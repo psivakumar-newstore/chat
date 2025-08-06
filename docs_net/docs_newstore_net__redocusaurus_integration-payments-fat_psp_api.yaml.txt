@@ -1,0 +1,429 @@
+openapi: 3.0.0
+info:
+  title: Payment Provider Asynchronous API
+  version: '0'
+  description: >
+    Allows integration adapters for asynchronuous
+    [PSPs](/docs/glossary.html#term-POS)
+
+    to notify NewStore of updates for requested payment operations.
+
+
+    Represents a submitted payment operation status that your payment provider
+    updated.
+
+
+    Use this resource if you are working with asynchronous payment providers, or
+    providers that take a
+
+    long time to respond, to notify NewStore about the completion of payment
+    operations.
+
+
+    **Note:** Payment provider integration is done using the
+
+    [Payment Provider Webhooks](/newstore-cloud/payment/fat_psp_hook.html).
+
+    For more information about the terminology, the integration procedure and
+    use cases,
+
+    refer to the [integration guide](/docs/development/api/guides/psp.html).
+
+
+    **Important:** All these requests contain an idempotency key. Make sure that
+    you send the **same** response
+
+    every time you receive a request with a given idempotency key.
+
+    For example, if you receive 3 requests containing the idempotency key
+    `abcd`, whether the request body
+
+    has changed or not, you must give the same response to these 3 requests.
+
+
+    **Note:** The defined baseUri is for illustration purposes only, edit it as
+    needed.
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+security: []
+paths:
+  /payment_providers/_success/{provider_name}/{correlation_id}/{instrument_id}:
+    parameters:
+      - name: provider_name
+        description: The name of the payment provider.
+        required: true
+        in: path
+        schema:
+          title: Provider Name
+          description: The name of the payment provider.
+          type: string
+      - name: correlation_id
+        description: >-
+          The correlation id is the idempotency key (`idempotency_key`) provided
+          in the initial call to the [Payment Provider
+          Webhooks](/newstore-cloud/payment/fat_psp_hook.html).
+        required: true
+        in: path
+        schema:
+          title: Correlation ID
+          description: >-
+            The correlation id is the idempotency key (`idempotency_key`)
+            provided in the initial call to the [Payment Provider
+            Webhooks](/newstore-cloud/payment/fat_psp_hook.html).
+          type: string
+      - name: instrument_id
+        description: >-
+          The identifier of the instrument (`identifier`) provided in the
+          initial call to the [Payment Provider
+          Webhooks](/newstore-cloud/payment/fat_psp_hook.html).
+        required: true
+        in: path
+        schema:
+          title: Instrument ID
+          description: >-
+            The identifier of the instrument (`identifier`) provided in the
+            initial call to the [Payment Provider
+            Webhooks](/newstore-cloud/payment/fat_psp_hook.html).
+          type: string
+    post:
+      operationId: notifySuccess
+      summary: Notify success
+      description: |
+        Notifies NewStore of a successful asynchronous call.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              title: Schema of a successful financial operation.
+              type: object
+              properties:
+                transactions:
+                  type: array
+                  description: >-
+                    A list of transactions that resulted from a successful
+                    operation. If the operation is asynchronous, this list is
+                    empty. To complete the request, use the Payment Provider
+                    Asynchronous API to notify NewStore of the outcome of the
+                    request.
+                  items:
+                    title: A financial instrument transaction
+                    type: object
+                    required:
+                      - transaction_id
+                      - instrument_id
+                      - currency
+                    properties:
+                      transaction_id:
+                        type: string
+                        description: >-
+                          The unique identifier of the transaction. It is
+                          recommended to assign a PSP-generated reference to
+                          this field instead of generating you own ID. This
+                          facilitates log analyses as the value directly
+                          corresponds to the PSP-owned transaction.
+                        minLength: 1
+                      instrument_id:
+                        type: string
+                        description: >-
+                          The integrator-owned identifier of the financial
+                          instrument.
+                        minLength: 1
+                      capture_amount:
+                        type: number
+                        description: The *change* on the available-for-capture amount.
+                        multipleOf: 0.01
+                        default: 0
+                      refund_amount:
+                        type: number
+                        description: The *change* on the available-to-refund amount.
+                        multipleOf: 0.01
+                        default: 0
+                      currency:
+                        type: string
+                        description: >-
+                          Currency in the ISO-4217-Alpha-3 character format
+.
+                        maxLength: 3
+                        minLength: 3
+                      reason:
+                        type: string
+                        description: The action that triggered this transaction.
+                        enum:
+                          - authorization
+                          - revoke
+                          - refund
+                          - capture
+                      metadata:
+                        type: object
+                        description: >-
+                          Extra information related to this transaction. As an
+                          integrator, you own this information. This field is
+                          treated as an opaque object by the NewStore platform
+                          but must follow the PCI-compliance guidelines. For
+                          example, you can use this field to store a Shopify
+                          order ID, an Adyen psp reference or non-sensitive
+                          information that should be displayed in NOM.
+                      payment_method:
+                        type: string
+                        description: >-
+                          The payment method used for the transaction. The
+                          default possible values are: 'cash', 'credit_card',
+                          'gift_card'. This value is a free field as it is
+                          ultimately the PSP's responsibility to define the
+                          available values.
+                      payment_wallet:
+                        type: string
+                        description: >-
+                          The payment walled used for the transaction. For
+                          example, Apple Pay, Android Pay.
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: The timestamp when the transaction was created.
+                      processed_at:
+                        type: string
+                        format: date-time
+                        description: The timestamp when the transaction was processed.
+      responses:
+        '204':
+          description: |
+            The operation was successful.
+        '400':
+          description: >
+            Bad request. The request syntax/semantics is invalid. This is a
+            non-retriable error.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+        '500':
+          description: >
+            Internal server error. The request failed but retrying with the same
+            data may work.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+  /payment_providers/_failure/{provider_name}/{correlation_id}/{instrument_id}:
+    parameters:
+      - name: provider_name
+        description: >-
+          The name of the payment provider. This is the name that is configured
+          as "name" in the Configuration Editor.
+        required: true
+        in: path
+        schema:
+          title: Provider Name
+          description: >-
+            The name of the payment provider. This is the name that is
+            configured as "name" in the Configuration Editor.
+          type: string
+      - name: correlation_id
+        description: >-
+          The correlation id is the idempotency key (`idempotency_key`) provided
+          in the initial call to the [Payment Provider
+          Webhooks](/newstore-cloud/payment/fat_psp_hook.html).
+        required: true
+        in: path
+        schema:
+          title: Correlation ID
+          description: >-
+            The correlation id is the idempotency key (`idempotency_key`)
+            provided in the initial call to the [Payment Provider
+            Webhooks](/newstore-cloud/payment/fat_psp_hook.html).
+          type: string
+      - name: instrument_id
+        description: >-
+          The identifier of the instrument (`identifier`) provided in the
+          initial call to the [Payment Provider
+          Webhooks](/newstore-cloud/payment/fat_psp_hook.html).
+        required: true
+        in: path
+        schema:
+          title: Instrument ID
+          description: >-
+            The identifier of the instrument (`identifier`) provided in the
+            initial call to the [Payment Provider
+            Webhooks](/newstore-cloud/payment/fat_psp_hook.html).
+          type: string
+    post:
+      operationId: notifyFailure
+      summary: Notify failure
+      description: |
+        Notifies NewStore of a failed asynchronous operation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              title: Provides information on errors raised when processing requests.
+              type: object
+              required:
+                - error_code
+                - message
+              properties:
+                error_code:
+                  description: >-
+                    An error type. You can use it to aggregate classes of
+                    errors.
+                  type: string
+                  enum:
+                    - internal_error
+                    - retry_error
+                    - instrument_error
+                    - fraud_error
+                    - rate_limit
+                    - failed_command
+                    - psp_api_error
+                  minLength: 1
+                message:
+                  description: Human readable message explaining the error.
+                  type: string
+                  minLength: 1
+                details:
+                  description: >-
+                    Metadata information that might be useful for debugging an
+                    error.
+                  type: object
+      responses:
+        '204':
+          description: |
+            The operation was successful.
+        '400':
+          description: >
+            Bad request. The request syntax/semantics is invalid. This is a
+            non-retriable error.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+        '500':
+          description: >
+            Internal server error. The request failed but retrying with the same
+            data may work.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+components: {}

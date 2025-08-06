@@ -1,0 +1,576 @@
+Order Notes API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Availabilities Export API
+Customer Profile Updates API
+Fulfillment Provider API
+Fulfillment Request API
+Historical order import API
+Item Return API
+Item Return API
+Location API
+Manager approval
+Fulfillment Configuration API
+Manager Approval Rules API
+Order API
+Order Injection API
+Order Notes API
+Order information retrieval API
+Safety Stock API
+Availabilities API
+Stock insights API
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+Get notes by order ID
+post
+Create order note
+post
+Create item note
+patch
+Update note
+del
+Delete note
+API docs by Redocly
+Order Notes API
+(
+0.1.0
+)
+Download OpenAPI specification
+:
+Download
+team-order-management
+:
+team-order-management@newstore.com
+API to create, read, update and delete notes for orders or items in NewStore Omnichannel Cloud.
+Get notes by order ID
+Returns all notes associated with the specified order ID in the request URL sorted from newest to oldest.
+This method also returns all the notes for the items that are part of the specified order.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_uuid
+required
+string
+Unique ID for an order.
+Responses
+200
+Successfully processed.
+400
+There is an error in the url.
+404
+The endpoint could not be found.
+500
+An error occurred on the server.
+default
+Unexpected Error
+get
+/orders/{order_uuid}/notes
+/v0/d
+/orders/{order_uuid}/notes
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"notes"
+:
+[
+{
+"id"
+:
+"e38123a3-ffec-4258-b440-33048a899365"
+,
+"order_id"
+:
+"0dce51af-fcda-4f6b-aca1-2c8ee5e695b3"
+,
+"item_id"
+:
+"643af430-5ab0-4cf7-96ac-278ac6a92cb0"
+,
+"text"
+:
+"Customer wants to cancel this order."
+,
+"source"
+:
+"Author 117"
+,
+"tags"
+:
+[
+"associate note"
+,
+"cancellation"
+]
+,
+"created_at"
+:
+"2012-10-31 15:50:13.793654 +0000 UTC"
+,
+"updated_at"
+:
+"2012-10-31 15:50:13.793654 +0000 UTC"
+}
+]
+}
+Create order note
+Creates a new note that applies to the order ID specified in the request URL. For example,
+create a note for an order that has been cancelled by the customer in the store.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_uuid
+required
+string
+Unique ID for an order.
+Request Body schema:
+application/json
+text
+required
+string
+[ 1 .. 4000 ] characters
+The content of this note.
+source
+required
+string
+[ 1 .. 256 ] characters
+The identifier for the author of the note. This field only supports
+user_id
+.
+source_type
+string
+[ 1 .. 256 ] characters
+The type of the source, e.g. 'user', 'system'
+tags
+required
+Array of
+strings
+[ items
+[ 1 .. 128 ] characters
+]
+The tags associated with this note.
+Responses
+200
+Note has been successfully created.
+400
+The request body is invalid.
+404
+The endpoint could not be found.
+500
+An error occurred on the server.
+default
+Unexpected Error
+post
+/orders/{order_uuid}/notes
+/v0/d
+/orders/{order_uuid}/notes
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"text"
+:
+"string"
+,
+"source"
+:
+"string"
+,
+"source_type"
+:
+"string"
+,
+"tags"
+:
+[
+"string"
+]
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"e38123a3-ffec-4258-b440-33048a899365"
+,
+"order_id"
+:
+"0dce51af-fcda-4f6b-aca1-2c8ee5e695b3"
+,
+"text"
+:
+"Customer wants to cancel this order."
+,
+"source"
+:
+"Author 117"
+,
+"tags"
+:
+[
+"associate note"
+,
+"cancellation"
+]
+,
+"created_at"
+:
+"2012-10-31 15:50:13.793654 +0000 UTC"
+,
+"updated_at"
+:
+"2012-10-31 15:50:13.793654 +0000 UTC"
+}
+Create item note
+Creates a new note that applies to the item ID specified in the request URL. For example,
+create a note for an item that a customer wants to cancel after purchasing it in the store.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_uuid
+required
+string
+Unique ID for an order. To retrieve the order ID, use the
+List external orders
+method.
+item_uuid
+required
+string
+Unique ID for an item in an order. To retrieve the item ID, use the
+List external orders
+method.
+Request Body schema:
+application/json
+text
+required
+string
+[ 1 .. 4000 ] characters
+The content of this note.
+source
+required
+string
+[ 1 .. 256 ] characters
+The identifier for the author of the note. This field only supports
+user_id
+.
+source_type
+string
+[ 1 .. 256 ] characters
+The type of the source, e.g. 'user', 'system'
+tags
+required
+Array of
+strings
+[ items
+[ 1 .. 128 ] characters
+]
+The tags associated with this note.
+Responses
+200
+Note has been successfully created.
+400
+The request body is invalid.
+404
+The endpoint could not be found.
+500
+An error occurred on the server.
+default
+Unexpected Error
+post
+/orders/{order_uuid}/items/{item_uuid}/notes
+/v0/d
+/orders/{order_uuid}/items/{item_uuid}/notes
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"text"
+:
+"string"
+,
+"source"
+:
+"string"
+,
+"source_type"
+:
+"string"
+,
+"tags"
+:
+[
+"string"
+]
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"e38123a3-ffec-4258-b440-33048a899365"
+,
+"order_id"
+:
+"0dce51af-fcda-4f6b-aca1-2c8ee5e695b3"
+,
+"item_id"
+:
+"643af430-5ab0-4cf7-96ac-278ac6a92cb0"
+,
+"text"
+:
+"Customer wants to cancel this order."
+,
+"source"
+:
+"Author 117"
+,
+"tags"
+:
+[
+"associate note"
+,
+"cancellation"
+]
+,
+"created_at"
+:
+"2012-10-31 15:50:13.793654 +0000 UTC"
+,
+"updated_at"
+:
+"2012-10-31 15:50:13.793654 +0000 UTC"
+}
+Update note
+Updates the note with the specified note ID provided in the request URL.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_uuid
+required
+string
+Unique ID for an order. To retrieve the order ID, use the
+List external orders
+method.
+note_uuid
+required
+string
+Unique ID for a note. To retrieve the note ID, use the
+Get order notes
+method.
+Request Body schema:
+application/json
+text
+required
+string
+[ 1 .. 4000 ] characters
+The content of this note.
+source
+required
+string
+[ 1 .. 256 ] characters
+The identifier for the author of the note.
+source_type
+string
+[ 1 .. 256 ] characters
+The type of the source of the note.
+tags
+required
+Array of
+strings
+[ items
+[ 1 .. 128 ] characters
+]
+The tags associated with this note.
+Responses
+200
+Note has been successfully updated.
+400
+The request body is invalid.
+404
+The endpoint or requested resource could not be found.
+500
+An error occurred on the server.
+default
+Unexpected Error
+patch
+/orders/{order_uuid}/notes/{note_uuid}
+/v0/d
+/orders/{order_uuid}/notes/{note_uuid}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"text"
+:
+"string"
+,
+"source"
+:
+"string"
+,
+"source_type"
+:
+"string"
+,
+"tags"
+:
+[
+"string"
+]
+}
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"e38123a3-ffec-4258-b440-33048a899365"
+,
+"order_id"
+:
+"0dce51af-fcda-4f6b-aca1-2c8ee5e695b3"
+,
+"item_id"
+:
+"643af430-5ab0-4cf7-96ac-278ac6a92cb0"
+,
+"text"
+:
+"Customer wants to cancel this order."
+,
+"source"
+:
+"Author 117"
+,
+"tags"
+:
+[
+"associate note"
+,
+"cancellation"
+]
+,
+"created_at"
+:
+"2012-10-31 15:50:13.793654 +0000 UTC"
+,
+"updated_at"
+:
+"2012-10-31 15:50:13.793654 +0000 UTC"
+}
+Delete note
+Deletes the note with the specified note ID provided in the request URL.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_uuid
+required
+string
+Unique ID for an order. To retrieve the order ID, use the
+List external orders
+method.
+note_uuid
+required
+string
+Unique ID for a note. To retrieve the note ID, use the
+Get order notes
+method.
+Responses
+200
+Note has been successfully deleted.
+400
+There is an error in the url.
+404
+The endpoint or requested resource could not be found.
+500
+An error occurred on the server.
+default
+Unexpected Error
+delete
+/orders/{order_uuid}/notes/{note_uuid}
+/v0/d
+/orders/{order_uuid}/notes/{note_uuid}
+Response samples
+400
+404
+500
+Content type
+application/problem+json
+Copy
+{
+"message"
+:
+"Invalid note ID in request url."
+}
+Previous
+Order Injection API
+Next
+Order information retrieval API
+Copyright © 2025 NewStore, Inc.

@@ -1,0 +1,237 @@
+openapi: 3.0.0
+info:
+  title: Stock insights API
+  version: 0.1.0
+  x-audience: external-public
+  x-api-id: stock-insights-062023
+  description: >
+    Use this API to get insights into the current allocations and reservation
+    for a product at a fulfillment node.
+
+    The API returns ``reservations``, ``allocations`` and ``future allocations``
+    for that product.
+
+
+    The allocations and reservations are not grouped on purpose to keep the load
+    on the service
+
+    and database to a minimum especially since the stock-http container is used
+    for routing to
+
+    get unallocated item counts. The list of allocations and reservations each
+    have a limit of 1000 items.
+
+    For simplicity, there will be no pagination provided.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /stock/insights:
+    get:
+      summary: Get ATP insights.
+      operationId: listAtpInsights
+      responses:
+        '200':
+          description: Successfully retrieved the allocations and reservations by ATP key.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Get ATP insights by product_id and fulfillment_node_id.
+                description: >-
+                  Limited response of valid request for fetching allocations by
+                  ATP keys.
+                required:
+                  - product_id
+                  - fulfillment_node_id
+                  - allocations
+                properties:
+                  product_id:
+                    type: string
+                    description: The product ID of the item.
+                  fulfillment_node_id:
+                    type: string
+                    description: The fulfillment node ID of the store/warehouse.
+                  allocations:
+                    type: array
+                    maxItems: 1000
+                    description: >-
+                      Allocations for the product with given product_id at the
+                      fulfillment node with given fulfillment_node_id. This
+                      request will limit the response to a maximum of 2000
+                      allocations.
+                    items:
+                      type: object
+                      required:
+                        - order_uuid
+                        - item_uuid
+                        - created_at
+                      properties:
+                        order_uuid:
+                          type: string
+                          maxLength: 36
+                          minLength: 36
+                          description: The uuid of the order.
+                        item_uuid:
+                          type: string
+                          maxLength: 36
+                          minLength: 36
+                          description: The uuid of the order item.
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Timestamp at which allocation was created
+                  reservations:
+                    type: array
+                    maxItems: 1000
+                    description: >-
+                      Reservations for the product with given product_id at the
+                      fulfillment node with given fulfillment_node_id. This
+                      request will limit the response to a maximum of 2000
+                      reservations.
+                    items:
+                      type: object
+                      required:
+                        - order_uuid
+                        - item_uuid
+                        - created_at
+                        - expires_at
+                      properties:
+                        order_uuid:
+                          type: string
+                          maxLength: 36
+                          minLength: 36
+                          description: The uuid of the order.
+                        item_uuid:
+                          type: string
+                          maxLength: 36
+                          minLength: 36
+                          description: The uuid of the order item.
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Timestamp at which reservation was created
+                        expires_at:
+                          type: string
+                          format: date-time
+                          description: Timestamp at which reservation will expire
+                  future_allocations:
+                    type: array
+                    maxItems: 1000
+                    description: >-
+                      Future allocations for the product with given product_id
+                      at the fulfillment node with given fulfillment_node_id.
+                      This request will limit the response to a maximum of 2000
+                      allocations.
+                    items:
+                      type: object
+                      required:
+                        - order_uuid
+                        - item_uuid
+                        - created_at
+                      properties:
+                        order_uuid:
+                          type: string
+                          maxLength: 36
+                          minLength: 36
+                          description: The uuid of the order.
+                        item_uuid:
+                          type: string
+                          maxLength: 36
+                          minLength: 36
+                          description: The uuid of the order item.
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Timestamp at which reservation was created
+              example:
+                product_id: 10000102
+                fulfillment_node_id: US01
+                allocations:
+                  - order_uuid: 5ca1548c-d228-4f98-a54e-c54bbba0a204
+                    item_uuid: 3409090f-1881-486e-9e2d-2278020e5655
+                    created_at: '2022-01-31T20:00:00Z'
+                  - order_uuid: 5ca1548c-d228-4f98-a54e-c54bbba0a204
+                    item_uuid: 236a3594-2db2-4491-a5b4-9741ce680b03
+                    created_at: '2022-01-31T20:00:00Z'
+                reservations:
+                  - order_uuid: 5ca1548c-d228-4f98-a54e-c54bbba0a204
+                    item_uuid: 3409090f-1881-486e-9e2d-2278020e5655
+                    created_at: '2022-01-31T20:00:00Z'
+                    expires_at: '2022-01-31T20:30:00Z'
+                  - order_uuid: 5ca1548c-d228-4f98-a54e-c54bbba0a204
+                    item_uuid: 236a3594-2db2-4491-a5b4-9741ce680b03
+                    created_at: '2022-01-31T20:00:00Z'
+                    expires_at: '2022-01-31T20:30:00Z'
+                future_allocations:
+                  - order_uuid: 017b8d63-76a8-46fc-b53a-4e2af8594427
+                    item_uuid: aaf13724-94a3-11ec-b909-0242ac120002
+                    created_at: '2022-01-31T20:00:00Z'
+                  - order_uuid: 017b8d63-76a8-46fc-b53a-4e2af8594427
+                    item_uuid: ba44378a-94a3-11ec-b909-0242ac120002
+                    created_at: '2022-01-31T20:00:00Z'
+        '400':
+          description: Invalid request.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: '''product_id'' is a required parameter.'
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        '500':
+          description: An internal error occurred.
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Human readable error message
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        default:
+          description: Unexpected Error
+      description: |
+        Retrieves the allocations and reservations by ATP keys in your business.
+      parameters:
+        - in: query
+          name: product_id
+          required: true
+          schema:
+            type: string
+          description: The product ID of the item.
+        - in: query
+          name: fulfillment_node_id
+          required: true
+          schema:
+            type: string
+          description: The fulfillment node ID of the store/warehouse.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,8595 @@
+Studio API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Backend API
+Events API
+Studio API
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+App Status
+get
+List app status details for current merchant
+put
+Updates App Status
+BrokenLinkAlerts
+del
+Will dismiss all broken links alerts for a breakable
+Content Extensions
+get
+List Content Extensions
+post
+Create Content Extension
+get
+View Content Extension
+del
+Delete Content Extension
+patch
+Update Content Extension
+Messages
+get
+List all messages
+post
+Create a message
+del
+Delete a message
+patch
+Update a Message
+Message Publications
+post
+Create a publication
+del
+Delete a publication
+patch
+Update a publication
+Published Messages
+get
+List published messages
+Push Notifications
+get
+Get list of all push notifications with filters support
+get
+Get list of all push notifications stats for the merchant
+Users
+get
+List all users
+post
+Create User
+get
+Show User
+del
+Delete User
+Walls
+post
+Publish a wall
+get
+List all walls
+post
+Create a wall
+get
+View active Wall
+put
+Update a wall
+del
+Delete a wall
+post
+Duplicate a wall
+post
+Update the order of rows
+Rows
+get
+View a row
+put
+Update a Row
+del
+Delete a Row
+post
+Create a Row
+Lookbook
+get
+Get all Lookbooks.
+post
+Create a Lookbook
+get
+Get a Lookbook
+del
+Delete a Lookbook
+post
+Duplicate a Lookbook
+post
+Update order of looks
+post
+Publish/Schedule a Lookbook
+post
+Add tags to a lookbook
+patch
+remove tags from a lookbook
+post
+Update order of lookbooks
+Look
+get
+Get all Looks by Lookbook
+post
+Create a Look
+get
+Get a Look
+put
+Update a Look
+del
+Delete a Look
+Push Notification
+post
+Schedules or sends a Push Notification
+post
+Send a push notification
+post
+Create Image for notification
+get
+Get a single Notification
+put
+update a push notification
+del
+Cancel a notification
+User
+get
+Check if a User is authenticated
+get
+View intercom details
+post
+Login a User
+post
+Logout a User
+get
+Get all Merchants for a user
+post
+Send a Password reset email
+patch
+Reset Users password
+post
+Validate a password_reset token
+Tag
+get
+Get all Tags
+Settings
+get
+Get appearance settings
+post
+Refresh the cache
+del
+Cancel a Cache refresh
+get
+Get all scheduled refreshes
+Merchants
+get
+Get a merchant
+get
+Get Categories
+get
+Get a Category
+get
+Get Products
+post
+Upload an Image
+post
+Upload Video content
+post
+Adds translations to a resource
+API docs by Redocly
+Studio API
+(
+1.0
+)
+Download OpenAPI specification
+:
+Download
+This is a draft and has not yet been finalized
+Some important changes to note:
+Promotions are now deprecated. Meaning the following routes no longer exist:
+OPTIONS /promotion/:store/promotions/?
+OPTIONS /promotion/:store/promotions/*
+GET /promotion/:store/promotions/?
+GET /promotions/:unique_id/?
+GET /promotion/:store/promotions/:unique_id/?
+POST /promotion/:store/promotions/?
+PUT /promotion/:store/promotions/?
+PUT /promotion/:store/promotions/:unique_id/?
+DELETE /promotion/:store/promotions/?
+DELETE /promotion/:store/promotions/:unique_id/?
+The merchant_id is now at the base of the path so for example:
+lookbook/:merchant/lookbooks
+is now
+/:merchant/lookbooks
+.
+all references to
+cms_id
+,
+store
+within urls has been replaced with the
+merchant_id
+Lookbooks, Walls and Push Notifications no longer belong to a
+store
+but belong to the
+merchant
+. This enables us to share Lookbooks, for example, across multiple stores.
+Lookbooks, Walls and Push Notifications now also contain a list of tags that they are
+associated with.
+A new endpoint has been added for Lookbooks, Walls and Push Notifications to enable adding
+tags.
+App Status
+List app status details for current merchant
+This endpoint fetches current app status settings
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+get
+/merchants/{merchant_id}/app_status
+/merchants/{merchant_id}/app_status
+Response samples
+200
+401
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"android"
+:
+{
+"minimum_version"
+:
+"string"
+}
+,
+"default_message"
+:
+"string"
+,
+"default_title"
+:
+"string"
+,
+"enabled"
+:
+true
+,
+"ios"
+:
+{
+"minimum_version"
+:
+"string"
+}
+,
+"merchant"
+:
+"string"
+,
+"messages"
+:
+[
+{
+"country"
+:
+"NL"
+,
+"lang"
+:
+"en"
+,
+"value"
+:
+"string"
+}
+]
+,
+"titles"
+:
+[
+{
+"country"
+:
+"NL"
+,
+"lang"
+:
+"en"
+,
+"value"
+:
+"English Title"
+}
+]
+}
+Updates App Status
+This endpoint will allow updating App Status mode (enabled or not) and text for title and message
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+maintenance
+object
+(
+UpdateAppStatusRequestParams
+)
+android
+object
+(
+AppStatusAndroid
+)
+Specific information used by Android mobile apps
+default_message
+string
+Default message displayed for all languages as body. Required, unless 'messages' is empty
+default_title
+string
+Default title displayed for all languages as header. Required, unless 'titles' is empty.
+enabled
+required
+boolean
+Maintenance Status Enabled or Disabled
+ios
+object
+(
+AppStatusIOS
+)
+Specific information used by iOS mobile apps
+messages
+Array of
+objects
+(
+AppStatusTranslatedMessage
+)
+Translations for Messages for various languages and countries. When used, 'default_title' cannot be empty.
+titles
+Array of
+objects
+(
+AppStatusTranslatedTitle
+)
+Translations for Titles for various languages and countries. When used, 'default_title' cannot be empty.
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+422
+Response when the params object is invalid
+put
+/merchants/{merchant_id}/app_status
+/merchants/{merchant_id}/app_status
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"maintenance"
+:
+{
+"android"
+:
+{
+"minimum_version"
+:
+"string"
+}
+,
+"default_message"
+:
+"string"
+,
+"default_title"
+:
+"string"
+,
+"enabled"
+:
+true
+,
+"ios"
+:
+{
+"minimum_version"
+:
+"string"
+}
+,
+"messages"
+:
+[
+{
+"country"
+:
+"NL"
+,
+"lang"
+:
+"en"
+,
+"value"
+:
+"string"
+}
+]
+,
+"titles"
+:
+[
+{
+"country"
+:
+"NL"
+,
+"lang"
+:
+"en"
+,
+"value"
+:
+"English Title"
+}
+]
+}
+}
+Response samples
+200
+401
+403
+404
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"android"
+:
+{
+"minimum_version"
+:
+"string"
+}
+,
+"default_message"
+:
+"string"
+,
+"default_title"
+:
+"string"
+,
+"enabled"
+:
+true
+,
+"ios"
+:
+{
+"minimum_version"
+:
+"string"
+}
+,
+"merchant"
+:
+"string"
+,
+"messages"
+:
+[
+{
+"country"
+:
+"NL"
+,
+"lang"
+:
+"en"
+,
+"value"
+:
+"string"
+}
+]
+,
+"titles"
+:
+[
+{
+"country"
+:
+"NL"
+,
+"lang"
+:
+"en"
+,
+"value"
+:
+"English Title"
+}
+]
+}
+BrokenLinkAlerts
+Will dismiss all broken links alerts for a breakable
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+breakable_id
+integer
+The ID of the content that has broken links
+breakable_type
+string
+Enum
+:
+"Look"
+"Lookbook"
+"Lookbook::Video"
+"Lookbook::Image"
+"Lookbook::Timeframe"
+"V2::Row"
+"Row"
+"PushNotification"
+"ProductList"
+The type of the breakable
+Responses
+200
+An error occured while trying to find broken links for this content
+204
+The alert was dismissed
+422
+The input params are invalid
+delete
+/merchants/{merchant_id}/broken_links/alert
+/merchants/{merchant_id}/broken_links/alert
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"breakable_id"
+:
+0
+,
+"breakable_type"
+:
+"Look"
+}
+Response samples
+200
+422
+Content type
+application/json
+Copy
+{
+"code"
+:
+"no_active_broken_link_found"
+}
+Content Extensions
+List Content Extensions
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+get
+/merchants/{merchant_id}/content_extensions
+/merchants/{merchant_id}/content_extensions
+Response samples
+200
+401
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"content_extensions"
+:
+[
+{
+"default_title"
+:
+"Winter Collection"
+,
+"default_url"
+:
+"
+https://merchant.com/winter-collection
+"
+,
+"id"
+:
+273
+,
+"titles"
+:
+[
+{
+"country"
+:
+"nl"
+,
+"lang"
+:
+"nl"
+,
+"value"
+:
+"Winter collectie"
+}
+,
+{
+"country"
+:
+"nl"
+,
+"lang"
+:
+"fr"
+,
+"value"
+:
+"Collection d'hiver"
+}
+]
+,
+"urls"
+:
+[
+{
+"storefront_id"
+:
+"en-NL"
+,
+"url"
+:
+"
+https://merchant.com/en-nl/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"nl-NL"
+,
+"url"
+:
+"
+https://merchant.com/nl-nl/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"nl-BE"
+,
+"url"
+:
+"
+https://merchant.com/nl-be/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"fr-BE"
+,
+"url"
+:
+"
+https://merchant.com/fr-be/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"fr-FR"
+,
+"url"
+:
+"
+https://merchant.com/fr-fr/winter-collection
+"
+}
+]
+}
+]
+}
+Create Content Extension
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+default_title
+required
+string
+The default title
+default_url
+required
+string
+<
+uri
+>
+The default title
+titles
+Array of
+objects
+(
+LocalizedContentExtensionTitle
+)
+Language specific titles
+urls
+Array of
+objects
+(
+LocalizedContentExtensionURL
+)
+Storefront specific URLs
+Responses
+201
+Created
+401
+Unauthorized
+403
+Forbidden
+422
+Unprocessable entity
+post
+/merchants/{merchant_id}/content_extensions
+/merchants/{merchant_id}/content_extensions
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"default_title"
+:
+"string"
+,
+"default_url"
+:
+"
+http://example.com
+"
+,
+"titles"
+:
+[
+{
+"country"
+:
+"string"
+,
+"lang"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"urls"
+:
+[
+{
+"storefront_id"
+:
+"string"
+,
+"url"
+:
+"string"
+}
+]
+}
+Response samples
+201
+401
+403
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"default_title"
+:
+"Winter Collection"
+,
+"default_url"
+:
+"
+https://merchant.com/winter-collection
+"
+,
+"id"
+:
+273
+,
+"titles"
+:
+[
+{
+"country"
+:
+"nl"
+,
+"lang"
+:
+"nl"
+,
+"value"
+:
+"Winter collectie"
+}
+,
+{
+"country"
+:
+"nl"
+,
+"lang"
+:
+"fr"
+,
+"value"
+:
+"Collection d'hiver"
+}
+]
+,
+"urls"
+:
+[
+{
+"storefront_id"
+:
+"en-NL"
+,
+"url"
+:
+"
+https://merchant.com/en-nl/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"nl-NL"
+,
+"url"
+:
+"
+https://merchant.com/nl-nl/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"nl-BE"
+,
+"url"
+:
+"
+https://merchant.com/nl-be/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"fr-BE"
+,
+"url"
+:
+"
+https://merchant.com/fr-be/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"fr-FR"
+,
+"url"
+:
+"
+https://merchant.com/fr-fr/winter-collection
+"
+}
+]
+}
+View Content Extension
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+content_extension_id
+required
+string
+Content Extension ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+get
+/merchants/{merchant_id}/content_extensions/{content_extension_id}
+/merchants/{merchant_id}/content_extensions/{content_extension_id}
+Response samples
+200
+401
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"default_title"
+:
+"Winter Collection"
+,
+"default_url"
+:
+"
+https://merchant.com/winter-collection
+"
+,
+"id"
+:
+273
+,
+"titles"
+:
+[
+{
+"country"
+:
+"nl"
+,
+"lang"
+:
+"nl"
+,
+"value"
+:
+"Winter collectie"
+}
+,
+{
+"country"
+:
+"nl"
+,
+"lang"
+:
+"fr"
+,
+"value"
+:
+"Collection d'hiver"
+}
+]
+,
+"urls"
+:
+[
+{
+"storefront_id"
+:
+"en-NL"
+,
+"url"
+:
+"
+https://merchant.com/en-nl/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"nl-NL"
+,
+"url"
+:
+"
+https://merchant.com/nl-nl/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"nl-BE"
+,
+"url"
+:
+"
+https://merchant.com/nl-be/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"fr-BE"
+,
+"url"
+:
+"
+https://merchant.com/fr-be/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"fr-FR"
+,
+"url"
+:
+"
+https://merchant.com/fr-fr/winter-collection
+"
+}
+]
+}
+Delete Content Extension
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+content_extension_id
+required
+string
+Content Extension ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+204
+No Content
+401
+Unauthorized
+403
+Forbidden
+delete
+/merchants/{merchant_id}/content_extensions/{content_extension_id}
+/merchants/{merchant_id}/content_extensions/{content_extension_id}
+Response samples
+401
+403
+Content type
+application/json
+Copy
+{
+"code"
+:
+"authentication_failed"
+,
+"message"
+:
+"Invalid authentication token or credentials"
+}
+Update Content Extension
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+content_extension_id
+required
+string
+Content Extension ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+default_title
+string
+The default title
+default_url
+string
+<
+uri
+>
+The default title
+titles
+Array of
+objects
+(
+LocalizedContentExtensionTitle
+)
+Language specific titles
+urls
+Array of
+objects
+(
+LocalizedContentExtensionURL
+)
+Storefront specific URLs
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+422
+Unprocessable entity
+patch
+/merchants/{merchant_id}/content_extensions/{content_extension_id}
+/merchants/{merchant_id}/content_extensions/{content_extension_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"default_title"
+:
+"string"
+,
+"default_url"
+:
+"
+http://example.com
+"
+,
+"titles"
+:
+[
+{
+"country"
+:
+"string"
+,
+"lang"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"urls"
+:
+[
+{
+"storefront_id"
+:
+"string"
+,
+"url"
+:
+"string"
+}
+]
+}
+Response samples
+200
+401
+403
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"default_title"
+:
+"Winter Collection"
+,
+"default_url"
+:
+"
+https://merchant.com/winter-collection
+"
+,
+"id"
+:
+273
+,
+"titles"
+:
+[
+{
+"country"
+:
+"nl"
+,
+"lang"
+:
+"nl"
+,
+"value"
+:
+"Winter collectie"
+}
+,
+{
+"country"
+:
+"nl"
+,
+"lang"
+:
+"fr"
+,
+"value"
+:
+"Collection d'hiver"
+}
+]
+,
+"urls"
+:
+[
+{
+"storefront_id"
+:
+"en-NL"
+,
+"url"
+:
+"
+https://merchant.com/en-nl/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"nl-NL"
+,
+"url"
+:
+"
+https://merchant.com/nl-nl/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"nl-BE"
+,
+"url"
+:
+"
+https://merchant.com/nl-be/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"fr-BE"
+,
+"url"
+:
+"
+https://merchant.com/fr-be/winter-collection
+"
+}
+,
+{
+"storefront_id"
+:
+"fr-FR"
+,
+"url"
+:
+"
+https://merchant.com/fr-fr/winter-collection
+"
+}
+]
+}
+Messages
+List all messages
+This endpoint fetches all the messages created by a merchant.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+query
+Parameters
+storefront_id
+string
+The storefront id
+status
+string
+Enum
+:
+"active"
+"published"
+"scheduled"
+A status used to filter messages
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+422
+Unprocessable entity
+get
+/merchants/{merchant_id}/messages
+/merchants/{merchant_id}/messages
+Response samples
+200
+401
+403
+404
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+{
+"body"
+:
+"string"
+,
+"id"
+:
+"string"
+,
+"language"
+:
+"string"
+,
+"publications"
+:
+[
+{
+"id"
+:
+"string"
+,
+"message_id"
+:
+"string"
+,
+"placements"
+:
+[
+"cart"
+]
+,
+"publish_at"
+:
+0
+,
+"storefront_ids"
+:
+[
+"string"
+]
+,
+"unpublish_at"
+:
+0
+}
+]
+,
+"title"
+:
+"string"
+,
+"visual"
+:
+{
+"type"
+:
+"string"
+}
+}
+]
+}
+Create a message
+This endpoint creates a message for a merchant.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+message
+object
+(
+CreateMessageRequestParams
+)
+body
+required
+string
+The body of the message
+image_path
+required
+string
+The image url for the visual element of the message
+language
+required
+string
+The language of the message
+title
+required
+string
+The title of the message
+Responses
+201
+Created
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+422
+Unprocessable entity
+post
+/merchants/{merchant_id}/messages
+/merchants/{merchant_id}/messages
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"message"
+:
+{
+"body"
+:
+"string"
+,
+"image_path"
+:
+"string"
+,
+"language"
+:
+"string"
+,
+"title"
+:
+"string"
+}
+}
+Response samples
+201
+401
+403
+404
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"message"
+:
+{
+"body"
+:
+"string"
+,
+"id"
+:
+"string"
+,
+"language"
+:
+"string"
+,
+"publications"
+:
+[
+{
+"id"
+:
+"string"
+,
+"message_id"
+:
+"string"
+,
+"placements"
+:
+[
+"cart"
+]
+,
+"publish_at"
+:
+0
+,
+"storefront_ids"
+:
+[
+"string"
+]
+,
+"unpublish_at"
+:
+0
+}
+]
+,
+"title"
+:
+"string"
+,
+"visual"
+:
+{
+"type"
+:
+"string"
+}
+}
+}
+Delete a message
+This endpoint deletes a message.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+message_id
+required
+string
+The message id
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+204
+Deleted
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+delete
+/merchants/{merchant_id}/messages/{message_id}
+/merchants/{merchant_id}/messages/{message_id}
+Response samples
+401
+403
+404
+Content type
+application/json
+Copy
+{
+"code"
+:
+"authentication_failed"
+,
+"message"
+:
+"Invalid authentication token or credentials"
+}
+Update a Message
+This endpoint updates an existing message.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+message_id
+required
+string
+The message id
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+message
+object
+(
+UpdateMessageRequestParams
+)
+body
+string
+The body of the message
+image_path
+string
+The image url for the visual element of the message
+title
+string
+The title of the message
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+422
+Unprocessable entity
+patch
+/merchants/{merchant_id}/messages/{message_id}
+/merchants/{merchant_id}/messages/{message_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"message"
+:
+{
+"body"
+:
+"string"
+,
+"image_path"
+:
+"string"
+,
+"title"
+:
+"string"
+}
+}
+Response samples
+200
+401
+403
+404
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"message"
+:
+{
+"body"
+:
+"string"
+,
+"id"
+:
+"string"
+,
+"language"
+:
+"string"
+,
+"publications"
+:
+[
+{
+"id"
+:
+"string"
+,
+"message_id"
+:
+"string"
+,
+"placements"
+:
+[
+"cart"
+]
+,
+"publish_at"
+:
+0
+,
+"storefront_ids"
+:
+[
+"string"
+]
+,
+"unpublish_at"
+:
+0
+}
+]
+,
+"title"
+:
+"string"
+,
+"visual"
+:
+{
+"type"
+:
+"string"
+}
+}
+}
+Message Publications
+Create a publication
+This endpoint creates publication for a message.
+path
+Parameters
+message_id
+required
+string
+The message id
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+publication
+object
+(
+CreatePublicationRequestParams
+)
+placements
+required
+Array of
+strings
+Items
+Value
+:
+"cart"
+List of placements where the message will be shown in the app
+publish_at
+required
+integer
+Unix timestamp that indicates when the message should be published
+storefront_ids
+required
+Array of
+strings
+List of storefront_ids the publication is linked to
+unpublish_at
+integer
+Unix timestamp that indicates until when the message should stay published
+Responses
+201
+Created
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+422
+Unprocessable entity
+post
+/messages/{message_id}/publications
+/messages/{message_id}/publications
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"publication"
+:
+{
+"placements"
+:
+[
+"cart"
+]
+,
+"publish_at"
+:
+0
+,
+"storefront_ids"
+:
+[
+"string"
+]
+,
+"unpublish_at"
+:
+0
+}
+}
+Response samples
+201
+401
+403
+404
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"publication"
+:
+{
+"id"
+:
+"string"
+,
+"message_id"
+:
+"string"
+,
+"placements"
+:
+[
+"cart"
+]
+,
+"publish_at"
+:
+0
+,
+"storefront_ids"
+:
+[
+"string"
+]
+,
+"unpublish_at"
+:
+0
+}
+}
+Delete a publication
+This endpoint deletes a publication.
+path
+Parameters
+message_id
+required
+string
+The message id
+publication_id
+required
+string
+The publication id
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+204
+No Content
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+delete
+/messages/{message_id}/publications/{publication_id}
+/messages/{message_id}/publications/{publication_id}
+Response samples
+401
+403
+404
+Content type
+application/json
+Copy
+{
+"code"
+:
+"authentication_failed"
+,
+"message"
+:
+"Invalid authentication token or credentials"
+}
+Update a publication
+This endpoint updates an existing publication.
+path
+Parameters
+message_id
+required
+string
+The message id
+publication_id
+required
+string
+The publication id
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+publication
+object
+(
+UpdatePublicationRequestParams
+)
+placements
+Array of
+strings
+Items
+Value
+:
+"cart"
+List of placements where the message will be shown in the app
+publish_at
+integer
+Unix timestamp that indicates when the message should be published
+storefront_ids
+Array of
+strings
+List of storefront_ids the publication is linked to
+unpublish_at
+integer
+Unix timestamp that indicates until when the message should stay published
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+422
+Unprocessable entity
+patch
+/messages/{message_id}/publications/{publication_id}
+/messages/{message_id}/publications/{publication_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"publication"
+:
+{
+"placements"
+:
+[
+"cart"
+]
+,
+"publish_at"
+:
+0
+,
+"storefront_ids"
+:
+[
+"string"
+]
+,
+"unpublish_at"
+:
+0
+}
+}
+Response samples
+200
+401
+403
+404
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"publication"
+:
+{
+"id"
+:
+"string"
+,
+"message_id"
+:
+"string"
+,
+"placements"
+:
+[
+"cart"
+]
+,
+"publish_at"
+:
+0
+,
+"storefront_ids"
+:
+[
+"string"
+]
+,
+"unpublish_at"
+:
+0
+}
+}
+Published Messages
+List published messages
+This endpoint fetches published messages.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+query
+Parameters
+storefront_id
+string
+The storefront id
+Responses
+200
+OK
+404
+Not Found
+get
+/merchants/{merchant_id}/published_messages
+/merchants/{merchant_id}/published_messages
+Response samples
+200
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+{
+"body"
+:
+"string"
+,
+"id"
+:
+"string"
+,
+"language"
+:
+"string"
+,
+"publications"
+:
+[
+{
+"id"
+:
+"string"
+,
+"message_id"
+:
+"string"
+,
+"placements"
+:
+[
+"cart"
+]
+,
+"publish_at"
+:
+0
+,
+"storefront_ids"
+:
+[
+"string"
+]
+,
+"unpublish_at"
+:
+0
+}
+]
+,
+"title"
+:
+"string"
+,
+"visual"
+:
+{
+"type"
+:
+"string"
+}
+}
+]
+}
+Push Notifications
+Get list of all push notifications with filters support
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+query
+Parameters
+status
+string
+Enum
+:
+"sent"
+"scheduled"
+Status of push notifications
+content_type
+string
+Enum
+:
+"resource"
+"custom"
+Content type of push notification
+locales
+string
+Example:
+locales=en-NL, en-US, de-DE
+Comma separated list of storefront_ids
+from
+string
+Default:
+0
+Offset for returning results
+to
+string
+Default:
+10
+Limit for the number of results returned
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+200
+Returns the Push notification
+422
+The input params are invalid
+get
+/merchants/{merchant_id}/push_notifications
+/merchants/{merchant_id}/push_notifications
+Response samples
+200
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"push_notifications"
+:
+[
+{
+"cancelled"
+:
+true
+,
+"content_type"
+:
+null
+,
+"destination_name"
+:
+"string"
+,
+"destination_storefront_id"
+:
+"string"
+,
+"destination_type"
+:
+"categories"
+,
+"destination_type_id"
+:
+"string"
+,
+"expiration_time"
+:
+0
+,
+"image_thumbnail_url"
+:
+"string"
+,
+"image_url"
+:
+"string"
+,
+"language"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"push_time"
+:
+"string"
+,
+"studio_id"
+:
+"string"
+,
+"tagged_with"
+:
+{
+"customer_group"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"locale"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+}
+,
+"time_zone"
+:
+"string"
+,
+"title"
+:
+"string"
+,
+"unique_id"
+:
+0
+,
+"video_url_480"
+:
+"string"
+,
+"video_url_720"
+:
+"string"
+}
+]
+}
+Get list of all push notifications stats for the merchant
+This endpoint will respond information about total number of users and total number of subscribers.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+query
+Parameters
+interval
+string
+Default:
+"1day"
+Enum
+:
+"1day"
+"7days"
+"30days"
+Period for report
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+200
+Returns the Push Notification Report
+422
+The input params are invalid
+get
+/merchants/{merchant_id}/push_notifications_report
+/merchants/{merchant_id}/push_notifications_report
+Response samples
+200
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"report"
+:
+{
+"beginning_of_interval"
+:
+"2022-06-05T03:34:47Z"
+,
+"delta_subscribers"
+:
+50
+,
+"delta_users"
+:
+-5
+,
+"end_of_interval"
+:
+"2022-06-10T03:34:47Z"
+,
+"subscribers_data"
+:
+[
+{
+"day"
+:
+"2022-03-16"
+,
+"total"
+:
+110
+}
+]
+,
+"total_subscribers"
+:
+100
+,
+"total_users"
+:
+82
+,
+"users_data"
+:
+[
+{
+"day"
+:
+"2022-03-16"
+,
+"total"
+:
+110
+}
+]
+}
+}
+Users
+List all users
+This endpoint will give a list of users allowed to access the specified merchant.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+get
+/merchants/{merchant_id}/users
+/merchants/{merchant_id}/users
+Response samples
+200
+401
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"users"
+:
+[
+{
+"email"
+:
+"string"
+,
+"merchants"
+:
+[
+"highstreet"
+,
+"dstar"
+]
+,
+"name"
+:
+"string"
+,
+"role"
+:
+"user"
+,
+"uuid"
+:
+"string"
+}
+]
+}
+Create User
+Creates a new user with access to this merchant and sends them an email to let them set a password.
+If a user with this email address already exists, the existing user will be updated to also have access to this merchant.
+If the request body has the 'name' attribute it will update the user's name from the database with the one from the request.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+user
+object
+(
+CreateUserRequestParams
+)
+Params for creating a new user for a merchant
+email
+required
+string
+Email
+name
+string
+Full Name
+role
+string
+User role to be created, default to 'user'
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+422
+Response when the params object is invalid
+post
+/merchants/{merchant_id}/users
+/merchants/{merchant_id}/users
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"user"
+:
+{
+"email"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"role"
+:
+"string"
+}
+}
+Response samples
+200
+401
+403
+404
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"email"
+:
+"string"
+,
+"merchants"
+:
+[
+"highstreet"
+,
+"dstar"
+]
+,
+"name"
+:
+"string"
+,
+"role"
+:
+"user"
+,
+"uuid"
+:
+"string"
+}
+Show User
+This endpoint will show the details of a single user.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+uuid
+required
+string
+User Unique Identifier
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+get
+/merchants/{merchant_id}/users/{uuid}
+/merchants/{merchant_id}/users/{uuid}
+Response samples
+200
+401
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"email"
+:
+"string"
+,
+"merchants"
+:
+[
+"highstreet"
+,
+"dstar"
+]
+,
+"name"
+:
+"string"
+,
+"role"
+:
+"user"
+,
+"uuid"
+:
+"string"
+}
+Delete User
+This endpoint will remove a user from a merchant.
+If after removing the user from the merchant their list of 'allowed_merchants' is empty, it will also delete the user from the database.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+uuid
+required
+string
+User Unique Identifier
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+204
+The user was deleted successfully
+delete
+/merchants/{merchant_id}/users/{uuid}
+/merchants/{merchant_id}/users/{uuid}
+Walls
+The Home wall is the first thing you see when you open a Highstreet app.
+Each storefront has one or more home walls, of which one and only one can
+be active at any given time.
+A home wall consists of a collection of Rows. They are stacked on top of
+each other. Each wall must have at least 2 and at most 25 Rows before it can
+be activated. A row has a grid with 12 (invisible) columns and a
+configurable number of rows on which Tiles can be placed.
+A Tile consists of coordinates describing the position on the grid, content
+(e.g. an image) and an optional linked resource (e.g. a lookbook or
+category).
+Publish a wall
+A Wall has 3 "states", Published, scheduled and unpublished(in drafts).
+These states determine what is visible in the app and when.
+A Wall can have a different schedule for a number of different locales.
+For example a wall can be scheduled to be live in France on Monday and
+the US on Wednesday.
+This endpoint is responsible for publishing, scheduling and unpublishing
+a wall. The endpoint accepts an array of objects representing a locale.
+If the time is in the future the wall will be scheduled, and if
+publish_at
+is now then the wall will be published.
+Note that the array in the request will replace all current tags /
+schedules in the resource. E.g. if the wall is published in en-GB but
+the request does not include a en-GB tag then the en-GB tag will be
+removed from the resource and the resource will no longer be published
+in that locale.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+wall_id
+required
+string
+Wall ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+Request body for publishing a wall
+Array
+id
+string
+Unique id of the locale tag
+time
+string
+An ISO8061 formatted time stamp
+time_zone
+string
+The time zone identifier eg Europe/Amsterdam
+value
+string
+Human readable value of locale tag eg nl-NL
+Responses
+201
+Resource successfully updated
+400
+A validation failed and the wall could not be updated
+403
+The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/wall/{wall_id}/schedule
+/{merchant_id}/wall/{wall_id}/schedule
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+Response samples
+201
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"base_storefront"
+:
+"string"
+,
+"gutter_size"
+:
+0
+,
+"id"
+:
+0
+,
+"name"
+:
+"string"
+,
+"published"
+:
+true
+,
+"schedule_overview"
+:
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"tagged_with"
+:
+[
+{
+"id"
+:
+0
+,
+"merchant"
+:
+"string"
+,
+"tag_type"
+:
+"locale"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"rows"
+:
+[
+{
+"config"
+:
+{
+"height"
+:
+0
+}
+,
+"tiles"
+:
+[
+{
+"rect"
+:
+[
+0
+]
+,
+"resource"
+:
+{
+"_"
+:
+"string"
+}
+}
+]
+,
+"type"
+:
+"grid"
+,
+"id"
+:
+0
+}
+]
+}
+List all walls
+The
+locales
+and
+view
+parameters cannot be combined.
+The
+view
+parameter is ignored if it has an unknown value.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+query
+Parameters
+locales
+Array of
+strings
+A comma separated list of locales
+view
+string
+Enum
+:
+"published"
+"scheduled"
+"drafts"
+The type of walls to list
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+200
+OK
+403
+The supplied session token or login details are invalid
+404
+Resource not found
+get
+/{merchant_id}/walls
+/{merchant_id}/walls
+Response samples
+200
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"walls"
+:
+[
+{
+"base_storefront"
+:
+"string"
+,
+"gutter_size"
+:
+0
+,
+"id"
+:
+0
+,
+"name"
+:
+"string"
+,
+"published"
+:
+true
+,
+"schedule_overview"
+:
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"tagged_with"
+:
+[
+{
+"id"
+:
+0
+,
+"merchant"
+:
+"string"
+,
+"tag_type"
+:
+"locale"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"preview"
+:
+{
+"config"
+:
+{
+"height"
+:
+0
+}
+,
+"tiles"
+:
+[
+{
+"rect"
+:
+[
+0
+]
+,
+"resource"
+:
+{
+"_"
+:
+"string"
+}
+}
+]
+,
+"type"
+:
+"grid"
+,
+"id"
+:
+0
+}
+,
+"row_count"
+:
+0
+}
+]
+}
+Create a wall
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+Request body for creating a wall
+base_storefront
+string
+DEPRECATED
+: Used to determine which storefront to use when
+searching for products / categories.
+name
+string
+Name of the home walls (inteded for merchants)
+Responses
+201
+Hi
+400
+The request body is invalid
+403
+The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/walls
+/{merchant_id}/walls
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"base_storefront"
+:
+"string"
+,
+"name"
+:
+"string"
+}
+Response samples
+201
+400
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"base_storefront"
+:
+"string"
+,
+"gutter_size"
+:
+0
+,
+"id"
+:
+0
+,
+"name"
+:
+"string"
+,
+"published"
+:
+true
+,
+"schedule_overview"
+:
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"tagged_with"
+:
+[
+{
+"id"
+:
+0
+,
+"merchant"
+:
+"string"
+,
+"tag_type"
+:
+"locale"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"rows"
+:
+[
+{
+"config"
+:
+{
+"height"
+:
+0
+}
+,
+"tiles"
+:
+[
+{
+"rect"
+:
+[
+0
+]
+,
+"resource"
+:
+{
+"_"
+:
+"string"
+}
+}
+]
+,
+"type"
+:
+"grid"
+,
+"id"
+:
+0
+}
+]
+}
+View active Wall
+Retrieve the currently active wall. Passing in an optional array of
+locales will return a filtered set of walls for the matching locales.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+query
+Parameters
+locales
+Array of
+strings
+A comma separated list of locales
+Responses
+200
+OK
+404
+Resource not found
+get
+/{merchant_id}/walls/active
+/{merchant_id}/walls/active
+Response samples
+200
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"base_storefront"
+:
+"string"
+,
+"gutter_size"
+:
+0
+,
+"id"
+:
+0
+,
+"name"
+:
+"string"
+,
+"published"
+:
+true
+,
+"schedule_overview"
+:
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"tagged_with"
+:
+[
+{
+"id"
+:
+0
+,
+"merchant"
+:
+"string"
+,
+"tag_type"
+:
+"locale"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"rows"
+:
+[
+{
+"config"
+:
+{
+"height"
+:
+0
+}
+,
+"tiles"
+:
+[
+{
+"rect"
+:
+[
+0
+]
+,
+"resource"
+:
+{
+"_"
+:
+"string"
+}
+}
+]
+,
+"type"
+:
+"grid"
+,
+"id"
+:
+0
+}
+]
+}
+Update a wall
+A wall
+must
+have between
+2
+and
+25 rows
+. Attempting to publish a wall
+with only one row results in an error.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+wall_id
+required
+string
+Wall ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+Request body for updating a wall
+name
+string
+Responses
+200
+OK
+400
+Update failed some validations
+403
+The supplied session token or login details are invalid
+404
+Resource not found
+put
+/{merchant_id}/walls/{wall_id}
+/{merchant_id}/walls/{wall_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"name"
+:
+"string"
+}
+Response samples
+200
+400
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"base_storefront"
+:
+"string"
+,
+"gutter_size"
+:
+0
+,
+"id"
+:
+0
+,
+"name"
+:
+"string"
+,
+"published"
+:
+true
+,
+"schedule_overview"
+:
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"tagged_with"
+:
+[
+{
+"id"
+:
+0
+,
+"merchant"
+:
+"string"
+,
+"tag_type"
+:
+"locale"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"rows"
+:
+[
+{
+"config"
+:
+{
+"height"
+:
+0
+}
+,
+"tiles"
+:
+[
+{
+"rect"
+:
+[
+0
+]
+,
+"resource"
+:
+{
+"_"
+:
+"string"
+}
+}
+]
+,
+"type"
+:
+"grid"
+,
+"id"
+:
+0
+}
+]
+}
+Delete a wall
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+wall_id
+required
+string
+Wall ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+204
+The wall was successfully deleted
+400
+Cannot delete a published wall
+403
+The supplied session token or login details are invalid
+404
+Resource not found
+delete
+/{merchant_id}/walls/{wall_id}
+/{merchant_id}/walls/{wall_id}
+Response samples
+400
+403
+404
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"PUBLISHED_WALL"
+,
+"message"
+:
+"Cannot delete published wall"
+,
+"success"
+:
+false
+}
+Duplicate a wall
+Copies a wall and all associated rows and tiles. The copied Wall will
+always be created as unpublished.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+wall_id
+required
+string
+Wall ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+201
+Successfully copied
+403
+The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/walls/{wall_id}/duplicate
+/{merchant_id}/walls/{wall_id}/duplicate
+Response samples
+201
+403
+404
+Content type
+application/json
+Copy
+{
+"copied_wall"
+:
+123
+}
+Update the order of rows
+All row IDs should be present. Extra row IDs or missing row IDs are
+not allowed.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+wall_id
+required
+string
+Wall ID
+Request Body schema:
+application/json
+Request body for changing the order of rows within a wall
+order
+Array of
+integers
+List of row IDs
+Responses
+204
+The order was changed
+400
+The given order is invalid
+403
+The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/walls/{wall_id}/order
+/{merchant_id}/walls/{wall_id}/order
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"order"
+:
+[
+0
+]
+}
+Response samples
+400
+403
+404
+Content type
+application/json
+Copy
+{
+"code"
+:
+"INVALID_ORDER"
+,
+"message"
+:
+"Missing or unknown rows"
+,
+"success"
+:
+false
+}
+Rows
+View a row
+Represents a single row in a promotion wall.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+row_id
+required
+string
+Row ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+200
+OK
+403
+The supplied session token or login details are invalid
+404
+Resource not found
+get
+/{merchant_id}/row/{row_id}
+/{merchant_id}/row/{row_id}
+Response samples
+200
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"config"
+:
+{
+"height"
+:
+0
+}
+,
+"tiles"
+:
+[
+{
+"rect"
+:
+[
+0
+]
+,
+"resource"
+:
+{
+"_"
+:
+"string"
+}
+}
+]
+,
+"type"
+:
+"grid"
+,
+"id"
+:
+0
+}
+Update a Row
+Updates a single row in a wall along with it's associated tiles
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+row_id
+required
+string
+Row ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+Request body for updating a row
+config
+required
+object
+Configuration of the row
+tiles
+required
+Array of
+objects
+(
+TileRequest
+)
+The tiles the row contains
+type
+required
+string
+Value
+:
+"grid"
+The row type
+Responses
+200
+OK
+403
+The supplied session token or login details are invalid
+404
+Resource not found
+put
+/{merchant_id}/row/{row_id}
+/{merchant_id}/row/{row_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"config"
+:
+{
+"height"
+:
+0
+}
+,
+"tiles"
+:
+[
+{
+"rect"
+:
+[
+0
+]
+,
+"resource"
+:
+{
+"_"
+:
+"string"
+}
+}
+]
+,
+"type"
+:
+"grid"
+}
+Response samples
+200
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"config"
+:
+{
+"height"
+:
+0
+}
+,
+"tiles"
+:
+[
+{
+"rect"
+:
+[
+0
+]
+,
+"resource"
+:
+{
+"_"
+:
+"string"
+}
+}
+]
+,
+"type"
+:
+"grid"
+,
+"id"
+:
+0
+}
+Delete a Row
+Deletes a single row in a promotion wall.
+Note:
+A wall
+must
+have between
+2
+and
+25 rows
+. Attempting
+to delete a row when the associated wall has only 2 rows will result in
+an error.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+row_id
+required
+string
+Row ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Responses
+204
+The row was successfully deleted
+400
+The minimum required amount of rows for a promotion wall has been reached
+403
+The supplied session token or login details are invalid
+404
+Resource not found
+delete
+/{merchant_id}/row/{row_id}
+/{merchant_id}/row/{row_id}
+Response samples
+400
+403
+404
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"MINIMUM_REACHED"
+,
+"message"
+:
+"Published walls must have at least 2 rows"
+,
+"success"
+:
+false
+}
+Create a Row
+Represents the collection of rows in a promotion wall.
+The collection of tiles, when placed on the grid, should cover the whole grid exactly. It’s
+not allowed to leave gaps, overlap tiles or let tiles stick out of the grid.
+A home wall can have at most 25 rows. Attempting to add more results in an error.
+A resource can only be linked once per wall.
+Tiles can be one of 2 types;
+img
+or
+video
+. The
+content
+body changes depending on the
+type.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+wall_id
+required
+string
+Wall ID
+header
+Parameters
+Authorization
+required
+string
+Access token
+Request Body schema:
+application/json
+Request body for creating a row
+config
+required
+object
+Configuration of the row
+tiles
+required
+Array of
+objects
+(
+TileRequest
+)
+The tiles the row contains
+type
+required
+string
+Value
+:
+"grid"
+The row type
+Responses
+201
+Created
+400
+The Resource has already been linked
+403
+The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/walls/{wall_id}/rows
+/{merchant_id}/walls/{wall_id}/rows
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"config"
+:
+{
+"height"
+:
+0
+}
+,
+"tiles"
+:
+[
+{
+"rect"
+:
+[
+0
+]
+,
+"resource"
+:
+{
+"_"
+:
+"string"
+}
+}
+]
+,
+"type"
+:
+"grid"
+}
+Response samples
+201
+400
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"config"
+:
+{
+"height"
+:
+0
+}
+,
+"tiles"
+:
+[
+{
+"rect"
+:
+[
+0
+]
+,
+"resource"
+:
+{
+"_"
+:
+"string"
+}
+}
+]
+,
+"type"
+:
+"grid"
+,
+"id"
+:
+0
+}
+Lookbook
+A Lookbook is a collection of Looks. Each Look contains an image and a number of 'hotspots'.
+These 'hotspots' are linked to individual products.
+Get all Lookbooks.
+Gets all look books by merchant_id. This endpoint is used by both the studio frontend and
+the middleware. Passing in an optional array of locales will return a filtered set of
+lookbooks for the matching locales. You can also pass an optional parameter of view with one
+of the following values:
+published
+,
+scheduled
+,
+drafts
+. These will each return the
+respective lookbooks depending on their status. Note that one lookbook could be published in
+one locale but scheduled in another. Therefore the same lookbook could appear in the both a
+published
+and
+scheduled
+list.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+query
+Parameters
+locales
+Array of
+strings
+A optional set of locales to filter by
+view
+string
+Responses
+200
+Returns an array of all matching lookbooks
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+get
+/{merchant_id}/lookbooks/
+/{merchant_id}/lookbooks/
+Response samples
+200
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"base_storefront"
+:
+"string"
+,
+"created_at"
+:
+0
+,
+"display_categories"
+:
+"string"
+,
+"front_images"
+:
+{
+"background-568h@2x~iphone"
+:
+"string"
+,
+"background-667h@2x~iphone"
+:
+"string"
+,
+"background-667h@3x~iphone"
+:
+"string"
+,
+"background-736h@3x~iphone"
+:
+"string"
+,
+"background@2x~ipad"
+:
+"string"
+,
+"background@2x~iphone"
+:
+"string"
+,
+"background@2x~watch"
+:
+"string"
+,
+"background~ipad"
+:
+"string"
+}
+,
+"id"
+:
+0
+,
+"index"
+:
+0
+,
+"linked_to_tile"
+:
+[
+"string"
+]
+,
+"look_count"
+:
+0
+,
+"merchant_id"
+:
+"string"
+,
+"published"
+:
+true
+,
+"schedule_overview"
+:
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"title"
+:
+"string"
+,
+"translations"
+:
+{
+"translations"
+:
+[
+{
+"locale"
+:
+"string"
+,
+"section"
+:
+"string"
+,
+"text"
+:
+"string"
+}
+]
+}
+,
+"updated_at"
+:
+0
+}
+]
+Create a Lookbook
+Creates a lookbook. When creating a Lookbook for the first time it will always be in an
+unpublished state
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Request Body schema:
+application/json
+display_categories
+Array of
+strings
+published
+boolean
+Default:
+false
+Defines if the lookbook is published or not. Only published lookbooks are visible in the
+app.
+title
+string
+Title of the lookbook
+Responses
+201
+Successfully created the lookbook
+400
+Invalid request parameters
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+post
+/{merchant_id}/lookbooks/
+/{merchant_id}/lookbooks/
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"display_categories"
+:
+[
+"string"
+]
+,
+"published"
+:
+false
+,
+"title"
+:
+"string"
+}
+Response samples
+201
+400
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"base_storefront"
+:
+"string"
+,
+"created_at"
+:
+0
+,
+"display_categories"
+:
+"string"
+,
+"front_images"
+:
+{
+"background-568h@2x~iphone"
+:
+"string"
+,
+"background-667h@2x~iphone"
+:
+"string"
+,
+"background-667h@3x~iphone"
+:
+"string"
+,
+"background-736h@3x~iphone"
+:
+"string"
+,
+"background@2x~ipad"
+:
+"string"
+,
+"background@2x~iphone"
+:
+"string"
+,
+"background@2x~watch"
+:
+"string"
+,
+"background~ipad"
+:
+"string"
+}
+,
+"id"
+:
+0
+,
+"index"
+:
+0
+,
+"linked_to_tile"
+:
+[
+"string"
+]
+,
+"look_count"
+:
+0
+,
+"merchant_id"
+:
+"string"
+,
+"published"
+:
+true
+,
+"schedule_overview"
+:
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"title"
+:
+"string"
+,
+"translations"
+:
+{
+"translations"
+:
+[
+{
+"locale"
+:
+"string"
+,
+"section"
+:
+"string"
+,
+"text"
+:
+"string"
+}
+]
+}
+,
+"updated_at"
+:
+0
+}
+Get a Lookbook
+Get a specific Lookbook by merchant_id and id
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+200
+Returns a Lookbook
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+get
+/{merchant_id}/lookbooks/{id}
+/{merchant_id}/lookbooks/{id}
+Response samples
+200
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"base_storefront"
+:
+"string"
+,
+"created_at"
+:
+0
+,
+"display_categories"
+:
+"string"
+,
+"front_images"
+:
+{
+"background-568h@2x~iphone"
+:
+"string"
+,
+"background-667h@2x~iphone"
+:
+"string"
+,
+"background-667h@3x~iphone"
+:
+"string"
+,
+"background-736h@3x~iphone"
+:
+"string"
+,
+"background@2x~ipad"
+:
+"string"
+,
+"background@2x~iphone"
+:
+"string"
+,
+"background@2x~watch"
+:
+"string"
+,
+"background~ipad"
+:
+"string"
+}
+,
+"id"
+:
+0
+,
+"index"
+:
+0
+,
+"linked_to_tile"
+:
+[
+"string"
+]
+,
+"look_count"
+:
+0
+,
+"merchant_id"
+:
+"string"
+,
+"published"
+:
+true
+,
+"schedule_overview"
+:
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"title"
+:
+"string"
+,
+"translations"
+:
+{
+"translations"
+:
+[
+{
+"locale"
+:
+"string"
+,
+"section"
+:
+"string"
+,
+"text"
+:
+"string"
+}
+]
+}
+,
+"updated_at"
+:
+0
+}
+Delete a Lookbook
+Deletes a lookbook according to merchant id and lookbook id.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+204
+Lookbook was successfully deleted
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+delete
+/{merchant_id}/lookbooks/{id}
+/{merchant_id}/lookbooks/{id}
+Response samples
+403
+404
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"UNAUTHORIZED"
+,
+"message"
+:
+"Permission denied"
+,
+"success"
+:
+false
+}
+Duplicate a Lookbook
+Copies a Lookbook and all associated Looks. The copied lookbook will always be created as
+unpublished. All tags associated with the lookbook will also be copied.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+201
+Successfully copied
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/lookbooks/{id}/duplicate
+/{merchant_id}/lookbooks/{id}/duplicate
+Response samples
+201
+403
+404
+Content type
+application/json
+Copy
+{
+"copied_lookbook"
+:
+"12"
+}
+Update order of looks
+Represents the order of the looks in a particular lookbook.
+When supplying a new order, all look IDs should be present. Extra or missing look ids are not allowed.
+Example Order:
+{
+"order"
+:
+[
+1
+,
+2
+,
+3
+,
+4
+]
+}
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+Request Body schema:
+application/json
+order
+Array of
+integers
+Responses
+204
+Success
+400
+Invalid Order
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/lookbooks/{id}/looks/order
+/{merchant_id}/lookbooks/{id}/looks/order
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"order"
+:
+[
+0
+]
+}
+Response samples
+400
+403
+404
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"INVALID_ORDER"
+,
+"message"
+:
+"Missing or unknown looks"
+,
+"success"
+:
+false
+}
+Publish/Schedule a Lookbook
+A Lookbook has 3 "states", Published, scheduled and unpublished(in drafts). These states
+determine what is visible in the app and when.
+A Lookbook can have a different schedule for a number of different locales. For example a
+wall can be scheduled to be live in France on Monday and the US on Wednesday.
+This endpoint is responsible for publishing, scheduling and unpublishing a wall. The
+endpoint accepts an array of objects representing a locale. If the time is in the
+future the wall will be scheduled, and if publish_at is now then the resource will be
+published.
+Note that the array in the request will replace all current tags/schedules in the resource.
+Eg if the resource is published in en-GB but the request does not include an en-GB tag then the
+en-GB tag will be removed from the resource and the resource will no longer be published in
+that locale.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Request Body schema:
+application/json
+Array
+id
+string
+Unique id of the locale tag
+time
+string
+An ISO8061 formatted time stamp
+time_zone
+string
+The time zone identifier eg Europe/Amsterdam
+value
+string
+Human readable value of locale tag eg nl-NL
+Responses
+201
+Resource successfully updated
+400
+A validation failed and the resource could not be updated
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/lookbooks/{id}/schedule
+/{merchant_id}/lookbooks/{id}/schedule
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+Response samples
+201
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"base_storefront"
+:
+"string"
+,
+"created_at"
+:
+0
+,
+"display_categories"
+:
+"string"
+,
+"front_images"
+:
+{
+"background-568h@2x~iphone"
+:
+"string"
+,
+"background-667h@2x~iphone"
+:
+"string"
+,
+"background-667h@3x~iphone"
+:
+"string"
+,
+"background-736h@3x~iphone"
+:
+"string"
+,
+"background@2x~ipad"
+:
+"string"
+,
+"background@2x~iphone"
+:
+"string"
+,
+"background@2x~watch"
+:
+"string"
+,
+"background~ipad"
+:
+"string"
+}
+,
+"id"
+:
+0
+,
+"index"
+:
+0
+,
+"linked_to_tile"
+:
+[
+"string"
+]
+,
+"look_count"
+:
+0
+,
+"merchant_id"
+:
+"string"
+,
+"published"
+:
+true
+,
+"schedule_overview"
+:
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"title"
+:
+"string"
+,
+"translations"
+:
+{
+"translations"
+:
+[
+{
+"locale"
+:
+"string"
+,
+"section"
+:
+"string"
+,
+"text"
+:
+"string"
+}
+]
+}
+,
+"updated_at"
+:
+0
+}
+Add tags to a lookbook
+This endpoint is not currently in use!!
+Enables a lookbook to be associated with multiple store fronts or customer groups
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+Request Body schema:
+application/json
+tags
+Array of
+objects
+(
+SimpleTag
+)
+Array
+tag_type
+string
+the type of tag. Could be either
+locale
+or
+customer_group
+tag_value
+string
+The tag name eg.
+Men 30 - 40
+Responses
+201
+Successfully added tags to the resource
+400
+Invalid Tag type
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/lookbooks/{id}/tags
+/{merchant_id}/lookbooks/{id}/tags
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"tags"
+:
+[
+{
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+}
+Response samples
+201
+400
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"base_storefront"
+:
+"string"
+,
+"created_at"
+:
+0
+,
+"display_categories"
+:
+"string"
+,
+"front_images"
+:
+{
+"background-568h@2x~iphone"
+:
+"string"
+,
+"background-667h@2x~iphone"
+:
+"string"
+,
+"background-667h@3x~iphone"
+:
+"string"
+,
+"background-736h@3x~iphone"
+:
+"string"
+,
+"background@2x~ipad"
+:
+"string"
+,
+"background@2x~iphone"
+:
+"string"
+,
+"background@2x~watch"
+:
+"string"
+,
+"background~ipad"
+:
+"string"
+}
+,
+"id"
+:
+0
+,
+"index"
+:
+0
+,
+"linked_to_tile"
+:
+[
+"string"
+]
+,
+"look_count"
+:
+0
+,
+"merchant_id"
+:
+"string"
+,
+"published"
+:
+true
+,
+"schedule_overview"
+:
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+,
+"time_zone"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"title"
+:
+"string"
+,
+"translations"
+:
+{
+"translations"
+:
+[
+{
+"locale"
+:
+"string"
+,
+"section"
+:
+"string"
+,
+"text"
+:
+"string"
+}
+]
+}
+,
+"updated_at"
+:
+0
+}
+remove tags from a lookbook
+Removes a set of tags from a lookbook
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+Request Body schema:
+application/json
+tags
+Array of
+objects
+(
+Tag
+)
+Array
+id
+string
+unique database id
+merchant_id
+string
+The merchant That this tag belongs to
+tag_type
+string
+the type of tag. Could be either
+locale
+or
+customer_group
+tag_value
+string
+The tag name eg.
+Men 30 - 40
+Responses
+204
+Successfully Removed the given tags from the resource
+400
+The specified tags were not associated with this lookbook
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+patch
+/{merchant_id}/lookbooks/{id}/tags
+/{merchant_id}/lookbooks/{id}/tags
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"tags"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+}
+Response samples
+400
+403
+404
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"INVALID_PROPERTY"
+,
+"message"
+:
+"The specified tags were not associated with this resource"
+,
+"success"
+:
+false
+}
+Update order of lookbooks
+Updates the order of lookbooks for a single locale.
+When supplying a new order, all lookbook IDs should be present. Extra lookbook IDs or
+missing row IDs are not allowed.
+Example Order:
+{
+"order"
+:
+[
+1
+,
+2
+,
+3
+,
+4
+]
+}
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+locale
+required
+string
+The locale you want to edit
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Request Body schema:
+application/json
+order
+Array of
+integers
+Responses
+204
+Success
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/lookbooks/{locale}/order
+/{merchant_id}/lookbooks/{locale}/order
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"order"
+:
+[
+1
+,
+2
+,
+3
+,
+4
+]
+}
+Response samples
+403
+404
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"UNAUTHORIZED"
+,
+"message"
+:
+"Permission denied"
+,
+"success"
+:
+false
+}
+Look
+Get all Looks by Lookbook
+Get all looks of a certain lookbook
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+Responses
+200
+Returns a list of Looks
+404
+Resource not found
+get
+/{merchant_id}/lookbooks/{id}/looks
+/{merchant_id}/lookbooks/{id}/looks
+Response samples
+200
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"created_at"
+:
+0
+,
+"hotspots"
+:
+[
+{
+"position"
+:
+{
+"x"
+:
+"string"
+,
+"y"
+:
+"string"
+}
+,
+"product_slots"
+:
+[
+{
+"products"
+:
+[
+0
+]
+}
+]
+}
+]
+,
+"id"
+:
+0
+,
+"image"
+:
+{
+"0x"
+:
+"string"
+,
+"1x"
+:
+"string"
+}
+,
+"image_key"
+:
+"string"
+,
+"images"
+:
+{
+"background-568h@2x~iphone"
+:
+"string"
+,
+"background-667h@2x~iphone"
+:
+"string"
+,
+"background-667h@3x~iphone"
+:
+"string"
+,
+"background-736h@3x~iphone"
+:
+"string"
+,
+"background@2x~ipad"
+:
+"string"
+,
+"background@2x~iphone"
+:
+"string"
+,
+"background@2x~watch"
+:
+"string"
+,
+"background~ipad"
+:
+"string"
+}
+,
+"index"
+:
+0
+,
+"lookbook_id"
+:
+0
+,
+"updated_at"
+:
+0
+}
+]
+Create a Look
+Creates a look for a lookbook
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+201
+Look was successfully created
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/lookbooks/{id}/looks
+/{merchant_id}/lookbooks/{id}/looks
+Response samples
+201
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"created_at"
+:
+0
+,
+"hotspots"
+:
+[
+{
+"position"
+:
+{
+"x"
+:
+"string"
+,
+"y"
+:
+"string"
+}
+,
+"product_slots"
+:
+[
+{
+"products"
+:
+[
+0
+]
+}
+]
+}
+]
+,
+"id"
+:
+0
+,
+"image"
+:
+{
+"0x"
+:
+"string"
+,
+"1x"
+:
+"string"
+}
+,
+"image_key"
+:
+"string"
+,
+"images"
+:
+{
+"background-568h@2x~iphone"
+:
+"string"
+,
+"background-667h@2x~iphone"
+:
+"string"
+,
+"background-667h@3x~iphone"
+:
+"string"
+,
+"background-736h@3x~iphone"
+:
+"string"
+,
+"background@2x~ipad"
+:
+"string"
+,
+"background@2x~iphone"
+:
+"string"
+,
+"background@2x~watch"
+:
+"string"
+,
+"background~ipad"
+:
+"string"
+}
+,
+"index"
+:
+0
+,
+"lookbook_id"
+:
+0
+,
+"updated_at"
+:
+0
+}
+Get a Look
+Get all looks of a certain lookbook
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+nested_id
+required
+string
+The id of the requested resource
+Responses
+200
+Returns a Look
+404
+Resource not found
+get
+/{merchant_id}/lookbooks/{id}/looks/{nested_id}
+/{merchant_id}/lookbooks/{id}/looks/{nested_id}
+Response samples
+200
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"created_at"
+:
+0
+,
+"hotspots"
+:
+[
+{
+"position"
+:
+{
+"x"
+:
+"string"
+,
+"y"
+:
+"string"
+}
+,
+"product_slots"
+:
+[
+{
+"products"
+:
+[
+0
+]
+}
+]
+}
+]
+,
+"id"
+:
+0
+,
+"image"
+:
+{
+"0x"
+:
+"string"
+,
+"1x"
+:
+"string"
+}
+,
+"image_key"
+:
+"string"
+,
+"images"
+:
+{
+"background-568h@2x~iphone"
+:
+"string"
+,
+"background-667h@2x~iphone"
+:
+"string"
+,
+"background-667h@3x~iphone"
+:
+"string"
+,
+"background-736h@3x~iphone"
+:
+"string"
+,
+"background@2x~ipad"
+:
+"string"
+,
+"background@2x~iphone"
+:
+"string"
+,
+"background@2x~watch"
+:
+"string"
+,
+"background~ipad"
+:
+"string"
+}
+,
+"index"
+:
+0
+,
+"lookbook_id"
+:
+0
+,
+"updated_at"
+:
+0
+}
+Update a Look
+Updates a look for a lookbook
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+nested_id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Request Body schema:
+application/json
+A json representation of a Look
+id
+integer
+look
+string
+A JSON Hash
+lookbook_id
+integer
+Responses
+200
+Look was successfully updated
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+put
+/{merchant_id}/lookbooks/{id}/looks/{nested_id}
+/{merchant_id}/lookbooks/{id}/looks/{nested_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"id"
+:
+0
+,
+"look"
+:
+"string"
+,
+"lookbook_id"
+:
+0
+}
+Response samples
+200
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"created_at"
+:
+0
+,
+"hotspots"
+:
+[
+{
+"position"
+:
+{
+"x"
+:
+"string"
+,
+"y"
+:
+"string"
+}
+,
+"product_slots"
+:
+[
+{
+"products"
+:
+[
+0
+]
+}
+]
+}
+]
+,
+"id"
+:
+0
+,
+"image"
+:
+{
+"0x"
+:
+"string"
+,
+"1x"
+:
+"string"
+}
+,
+"image_key"
+:
+"string"
+,
+"images"
+:
+{
+"background-568h@2x~iphone"
+:
+"string"
+,
+"background-667h@2x~iphone"
+:
+"string"
+,
+"background-667h@3x~iphone"
+:
+"string"
+,
+"background-736h@3x~iphone"
+:
+"string"
+,
+"background@2x~ipad"
+:
+"string"
+,
+"background@2x~iphone"
+:
+"string"
+,
+"background@2x~watch"
+:
+"string"
+,
+"background~ipad"
+:
+"string"
+}
+,
+"index"
+:
+0
+,
+"lookbook_id"
+:
+0
+,
+"updated_at"
+:
+0
+}
+Delete a Look
+Deletes a look for a lookbook
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+nested_id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+204
+Look was successfully Deleted
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+delete
+/{merchant_id}/lookbooks/{id}/looks/{nested_id}
+/{merchant_id}/lookbooks/{id}/looks/{nested_id}
+Response samples
+403
+404
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"UNAUTHORIZED"
+,
+"message"
+:
+"Permission denied"
+,
+"success"
+:
+false
+}
+Push Notification
+A studio user is able to create and schedule push notifications. Rich push notifications are now
+supported meaning that an image can be attached and viewed in the app.
+A push notification consists of a title and a message. The Notification is also associated to a
+number of locations. These being
+home
+,
+category
+,
+lookbook
+,
+product
+. The Notification will
+contain a deeplink and open the app in the respective location.
+Example of a rich push notification:
+Schedules or sends a Push Notification
+The push notifications are used to improve engagement with users of the Highstreet app and
+to promote promotions, products, categories or lookbooks.
+A notification consists of a message, an optional title or a subtitle and additional
+information to guide the app in presenting rich notification content and allowing the app to
+take advantage of the deep linking feature.
+A notification can also be sent to a single user by adding user's email address to the customer_id key
+A notification is described as follows:
+{
+"message"
+:
+"The message of the push notification, displayed on device's lockscreen"
+,
+"push_time"
+:
+"1473172784"
+,
+"store"
+:
+"test"
+,
+"destination_type"
+:
+"categories"
+,
+"destination_type_id"
+:
+"xwhl123"
+,
+"destination_name"
+:
+"A category name"
+,
+"cancelled"
+:
+false
+}
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Request Body schema:
+application/json
+content_type
+required
+string
+(
+ContentType
+)
+Enum
+:
+"resource"
+"custom"
+Is the push notification linked to a content in Studio or was it created custom (video/image)
+customer_id
+string
+The email address of a customer. This will send the notifaction to this user only
+destination_name
+string
+The human readable identifier of the destination
+destination_type
+required
+string
+Enum
+:
+"categories"
+"products"
+"lookbooks"
+"home"
+The destination type for the deep linking
+destination_type_id
+required
+string
+The identifier for the destination type, if needed.
+image_thumbnail_url
+string
+The url to a thumbnail created to display on the lock screen
+image_url
+string
+The url to an image created to display in rich notifications
+message
+required
+string
+The message for the push notification.
+push_time
+string
+When the notification will be sent.
+tags
+required
+Array of
+objects
+(
+SimpleTag
+)
+title
+required
+string
+The title for the push notification.
+Responses
+201
+Successfully scheduled push notification
+400
+Invalid request parameters
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+500
+The Notification has not been sent
+post
+/merchants/{merchant_id}/push_notifications
+/merchants/{merchant_id}/push_notifications
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"content_type"
+:
+"resource"
+,
+"customer_id"
+:
+"string"
+,
+"destination_name"
+:
+"string"
+,
+"destination_type"
+:
+"categories"
+,
+"destination_type_id"
+:
+"string"
+,
+"image_thumbnail_url"
+:
+"string"
+,
+"image_url"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"push_time"
+:
+"string"
+,
+"tags"
+:
+[
+{
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"title"
+:
+"string"
+}
+Response samples
+201
+400
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"cancelled"
+:
+true
+,
+"content_type"
+:
+null
+,
+"destination_name"
+:
+"string"
+,
+"destination_storefront_id"
+:
+"string"
+,
+"destination_type"
+:
+"categories"
+,
+"destination_type_id"
+:
+"string"
+,
+"expiration_time"
+:
+0
+,
+"image_thumbnail_url"
+:
+"string"
+,
+"image_url"
+:
+"string"
+,
+"language"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"push_time"
+:
+"string"
+,
+"studio_id"
+:
+"string"
+,
+"tagged_with"
+:
+{
+"customer_group"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"locale"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+}
+,
+"time_zone"
+:
+"string"
+,
+"title"
+:
+"string"
+,
+"unique_id"
+:
+0
+,
+"video_url_480"
+:
+"string"
+,
+"video_url_720"
+:
+"string"
+}
+Send a push notification
+The push notifications are used to improve engagement with users of the Highstreet app and
+to promote promotions, products, categories or lookbooks.
+A notification consists of a message, an optional title or a subtitle and additional
+information to guide the app in presenting rich notification content and allowing the app to
+take advantage of the deep linking feature.
+A notification can also be sent to a single user by adding user's email address to the customer_id key
+A notification is described as follows:
+{
+"message"
+:
+"The message of the push notification, displayed on device's lockscreen"
+,
+"push_time"
+:
+"1473172784"
+,
+"store"
+:
+"test"
+,
+"destination_type"
+:
+"categories"
+,
+"destination_type_id"
+:
+"xwhl123"
+,
+"destination_name"
+:
+"A category name"
+,
+"cancelled"
+:
+false
+}
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Request Body schema:
+application/json
+content_type
+required
+string
+(
+ContentType
+)
+Enum
+:
+"resource"
+"custom"
+Is the push notification linked to a content in Studio or was it created custom (video/image)
+customer_id
+string
+The email address of a customer. This will send the notifaction to this user only
+destination_name
+string
+The human readable identifier of the destination
+destination_type
+required
+string
+Enum
+:
+"categories"
+"products"
+"lookbooks"
+"home"
+The destination type for the deep linking
+destination_type_id
+required
+string
+The identifier for the destination type, if needed.
+image_thumbnail_url
+string
+The url to a thumbnail created to display on the lock screen
+image_url
+string
+The url to an image created to display in rich notifications
+message
+required
+string
+The message for the push notification.
+push_time
+string
+When the notification will be sent.
+tags
+required
+Array of
+objects
+(
+SimpleTag
+)
+title
+required
+string
+The title for the push notification.
+Responses
+201
+Successfully scheduled push notification
+400
+Invalid request parameters
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+500
+The Notification has not been sent
+post
+/{merchant_id}/push_notifications
+/{merchant_id}/push_notifications
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"content_type"
+:
+"resource"
+,
+"customer_id"
+:
+"string"
+,
+"destination_name"
+:
+"string"
+,
+"destination_type"
+:
+"categories"
+,
+"destination_type_id"
+:
+"string"
+,
+"image_thumbnail_url"
+:
+"string"
+,
+"image_url"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"push_time"
+:
+"string"
+,
+"tags"
+:
+[
+{
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"title"
+:
+"string"
+}
+Response samples
+201
+400
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"cancelled"
+:
+true
+,
+"content_type"
+:
+null
+,
+"destination_name"
+:
+"string"
+,
+"destination_storefront_id"
+:
+"string"
+,
+"destination_type"
+:
+"categories"
+,
+"destination_type_id"
+:
+"string"
+,
+"expiration_time"
+:
+0
+,
+"image_thumbnail_url"
+:
+"string"
+,
+"image_url"
+:
+"string"
+,
+"language"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"push_time"
+:
+"string"
+,
+"studio_id"
+:
+"string"
+,
+"tagged_with"
+:
+{
+"customer_group"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"locale"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+}
+,
+"time_zone"
+:
+"string"
+,
+"title"
+:
+"string"
+,
+"unique_id"
+:
+0
+,
+"video_url_480"
+:
+"string"
+,
+"video_url_720"
+:
+"string"
+}
+Create Image for notification
+Push notifications now support Rich notifications. This means that we can assign an image to
+the notification. We generate this image for the client depending on the destination type of
+the notification.
+Only push notifications with a destination type of
+products
+,
+lookbooks
+,
+categories
+or
+home
+will have an image attached. The destination_type_id related to the id of the
+resource. The only slightly confusing part is with
+home
+the
+destination_type_id
+is
+actually the id of a Tile and not a Wall.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Request Body schema:
+application/json
+destiantion_type_id
+string
+destination_type
+string
+Responses
+201
+Successfully created image
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+500
+Image Creation Failed
+post
+/{merchant_id}/push_notifications/image
+/{merchant_id}/push_notifications/image
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"destiantion_type_id"
+:
+"string"
+,
+"destination_type"
+:
+"string"
+}
+Response samples
+201
+403
+500
+Content type
+application/json
+image_thumbnail_url
+image_url
+application/json
+Copy
+{
+"image_thumbnail_url"
+:
+"string"
+,
+"image_url"
+:
+"string"
+}
+Get a single Notification
+Returns a single Push Notification by id and merchant_id
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+200
+Returns the Push notification
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+get
+/{merchant_id}/push_notifications/{id}
+/{merchant_id}/push_notifications/{id}
+Response samples
+200
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"cancelled"
+:
+true
+,
+"content_type"
+:
+null
+,
+"destination_name"
+:
+"string"
+,
+"destination_storefront_id"
+:
+"string"
+,
+"destination_type"
+:
+"categories"
+,
+"destination_type_id"
+:
+"string"
+,
+"expiration_time"
+:
+0
+,
+"image_thumbnail_url"
+:
+"string"
+,
+"image_url"
+:
+"string"
+,
+"language"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"push_time"
+:
+"string"
+,
+"studio_id"
+:
+"string"
+,
+"tagged_with"
+:
+{
+"customer_group"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"locale"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+}
+,
+"time_zone"
+:
+"string"
+,
+"title"
+:
+"string"
+,
+"unique_id"
+:
+0
+,
+"video_url_480"
+:
+"string"
+,
+"video_url_720"
+:
+"string"
+}
+update a push notification
+Updates a notification. One signal doesn't actually support this functionality. So behind
+the scenes we are cancelling the original notification and creating a new one.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Request Body schema:
+application/json
+content_type
+required
+string
+(
+ContentType
+)
+Enum
+:
+"resource"
+"custom"
+Is the push notification linked to a content in Studio or was it created custom (video/image)
+customer_id
+string
+The email address of a customer. This will send the notifaction to this user only
+destination_name
+string
+The human readable identifier of the destination
+destination_type
+required
+string
+Enum
+:
+"categories"
+"products"
+"lookbooks"
+"home"
+The destination type for the deep linking
+destination_type_id
+required
+string
+The identifier for the destination type, if needed.
+image_thumbnail_url
+string
+The url to a thumbnail created to display on the lock screen
+image_url
+string
+The url to an image created to display in rich notifications
+message
+required
+string
+The message for the push notification.
+push_time
+string
+When the notification will be sent.
+tags
+required
+Array of
+objects
+(
+SimpleTag
+)
+title
+required
+string
+The title for the push notification.
+Responses
+200
+Successfully update push notification
+400
+Invalid request parameters
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+put
+/{merchant_id}/push_notifications/{id}
+/{merchant_id}/push_notifications/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"content_type"
+:
+"resource"
+,
+"customer_id"
+:
+"string"
+,
+"destination_name"
+:
+"string"
+,
+"destination_type"
+:
+"categories"
+,
+"destination_type_id"
+:
+"string"
+,
+"image_thumbnail_url"
+:
+"string"
+,
+"image_url"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"push_time"
+:
+"string"
+,
+"tags"
+:
+[
+{
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"title"
+:
+"string"
+}
+Response samples
+200
+400
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"cancelled"
+:
+true
+,
+"content_type"
+:
+null
+,
+"destination_name"
+:
+"string"
+,
+"destination_storefront_id"
+:
+"string"
+,
+"destination_type"
+:
+"categories"
+,
+"destination_type_id"
+:
+"string"
+,
+"expiration_time"
+:
+0
+,
+"image_thumbnail_url"
+:
+"string"
+,
+"image_url"
+:
+"string"
+,
+"language"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"push_time"
+:
+"string"
+,
+"studio_id"
+:
+"string"
+,
+"tagged_with"
+:
+{
+"customer_group"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"locale"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+}
+,
+"time_zone"
+:
+"string"
+,
+"title"
+:
+"string"
+,
+"unique_id"
+:
+0
+,
+"video_url_480"
+:
+"string"
+,
+"video_url_720"
+:
+"string"
+}
+Cancel a notification
+Cancels a pending push notification.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+204
+Successfully cancelled the notifaction
+400
+The push notification has already been sent
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+500
+Cancellation failed
+delete
+/{merchant_id}/push_notifications/{id}
+/{merchant_id}/push_notifications/{id}
+Response samples
+400
+403
+404
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"TOO_LATE"
+,
+"message"
+:
+"push notification is already sent"
+,
+"success"
+:
+false
+}
+User
+The User model on  the studio is fairly simple. A User is able to login and logout of the studio
+as well as reset their password. A User is allowed access to a merchant via the
+merchants
+attribute.
+User Model:
+attribute
+type
+description
+email
+string
+Unique identifier of the user
+password_digest
+string
+Hashed password
+reset_digest
+string
+Hashed reset token for use when resetting a password
+reset_sent_at
+datetime
+Time when reset token was sent
+merchants
+array
+An array of merchants the user has access to. This is normally just one
+super_admin
+boolean
+Highstreet staff admin staff. Gives the user access to all merchants
+last_updated
+integer
+Timestamp of when record was last updated
+Check if a User is authenticated
+This Simply lets you know wether the current user is logged in or not.
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+200
+OK. The User is authenticated. No Content is returned
+401
+The User has not been successfully authenticated.
+The body will return
+PERMISSION DENIED
+get
+/authenticated/
+/authenticated/
+Response samples
+401
+Content type
+text/plain; charset=utf-8
+Copy
+Permission denied
+View intercom details
+Responses
+200
+Returns the intercom details
+404
+Resource not found
+get
+/intercom
+/intercom
+Response samples
+200
+404
+Content type
+application/json
+name
+application/json
+Copy
+{
+"name"
+:
+"string"
+}
+Login a User
+This authenticates a User and returns a valid session token. This Session token can then be
+attached to the
+HTTP_AUTHORIZATION
+for all future requests.
+Request Body schema:
+application/json
+email
+string
+The user's email address
+password
+string
+A valid password
+Responses
+200
+OK. Successfully logged the user in
+403
+Wrong username/password
+post
+/login/
+/login/
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"email"
+:
+"string"
+,
+"password"
+:
+"string"
+}
+Response samples
+200
+403
+Content type
+application/json
+Copy
+{
+"token"
+:
+"laksjoiqw84y3298rflksajbflksanfasf89puas98fyuaw800329"
+}
+Logout a User
+This logs a user out of the studio and destroys their session.
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+200
+OK. Successfully logged the user out. No content is returned.
+403
+The user is not logged in. Or the session token is invalid
+post
+/logout/
+/logout/
+Response samples
+403
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"nil"
+,
+"message"
+:
+"Not logged in"
+,
+"success"
+:
+false
+}
+Get all Merchants for a user
+Typically a user only has access to one merchant. However there are a few cases where some
+users have access to multiple. This endpoint returns an array of available merchant ids
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+200
+Returns a list of all merchant objects that a user has access to
+400
+There are no merchants associated to the user
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+get
+/merchants
+/merchants
+Response samples
+200
+400
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"merchants"
+:
+[
+{
+"app_store_id"
+:
+"string"
+,
+"deeplink_scheme"
+:
+"string"
+,
+"display_name"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+]
+}
+Send a Password reset email
+This endpoint will find the User by the supplied email address and send them an email
+containing a link for them to reset their password.
+Request Body schema:
+application/json
+email
+string
+The Users email address
+Responses
+200
+OK. Successfully sent an email to the given user
+400
+The supplied email was not found.
+post
+/password_resets/
+/password_resets/
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"email"
+:
+"string"
+}
+Response samples
+400
+Content type
+application/json
+Copy
+{
+"errors"
+:
+"string"
+}
+Reset Users password
+This will update the Users password with the supplied information. There is
+no
+password
+confirmation validation on this endpoint as it only accepts one password attribute.
+Therefore the frontend must check that the supplied passwords match.
+If an expired or invalid reset token is supplied the server will return a 400.
+Request Body schema:
+application/json
+email
+string
+The Users email address
+password
+string
+The new password
+token
+string
+A valid password reset token
+Responses
+200
+OK. Successfully updated the Users password
+400
+The supplied email was not found.
+patch
+/password_resets/
+/password_resets/
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"email"
+:
+"string"
+,
+"password"
+:
+"string"
+,
+"token"
+:
+"string"
+}
+Response samples
+400
+Content type
+application/json
+Copy
+{
+"errors"
+:
+"string"
+}
+Validate a password_reset token
+Check wether a given token is valid for a given user.
+path
+Parameters
+token
+required
+string
+A valid token. This is extracted from the link sent in the email
+Request Body schema:
+application/json
+email
+string
+The Users email address
+Responses
+200
+OK. The specified token is valid for the specified user
+400
+The given token it not valid for the specified user.
+post
+/password_resets/{token}/validate/
+/password_resets/{token}/validate/
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"email"
+:
+"string"
+}
+Response samples
+400
+Content type
+application/json
+Copy
+{
+"errors"
+:
+"string"
+}
+Tag
+Resources such as lookbooks, push notifications and home walls can be tagged.
+These tags are in place to add a store front or customer group to a resource. Enabling the same
+resource to be shared across multiple store fronts and customer groups.
+Get all Tags
+Get all available tags for a merchant. The response is grouped by
+tag_type
+for example
+locale
+or
+customer_group
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+Responses
+200
+Success
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+get
+/{merchant_id}/tags
+/{merchant_id}/tags
+Response samples
+200
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"customer_group"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+,
+"locale"
+:
+[
+{
+"id"
+:
+"string"
+,
+"merchant_id"
+:
+"string"
+,
+"tag_type"
+:
+"string"
+,
+"tag_value"
+:
+"string"
+}
+]
+}
+Settings
+Get appearance settings
+Returns appearance configurations
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+200
+Success
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+get
+/{merchant_id}/settings/appearance
+/{merchant_id}/settings/appearance
+Response samples
+200
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"appearance"
+:
+{
+"home_wall"
+:
+{
+"background_color"
+:
+"string"
+,
+"gutter_size"
+:
+"string"
+,
+"horizontal_margin"
+:
+"string"
+,
+"shadow_alpha"
+:
+"string"
+,
+"tile_corner_radius"
+:
+"string"
+,
+"vertical_margin"
+:
+"string"
+}
+}
+}
+Refresh the cache
+Refreshes the cache for a list of storefronts
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Request Body schema:
+application/json
+storefronts
+Array of
+objects
+(
+CacheRefreshSchedule
+)
+Array
+id
+string
+The storefront id
+time
+string
+An ISO8061 time stamp
+Responses
+200
+Cache was successfully refreshed for all storefronts
+400
+REFRESH_ERROR
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+post
+/{merchant_id}/settings/cache_refresh
+/{merchant_id}/settings/cache_refresh
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"storefronts"
+:
+[
+{
+"id"
+:
+"string"
+,
+"time"
+:
+"string"
+}
+]
+}
+Response samples
+400
+403
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"success"
+:
+true
+}
+Cancel a Cache refresh
+Cancels a cache refresh event using the schedule_id. This is returned by the
+{merchant_id}/settings/cache_refresh/schedules end point.
+This will cancel a cache refresh schedule for all associated storefronts.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+204
+Cache Refresh was successfully cancelled
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+delete
+/{merchant_id}/settings/cache_refresh/:id
+/{merchant_id}/settings/cache_refresh/:id
+Response samples
+403
+404
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"UNAUTHORIZED"
+,
+"message"
+:
+"Permission denied"
+,
+"success"
+:
+false
+}
+Get all scheduled refreshes
+Returns a list of scheduled cache refreshes
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Responses
+200
+A list of cache refreshes
+400
+REFRESH_ERROR
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+get
+/{merchant_id}/settings/cache_refresh/schedules
+/{merchant_id}/settings/cache_refresh/schedules
+Response samples
+200
+400
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"schedule_id"
+:
+"string"
+,
+"storefronts"
+:
+[
+"string"
+]
+,
+"time"
+:
+"string"
+}
+]
+Merchants
+Get a merchant
+This endpoint fetches a merchant including storefronts.
+path
+Parameters
+id
+required
+string
+The merchant identifier
+Responses
+200
+OK
+401
+Unauthorized
+403
+Forbidden
+404
+Not Found
+get
+/merchants/{id}
+/merchants/{id}
+Response samples
+200
+401
+403
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"merchant"
+:
+[
+{
+"id"
+:
+"string"
+,
+"storefronts"
+:
+[
+{
+"id"
+:
+"string"
+,
+"language"
+:
+"string"
+}
+]
+}
+]
+}
+Get Categories
+Returns a flat list of available categories for the locale.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+locale
+required
+string
+The locale you want to edit
+Responses
+200
+A list of categories
+404
+Resource not found
+get
+/{merchant_id}/catalog/{locale}/categories
+/{merchant_id}/catalog/{locale}/categories
+Response samples
+200
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"id"
+:
+"string"
+,
+"path"
+:
+"string"
+,
+"title"
+:
+"string"
+}
+]
+Get a Category
+Checks if the category exists
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+id
+required
+string
+The id of the requested resource
+locale
+required
+string
+The locale you want to edit
+Responses
+200
+The Category does exist
+404
+Resource not found
+get
+/{merchant_id}/catalog/{locale}/categories/{id}
+/{merchant_id}/catalog/{locale}/categories/{id}
+Response samples
+200
+404
+Content type
+application/json
+Copy
+{
+"id"
+:
+"string"
+,
+"path"
+:
+"string"
+,
+"title"
+:
+"string"
+}
+Get Products
+Returns a search of products for the catalog of the specified locale
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+locale
+required
+string
+The locale you want to edit
+Responses
+200
+A list of products
+404
+Resource not found
+get
+/{merchant_id}/catalog/{locale}/products
+/{merchant_id}/catalog/{locale}/products
+Response samples
+200
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"attribute_values"
+:
+[
+{
+"code"
+:
+"string"
+,
+"title"
+:
+"string"
+,
+"type"
+:
+"string"
+,
+"value"
+:
+{
+"id"
+:
+"string"
+,
+"sort_hint"
+:
+"string"
+,
+"title"
+:
+"string"
+}
+}
+]
+,
+"id"
+:
+"string"
+,
+"images"
+:
+{
+"image"
+:
+"string"
+,
+"small_image"
+:
+"string"
+,
+"thumbnail"
+:
+"string"
+}
+,
+"name"
+:
+"string"
+,
+"sku"
+:
+"string"
+}
+]
+Upload an Image
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+Request Body schema:
+multipart/form-data
+upfile
+string
+<
+binary
+>
+The file to upload.
+Responses
+201
+(empty)
+400
+The image has to fit with required dimensions
+post
+/{merchant_id}/grid_image?columns=&rows=
+/{merchant_id}/grid_image?columns=&rows=
+Response samples
+201
+400
+Content type
+application/json
+image_key
+application/json
+Copy
+{
+"image_key"
+:
+"string"
+}
+Upload Video content
+Uploads and transcodes video content for use in a home wall.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Request Body schema:
+multipart/form-data
+rows
+string
+The number of rows the tile will take up
+columns
+string
+The number of columns the tile will take up
+placeholder
+string
+<
+binary
+>
+The image file to upload. This is displayed whilst the video is loading in the app
+video
+string
+<
+binary
+>
+The video file to upload
+Responses
+201
+Files successfully uploaded
+400
+Image or video validation failed
+post
+/{merchant_id}/video
+/{merchant_id}/video
+Response samples
+201
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"placeholder"
+:
+"string"
+,
+"videos"
+:
+{ }
+}
+Adds translations to a resource
+Create translations for a resource. For example
+POST /scotch/lookbooks/2/translations
+will
+create translations for the specified lookbook.
+path
+Parameters
+merchant_id
+required
+string
+The merchant ID
+resource
+required
+string
+The name of requested resource type, eg lookbooks
+id
+required
+string
+The id of the requested resource
+header
+Parameters
+Authorization
+required
+string
+The valid session token, returned after logging a user in.
+Request Body schema:
+application/json
+The number of rows the tile will take up
+translations
+Array of
+objects
+(
+Translation
+)
+Array
+locale
+string
+The locale
+section
+string
+text
+string
+Responses
+201
+Files successfully uploaded. Returns the specified resource, for example the lookbook
+400
+A validation failed
+403
+Unauthorized
+unauthorized
+: The supplied session token or login details are invalid
+404
+Resource not found
+post
+/{merchant_id}/{resource}/{id}/translations
+/{merchant_id}/{resource}/{id}/translations
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"translations"
+:
+[
+{
+"locale"
+:
+"string"
+,
+"section"
+:
+"string"
+,
+"text"
+:
+"string"
+}
+]
+}
+Response samples
+400
+403
+404
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"success"
+:
+true
+}
+Previous
+Events API
+Next
+Clienteling Setup API
+Copyright © 2025 NewStore, Inc.

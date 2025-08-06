@@ -1,0 +1,190 @@
+openapi: 3.1.0
+x-stoplight:
+  id: k8p2kc6hmchbx
+info:
+  title: Integration Configurations
+  version: '1.0'
+  description: >-
+    Use this API to manage integration configurations. For now, it supports
+    Third Party Promotion Engine (TPPE).
+  x-audience: external-public
+  x-api-id: df5eab82-db44-4a64-bc80-f3d2d16bf93e
+  x-domain-gateway-integration:
+    serviceName: chimera
+servers:
+  - url: https://promotions.s.newstore.domains/promotions
+    description: The staging server
+  - url: https://promotions.p.newstore.domains/promotions
+    description: The production server
+paths:
+  /configurations/{section-id}:
+    get:
+      summary: Get Configuration
+      responses:
+        '200':
+          description: Integration Config Response
+          content: &ref_4
+            application/json:
+              schema:
+                title: IntegrationConfig
+                x-stoplight: &ref_1
+                  id: qpbx0mz8455gp
+                type: object
+                description: Third party promotions engine integration config.
+                properties: &ref_2
+                  session_update_url:
+                    type: string
+                    x-stoplight:
+                      id: hcg3paximkgyn
+                    description: >-
+                      Session Update URL.
+
+
+                      The URL that will be called each time the order gets
+                      updated in NewStore's Associate App. The URL has to end
+                      with the placeholder {customerSessionId} that will be
+                      replaced with the cart ID/order ID.
+                  auth_token:
+                    type: string
+                    x-stoplight:
+                      id: lusc0390jdsgl
+                    description: >-
+                      The auth token that will be used as Bearer token for the
+                      authentication with the third party integration APIs. It
+                      can be empty.
+                    writeOnly: true
+                examples: &ref_3
+                  - session_update_url: >-
+                      http://abc.cloudhub.io/promotion/cart-session/{customerSessionId}
+                    auth_token: test-auth-token
+              examples:
+                Example 1:
+                  value:
+                    session_update_url: >-
+                      http://abc.cloudhub.io/promotion/cart-session/{customerSessionId}
+        '400':
+          description: An error response.
+          content: &ref_0
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    x-stoplight:
+                      id: g1ldm3xh1ht4c
+                    description: The error message.
+                    readOnly: true
+                  status:
+                    x-stoplight:
+                      id: khyuanllt8jcl
+                    description: The HTTP status code.
+                    type: integer
+                    readOnly: true
+                  causes:
+                    type: array
+                    x-stoplight:
+                      id: i61vh06yvm2bc
+                    description: A list of causes. It's optional.
+                    items:
+                      x-stoplight:
+                        id: 169occcudmoyl
+                      type: string
+                      readOnly: true
+                required:
+                  - message
+                  - status
+              examples:
+                Example 1:
+                  value:
+                    message: not found
+                    status: 404
+                Example 2:
+                  value:
+                    message: internal server error
+                    status: 500
+        '500':
+          description: An error response.
+          content: *ref_0
+      operationId: showConfiguration
+      description: Retrives integration configurations.
+      requestBody:
+        content: {}
+      x-stoplight:
+        id: 6aznb6ritpwp8
+      x-internal: true
+      tags:
+        - Manage integration configurations
+    parameters:
+      - schema:
+          type: string
+          enum:
+            - tppe
+        name: section-id
+        in: path
+        required: true
+        description: The id of the section to be configured.
+    patch:
+      summary: Update Configuration
+      operationId: updateConfiguration
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: An error response.
+          content: *ref_0
+        '500':
+          description: An error response.
+          content: *ref_0
+      description: Updates integration configuration.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - title: IntegrationConfig
+                  x-stoplight: *ref_1
+                  type: object
+                  description: Third party promotions engine integration config.
+                  properties: *ref_2
+                  examples: *ref_3
+            examples:
+              tppe example:
+                value:
+                  session_update_url: >-
+                    http://abc.cloudhub.io/promotion/cart-session/{customerSessionId}
+                  auth_token: test-auth-token
+      parameters: []
+      x-stoplight:
+        id: c2cvyomncwqf5
+      x-internal: true
+      tags:
+        - Manage integration configurations
+components:
+  schemas:
+    IntegrationConfig:
+      title: IntegrationConfig
+      x-stoplight: *ref_1
+      type: object
+      description: Third party promotions engine integration config.
+      properties: *ref_2
+      examples: *ref_3
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+  parameters: {}
+  responses:
+    Error:
+      description: An error response.
+      content: *ref_0
+    IntegrationConfigResponse:
+      description: Integration Config Response
+      content: *ref_4
+  requestBodies: {}
+security:
+  - newStoreAccessToken: []
+x-internal: true
+tags:
+  - name: Manage integration configurations
+    description: Manage integration configurations

@@ -1,0 +1,1400 @@
+(Legacy) User Management API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+Item Return API
+Private Financial Documents API
+Support API
+Token API (Deprecated)
+(Legacy) User Management API
+get
+Get identity configuration
+get
+List user accounts
+post
+Create user account
+get
+Get user account
+put
+Update user account
+del
+Delete user account
+get
+List permissions for a user
+get
+List user permissions
+get
+List user roles
+post
+Create user role
+get
+Get user role
+put
+Update user role
+del
+Delete user role
+get
+List user accounts for a user role
+post
+Send Keycloak events to the platform
+API docs by Redocly
+(Legacy) User Management API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Use this API to manage the retailer's identity and user management configurations within the NewStore platform.
+Warning:
+This API version is
+deprecated
+and will be
+sunset on January 12th, 2024
+.
+We recommend that all existing integrations use the latest
+User Management API
+.
+Get identity configuration
+Deprecated
+Retrieves the retailer's identity configuration, such as identity providers.
+Responses
+200
+Returns the identity configuration, such as identity providers.
+500
+Internal server error.
+get
+/config
+/api/v1/org/identity
+/config
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"issuer"
+:
+"string"
+,
+"providers"
+:
+[
+{
+"provider"
+:
+"auth0"
+,
+"alias"
+:
+"string"
+}
+]
+}
+List user accounts
+Deprecated
+Retrieves all available user accounts for the retailer. Searches if the query parameter is used.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+q
+string
+Query the resulting list by first/last name or email address.
+offset
+integer
+>= 0
+The offset to be used for the resulting user account list.
+count
+integer
+>= 0
+The number of requested user accounts.
+Responses
+200
+Returns all users.
+500
+Internal Server Error.
+get
+/users
+/api/v1/org/identity
+/users
+Response samples
+200
+500
+Content type
+application/json
+Copy
+[ ]
+Create user account
+Deprecated
+Creates a new user account.
+To assign roles to a new user account, provide the IDs of the relevant roles in the
+roles
+property.
+To retrieve the role IDs, use the
+List roles method
+.
+If the
+external_directory
+property is set to
+false
+, the user account is created
+in Auth0 as well and an email with password setup instructions is sent. The user can then use these
+credentials to log into NewStore.
+Note:
+If the user has no roles assigned, they will be able to log in to NOM but will not be able to interact
+with NOM until you assign roles to the user to allow them to interact with the various apps. See the
+Create user role
+method.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+email
+required
+string
+<
+email
+>
+Email address of the user.
+first_name
+string
+First name of the user.
+last_name
+string
+Last name of the user.
+phone
+string
+Telephone number of the user.
+avatar_url
+string
+DEPRECATED; will be ignored.
+external_directory
+boolean
+User is managed by an external directory.
+is_active
+boolean
+Whether the user can login or not.
+roles
+Array of
+strings
+List of role IDs the user is assigned to.
+Responses
+201
+The user account is created.
+409
+The provided email address is already in use.
+412
+One or more user roles used were not found.
+500
+Internal server error.
+post
+/users
+/api/v1/org/identity
+/users
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"email"
+:
+"user@example.com"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"phone"
+:
+"string"
+,
+"avatar_url"
+:
+"string"
+,
+"external_directory"
+:
+true
+,
+"is_active"
+:
+true
+,
+"roles"
+:
+[
+"string"
+]
+}
+Response samples
+201
+409
+412
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"string"
+,
+"associate_id"
+:
+"string"
+,
+"email"
+:
+"user@example.com"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"phone"
+:
+"string"
+,
+"avatar_url"
+:
+"string"
+,
+"external_directory"
+:
+true
+,
+"is_active"
+:
+true
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"last_login_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"roles"
+:
+[
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"is_readonly"
+:
+true
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+]
+}
+Get user account
+Deprecated
+Retrieves the user account with the specified ID.
+path
+Parameters
+id
+required
+string
+The user account ID.
+Responses
+200
+404
+User not found.
+500
+Internal server error.
+get
+/users/{id}
+/api/v1/org/identity
+/users/{id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"string"
+,
+"associate_id"
+:
+"string"
+,
+"email"
+:
+"user@example.com"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"phone"
+:
+"string"
+,
+"avatar_url"
+:
+"string"
+,
+"external_directory"
+:
+true
+,
+"is_active"
+:
+true
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"last_login_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"roles"
+:
+[
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"is_readonly"
+:
+true
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+]
+}
+Update user account
+Deprecated
+Updates the user account with the specified ID.
+If the
+external_directory
+property is changed to
+false
+, the user account will be created in
+Auth0 as well and an email with password setup instructions will be send. The user can then use
+these credentials to log into NewStore.
+Note:
+If the user has no roles assigned, they will be able to log in to NOM but will not be able to interact
+with NOM until you assign roles to the user to allow them to interact with the various apps. See the
+Create user role
+method..
+If the
+external_directory
+property is changed to
+true
+, the user account will be deleted from Auth0.
+The user then can login with the enterprise directory credentials.
+path
+Parameters
+id
+required
+string
+The user account ID.
+Request Body schema:
+application/json
+first_name
+required
+string
+First name of the user.
+last_name
+required
+string
+Last name of the user.
+phone
+required
+string
+Telephone number of the user.
+avatar_url
+required
+string
+DEPRECATED; will be ignored.
+external_directory
+required
+boolean
+User is managed by an external directory.
+is_active
+required
+boolean
+Whether the user can login or not.
+roles
+required
+Array of
+strings
+List of role IDs the user is assigned to.
+Responses
+200
+The updated user account.
+404
+User account was not found.
+412
+One or more user roles used were not found.
+500
+Internal server error.
+put
+/users/{id}
+/api/v1/org/identity
+/users/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"phone"
+:
+"string"
+,
+"avatar_url"
+:
+"string"
+,
+"external_directory"
+:
+true
+,
+"is_active"
+:
+true
+,
+"roles"
+:
+[
+"string"
+]
+}
+Response samples
+200
+404
+412
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"string"
+,
+"associate_id"
+:
+"string"
+,
+"email"
+:
+"user@example.com"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"phone"
+:
+"string"
+,
+"avatar_url"
+:
+"string"
+,
+"external_directory"
+:
+true
+,
+"is_active"
+:
+true
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"last_login_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"roles"
+:
+[
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"is_readonly"
+:
+true
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+]
+}
+Delete user account
+Deprecated
+Deletes the user account with the specified ID.
+If the
+external_directory
+property is set to
+false
+, the user account will be deleted in Auth0 as well.
+If the
+external_directory
+property is set to
+true
+, the user account will not be deleted from the
+respective enterprise directory.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The user account ID.
+Responses
+204
+The deletion request was sucessful.
+404
+User account was not found.
+500
+Internal server error.
+delete
+/users/{id}
+/api/v1/org/identity
+/users/{id}
+Response samples
+404
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+List permissions for a user
+Deprecated
+Retrieves information and permissions of the user identified by the bearer token.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+application
+string
+Enum
+:
+"nom"
+"aa"
+"fa"
+Filter the users permission by application.
+Responses
+200
+Returns information and permissions of the current user identified by the bearer token.
+400
+Bad Request, for example due to the request of an invalid application.
+500
+Internal server error.
+get
+/userinfo
+/api/v1/org/identity
+/userinfo
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"string"
+,
+"associate_id"
+:
+"string"
+,
+"email"
+:
+"user@example.com"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"permissions"
+:
+[
+{
+"name"
+:
+"string"
+,
+"application"
+:
+"nom"
+,
+"children"
+:
+[
+{ }
+]
+}
+]
+}
+List user permissions
+Deprecated
+Lists all the user permissions available for the retailer.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Returns all permissions.
+500
+Internal server error.
+get
+/permissions
+/api/v1/org/identity
+/permissions
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"elements"
+:
+[
+{
+"name"
+:
+"string"
+,
+"application"
+:
+"nom"
+,
+"children"
+:
+[
+{ }
+]
+}
+]
+}
+List user roles
+Deprecated
+Lists all available user roles for the retailer. Search if the query parameter is used.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+q
+string
+Query the resulting list by name.
+Responses
+200
+Returns all roles.
+500
+Internal server error.
+get
+/roles
+/api/v1/org/identity
+/roles
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"elements"
+:
+[
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"is_readonly"
+:
+true
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+]
+}
+Create user role
+Deprecated
+Creates a new role.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+name
+required
+string
+^[^/]+$
+Name of the role. To be valid, it can't include slashes ('/').
+directory_mapping
+Array of
+strings
+Maps external directory groups to this role.
+permissions
+required
+Array of
+objects
+non-empty
+List of permissions.
+Responses
+201
+The role is created.
+409
+The provided name is already in use.
+412
+One or more permissions used were not found.
+500
+Internal server error.
+post
+/roles
+/api/v1/org/identity
+/roles
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"name"
+:
+"string"
+,
+"directory_mapping"
+:
+[
+"string"
+]
+,
+"permissions"
+:
+[
+{
+"name"
+:
+"string"
+,
+"application"
+:
+"nom"
+}
+]
+}
+Response samples
+201
+409
+412
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"is_readonly"
+:
+true
+,
+"directory_mapping"
+:
+[
+"string"
+]
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"permissions"
+:
+[
+{
+"name"
+:
+"string"
+,
+"application"
+:
+"nom"
+,
+"children"
+:
+[
+{ }
+]
+}
+]
+}
+Get user role
+Deprecated
+Retrieves the user role with the specified ID.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The role ID.
+Responses
+200
+404
+Role not found.
+500
+Internal server error.
+get
+/roles/{id}
+/api/v1/org/identity
+/roles/{id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"is_readonly"
+:
+true
+,
+"directory_mapping"
+:
+[
+"string"
+]
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"permissions"
+:
+[
+{
+"name"
+:
+"string"
+,
+"application"
+:
+"nom"
+,
+"children"
+:
+[
+{ }
+]
+}
+]
+}
+Update user role
+Deprecated
+Updates the user role with the specified ID.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The role ID.
+Request Body schema:
+application/json
+name
+required
+string
+^[^/]+$
+Name of the role. To be valid, it can't include slashes ('/').
+directory_mapping
+Array of
+strings
+Maps external directory groups to this role.
+permissions
+required
+Array of
+objects
+non-empty
+List of permissions.
+Responses
+200
+The updated role.
+403
+Cannot update a read-only role.
+404
+Role was not found.
+412
+One or more user roles used were not found.
+500
+Internal server error.
+put
+/roles/{id}
+/api/v1/org/identity
+/roles/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"name"
+:
+"string"
+,
+"directory_mapping"
+:
+[
+"string"
+]
+,
+"permissions"
+:
+[
+{
+"name"
+:
+"string"
+,
+"application"
+:
+"nom"
+}
+]
+}
+Response samples
+200
+403
+404
+412
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"is_readonly"
+:
+true
+,
+"directory_mapping"
+:
+[
+"string"
+]
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"permissions"
+:
+[
+{
+"name"
+:
+"string"
+,
+"application"
+:
+"nom"
+,
+"children"
+:
+[
+{ }
+]
+}
+]
+}
+Delete user role
+Deprecated
+Deletes the user role with the specified ID.
+Once deleted, the user role is unassigned from all associated user accounts.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The role ID.
+Responses
+204
+The deletion request was sucessful.
+403
+Cannot delete a read-only role.
+404
+Role was not found.
+500
+Internal server error.
+delete
+/roles/{id}
+/api/v1/org/identity
+/roles/{id}
+Response samples
+403
+404
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+List user accounts for a user role
+Deprecated
+Retrieves all user accounts that have been assigned the specified user role.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The role ID.
+Responses
+200
+Returns all users by role.
+404
+Role not found.
+500
+Internal Server Error.
+get
+/roles/{id}/users
+/api/v1/org/identity
+/roles/{id}/users
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+[ ]
+Send Keycloak events to the platform
+Deprecated
+Sends Keycloak events to the NewStore platform.
+Request Body schema:
+application/json
+realm
+required
+string
+Realm of the incoming event.
+operation
+required
+string
+Operation type done on the given resource. e.g.
+create
+resource_id
+required
+string
+Identifier of the given resource.
+resource_name
+string
+Name of the given resource. e.g.
+user
+error
+string
+Something went wrong on keycloak site to emit the event.
+Responses
+204
+The event got processed.
+500
+Internal server error.
+post
+/webhooks/keycloak/events
+/api/v1/org/identity
+/webhooks/keycloak/events
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"realm"
+:
+"string"
+,
+"operation"
+:
+"string"
+,
+"resource_id"
+:
+"string"
+,
+"resource_name"
+:
+"string"
+,
+"error"
+:
+"string"
+}
+Response samples
+204
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"string"
+,
+"associate_id"
+:
+"string"
+,
+"email"
+:
+"user@example.com"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"phone"
+:
+"string"
+,
+"avatar_url"
+:
+"string"
+,
+"external_directory"
+:
+true
+,
+"is_active"
+:
+true
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"last_login_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"roles"
+:
+[
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"is_readonly"
+:
+true
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+]
+}
+Previous
+Token API (Deprecated)
+Copyright © 2025 NewStore, Inc.

@@ -1,0 +1,1312 @@
+openapi: 3.0.0
+info:
+  title: API to manage sales order configurations
+  version: 0.1.0
+  x-audience: external-public
+  x-api-id: manage-sales-order-configs-062023
+  description: |
+    Use these APIs to manage order configurations in the NewStore platform.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+tags:
+  - name: External OMS configuration
+    description: >
+Use this resource to configure NewStore as a secondary
+
+      [order management system](/product/glossary/#glossary-OMS) for retailers,
+      to
+
+      allow them to continue using their
+
+      legacy order management system (OMS) for primary order fulfillment tasks.
+
+
+      When NewStore is the secondary OMS for your business, it provides the
+
+      following features from the perspective of order routing and fulfillment:
+
+
+      - Order placement and returns via NewStore Associate App. Orders placed
+      via the app
+        are then routed to the external OMS for fulfillment.
+      - Managing payments for all orders.
+        - [In-store purchase](/developers/guides/order-management-routing/integ-eOMS/#cash--carry-orders-cc)
+        - [Endless Aisle and Mixed Cart purchases](/developers/guides/order-management-routing/integ-eOMS/#mixed-cart-orders)
+      - [Store fulfillment](/product/#ff) and handling shipping
+        for orders fulfilled via stores.
+      - Inventory management of stores, as NewStore will be the
+        [inventory master](/product/processes/about-inventory-management#nes-inv-master)
+        for your business in the stores.
+
+      When NewStore is secondary OMS, the primary OMS is responsible for the
+      following in your business:
+
+
+      - [ATP](/product/glossary/#glossary-ATP), [order
+      routing](/product/processes/order-routing),
+        order modifications, and customer support.
+      - [Rerouting](/product/processes/about-ffment/#reroute-reqs) rejected
+      store fulfillment orders.
+
+      - Handling shipping for orders fulfilled from a [DC or
+      warehouse](/product/bpmn/dc-fulfillment).
+
+      - Managing payments for all order that need fulfillment.
+        Please note that it is possible to capture payments with NewStore for in-store (no additional configuration required),
+        endless aisle and mixed cart orders (configuration required).
+        More information in: [Mixed Cart support for 3rd party OMS](/developers/guides/order-management-routing/integ-eOMS/#mixed-cart-orders).
+  - name: Sales order configuration
+    description: >
+      Use this resource to configure sales order parameters and their behavior
+      in the NewStore
+
+      platform.
+security:
+  - newStoreAccessToken: []
+paths:
+  /config/sales_order/sales_order_generator_sequence:
+    get:
+      summary: Get order ID sequence parameters
+      operationId: showSalesOrderGeneratorSequence
+      tags:
+        - Sales order configuration
+      responses:
+        '200':
+          description: >-
+            Parameters of the sequence used for generating human-readable order
+            identifiers.
+          content:
+            application/json:
+              example:
+                value:
+                  prefix: NS
+                  size: 16
+                  start: 1
+                  step: 2
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for setting parameters of the sequence used for
+                  generating human-readable order identifiers.
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    properties:
+                      prefix:
+                        description: Prefix for human-readable order identifiers.
+                        type: string
+                      size:
+                        description: Size of human-readable order identifiers.
+                        type: integer
+                      start:
+                        description: Start of human-readable order identifiers.
+                        type: integer
+                      step:
+                        description: Step of human-readable order identifiers.
+                        type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '404':
+          description: >-
+            Config key does not exist (it is not a case when key exists but just
+            not set)
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves order ID sequence parameters, that are used to generate
+        human-readable order
+
+        identifiers. These are required for order processing, as unique IDs are
+        assigned to orders
+
+        in the NewStore platform via these parameters.
+    post:
+      summary: Set order ID sequence parameters
+      operationId: createSalesOrderGeneratorSequence
+      tags:
+        - Sales order configuration
+      requestBody:
+        content:
+          application/json:
+            example:
+              value:
+                prefix: NS
+                size: 16
+                start: 1
+                step: 2
+            schema:
+              title: >-
+                Schema for setting parameters of the sequence used for
+                generating human-readable order identifiers.
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  type: object
+                  properties:
+                    prefix:
+                      description: Prefix for human-readable order identifiers.
+                      type: string
+                    size:
+                      description: Size of human-readable order identifiers.
+                      type: integer
+                      minimum: 1
+                    start:
+                      description: >-
+                        Start of human-readable order identifiers, any value
+                        **greater than** 0.
+                      minimum: 1
+                      type: integer
+                    step:
+                      description: >-
+                        Step of human-readable order identifiers, any value
+                        **greater than** 0.
+                      type: integer
+                      minimum: 1
+        required: true
+      responses:
+        '200':
+          description: >-
+            Parameters of the sequence used for generating human-readable order
+            identifiers.
+          content:
+            application/json:
+              example:
+                value:
+                  prefix: NS
+                  size: 16
+                  start: 1
+                  step: 2
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for setting parameters of the sequence used for
+                  generating human-readable order identifiers.
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    properties:
+                      prefix:
+                        description: Prefix for human-readable order identifiers.
+                        type: string
+                      size:
+                        description: Size of human-readable order identifiers.
+                        type: integer
+                      start:
+                        description: Start of human-readable order identifiers.
+                        type: integer
+                      step:
+                        description: Step of human-readable order identifiers.
+                        type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Incorrect payload for config (validation failed).
+          content:
+            application/problem+json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: Update failed for config due to lost race.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+      description: >
+        Sets or creates order ID sequence parameters for the retailer, that are
+        used to generate human-readable order
+
+        identifiers. These are required for order processing, as unique IDs are
+        assigned to orders
+
+        in the NewStore platform via these parameters. Once the configuration
+        was applied, it can't be changed.
+  /config/sales_order/on_hold_timer_duration:
+    get:
+      summary: Get grace period for orders
+      operationId: showOnHoldTimerDuration
+      tags:
+        - Sales order configuration
+      description: >
+        Retrieves the [grace period](/product/glossary#glossary-remorse-period)
+        for orders in your business.
+
+        This is the duration for an on hold order in seconds, after which it is
+        routed for fulfillment.
+
+
+        **Note**: You can also set the grace period for orders via the
+
+        [fulfillment
+        configuration](/newstore-cloud/order_management/newstore_ff_config_api.html#operation/add-or-update-fulfillment-configuration)
+
+        set up for your business.
+
+
+        This configuration only sets a grace period for orders that do not have
+        a grace period assigned
+
+        already. A grace period for an order is usually assigned when an order
+        is imported into
+
+        NewStore from an external system, with no default routing and a [service
+        level](/product/glossary/#glossary-service-level)
+
+        already assigned to it.
+
+
+        For more information on how routing works, see [About order
+        routing](/product/processes/order-routing)
+
+        and the [Checkout
+        configuration](/newstore-cloud/checkout/checkout_admin.html#operation/getConfig).
+      responses:
+        '200':
+          description: Timer duration for on hold orders.
+          content:
+            application/json:
+              example:
+                value: 20
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: Schema for setting timer duration for on hold orders
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    description: Timer duration in seconds
+                    type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '404':
+          description: >-
+            Config key does not exist (This is different from when the config
+            key has not been set).
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+    post:
+      summary: Create grace period for orders
+      operationId: createOnHoldTimerDuration
+      tags:
+        - Sales order configuration
+      requestBody:
+        content:
+          application/json:
+            example:
+              value: 20
+            schema:
+              title: Schema for setting timer duration for on hold orders
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  description: Timer duration in seconds
+                  type: integer
+        required: true
+      responses:
+        '200':
+          description: >-
+            Parameters of the sequence used for generating human-readable order
+            identifiers.
+          content:
+            application/json:
+              example:
+                value: 20
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: Schema for setting timer duration for on hold orders
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    description: Timer duration in seconds
+                    type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Incorrect payload for config (validation failed).
+          content:
+            application/problem+json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: Update failed for config due to lost race.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+      description: >
+        Sets the [grace period](/product/glossary#glossary-remorse-period) for
+        orders in your business.
+
+        This is the duration for an on hold order in seconds, after which it is
+        routed for fulfillment.
+
+
+        **Note**: You can also set the grace period for orders via the
+
+        [fulfillment
+        configuration](/newstore-cloud/order_management/newstore_ff_config_api.html#operation/add-or-update-fulfillment-configuration)
+
+        set up for your business.
+
+
+        This method only sets a grace period for orders that do not have a grace
+        period assigned
+
+        already. A grace period for an order is usually assigned when an order
+        is imported into
+
+        NewStore from an external system, with no default routing and a [service
+        level](/product/glossary/#glossary-service-level)
+
+        already assigned to it.
+
+
+        For more information on how routing works, see [About order
+        routing](/product/processes/order-routing)
+
+        and the [Checkout
+        configuration](/newstore-cloud/checkout/checkout_admin.html#operation/getConfig).
+  /config/sales_order/cancellation_allowed_from:
+    get:
+      summary: List locations from which orders can be canceled
+      operationId: listCancellationAllowedFrom
+      tags:
+        - Sales order configuration
+      responses:
+        '200':
+          description: Defines from which location type orders can be cancelled.
+          content:
+            application/json:
+              example:
+                value:
+                  - store
+                  - dc
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for setting location types from which orders can be
+                  cancelled
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    description: >-
+                      Defines from which location type orders can be canceled.
+                      By default (if no config is set) orders routed to stores
+                      can be canceled by every tenant, unless it is excluded
+                      from this list.
+                    type: array
+                    minItems: 1
+                    items:
+                      type: string
+                      enum:
+                        - store
+                        - dc
+                  updated_at:
+                    type: string
+                    minLength: 1
+                    format: date-time
+        '404':
+          description: >-
+            Config key does not exist (it is not a case when key exists but just
+            not set)
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the locations from which orders in your business can be
+        canceled.
+
+
+        **Note**: By default, orders routed to stores can be canceled by all
+        retailers, unless it is
+
+        excluded from this configuration. If not specified in a configuration,
+        orders cannot be
+
+        canceled from [DCs](/product/glossary#glossary-DC).
+    post:
+      summary: Set locations from which orders can be canceled
+      operationId: createCancellationAllowedFrom
+      tags:
+        - Sales order configuration
+      requestBody:
+        content:
+          application/json:
+            example:
+              value:
+                - store
+                - dc
+            schema:
+              title: >-
+                Schema for setting location types from which orders can be
+                cancelled
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  description: >-
+                    Defines from which location type orders can be canceled. By
+                    default (if no config is set) orders routed to stores can be
+                    canceled by every tenant, unless it is excluded from this
+                    list.
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    minLength: 1
+                    enum:
+                      - store
+                      - dc
+        required: true
+      responses:
+        '200':
+          description: Array of providers which allow cancellation.
+          content:
+            application/json:
+              example:
+                value:
+                  - store
+                  - dc
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for setting location types from which orders can be
+                  cancelled
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    description: >-
+                      Defines from which location type orders can be canceled.
+                      By default (if no config is set) orders routed to stores
+                      can be canceled by every tenant, unless it is excluded
+                      from this list.
+                    type: array
+                    minItems: 1
+                    items:
+                      type: string
+                      enum:
+                        - store
+                        - dc
+                  updated_at:
+                    type: string
+                    minLength: 1
+                    format: date-time
+        '400':
+          description: Incorrect payload for config (validation failed).
+          content:
+            application/problem+json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: Update failed for config due to lost race.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+      description: >
+        Sets the locations from which orders in your business can be canceled.
+
+
+        **Note**: By default, orders routed to stores can be canceled by all
+        retailers, unless it is
+
+        excluded from this configuration. If not specified in a configuration,
+        orders cannot be
+
+        canceled from [DCs](/product/glossary#glossary-DC).
+  /config/sales_order/big_sales_order:
+    get:
+      summary: Get limits on items for large orders
+      operationId: listBigSalesOrder
+      tags:
+        - Sales order configuration
+      responses:
+        '200':
+          description: >-
+            The order item limits that determine if the order is routed or is
+            considered a big order and placed on hold.
+          content:
+            application/problem+json:
+              example:
+                value:
+                  soft_limit_for_big_orders: 300
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for setting order item limits that determine if the
+                  order is routed or is considered a big order and placed on
+                  hold.
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    properties:
+                      soft_limit_for_big_orders:
+                        description: >-
+                          The number of items which determines whether an order
+                          is routed immediately or put on hold. If the number of
+                          items is more than this limit the order will be put on
+                          hold.
+                        type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '404':
+          description: >-
+            Config key does not exist (it is not a case when key exists but just
+            not set)
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the order item limits that determine if the order is routed or
+        is considered a
+
+        big order and placed on hold.
+
+
+        You can set specific limits for items that orders can contain in your
+        business. For example,
+
+        you can specify the maximum number of items an order can contain (such
+        as 300 items), exceeding which
+
+        it is put on hold.
+    post:
+      summary: Set limits on items for large orders
+      operationId: createBigSalesOrder
+      tags:
+        - Sales order configuration
+      requestBody:
+        content:
+          application/json:
+            example:
+              value:
+                soft_limit_for_big_orders: 300
+            schema:
+              title: >-
+                Schema for setting order item limits that determine if the order
+                is routed or is considered a big order and placed on hold.
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  required:
+                    - soft_limit_for_big_orders
+                  properties:
+                    soft_limit_for_big_orders:
+                      description: >-
+                        The order item limits that determine if the order is
+                        routed or is considered a big order and placed on hold.
+                        If the limit if not set, 100 is used as the default
+                        value.
+                      type: integer
+        required: true
+      responses:
+        '200':
+          description: >-
+            The order item limits that determine if the order is routed or is
+            considered a big order and placed on hold.
+          content:
+            application/json:
+              example:
+                value:
+                  soft_limit_for_big_orders: 300
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for setting order item limits that determine if the
+                  order is routed or is considered a big order and placed on
+                  hold.
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    properties:
+                      soft_limit_for_big_orders:
+                        description: >-
+                          The number of items which determines whether an order
+                          is routed immediately or put on hold. If the number of
+                          items is more than this limit the order will be put on
+                          hold.
+                        type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Incorrect payload for config (validation failed).
+          content:
+            application/problem+json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: Update failed for config due to lost race.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+      description: >
+        Specifies the order item limits that determine if the order is routed or
+        is considered a big order
+
+        and placed on hold.
+
+
+        You can set specific limits for items that orders can contain in your
+        business. For example,
+
+        you can specify the maximum number of items an order can contain (such
+        as 300 items), exceeding which
+
+        it is put on hold.
+  /config/sales_order/external_oms:
+    description: External OMS configuration
+    get:
+      summary: Get external OMS configuration
+      operationId: showOmsConfiguration
+      tags:
+        - External OMS configuration
+      responses:
+        '200':
+          description: External OMS Configuration Setting.
+          content:
+            application/json:
+              example:
+                value:
+                  enabled: false
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: Schema for getting the value for external OMS configuration
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    properties:
+                      enabled:
+                        type: boolean
+                        description: Specifies if the tenant is using an external OMS.
+                  updated_at:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't process request due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the current configuration for the external
+
+        [order management system](/product/glossary#glossary-OMS) enabled for
+        the retailer.
+
+
+        **Note:** To understand what NewStore is responsible for when it is the
+        secondary
+
+        OMS for your business and an external OMs is integrated with the
+        platform,
+
+        see the [resource definition](#oms).
+    post:
+      summary: Enable external OMS configuration
+      operationId: createExternalOmsConfiguration
+      tags:
+        - External OMS configuration
+      requestBody:
+        content:
+          application/json:
+            example:
+              value:
+                enabled: true
+            schema:
+              title: Schema for setting the value for external OMS configuration
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  required:
+                    - enabled
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Specifies if the tenant is using an external OMS.
+        required: true
+      responses:
+        '200':
+          description: External OMS Configuration Setting.
+        '400':
+          description: Bad Request Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: bad_request
+                message: Value provided should be a string.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '409':
+          description: Conflict Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: concurrent_update_on_tenant_setting
+                message: >-
+                  Concurrent update detected on external_oms configuration
+                  setting.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't process request due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        default:
+          description: Unexpected Error
+      description: >
+        Specify that the retailer will use an external
+
+        [order management system](/product/glossary#glossary-OMS) configuration
+        for
+
+        [order fulfillment](/product/processes/about-ffment).
+
+
+        If you want to disable the external OMS for the retailer, in the request
+        payload,
+
+        specify ``false`` as the value for the ``enabled`` property.
+
+
+        **Note:** To understand what NewStore is responsible for when it is the
+        secondary
+
+        OMS for your business, see the [resource definition](#oms).
+  /config/sales_order/external_order_webhook:
+    get:
+      summary: Get webhook configuration
+      operationId: showExternalOrderWebhook
+      tags:
+        - External order webhook
+      responses:
+        '200':
+          description: Returns information from an external system.
+          content:
+            application/json:
+              example:
+                value:
+                  url: https://example.com/
+                  api_key: API_KEY
+                  timeout: 20
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for external order webhook configuration stored for the
+                  tenant.
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    type: object
+                    required:
+                      - url
+                      - api_key
+                    properties:
+                      url:
+                        description: The URL used to send the request to.
+                        type: string
+                        format: uri
+                        minLength: 1
+                      api_key:
+                        description: The API key used for authentication.
+                        type: string
+                        minLength: 1
+                      timeout:
+                        description: >-
+                          Timeout in seconds, the default is 15 and the maximum
+                          allowed value is 25.
+                        type: integer
+                        maximum: 25
+                  updated_at:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the current webhook configuration that enables NewStore to
+        retrieve order details
+
+        and customer purchase history from an external order management system.
+        For more information,
+
+        see the [integration
+        guide](/developers/guides/order-management-routing/integ-eOMS).
+    post:
+      summary: Set webhook configuration
+      operationId: createExternalOrderWebhook
+      tags:
+        - External order webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              value:
+                url: https://example.com/
+                api_key: API_KEY
+                timeout: 20
+            schema:
+              title: >-
+                Schema for external order webhook configuration stored for the
+                tenant.
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  type: object
+                  required:
+                    - url
+                    - api_key
+                  properties:
+                    url:
+                      description: The URL used to send the request to.
+                      type: string
+                      format: uri
+                      minLength: 1
+                    api_key:
+                      description: The API key used for authentication.
+                      type: string
+                      minLength: 1
+                    timeout:
+                      description: >-
+                        Timeout in seconds, the default is 15 and the maximum
+                        allowed value is 25.
+                      type: integer
+                      maximum: 25
+      responses:
+        '200':
+          description: Stores webhook configuration from an external system.
+        '400':
+          description: Bad Request Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: bad_request
+                message: Value provided should be a string.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '409':
+          description: Conflict Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: concurrent_update_on_tenant_setting
+                message: >-
+                  Concurrent update detected on external_oms configuration
+                  setting.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+      description: >
+        Sets up the webhook configuration to enable NewStore to retrieve order
+        details
+
+        and customer purchase history from an external order management system.
+        For more information,
+
+        see the [integration
+        guide](/developers/guides/order-management-routing/integ-eOMS).
+
+
+        **Note**: The provided URL is a base URL, the platform will add
+        respective routes accordingly.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

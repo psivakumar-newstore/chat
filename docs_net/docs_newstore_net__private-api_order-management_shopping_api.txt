@@ -1,0 +1,2236 @@
+Shopping API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Capture Order
+External Order API
+Sales order historic import API
+Order Injection configuration
+Order line internal APIs
+Service Level API
+Customer Care Order Support API
+Fulfillment App API
+NewStore Checkout API
+Order status notifications API
+Support API
+Sales Order Support API
+External OMS Config API
+API to manage sales order configurations
+Shopping API
+Swap products in order
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+post
+Create cart
+get
+Get cart by id
+patch
+Update cart
+post
+Get shipping solutions
+get
+Get document
+post
+Send document
+API docs by Redocly
+Shopping API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Create cart
+Creates a new cart. Use this method to create an order, or to create a return.
+Its state is automatically set to
+draft
+.
+If you have
+enabled the mixed cart feature
+,
+you should set the
+fulfillment_group
+property for each product of the cart. It defines whether the product is to be shipped or picked up in store.
+To update the content of the cart, use the
+Update cart method
+.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+returns
+(Array of objects or objects) or (any or null)
+Describes returned items if any.
+state
+string
+(
+Order state
+)
+Enum
+:
+"draft"
+"ready"
+"placed"
+"accepted"
+"failed"
+Desired state of the order. Use 'draft' while patching the order, use 'placed' to make an attempt to place the order.
+shop
+string or null
+<= 128 characters
+The shop containing the items of the order.
+shop_locale
+string or null
+<= 128 characters
+The locale used for the shop, in RFC 5646.
+customer
+(any or null) or object
+Personal information about the customer.
+tax_exempt
+boolean
+Default:
+false
+If true, the order is tax exempt.
+billing_address
+object or (any or null)
+Billing address. If not set, the shipping address will be used.
+store_id
+string
+<= 256 characters
+ID of the store where this order was placed.
+price_modifiers
+object or (any or null)
+Manual order level price adjustments and coupons.
+extended_attributes
+(any or null) or Array of objects
+Attributes set by the tenant to be carried over to the export APIs without affecting the business logic of the NewStore platform.
+channel
+(any or null) or object
+Information about the source of the order.
+products
+(any or null) or Array of objects
+The list of products contained in the order.
+payments
+object
+Payment data blocks, each has the identifier provided as the key. The identifier depends on the 'type' property of the payment. When type is 'token', use the payment token. When type is 'authorized', use the charge identifier. When type is 'captured', use the capture identifier. Payments can be modified by these identifiers. Payment statuses are reported per identifier.
+shipping_address
+object or (any or null)
+Shipping address.
+manager_approval
+object or (any or null)
+Describes if the order needs an approval, before it is placed.
+associate_id
+string or null
+<= 256 characters
+ID of the store associate who processed this order.
+currency
+string or (any or null)
+The currency for all the prices contained within this payload.
+Responses
+200
+The order has been created successfully.
+400
+The input data is invalid.
+Price is specified with invalid number of decimal places according to the specified currency.
+For example, if the currency is specified as
+USD
+and the product price has more
+than 2 decimal places, it is considered as invalid by the platform.
+For more information, see
+pricing dependencies on currency
+.
+500
+An internal error occurred.
+post
+/orders
+/v0/c
+/orders
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"returns"
+:
+[
+{
+"order_id"
+:
+"string"
+,
+"item_id"
+:
+"string"
+,
+"return_reason"
+:
+"string"
+,
+"refund"
+:
+{
+"amount"
+:
+0
+,
+"metadata"
+:
+{ }
+,
+"available_methods"
+:
+[
+"string"
+]
+,
+"method"
+:
+"string"
+}
+,
+"blind_return"
+:
+{
+"product_id"
+:
+"string"
+,
+"external_order_id"
+:
+"string"
+,
+"adjusted_item_price"
+:
+0
+,
+"pricebook"
+:
+"string"
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"calculated_price"
+:
+{
+"item_price"
+:
+0
+,
+"item_list_price"
+:
+0
+,
+"item_tax_base"
+:
+0
+,
+"item_tax"
+:
+0
+,
+"item_gross"
+:
+0
+,
+"item_discount"
+:
+0
+,
+"item_order_discount"
+:
+0
+,
+"item_discount_info"
+:
+[
+{
+"discount_ref"
+:
+"string"
+,
+"coupon_code"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"type"
+:
+"fixed"
+,
+"scope"
+:
+"order"
+,
+"original_value"
+:
+0
+,
+"price_adjustment"
+:
+0
+,
+"discount_source"
+:
+"automatic"
+}
+]
+,
+"item_order_discount_info"
+:
+[
+{
+"discount_ref"
+:
+"string"
+,
+"coupon_code"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"type"
+:
+"fixed"
+,
+"scope"
+:
+"order"
+,
+"original_value"
+:
+0
+,
+"price_adjustment"
+:
+0
+,
+"discount_source"
+:
+"automatic"
+}
+]
+,
+"gift_wrapping_price"
+:
+0
+,
+"gift_wrapping_tax"
+:
+0
+}
+,
+"external_identifier"
+:
+{ }
+}
+,
+"was_blind"
+:
+true
+,
+"return_code"
+:
+0
+,
+"item_condition"
+:
+"string"
+,
+"condition_code"
+:
+0
+}
+]
+,
+"state"
+:
+"draft"
+,
+"shop"
+:
+"string"
+,
+"shop_locale"
+:
+"string"
+,
+"customer"
+:
+{ }
+,
+"tax_exempt"
+:
+false
+,
+"billing_address"
+:
+{
+"title"
+:
+"string"
+,
+"suffix"
+:
+"string"
+,
+"salutation"
+:
+"string"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"country"
+:
+"st"
+,
+"zip_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"phone"
+:
+"string"
+}
+,
+"store_id"
+:
+"string"
+,
+"price_modifiers"
+:
+{
+"manual_price_modifier"
+:
+{ }
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"string"
+}
+]
+}
+,
+"extended_attributes"
+:
+{ }
+,
+"channel"
+:
+{ }
+,
+"products"
+:
+{ }
+,
+"payments"
+:
+{ }
+,
+"shipping_address"
+:
+{
+"title"
+:
+"string"
+,
+"suffix"
+:
+"string"
+,
+"salutation"
+:
+"string"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"country"
+:
+"st"
+,
+"zip_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"phone"
+:
+"string"
+}
+,
+"manager_approval"
+:
+{
+"approved_by"
+:
+"string"
+,
+"approved_rules"
+:
+[
+"string"
+]
+,
+"matched_rules"
+:
+[
+{
+"label"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"restricted_payment_methods"
+:
+[
+"cash"
+]
+}
+]
+}
+,
+"associate_id"
+:
+"string"
+,
+"currency"
+:
+"string"
+}
+Response samples
+200
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"schema"
+:
+{
+"associate_id"
+:
+"7b08ff9a82c9488e905003fce9ad0a53"
+,
+"billing_address"
+:
+{
+"address_line_1"
+:
+"1 United Nations Plaza"
+,
+"city"
+:
+"New York"
+,
+"country"
+:
+"US"
+,
+"first_name"
+:
+"John"
+,
+"last_name"
+:
+"Doe"
+,
+"phone"
+:
+"7036917165"
+,
+"state"
+:
+"NY"
+,
+"zip_code"
+:
+"10017"
+}
+,
+"channel"
+:
+{
+"name"
+:
+"NewStore Associate App"
+,
+"type"
+:
+"web"
+}
+,
+"currency"
+:
+"USD"
+,
+"customer"
+:
+{
+"email"
+:
+"johndoe@example.com"
+,
+"id"
+:
+"f4251bc6-2871-419c-84d0-c9ea40785fa2"
+,
+"language"
+:
+"EN"
+,
+"name"
+:
+"John Doe"
+}
+,
+"discounts"
+:
+null
+,
+"id"
+:
+"569ac9d0-9d69-429c-b263-fe7482561a25"
+,
+"messages"
+:
+null
+,
+"payment_statuses"
+:
+{ }
+,
+"price_modifiers"
+:
+{ }
+,
+"products"
+:
+[
+{
+"calculated_price"
+:
+{
+"gift_wrapping_price"
+:
+0
+,
+"gift_wrapping_tax"
+:
+0
+,
+"item_discount"
+:
+0
+,
+"item_discount_info"
+:
+null
+,
+"item_gross"
+:
+15
+,
+"item_list_price"
+:
+13.78
+,
+"item_order_discount"
+:
+0
+,
+"item_price"
+:
+13.78
+,
+"item_tax"
+:
+1.22
+,
+"item_tax_base"
+:
+13.78
+,
+"item_tax_details"
+:
+[
+{
+"Amount"
+:
+0.55
+,
+"Name"
+:
+"NY STATE TAX"
+,
+"Rate"
+:
+0.04
+}
+,
+{
+"Amount"
+:
+0.62
+,
+"Name"
+:
+"NY CITY TAX"
+,
+"Rate"
+:
+0.045
+}
+]
+}
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"item-level"
+,
+"value"
+:
+"attribute"
+}
+]
+,
+"external_identifiers"
+:
+[
+{
+"ean13"
+:
+"2900010000114"
+,
+"sku"
+:
+"1000011"
+}
+]
+,
+"fulfillment_group"
+:
+{
+"type"
+:
+"IN_STORE_HANDOVER"
+}
+,
+"group_id"
+:
+""
+,
+"item_ids"
+:
+[
+"0332684e-73f6-47f8-83b9-0d3948d33b77"
+]
+,
+"pricebook"
+:
+""
+,
+"product_id"
+:
+"1000011"
+,
+"quantity"
+:
+1
+}
+,
+{
+"calculated_price"
+:
+{
+"gift_wrapping_price"
+:
+0
+,
+"gift_wrapping_tax"
+:
+0
+,
+"item_discount"
+:
+0
+,
+"item_discount_info"
+:
+null
+,
+"item_gross"
+:
+15
+,
+"item_list_price"
+:
+13.78
+,
+"item_order_discount"
+:
+0
+,
+"item_order_discount_info"
+:
+null
+,
+"item_price"
+:
+13.78
+,
+"item_tax"
+:
+1.22
+,
+"item_tax_base"
+:
+13.78
+,
+"item_tax_details"
+:
+[
+{
+"Amount"
+:
+0.55
+,
+"Name"
+:
+"NY STATE TAX"
+,
+"Rate"
+:
+0.04
+}
+,
+{
+"Amount"
+:
+0.62
+,
+"Name"
+:
+"NY CITY TAX"
+,
+"Rate"
+:
+0.045
+}
+,
+{
+"Amount"
+:
+0.05
+,
+"Name"
+:
+"NY SPECIAL TAX"
+,
+"Rate"
+:
+0.00375
+}
+]
+}
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"item-level"
+,
+"value"
+:
+"attribute"
+}
+]
+,
+"external_identifiers"
+:
+[
+{
+"ean13"
+:
+"2900010000114"
+,
+"sku"
+:
+"1000011"
+}
+]
+,
+"fulfillment_group"
+:
+{
+"type"
+:
+"SHIPPING"
+}
+,
+"group_id"
+:
+""
+,
+"item_ids"
+:
+[
+"40a3dc40-56cf-415e-b9a3-9d2a1f3a1791"
+]
+,
+"pricebook"
+:
+""
+,
+"product_id"
+:
+"1000011"
+,
+"quantity"
+:
+1
+}
+]
+,
+"remaining_amount"
+:
+30
+,
+"shipping_address"
+:
+{
+"address_line_1"
+:
+"1 United Nations Plaza"
+,
+"city"
+:
+"New York"
+,
+"country"
+:
+"US"
+,
+"first_name"
+:
+"John"
+,
+"last_name"
+:
+"Doe"
+,
+"phone"
+:
+"7036917165"
+,
+"state"
+:
+"NY"
+,
+"zip_code"
+:
+"10017"
+}
+,
+"shipping_solution_id"
+:
+""
+,
+"shop"
+:
+"storefront-catalog-en"
+,
+"shop_locale"
+:
+"en-US"
+,
+"state"
+:
+"draft"
+,
+"store_id"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"tax_exempt"
+:
+false
+,
+"totals"
+:
+{
+"discount_total"
+:
+0
+,
+"grand_total"
+:
+30
+,
+"price_method"
+:
+"tax_excluded"
+,
+"shipping_tax_amount"
+:
+0
+,
+"shipping_total"
+:
+0
+,
+"sub_total"
+:
+0
+,
+"subtotal"
+:
+27.56
+,
+"tax_strategy"
+:
+"avalara"
+,
+"tax_total"
+:
+2.44
+}
+}
+}
+Get cart by id
+Retrieves the specified cart.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}...
+Show pattern
+UUID-like identifier for the cart. The id is returned when you call the
+Create cart
+method.
+Responses
+200
+Successfully returned the cart.
+400
+Invalid syntax for order identifier (non-UUID).
+404
+The cart was not found.
+500
+An internal error occurred.
+get
+/orders/{id}
+/v0/c
+/orders/{id}
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"string"
+,
+"messages"
+:
+[
+"string"
+]
+,
+"exchange"
+:
+{
+"type"
+:
+"string"
+,
+"amount"
+:
+0
+}
+,
+"payment_statuses"
+:
+{ }
+,
+"totals"
+:
+{
+"price_method"
+:
+"tax_included"
+,
+"subtotal"
+:
+0
+,
+"shipping_total"
+:
+0
+,
+"shipping_tax_amount"
+:
+0
+,
+"discount_total"
+:
+0
+,
+"grand_total"
+:
+0
+,
+"tax_total"
+:
+0
+}
+,
+"remaining_amount"
+:
+0
+,
+"discounts"
+:
+{ }
+,
+"return_status"
+:
+{
+"status"
+:
+"pending"
+,
+"error"
+:
+{
+"code"
+:
+"string"
+,
+"description"
+:
+"string"
+}
+}
+,
+"manager_approval"
+:
+{
+"approved_by"
+:
+"string"
+,
+"approved_rules"
+:
+[
+"string"
+]
+,
+"matched_rules"
+:
+[
+{
+"label"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"restricted_payment_methods"
+:
+[
+"cash"
+]
+}
+]
+}
+,
+"fiscal_cashbox_id"
+:
+"string"
+,
+"tax_exemption_class"
+:
+"string"
+,
+"tax_exemption_number"
+:
+"string"
+}
+Update cart
+Updates an existing cart.
+Use this method to update the status of the cart or to add items, payments, or a shipping method to the cart in order to place an order, return items or exchange items.
+This method is also a way to ensure synchronization with the backend.
+For example, if you request a state change from
+ready
+to
+draft
+, the backend will reject the state change if your order still matches all criteria to be ready.
+Note:
+You can call this method with an empty body to get the status of the payment(s).
+Limitations:
+An order can only contain one shipping address and one billing address.
+At most 100 items per order are allowed.
+At most 10 payments can be provided per order.
+At most 100 extended attributes can be provided per order.
+At most one discount coupon can be applied per order.
+At most one manual order-level adjustment can be applied per order.
+At most one manual item-level adjustment can be applied per item.
+However, a coupon as well as a manual price adjustment can be applied together on the same order, even if both
+result in an order-level discount or an item-level discount (also if both discounts are applied on the same item).
+Related resources:
+Use the
+Orders
+resource to retrieve the identifiers of the order and items to return.
+Use the
+User configuration
+resource to retrieve the configured return reasons, item conditions, and their corresponding codes.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}...
+Show pattern
+UUID-like identifier for the cart. The id is returned when you call the
+Create cart
+method.
+Request Body schema:
+application/json
+returns
+(Array of objects or objects) or (any or null)
+Describes returned items if any.
+state
+string
+(
+Order state
+)
+Enum
+:
+"draft"
+"ready"
+"placed"
+"accepted"
+"failed"
+Desired state of the order. Use 'draft' while patching the order, use 'placed' to make an attempt to place the order.
+shop
+string or null
+<= 128 characters
+The shop containing the items of the order.
+shop_locale
+string or null
+<= 128 characters
+The locale used for the shop, in RFC 5646.
+customer
+(any or null) or object
+Personal information about the customer.
+tax_exempt
+boolean
+Default:
+false
+If true, the order is tax exempt.
+billing_address
+object or (any or null)
+Billing address. If not set, the shipping address will be used.
+store_id
+string
+<= 256 characters
+ID of the store where this order was placed.
+price_modifiers
+object or (any or null)
+Manual order level price adjustments and coupons.
+extended_attributes
+(any or null) or Array of objects
+Attributes set by the tenant to be carried over to the export APIs without affecting the business logic of the NewStore platform.
+channel
+(any or null) or object
+Information about the source of the order.
+products
+(any or null) or Array of objects
+The list of products contained in the order.
+payments
+object
+Payment data blocks, each has the identifier provided as the key. The identifier depends on the 'type' property of the payment. When type is 'token', use the payment token. When type is 'authorized', use the charge identifier. When type is 'captured', use the capture identifier. Payments can be modified by these identifiers. Payment statuses are reported per identifier.
+shipping_address
+object or (any or null)
+Shipping address.
+manager_approval
+object or (any or null)
+Describes if the order needs an approval, before it is placed.
+associate_id
+string or null
+<= 256 characters
+ID of the store associate who processed this order.
+currency
+string or (any or null)
+The currency for all the prices contained within this payload.
+shipping_solution_id
+string or null
+<= 64 characters
+Identifies shipping solution for the order. Can be 'in_store_handover' when no shipping is required or one of the identifiers returned by the /order/{id}/shipping_solutions endpoint.
+Responses
+200
+The order has been updated successfully.
+400
+The input data is invalid.
+Use the error codes for error handling. The error messages should never
+be used for error handling as they can change at any time.
+Error codes
+Missing required fields:
+address_validation_error
+: This error is returned when the tax calculation subsystem can not use
+the provided shipping address for calculating taxes. Most of the time it means that
+either country or postal code is missing.
+missing_address_line_1_for_shipping_address
+missing_associate_id
+missing_channel_info
+missing_country_for_billing_address
+missing_country_for_shipping_address
+missing_currency
+missing_customer_email
+missing_customer_info
+missing_products_or_returns
+missing_shipping_address
+missing_shipping_address_phone
+missing_shipping_solution_id_or_associate_id
+missing_shop
+missing_shop_locale
+missing_store_id
+Invalid field values:
+The following error codes are returned in case an invalid value was provided for a certain field:
+invalid_uuid
+: invalid syntax for order identifier (non-UUID)
+concurrent_update_error
+: coupon redemption failed because the provided coupon was modified at the same time as it was supposed to be redeemed
+coupon_code_not_found
+: the requested coupon does not exist
+coupon_is_disabled
+: the requested coupon is deactivated
+discount_bundle_conflict
+: the requested coupon can not be applied in combination with group pricing ("product bundles")
+get_gift_wrapping_error
+: failed to fetch gift wrapping information for the order
+get_products_error
+: one of the requested products was not found
+invalid_coupon
+: coupon validation or redemption failed because the requested coupon is not valid for the order
+invalid_currency
+: the currency that is associated with the requested coupon does not match with the order currency
+invalid_order_data
+: the order information required to calculate shipping solutions was incomplete
+invalid_paid_amount
+: The grand total of the order is not sufficiently paid
+paid_token_amount_exceeds_grand_total
+: The sum of all token payments exceeds the grand total. Adjust token payments to avoid charging the user extra
+items_not_available
+: can not determine shipping solutions because at least one item is not available
+order_data_changed
+: the order data was modified while shipping solutions are requested (try again)
+shipping_solution_not_found
+: A shipping solution ID was provided with the request, but the corresponding shipping solution does not exist
+too_low_total
+: the requested coupon can not be applied because the order grand total is too low
+multiple_refunded_payments_error
+: multiple "refunded" payments were added to the order (i.e. adyen_refund and gift_card)
+adjusted_item_price_invalid
+: manual price for blind_return products is not correct
+mixed_country_taxes
+: multiple tax country codes were calculated for order, created in one of fiscal countries
+invalid_currency_rounding
+: input price value has incorrect number of decimal places according to specified currency
+mixed_product_currency
+: one of the products has currency different from the order
+fiscalization_failed_error
+: Failed to get a fiscal signature due to a fiscal provider error
+Return not possible:
+The following errors can be returned for return items added to the order.
+duplicate_items
+: the same return item was added multiple times to the order
+item_already_returned
+: the return item added was already returned and cannot be returned again
+item_not_found
+: the item identifier provided does not match any existing item
+no_items_provided
+: there is no correct item id provided
+return_window_missed
+: the return item added is not returnable anymore because it is outside of the return window
+sales_order_not_found
+: the order identifier provided does not match any existing order
+mixed_common_and_blind_returns_not_allowed
+: the order contains both blind and normal returns
+different_external_order_ids_in_blind_return
+:  the order contains blind return items with different external order ids
+403
+The order cannot be updated without approval.
+404
+The order was not found.
+409
+The order update failed due to a concurrent request.
+Error code:
+not_updated_error
+500
+An internal error occurred.
+patch
+/orders/{id}
+/v0/c
+/orders/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"returns"
+:
+[
+{
+"order_id"
+:
+"string"
+,
+"item_id"
+:
+"string"
+,
+"return_reason"
+:
+"string"
+,
+"refund"
+:
+{
+"amount"
+:
+0
+,
+"metadata"
+:
+{ }
+,
+"available_methods"
+:
+[
+"string"
+]
+,
+"method"
+:
+"string"
+}
+,
+"blind_return"
+:
+{
+"product_id"
+:
+"string"
+,
+"external_order_id"
+:
+"string"
+,
+"adjusted_item_price"
+:
+0
+,
+"pricebook"
+:
+"string"
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+,
+"calculated_price"
+:
+{
+"item_price"
+:
+0
+,
+"item_list_price"
+:
+0
+,
+"item_tax_base"
+:
+0
+,
+"item_tax"
+:
+0
+,
+"item_gross"
+:
+0
+,
+"item_discount"
+:
+0
+,
+"item_order_discount"
+:
+0
+,
+"item_discount_info"
+:
+[
+{
+"discount_ref"
+:
+"string"
+,
+"coupon_code"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"type"
+:
+"fixed"
+,
+"scope"
+:
+"order"
+,
+"original_value"
+:
+0
+,
+"price_adjustment"
+:
+0
+,
+"discount_source"
+:
+"automatic"
+}
+]
+,
+"item_order_discount_info"
+:
+[
+{
+"discount_ref"
+:
+"string"
+,
+"coupon_code"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"type"
+:
+"fixed"
+,
+"scope"
+:
+"order"
+,
+"original_value"
+:
+0
+,
+"price_adjustment"
+:
+0
+,
+"discount_source"
+:
+"automatic"
+}
+]
+,
+"gift_wrapping_price"
+:
+0
+,
+"gift_wrapping_tax"
+:
+0
+}
+,
+"external_identifier"
+:
+{ }
+}
+,
+"was_blind"
+:
+true
+,
+"return_code"
+:
+0
+,
+"item_condition"
+:
+"string"
+,
+"condition_code"
+:
+0
+}
+]
+,
+"state"
+:
+"draft"
+,
+"shop"
+:
+"string"
+,
+"shop_locale"
+:
+"string"
+,
+"customer"
+:
+{ }
+,
+"tax_exempt"
+:
+false
+,
+"billing_address"
+:
+{
+"title"
+:
+"string"
+,
+"suffix"
+:
+"string"
+,
+"salutation"
+:
+"string"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"country"
+:
+"st"
+,
+"zip_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"phone"
+:
+"string"
+}
+,
+"store_id"
+:
+"string"
+,
+"price_modifiers"
+:
+{
+"manual_price_modifier"
+:
+{ }
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"string"
+}
+]
+}
+,
+"extended_attributes"
+:
+{ }
+,
+"channel"
+:
+{ }
+,
+"products"
+:
+{ }
+,
+"payments"
+:
+{ }
+,
+"shipping_address"
+:
+{
+"title"
+:
+"string"
+,
+"suffix"
+:
+"string"
+,
+"salutation"
+:
+"string"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"country"
+:
+"st"
+,
+"zip_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"phone"
+:
+"string"
+}
+,
+"manager_approval"
+:
+{
+"approved_by"
+:
+"string"
+,
+"approved_rules"
+:
+[
+"string"
+]
+,
+"matched_rules"
+:
+[
+{
+"label"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"restricted_payment_methods"
+:
+[
+"cash"
+]
+}
+]
+}
+,
+"associate_id"
+:
+"string"
+,
+"currency"
+:
+"string"
+,
+"shipping_solution_id"
+:
+"string"
+}
+Response samples
+200
+400
+403
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"string"
+,
+"messages"
+:
+[
+"string"
+]
+,
+"exchange"
+:
+{
+"type"
+:
+"string"
+,
+"amount"
+:
+0
+}
+,
+"payment_statuses"
+:
+{ }
+,
+"totals"
+:
+{
+"price_method"
+:
+"tax_included"
+,
+"subtotal"
+:
+0
+,
+"shipping_total"
+:
+0
+,
+"shipping_tax_amount"
+:
+0
+,
+"discount_total"
+:
+0
+,
+"grand_total"
+:
+0
+,
+"tax_total"
+:
+0
+}
+,
+"remaining_amount"
+:
+0
+,
+"discounts"
+:
+{ }
+,
+"return_status"
+:
+{
+"status"
+:
+"pending"
+,
+"error"
+:
+{
+"code"
+:
+"string"
+,
+"description"
+:
+"string"
+}
+}
+,
+"manager_approval"
+:
+{
+"approved_by"
+:
+"string"
+,
+"approved_rules"
+:
+[
+"string"
+]
+,
+"matched_rules"
+:
+[
+{
+"label"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"restricted_payment_methods"
+:
+[
+"cash"
+]
+}
+]
+}
+,
+"fiscal_cashbox_id"
+:
+"string"
+,
+"tax_exemption_class"
+:
+"string"
+,
+"tax_exemption_number"
+:
+"string"
+}
+Get shipping solutions
+Generates shipping solutions for the order. If there are any
+shipping discounts on the order, they will be applied to the
+shipping solutions. Tax is not calculated on the shipping
+solution generation. The tax is only calculated when the
+shipping solution is added to the order.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}...
+Show pattern
+UUID-like identifier for the cart. The id is returned when you call the
+Create cart
+method.
+Responses
+200
+The available shipping solutions have been returned successfully.
+400
+Invalid syntax for order identifier (non-UUID).
+404
+The order was not found.
+500
+An internal error occurred.
+post
+/orders/{id}/shipping_solutions
+/v0/c
+/orders/{id}/shipping_solutions
+Response samples
+200
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"shipping_solutions"
+:
+{ }
+}
+Get document
+Retrieves the document related to the provided cart id.
+The type of document you get depends on the what the cart was used for:
+A cart used to place an order: you retrieve a sales receipt.
+A cart used for a return, you retrieve a refund note.
+A cart used to exchange some items, you retrieve an exchange receipt.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}...
+Show pattern
+UUID-like identifier for the cart. The id is returned when you call the
+Create cart
+method.
+Responses
+200
+Successfully returned the document url together with the document type.
+400
+Invalid syntax for order identifier (non-UUID).
+404
+The document or order was not found.
+500
+An internal error occurred.
+get
+/orders/{id}/documents
+/v0/c
+/orders/{id}/documents
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"schema"
+:
+{
+"document_url"
+:
+"
+https://dodici.d.newstore.net/v0/d/documents/e28f282d-428f-4aee-ab1e-e32b89f17562
+"
+,
+"document_type"
+:
+"sales_receipt"
+}
+}
+Send document
+Sends the document related to the provided cart id to the provided email address.
+The type of document depends on the what the cart was used for:
+A cart used to place an order: a sales receipt is sent.
+A cart used for a return, a refund note is sent.
+A cart used to exchange some items, an exchange receipt is sent.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}...
+Show pattern
+UUID-like identifier for the cart. The id is returned when you call the
+Create cart
+method.
+Request Body schema:
+application/json
+email
+required
+string
+The email address the document is sent to.
+force_send
+boolean
+If it is set to true, the email would be sent even if it was sent before.
+Responses
+202
+The document for the current transaction has been accepted for sending.
+400
+The provided request is invalid.
+404
+The document or order was not found.
+500
+An internal error occurred.
+post
+/orders/{id}/documents/_send
+/v0/c
+/orders/{id}/documents/_send
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"schema"
+:
+{
+"email"
+:
+"customer@example.org"
+}
+}
+Response samples
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"schema"
+:
+{
+"error_code"
+:
+"bad_request"
+,
+"message"
+:
+"The provided request is invalid."
+,
+"request_id"
+:
+"2018.10.18"
+}
+}
+Previous
+API to manage sales order configurations
+Next
+Swap products in order
+Copyright © 2025 NewStore, Inc.

@@ -1,0 +1,3172 @@
+openapi: 3.1.0
+info:
+  title: Automatic Promotions
+  version: '1.0'
+  license:
+    name: NewStore Private
+    url: https://newstore.com
+  contact:
+    name: NewStore Support
+    email: support@newstore.com
+  description: >-
+    Use this API to manage Automatic Promotions in NewStore, such as creating,
+    retrieving, or updating promotions.
+
+
+    You can use these methods to create automatic promotions for specific
+    products or for the whole cart, which are applied automatically during
+    checkout in NewStore Associate App.
+
+
+    For a guide on how to use automatic promotions via NewStore Omnichannel
+    Manager, see [this guide](/product/nomapp/nom-automatic-promotions). Also
+    you can find additinal information in [process
+    documentation](/product/processes/about-discounts-promotions)
+
+
+    **DISCLAIMER:** *Coupon fields should not contain any PII, this information
+    may be removed.*
+servers:
+  - url: https://dodici.s.newstore.net/v0/promotions
+    description: The staging/production server
+security:
+  - newStoreAccessToken: []
+paths:
+  /promotion/{id}:
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+        description: The ID of the promotion.
+    get:
+      summary: Get Promotion
+      responses:
+        '200':
+          $ref: '#/components/responses/PromotionResponse'
+        '404':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+      operationId: getPromotion
+      description: >-
+        Retrieves the specified automatic promotion by ID. To retrieve the
+        promotion ID, use the list promotions API.
+    put:
+      summary: Update Promotion
+      operationId: updatePromotion
+      responses:
+        '200':
+          $ref: '#/components/responses/PromotionResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+      description: >-
+        Updates the specified promotion with new information.The only property
+        that cannot be updated is the category.
+      requestBody:
+        $ref: '#/components/requestBodies/UpdatePromotionRequest'
+  /promotion:
+    post:
+      summary: Create Promotion
+      operationId: postPromotion
+      responses:
+        '201':
+          $ref: '#/components/responses/PromotionResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+      requestBody:
+        $ref: '#/components/requestBodies/CreatePromotionRequest'
+      description: Creates a specified automatic promotion.
+    get:
+      summary: List Promotions
+      operationId: getPromotions
+      responses:
+        '200':
+          $ref: '#/components/responses/PromotionsResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+      description: Retrieves all automatic promotions.
+      parameters:
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/partial-category'
+  /promotion/search:
+    post:
+      summary: Search Promotions
+      operationId: postPromotionSearch
+      responses:
+        '200':
+          $ref: '#/components/responses/PromotionsResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+      description: Searchs for the specified promotions.
+      requestBody:
+        $ref: '#/components/requestBodies/SearchPromotionRequest'
+      parameters:
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/page'
+components:
+  schemas:
+    Promotion:
+      title: Promotion
+      type: object
+      description: An automatic promotion.
+      required:
+        - name
+        - validFrom
+        - category
+        - currencies
+      properties:
+        id:
+          type: string
+          description: The promotion ID.
+          example: 64357c41-cad8-4000-8000-d998be563098
+          readOnly: true
+        name:
+          type: string
+          description: The name of the promotion.
+          example: Black Friday Promo
+        description:
+          type: string
+          description: An alias for the name field.
+          example: Black Friday Promo
+          readOnly: true
+        validFrom:
+          type: string
+          description: >-
+            The date the promotion becomes valid. If localizedTimezone is false,
+            timezone can be indicated at the end of the string.
+          example: '2023-11-01T00:00:00'
+          pattern: >-
+            (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+        validTo:
+          type: string
+          description: >-
+            The date the promotion becomes invalid. If localizedTimezone is
+            false, timezone can be indicated at the end of the string.
+          example: '2023-12-01T00:00:00'
+          pattern: >-
+            (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+        category:
+          oneOf:
+            - $ref: '#/components/schemas/CartLevelPercentageCategory'
+            - $ref: '#/components/schemas/CartLevelFixedCategory'
+            - $ref: '#/components/schemas/ProductLevelPercentageCategory'
+            - $ref: '#/components/schemas/ProductLevelFixedCategory'
+            - $ref: '#/components/schemas/BogoPercentageCategory'
+            - $ref: '#/components/schemas/BogoFixedCategory'
+            - $ref: '#/components/schemas/BundlePercentageCategory'
+            - $ref: '#/components/schemas/BundleFixedCategory'
+            - $ref: '#/components/schemas/FreeShipping'
+          description: The actual promotion kind.
+        active:
+          type: boolean
+          description: Indicates whether the promotions is active or not.
+        createdAt:
+          type: string
+          description: The creation date.
+          example: '2023-04-11T00:00:00Z'
+          readOnly: true
+        createdBy:
+          type: string
+          description: The user that created the promotion.
+          example: 25dd570161b05f0cae353a56757f8495
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The last update date.
+          example: '2023-04-11T00:00:00Z'
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user that updated the promotion.
+          example: 25dd570161b05f0cae353a56757f8495
+          readOnly: true
+        tenant:
+          type: string
+          description: The tenant that owns the promotion.
+          example: dodici
+          readOnly: true
+        currencies:
+          type: array
+          description: >-
+            A list of conditions on currencies to satisfy in order for the
+            promotion to be applied.
+          items:
+            $ref: '#/components/schemas/Currency'
+        stores:
+          type: array
+          description: >-
+            Indicates in which stores the promotion can be used. A list of IDs
+            states that the promotion can be used in the given stores while an
+            empty array states that the promotion can be used in any store.
+          items:
+            type: string
+            example: f9c7b6ec-b296-4eba-b083-c8b53d14407d
+        localizedTimezone:
+          type: boolean
+          description: >-
+            Optional, this property determines local timezone validity for the
+            promotion. If true, UTC is assumed with no timezone required in
+            "validFrom" and "validTo". If false, timezone must be specified in
+            those fields.
+        exclusive:
+          type: boolean
+          description: Indicates whether the promotion is exclusive or not.
+        segment:
+          $ref: '#/components/schemas/Segment'
+          description: >-
+            Represents customer segmentation. Use this method to create coupons
+            that apply to specific groups of customers (such as VIP customers,
+            gold or silver card members, etc).
+    SearchPromotion:
+      title: SearchPromotion
+      type: object
+      description: ' Search for the specified promotions.'
+      examples: []
+      properties:
+        name:
+          type: string
+          description: The name of the promotion.
+          example: Black Friday Promo
+        kind:
+          type: array
+          description: The promotion type.
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/PromotionType'
+        validFrom:
+          type: string
+          description: The date the promotion becomes valid.
+          example: '2023-11-01T00:00:00Z'
+          pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$
+        validTo:
+          type: string
+          description: The date the promotion becomes invalid.
+          example: '2023-12-01T00:00:00Z'
+          pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$
+        active:
+          type: boolean
+          description: Indicates whether the promotions is active or not.
+        segment:
+          type: string
+          description: >-
+            Indicates the **Key** or **Value** of customer profile extended
+            attribute.
+        partial:
+          type: boolean
+          default: false
+          description: Partially returns the data of each promotion.
+    PromotionType:
+      type: string
+      enum:
+        - CartLevelPercentage
+        - ProductLevelPercentage
+        - BogoPercentage
+        - FreeShippingPercentage
+        - BundlePercentage
+        - CartLevelFixed
+        - ProductLevelFixed
+        - BogoFixed
+        - BundleFixed
+      title: kind
+      description: Kinds of promotion categories.
+      x-internal: false
+    ObjectLinks:
+      title: ObjectLinks
+      type: object
+      description: Object links.
+      properties:
+        self:
+          type: string
+          description: A link to the object itself.
+          readOnly: true
+    CartLevelPercentageCategory:
+      title: CartLevelPercentageCategory
+      type: object
+      description: A promotion which is applied as a % discount to the entire cart.
+      properties:
+        kind:
+          type: string
+          description: |
+            The promotion type discriminator.
+          pattern: ^CartLevelPercentage$
+          example: CartLevelPercentage
+        discount:
+          type: integer
+          description: |
+            The % discount applied to the cart, from 0 to 100.
+          minimum: 0
+          maximum: 100
+          example: 10
+      required:
+        - kind
+        - discount
+      examples:
+        - kind: CartLevelPercentage
+          discount: 10
+    FixedDiscount:
+      title: FixedDiscount
+      type: object
+      properties:
+        amount:
+          type: number
+          example: 9.99
+          description: The amount of the discount.
+        currency:
+          type: string
+          example: EUR
+          description: The currency of the discount.
+      required:
+        - amount
+        - currency
+      description: A fixed amount discount for a specific currency.
+      examples:
+        - amount: 9.99
+          currency: EUR
+    CartLevelFixedCategory:
+      title: CartLevelFixedCategory
+      type: object
+      description: >-
+        A promotion which is applied as a fixed amount discount to the entire
+        cart.
+      examples:
+        - kind: CartLevelFixed
+          discounts:
+            - amount: 10
+              currency: EUR
+            - amount: 5
+              currency: USD
+      properties:
+        kind:
+          type: string
+          pattern: ^CartLevelFixed$
+          description: The promotion type discriminator.
+          example: CartLevelFixed
+        discounts:
+          type: array
+          description: Discounts to be applied for the given currencies.
+          items:
+            $ref: '#/components/schemas/FixedDiscount'
+      required:
+        - kind
+        - discounts
+    ProductCategory:
+      title: ProductCategory
+      type: object
+      description: A product category.
+      examples:
+        - path:
+            - clothes
+            - skirts
+      properties:
+        path:
+          type: array
+          description: A category path.
+          items:
+            type: string
+            example: '["clothes", "skirts"]'
+    ProductLevelPercentageCategory:
+      title: ProductLevelPercentageCategory
+      type: object
+      examples:
+        - kind: ProductLevelPercentage
+          includedCategories:
+            - path:
+                - clothes
+                - skirts
+          includedProducts: []
+          excludedProducts: []
+          shopId: storefront-catalog-en
+          locale: en-us
+          discount: 10
+      description: A promotion which is applied as a % amount discount to a product.
+      properties:
+        kind:
+          type: string
+          pattern: ^ProductLevelPercentage$
+          description: The promotion type discriminator.
+          example: ProductLevelPercentage
+        discount:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: The % discount applied to the cart, from 0 to 100.
+          example: 20
+        includedCategories:
+          description: >-
+            Categories of products for which the promotion will be applied. This
+            property is mutually exclusive with 'includedProducts'.
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCategory'
+        includedProducts:
+          type: array
+          description: >-
+            A list of products for which the promotion will be applied. This
+            property is mutually exclusive with 'includedCategories'.
+          items:
+            type: string
+            example: '["1000501", "1000551"]'
+        excludedProducts:
+          type: array
+          description: A list of products for which the promotion not will be applied.
+          items:
+            type: string
+        shopId:
+          type: string
+          description: Shop ID for which the promotion will be applied.
+        locale:
+          type: string
+          description: Locale for which the promotion will be applied.
+      required:
+        - kind
+        - discount
+        - shopId
+        - locale
+    ProductLevelFixedCategory:
+      title: ProductLevelFixedCategory
+      type: object
+      description: A promotion which is applied as a fixed amount discount to a product.
+      examples:
+        - kind: ProductLevelFixed
+          includedCategories:
+            - path:
+                - clothes
+                - skirts
+          includedProducts: []
+          excludedProducts: []
+          shopId: storefront-catalog-en
+          locale: en-us
+          discounts:
+            - amount: 10
+              currency: EUR
+            - amount: 5
+              currency: USD
+      properties:
+        kind:
+          type: string
+          pattern: ^ProductLevelFixed$
+          description: The promotion type discriminator.
+          example: ProductLevelFixed
+        includedCategories:
+          type: array
+          description: >-
+            Categories of products for which the promotion will be applied. This
+            property is mutually exclusive with 'includedProducts'.
+          items:
+            $ref: '#/components/schemas/ProductCategory'
+        includedProducts:
+          type: array
+          description: >-
+            A list of products for which the promotion will be applied. This
+            property is mutually exclusive with 'includedCategories'.
+          items:
+            type: string
+            example: '["P0001", "P0002", "P0003"]'
+        excludedProducts:
+          type: array
+          description: A list of products for which the promotion not will be applied.
+          items:
+            type: string
+            example: '["P0004", "P0005"]'
+        shopId:
+          type: string
+          description: Shop ID for which the promotion will be applied.
+          example: storefront-catalog-en
+        locale:
+          type: string
+          description: Locale for which the promotion will be applied.
+          example: us-en
+        discounts:
+          description: Discounts to be applied for the given currencies.
+          type: array
+          items:
+            $ref: '#/components/schemas/FixedDiscount'
+      required:
+        - kind
+        - shopId
+        - locale
+        - discounts
+    BogoCondition:
+      title: BogoCondition
+      type: object
+      description: >-
+        A constranint on the quantity and quality of objects that define a BOGO
+        promotion.
+      examples:
+        - quantity: 3
+          includedProducts:
+            - P0001
+            - P0002
+          includedCategories: []
+          excludedProducts: []
+        - quantity: 3
+          includedProducts: []
+          includedCategories:
+            - path:
+                - clothes
+                - skirts
+          excludedProducts:
+            - P0005
+      properties:
+        quantity:
+          type: integer
+          minimum: 1
+          description: The quantity in which the eligible products must appear.
+          example: 3
+        includedProducts:
+          type: array
+          description: >-
+            Products that must be included in the right quantities in order to
+            activate the promotion.
+          items:
+            type: string
+            example: '["P0001", "P0002"]'
+        includedCategories:
+          type: array
+          description: >-
+            Products of given categories that must be included in the right
+            quantities in order to activate the promotion.
+          items:
+            $ref: '#/components/schemas/ProductCategory'
+        excludedProducts:
+          type: array
+          description: Products that will be excluded from the products combination.
+          items:
+            type: string
+            example: '["P0005"]'
+      required:
+        - quantity
+    BogoPercentageCategory:
+      title: BogoPercentageCategory
+      type: object
+      description: >-
+        A promotion which is applied as a % discount to a set of items in the
+        for of Buy X Get Y.
+      examples:
+        - kind: BogoPercentage
+          buy:
+            quantity: 3
+            includedProducts:
+              - P0001
+              - P0002
+              - P0003
+            includedCategories: []
+            excludedProducts: []
+          get:
+            quantity: 1
+            includedProducts:
+              - P0004
+            includedCategories: []
+            excludedProducts: []
+          discount: 10
+          shopId: storefront-catalog-en
+          locale: us-en
+        - kind: BogoPercentage
+          buy:
+            quantity: 3
+            includedProducts: []
+            includedCategories:
+              - path:
+                  - clothes
+                  - skirts
+              - path:
+                  - clothes
+                  - trousers
+            excludedProducts: []
+          get:
+            quantity: 1
+            includedProducts: []
+            includedCategories:
+              - path:
+                  - clothes
+                  - shoes
+            excludedProducts: []
+          discount: 10
+          shopId: storefront-catalog-en
+          locale: us-en
+      properties:
+        kind:
+          type: string
+          pattern: ^BogoPercentage$
+          description: The promotion type discriminator.
+          example: BogoPercentage
+        buy:
+          $ref: '#/components/schemas/BogoCondition'
+          description: A set of conditions on the buy part of Buy X Get Y.
+        get:
+          $ref: '#/components/schemas/BogoCondition'
+          description: A set of conditions on the get part of Buy X Get Y.
+        discount:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: The % discount applied to the cart, from 0 to 100.
+          example: 10
+        shopId:
+          type: string
+          description: Shop ID for which the promotion will be applied.
+          example: storefront-catalog-en
+        locale:
+          type: string
+          description: Locale for which the promotion will be applied.
+          example: us-en
+      required:
+        - kind
+        - buy
+        - get
+        - discount
+        - shopId
+        - locale
+    BogoFixedCategory:
+      title: BogoFixedCategory
+      type: object
+      description: >-
+        A promotion which is applied as a fixed discount to a set of items in
+        the for of Buy X Get Y.
+      examples:
+        - kind: BogoFixed
+          buy:
+            quantity: 3
+            includedProducts:
+              - P0001
+              - P0002
+            includedCategories: []
+            excludedProducts: []
+          get:
+            quantity: 2
+            includedProducts:
+              - P0007
+              - P0008
+            includedCategories: []
+            excludedProducts: []
+          shopId: storefront-catalog-en
+          locale: en-us
+          discounts:
+            - amount: 20
+              currency: USD
+        - kind: BogoFixed
+          buy:
+            quantity: 3
+            includedProducts: []
+            includedCategories:
+              - path:
+                  - clothes
+                  - skirts
+              - path:
+                  - clothes
+                  - trousers
+            excludedProducts: []
+          get:
+            quantity: 1
+            includedProducts: []
+            includedCategories:
+              - path:
+                  - clothes
+                  - shoes
+            excludedProducts: []
+          shopId: storefront-catalog-en
+          locale: en-us
+          discounts:
+            - amount: 20
+              currency: USD
+      properties:
+        kind:
+          type: string
+          pattern: ^BogoFixed$
+          description: The promotion type discriminator.
+          example: BogoFixed
+        buy:
+          $ref: '#/components/schemas/BogoCondition'
+          description: A set of conditions on the buy part of Buy X Get Y.
+        get:
+          $ref: '#/components/schemas/BogoCondition'
+          description: A set of conditions on the get part of Buy X Get Y.
+        shopId:
+          type: string
+          description: Shop ID for which the promotion will be applied.
+          example: storefront-catalog-en
+        locale:
+          type: string
+          description: Locale for which the promotion will be applied.
+          example: en-us
+        discounts:
+          type: array
+          description: Discounts to be applied for the given currencies.
+          items:
+            $ref: '#/components/schemas/FixedDiscount'
+      required:
+        - kind
+        - buy
+        - get
+        - shopId
+        - locale
+        - discounts
+    BundleProduct:
+      title: BundleProduct
+      type: object
+      description: >-
+        An object representing a match for a bundle which consists of a list of
+        products in a desired quantity.
+      examples:
+        - productID:
+            - P0001
+            - P0002
+          quantity: 4
+      properties:
+        productID:
+          type: array
+          description: A list of products eligible for the bundle.
+          items:
+            type: string
+            example: '["P0001", "P0002"]'
+        quantity:
+          type: integer
+          minimum: 1
+          description: The quantity in which the eligible products must appear.
+          example: 4
+      required:
+        - productID
+        - quantity
+    BundleCategory:
+      title: BundleCategory
+      type: object
+      description: >-
+        An object representing a match for a bundle which consists of a category
+        and a desired quantity.
+      examples:
+        - path:
+            - clothes
+            - skirts
+          quantity: 4
+      properties:
+        path:
+          type: array
+          description: A product category eligible for the bundle.
+          items:
+            type: string
+            example: '["clothes", "skirts"]'
+        quantity:
+          type: integer
+          minimum: 1
+          description: The quantity in which the eligible products must appear.
+          example: 4
+      required:
+        - path
+        - quantity
+    Bundle:
+      title: Bundle
+      type: object
+      description: >-
+        A description of a combination of products and categories in AND
+        condition.
+      examples:
+        - includedProducts:
+            - productID:
+                - P0001
+                - P0002
+              quantity: 4
+          includedCategories: []
+          excludedProducts: []
+        - includedProducts: []
+          includedCategories:
+            - path:
+                - clothes
+                - skirts
+              quantity: 4
+          excludedProducts:
+            - P0005
+            - P0006
+      properties:
+        includedProducts:
+          type: array
+          description: >-
+            Products that must be included in the right quantities in order to
+            activate the bundle.
+          items:
+            $ref: '#/components/schemas/BundleProduct'
+        includedCategories:
+          type: array
+          description: >-
+            Products of given categories that must be included in the right
+            quantities in order to activate the bundle.
+          items:
+            $ref: '#/components/schemas/BundleCategory'
+        excludedProducts:
+          type: array
+          description: Products that will be excluded from the bundle combination.
+          items:
+            type: string
+            example: '["P0005", "P0006"]'
+    BundlePercentageCategory:
+      title: BundlePercentageCategory
+      type: object
+      description: A promotion which is applied as a % discount to a bundle of items.
+      examples:
+        - kind: BundlePercentage
+          discount: 40
+          bundles:
+            - includedProducts:
+                - productID:
+                    - P0001
+                    - P0002
+                  quantity: 4
+              includedCategories: []
+              excludedProducts: []
+          shopId: storefront-catalog-en
+          locale: en-us
+      properties:
+        kind:
+          type: string
+          pattern: ^BundlePercentage$
+          description: The promotion type discriminator.
+          example: BundlePercentage
+        discount:
+          type: integer
+          description: The % discount applied to the cart, from 0 to 100.
+          example: 40
+        bundles:
+          type: array
+          description: >-
+            A list of bundle combinations to be considered in OR that can
+            activate the promotion.
+          items:
+            $ref: '#/components/schemas/Bundle'
+        shopId:
+          type: string
+          description: Shop ID for which the promotion will be applied.
+          example: storefront-catalog-en
+        locale:
+          type: string
+          description: Locale for which the promotion will be applied.
+          example: en-us
+      required:
+        - kind
+        - discount
+        - bundles
+        - shopId
+        - locale
+    FixedPrice:
+      title: FixedPrice
+      type: object
+      description: A fixed price at which a set of items is sold.
+      properties:
+        amount:
+          type: number
+          description: The amount at which a set of items is sold.
+          example: 150
+        currency:
+          type: string
+          description: The currency of the fixed price.
+          example: EUR
+      required:
+        - amount
+        - currency
+      examples:
+        - amount: 150
+          currency: EUR
+    BundleFixedCategory:
+      title: BundleFixedCategory
+      type: object
+      description: A promotion which is applied as a fixed price to a bundle of items.
+      examples:
+        - kind: BundleFixed
+          values:
+            - amount: 100
+              currency: EUR
+          bundles:
+            - includedProducts:
+                - productID:
+                    - P0001
+                    - P0002
+                  quantity: 4
+              includedCategories: []
+              excludedProducts: []
+          shopId: storefront-catalog-en
+          locale: en-us
+      properties:
+        kind:
+          type: string
+          pattern: ^BundleFixed$
+          description: The promotion type discriminator.
+          example: BundleFixed
+        values:
+          type: array
+          description: The fixed price applied to the bundle per currency.
+          items:
+            $ref: '#/components/schemas/FixedPrice'
+        bundles:
+          type: array
+          description: >-
+            A list of bundle combinations to be considered in OR that can
+            activate the promotion.
+          items:
+            $ref: '#/components/schemas/Bundle'
+        shopId:
+          type: string
+          description: Shop ID for which the promotion will be applied.
+          example: storefront-catalog-en
+        locale:
+          type: string
+          description: Locale for which the promotion will be applied.
+          example: en-us
+      required:
+        - kind
+        - values
+        - bundles
+        - shopId
+        - locale
+    FreeShipping:
+      title: FreeShipping
+      type: object
+      description: >-
+        A promotion that gives a 100% discount on the shipping costs if
+        conditions are met.
+      properties:
+        kind:
+          type: string
+          pattern: ^FreeShippingPercentage$
+          description: The promotion type discriminator.
+          example: FreeShippingPercentage
+        shippingOptions:
+          type: array
+          description: Shipping options for which the promotion should be applied.
+          items:
+            type: string
+            example: '["SHIP_OPT_01", "SHIP_OPT_02", "SAME_DAY", "STANDARD"]'
+        shopId:
+          type: string
+          description: Shop ID for which the promotion will be applied.
+          example: storefront-catalog-en
+        locale:
+          type: string
+          description: Locale for which the promotion will be applied.
+          example: en-us
+      required:
+        - kind
+        - shippingOptions
+        - shopId
+        - locale
+      examples:
+        - kind: FreeShippingPercentage
+          shippingOptions:
+            - SHIP_OPT_01
+            - SHIP_OPT_02
+            - SAME_DAY
+            - STANDARD
+          shopId: storefront-catalog-en
+          locale: en-us
+    Currency:
+      title: Currency
+      type: object
+      description: An object representing a constraint on a currency.
+      examples:
+        - code: EUR
+          minimumCartValue: 50
+      properties:
+        code:
+          type: string
+          description: Currency code.
+          example: EUR
+        minimumCartValue:
+          type: number
+          minimum: 0
+          default: 0
+          description: >-
+            The minimum cart value for a given currency needed to apply the
+            promotion.
+          example: 50
+      required:
+        - code
+        - minimumCartValue
+    Segment:
+      title: Segment
+      type:
+        - object
+        - 'null'
+      description: A customer segmentation.
+      examples:
+        - key: type
+          value: gold member
+          schama: 1
+      properties:
+        key:
+          type: string
+          description: 'The name of the customer profile extended attribute. '
+        value:
+          type: string
+          description: >-
+            The **value** of the selected name in customer profile extended
+            attribute. 
+        schema:
+          type: number
+          description: Represents the version of the data structure. For now it is **1**.
+      required:
+        - key
+        - value
+        - schema
+    PageLinks:
+      title: PageLinks
+      type: object
+      description: Pagination links.
+      properties:
+        next:
+          type:
+            - string
+            - 'null'
+          description: The link in a pagination response pointing to the next page.
+          example: /promotion?count=50&page=2
+          readOnly: true
+        previous:
+          type:
+            - string
+            - 'null'
+          description: the link in a pagination response pointing to the previous page.
+          example: 'null'
+          readOnly: true
+      examples:
+        - next: /promotion?count=50&page=2
+          previous: 'null'
+        - next: /coupon?count=50&page=2&partial=true
+          previous: 'null'
+    Pagination:
+      title: Pagination
+      type: object
+      description: Pagination response fields.
+      properties:
+        count:
+          type: integer
+          description: Echoes the 'count' value from 'Query Prameters'.
+          example: 50
+        page:
+          type: integer
+          description: Echoes the 'page' value from 'Query Prameters'.
+          example: 1
+        total:
+          type: integer
+          description: The total number of resources matching the query.
+          example: 220
+      examples: []
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    count:
+      name: count
+      in: query
+      required: true
+      schema:
+        type: integer
+        maximum: 150
+      description: The number of promotions to get at once.
+    page:
+      name: page
+      in: query
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      description: The page number.
+    partial-category:
+      name: partial-category
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: true
+        example: true
+      description: >-
+        This flag should be always present with ``true`` value , it prevents
+        loads of categories.
+  responses:
+    Error:
+      description: An error response.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: The error message.
+                readOnly: true
+              status:
+                description: The HTTP status code.
+                type: integer
+                readOnly: true
+              causes:
+                type: array
+                description: A list of causes. It's optional.
+                items:
+                  type: string
+                  readOnly: true
+            required:
+              - message
+              - status
+          examples:
+            Example 1:
+              value:
+                message: not found
+                status: 404
+            Example 2:
+              value:
+                message: internal server error
+                status: 500
+    PromotionsResponse:
+      description: >-
+        A page of promotions, the links for the previous and next pages and
+        pagination information.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                description: An array of promotions plus HATEOAS fields.
+                items:
+                  type: object
+                  properties:
+                    links:
+                      $ref: '#/components/schemas/ObjectLinks'
+                      description: The HATEOAS fields for the promotion.
+                    promotion:
+                      description: The promotion.
+                      allOf:
+                        - $ref: '#/components/schemas/Promotion'
+                        - type: object
+                          properties:
+                            version:
+                              type: string
+                              description: The promotion.
+                          required:
+                            - version
+              links:
+                $ref: '#/components/schemas/PageLinks'
+                description: Pagination links.
+              pagination:
+                $ref: '#/components/schemas/Pagination'
+                description: Pagination response fields.
+          examples:
+            Promotions Response:
+              value:
+                items:
+                  - links:
+                      self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                    promotion:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Promo
+                      description: Black Friday Promo
+                      validFrom: '2023-11-01T00:00:00'
+                      validTo: '2023-12-01T00:00:00'
+                      category:
+                        kind: CartLevelPercentage
+                        discount: 10
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: true
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  - links:
+                      self: /promotion/633e9b5e-983b-4000-8000-bdde1340e55f
+                    promotion:
+                      id: 633e9b5e-983b-4000-8000-bdde1340e55f
+                      name: Promotion for hoodies
+                      description: Promotion for hoodies
+                      validFrom: '2023-04-27T00:00:00'
+                      validTo: '2023-04-30T23:59:59'
+                      category:
+                        kind: ProductLevelFixed
+                        includedCategories:
+                          - path:
+                              - Shop
+                              - Accessories
+                        includedProducts: []
+                        excludedProducts: []
+                        shopId: storefront-catalog-en
+                        locale: en-us
+                        discounts:
+                          - amount: 50
+                            currency: EUR
+                          - amount: 50
+                            currency: USD
+                      active: false
+                      createdAt: '2023-04-27T13:15:55Z'
+                      createdBy: 3227aa4cdff85694a7788450e3c269b2
+                      updatedAt: '2022-10-06T09:09:50Z'
+                      updatedBy: 3227aa4cdff85694a7788450e3c269b2
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 150
+                        - code: USD
+                          minimumCartValue: 150
+                      stores: []
+                      exclusive: true
+                      segment:
+                        key: member
+                        value: VIP
+                        schema: 1
+                      version: 6255ca9a-a025-4846-826a-f69fd6da4917
+                links:
+                  next: /promotion?count=2&page=1
+                  previous: null
+                pagination:
+                  count: 2
+                  page: 1
+                  total: 15
+    PromotionResponse:
+      description: A promotion plus HATEOAS fields.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              links:
+                $ref: '#/components/schemas/ObjectLinks'
+                description: The HATEOAS fields for the promotion.
+              promotion:
+                allOf:
+                  - $ref: '#/components/schemas/Promotion'
+                    description: The promotion.
+                  - type: object
+                    properties:
+                      version:
+                        type: string
+                        description: A UUID representing the version of the promotion.
+                    required:
+                      - version
+          examples:
+            Response CartLevelPercentage Promotion Without Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response CartLevelPercentage Promotion With Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response CartLevelFixed Promotion Without Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: CartLevelFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response CartLevelFixed Promotion With Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response ProductLevelPercentage Promotion Without Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: ProductLevelPercentage
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discount: 10
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response ProductLevelPercentage Promotion With Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: ProductLevelPercentage
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discount: 10
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response ProductLevelFixed Promotion Without Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: ProductLevelFixed
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response ProductLevelFixed Promotion With Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: ProductLevelFixed
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response BogoPercentage Promotion Without Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: BogoPercentage
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                        - P0003
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 1
+                      includedProducts:
+                        - P0004
+                      includedCategories: []
+                      excludedProducts: []
+                    discount: 10
+                    shopId: storefront-catalog-en
+                    locale: us-en
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response BogoPercentage Promotion With Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: BogoPercentage
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                        - P0003
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 1
+                      includedProducts:
+                        - P0004
+                      includedCategories: []
+                      excludedProducts: []
+                    discount: 10
+                    shopId: storefront-catalog-en
+                    locale: us-en
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response BogoFixed Promotion Without Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: BogoFixed
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 2
+                      includedProducts:
+                        - P0007
+                        - P0008
+                      includedCategories: []
+                      excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 20
+                        currency: USD
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response BogoFixed Promotion With Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: BogoFixed
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 2
+                      includedProducts:
+                        - P0007
+                        - P0008
+                      includedCategories: []
+                      excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 20
+                        currency: USD
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response BundlePercentage Promotion Without Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: BundlePercentage
+                    discount: 40
+                    bundles:
+                      - includedProducts:
+                          - productID:
+                              - P0001
+                              - P0002
+                            quantity: 4
+                        includedCategories: []
+                        excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response BundlePercentage Promotion With Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: BundlePercentage
+                    discount: 40
+                    bundles:
+                      - includedProducts:
+                          - productID:
+                              - P0001
+                              - P0002
+                            quantity: 4
+                        includedCategories: []
+                        excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response BundleFixed Promotion Without Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: BogoPercentage
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                        - P0003
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 1
+                      includedProducts:
+                        - P0004
+                      includedCategories: []
+                      excludedProducts: []
+                    discount: 10
+                    shopId: storefront-catalog-en
+                    locale: us-en
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response BundleFixed Promotion With Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: BundleFixed
+                    values:
+                      - amount: 100
+                        currency: EUR
+                    bundles:
+                      - includedProducts:
+                          - productID:
+                              - P0001
+                              - P0002
+                            quantity: 4
+                        includedCategories: []
+                        excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response FreeShippingPercentage Promotion Without Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: FreeShippingPercentage
+                    shippingOptions:
+                      - SHIP_OPT_01
+                      - SHIP_OPT_02
+                      - SAME_DAY
+                      - STANDARD
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Response FreeShippingPercentage Promotion With Timezone:
+              value:
+                links:
+                  self: /promotion/64357c41-cad8-4000-8000-d998be563098
+                promotion:
+                  id: 64357c41-cad8-4000-8000-d998be563098
+                  name: Black Friday Promo
+                  description: Black Friday Promo
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: FreeShippingPercentage
+                    shippingOptions:
+                      - SHIP_OPT_01
+                      - SHIP_OPT_02
+                      - SAME_DAY
+                      - STANDARD
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                  active: true
+                  createdAt: '2023-04-11T00:00:00'
+                  createdBy: 25dd570161b05f0cae353a56757f8495
+                  updatedAt: '2023-04-11T00:00:00'
+                  updatedBy: 25dd570161b05f0cae353a56757f8495
+                  tenant: dodici
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+  requestBodies:
+    UpdatePromotionRequest:
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Promotion'
+              - type: object
+                properties:
+                  version:
+                    type: string
+                    description: A UUID representing the version of the promotion.
+                    example: a43a5a2d-1424-4c80-a252-992d489062eb
+                    writeOnly: true
+                required:
+                  - version
+          examples:
+            Update CartLevelPercentage Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: CartLevelPercentage
+                  discount: 10
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update CartLevelPercentage Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: CartLevelPercentage
+                  discount: 10
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update CartLevelFixed Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: CartLevelFixed
+                  discounts:
+                    - amount: 10
+                      currency: EUR
+                    - amount: 5
+                      currency: USD
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                  - code: USD
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update CartLevelFixed Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: CartLevelFixed
+                  discounts:
+                    - amount: 10
+                      currency: EUR
+                    - amount: 5
+                      currency: USD
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                  - code: USD
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update ProductLevelPercentage Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: ProductLevelPercentage
+                  includedCategories:
+                    - path:
+                        - clothes
+                        - skirts
+                  includedProducts: []
+                  excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discount: 10
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update ProductLevelPercentage Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: ProductLevelPercentage
+                  includedCategories:
+                    - path:
+                        - clothes
+                        - skirts
+                  includedProducts: []
+                  excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discount: 10
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update ProductLevelFixed Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: ProductLevelFixed
+                  includedCategories:
+                    - path:
+                        - clothes
+                        - skirts
+                  includedProducts: []
+                  excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discounts:
+                    - amount: 10
+                      currency: EUR
+                    - amount: 5
+                      currency: USD
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                  - code: USD
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update ProductLevelFixed Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: ProductLevelFixed
+                  includedCategories:
+                    - path:
+                        - clothes
+                        - skirts
+                  includedProducts: []
+                  excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discounts:
+                    - amount: 10
+                      currency: EUR
+                    - amount: 5
+                      currency: USD
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                  - code: USD
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update BogoPercentage Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: BogoPercentage
+                  buy:
+                    quantity: 3
+                    includedProducts:
+                      - P0001
+                      - P0002
+                      - P0003
+                    includedCategories: []
+                    excludedProducts: []
+                  get:
+                    quantity: 1
+                    includedProducts:
+                      - P0004
+                    includedCategories: []
+                    excludedProducts: []
+                  discount: 10
+                  shopId: storefront-catalog-en
+                  locale: us-en
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update BogoPercentage Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: BogoPercentage
+                  buy:
+                    quantity: 3
+                    includedProducts:
+                      - P0001
+                      - P0002
+                      - P0003
+                    includedCategories: []
+                    excludedProducts: []
+                  get:
+                    quantity: 1
+                    includedProducts:
+                      - P0004
+                    includedCategories: []
+                    excludedProducts: []
+                  discount: 10
+                  shopId: storefront-catalog-en
+                  locale: us-en
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update BogoFixed Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: BogoFixed
+                  buy:
+                    quantity: 3
+                    includedProducts:
+                      - P0001
+                      - P0002
+                    includedCategories: []
+                    excludedProducts: []
+                  get:
+                    quantity: 2
+                    includedProducts:
+                      - P0007
+                      - P0008
+                    includedCategories: []
+                    excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discounts:
+                    - amount: 20
+                      currency: EUR
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update BogoFixed Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: BogoFixed
+                  buy:
+                    quantity: 3
+                    includedProducts:
+                      - P0001
+                      - P0002
+                    includedCategories: []
+                    excludedProducts: []
+                  get:
+                    quantity: 2
+                    includedProducts:
+                      - P0007
+                      - P0008
+                    includedCategories: []
+                    excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discounts:
+                    - amount: 20
+                      currency: EUR
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update BundlePercentage Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: BundlePercentage
+                  discount: 40
+                  bundles:
+                    - includedProducts:
+                        - productID:
+                            - P0001
+                            - P0002
+                          quantity: 4
+                      includedCategories: []
+                      excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update BundlePercentage Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: BundlePercentage
+                  discount: 40
+                  bundles:
+                    - includedProducts:
+                        - productID:
+                            - P0001
+                            - P0002
+                          quantity: 4
+                      includedCategories: []
+                      excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update BundleFixed Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: BundleFixed
+                  values:
+                    - amount: 100
+                      currency: EUR
+                  bundles:
+                    - includedProducts:
+                        - productID:
+                            - P0001
+                            - P0002
+                          quantity: 4
+                      includedCategories: []
+                      excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update BundleFixed Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: BundleFixed
+                  values:
+                    - amount: 100
+                      currency: EUR
+                  bundles:
+                    - includedProducts:
+                        - productID:
+                            - P0001
+                            - P0002
+                          quantity: 4
+                      includedCategories: []
+                      excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update FreeShippingPercentage Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: FreeShippingPercentage
+                  shippingOptions:
+                    - SHIP_OPT_01
+                    - SHIP_OPT_02
+                    - SAME_DAY
+                    - STANDARD
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+            Update FreeShippingPercentage Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                description: The Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: FreeShippingPercentage
+                  shippingOptions:
+                    - SHIP_OPT_01
+                    - SHIP_OPT_02
+                    - SAME_DAY
+                    - STANDARD
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+                version: a43a5a2d-1424-4c80-a252-992d489062eb
+      description: Update promotion request.
+    CreatePromotionRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Promotion'
+          examples:
+            Create CartLevelPercentage Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: CartLevelPercentage
+                  discount: 10
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create CartLevelPercentage Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: CartLevelPercentage
+                  discount: 10
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create CartLevelFixed Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: CartLevelFixed
+                  discounts:
+                    - amount: 10
+                      currency: EUR
+                    - amount: 5
+                      currency: USD
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                  - code: USD
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create CartLevelFixed Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: CartLevelFixed
+                  discounts:
+                    - amount: 10
+                      currency: EUR
+                    - amount: 5
+                      currency: USD
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                  - code: USD
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create ProductLevelPercentage Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: ProductLevelPercentage
+                  includedCategories:
+                    - path:
+                        - clothes
+                        - skirts
+                  includedProducts: []
+                  excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discount: 10
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create ProductLevelPercentage Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: ProductLevelPercentage
+                  includedCategories:
+                    - path:
+                        - clothes
+                        - skirts
+                  includedProducts: []
+                  excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discount: 10
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create ProductLevelFixed Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: ProductLevelFixed
+                  includedCategories:
+                    - path:
+                        - clothes
+                        - skirts
+                  includedProducts: []
+                  excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discounts:
+                    - amount: 10
+                      currency: EUR
+                    - amount: 5
+                      currency: USD
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                  - code: USD
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create ProductLevelFixed Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: ProductLevelFixed
+                  includedCategories:
+                    - path:
+                        - clothes
+                        - skirts
+                  includedProducts: []
+                  excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discounts:
+                    - amount: 10
+                      currency: EUR
+                    - amount: 5
+                      currency: USD
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                  - code: USD
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create BogoPercentage Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: BogoPercentage
+                  buy:
+                    quantity: 3
+                    includedProducts:
+                      - P0001
+                      - P0002
+                      - P0003
+                    includedCategories: []
+                    excludedProducts: []
+                  get:
+                    quantity: 1
+                    includedProducts:
+                      - P0004
+                    includedCategories: []
+                    excludedProducts: []
+                  discount: 10
+                  shopId: storefront-catalog-en
+                  locale: us-en
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create BogoPercentage Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: BogoPercentage
+                  buy:
+                    quantity: 3
+                    includedProducts:
+                      - P0001
+                      - P0002
+                      - P0003
+                    includedCategories: []
+                    excludedProducts: []
+                  get:
+                    quantity: 1
+                    includedProducts:
+                      - P0004
+                    includedCategories: []
+                    excludedProducts: []
+                  discount: 10
+                  shopId: storefront-catalog-en
+                  locale: us-en
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create BogoFixed Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: BogoFixed
+                  buy:
+                    quantity: 3
+                    includedProducts:
+                      - P0001
+                      - P0002
+                    includedCategories: []
+                    excludedProducts: []
+                  get:
+                    quantity: 2
+                    includedProducts:
+                      - P0007
+                      - P0008
+                    includedCategories: []
+                    excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discounts:
+                    - amount: 20
+                      currency: EUR
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create BogoFixed Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: BogoFixed
+                  buy:
+                    quantity: 3
+                    includedProducts:
+                      - P0001
+                      - P0002
+                    includedCategories: []
+                    excludedProducts: []
+                  get:
+                    quantity: 2
+                    includedProducts:
+                      - P0007
+                      - P0008
+                    includedCategories: []
+                    excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                  discounts:
+                    - amount: 20
+                      currency: EUR
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create BundlePercentage Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: BundlePercentage
+                  discount: 40
+                  bundles:
+                    - includedProducts:
+                        - productID:
+                            - P0001
+                            - P0002
+                          quantity: 4
+                      includedCategories: []
+                      excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create BundlePercentage Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: BundlePercentage
+                  discount: 40
+                  bundles:
+                    - includedProducts:
+                        - productID:
+                            - P0001
+                            - P0002
+                          quantity: 4
+                      includedCategories: []
+                      excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create BundleFixed Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: BundleFixed
+                  values:
+                    - amount: 100
+                      currency: EUR
+                  bundles:
+                    - includedProducts:
+                        - productID:
+                            - P0001
+                            - P0002
+                          quantity: 4
+                      includedCategories: []
+                      excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create BundleFixed Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: BundleFixed
+                  values:
+                    - amount: 100
+                      currency: EUR
+                  bundles:
+                    - includedProducts:
+                        - productID:
+                            - P0001
+                            - P0002
+                          quantity: 4
+                      includedCategories: []
+                      excludedProducts: []
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create FreeShippingPercentage Promotion Without Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00'
+                validTo: '2023-12-01T00:00:00'
+                category:
+                  kind: FreeShippingPercentage
+                  shippingOptions:
+                    - SHIP_OPT_01
+                    - SHIP_OPT_02
+                    - SAME_DAY
+                    - STANDARD
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: true
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+            Create FreeShippingPercentage Promotion With Timezone:
+              value:
+                name: Black Friday Promo
+                validFrom: '2023-11-01T00:00:00+01:00'
+                validTo: '2023-12-01T00:00:00+01:00'
+                category:
+                  kind: FreeShippingPercentage
+                  shippingOptions:
+                    - SHIP_OPT_01
+                    - SHIP_OPT_02
+                    - SAME_DAY
+                    - STANDARD
+                  shopId: storefront-catalog-en
+                  locale: en-us
+                active: true
+                currencies:
+                  - code: EUR
+                    minimumCartValue: 50
+                stores:
+                  - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                localizedTimezone: false
+                exclusive: true
+                segment:
+                  key: type
+                  value: gold member
+                  schema: 1
+      description: Create promotion request.
+    SearchPromotionRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SearchPromotion'
+          examples:
+            Search Promotion:
+              value:
+                name: promo
+                kind:
+                  - CartLevelPercentage
+                  - ProductLevelFixed
+                validFrom: '2023-11-01T00:00:00Z'
+                validTo: '2023-12-01T00:00:00Z'
+                active: true
+                segment: member
+                partial: false
+      description: Search promotion request.
+x-internal: false

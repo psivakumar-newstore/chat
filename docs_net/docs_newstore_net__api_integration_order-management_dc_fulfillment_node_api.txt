@@ -1,0 +1,952 @@
+Fulfillment Provider API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Availabilities Export API
+Customer Profile Updates API
+Fulfillment Provider API
+Fulfillment Request API
+Historical order import API
+Item Return API
+Item Return API
+Location API
+Manager approval
+Fulfillment Configuration API
+Manager Approval Rules API
+Order API
+Order Injection API
+Order Notes API
+Order information retrieval API
+Safety Stock API
+Availabilities API
+Stock insights API
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+post
+Accept fulfillment request
+get
+Get item cancelation status
+post
+Cancel items
+get
+Get item rejection status
+post
+Reject items
+get
+Get rejection status
+post
+Reject fulfillment request
+post
+Resend fulfillment request
+get
+Get shipping status
+post
+Update shipping status
+API docs by Redocly
+Fulfillment Provider API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Represents a request to ship products in an order. Use this resource to accept or reject fulfillment requests.
+You can also retrieve and update the shipping status for a fulfillment request.
+This resource only applies to orders routed to a warehouse for
+fulfillment
+.
+To manage orders routed to stores for fulfillment, contact the
+support team
+.
+To retrieve a list of fulfillment requests for an order, with the status of items in each fulfillment request,
+see
+Store and DC orders
+.
+Note:
+When shipping, rejecting or canceling order items with the same product ID the service will pick either
+the cheapest or the most expensive one depending on the action type. Please check each endpoint for more details.
+Accept fulfillment request
+Accepts a fulfillment request. Acceptance indicates intent to fulfill.
+Note:
+This only applies to orders routed to a DC or warehouse for fulfillment.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+uuid
+required
+string
+Unique ID for a fulfillment request.
+Responses
+200
+Successfully processed. Note that there should be only one fulfillment
+process started for a given fulfillment request ID.
+400
+The request failed. The possible reasons are:
+The fulfillment request ID is invalid. Error code is
+fulfillment_request_invalid
+.
+The fulfillment request ID has already been rejected. Error code is
+already_rejected
+.
+post
+/fulfillment_requests/{uuid}/acknowledgement
+/v0/d
+/fulfillment_requests/{uuid}/acknowledgement
+Response samples
+400
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"already_shipped"
+,
+"error_description"
+:
+"string"
+}
+Get item cancelation status
+Returns the cancelation status of items in a fulfillment request. Use this method to check if a
+item in a fulfillment request was successfully canceled.
+This method only works if the
+Cancel items method
+was used
+to cancel the fulfillment request.
+Note:
+This only applies to orders routed to a DC or warehouse for fulfillment.
+Important:
+You cannot cancel an item after it has been shipped or rejected.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+uuid
+required
+string
+Unique ID for a fulfillment request.
+Responses
+200
+Successfully processed.
+404
+The cancelation status is not yet available for the fulfillment request.
+get
+/fulfillment_requests/{uuid}/canceled_items
+/v0/d
+/fulfillment_requests/{uuid}/canceled_items
+Response samples
+200
+Content type
+application/json
+Example
+Successfully canceled items
+Failed canceled items
+Successful and failed canceled items
+Successfully canceled items
+Copy
+Expand all
+Collapse all
+{
+"canceled_items"
+:
+[
+{
+"accepted_at"
+:
+"2018-10-17T13:57:59.349425Z"
+,
+"product_id"
+:
+"1000041"
+,
+"item_id"
+:
+"85235c11-b515-4330-9345-b923a23dc352"
+,
+"received_at"
+:
+"2018-10-17T13:57:59.296839Z"
+}
+]
+}
+Cancel items
+Marks some or all items of a fulfillment request as canceled. This immediately releases
+allocations and means that the item can no longer be fulfilled.
+To retrieve the status of the cancelation, use the
+Get item cancelation status
+.
+Note:
+This only applies to orders routed to a DC or warehouse for fulfillment.
+To cancel an item in an order that is routed to a store for fulfillment, contact the
+support team
+.
+Important:
+You cannot cancel an item
+after
+it has been shipped or rejected.
+Note:
+In case the order contains multiple items wit the same product ID, the least expensive one will be picked first. 
+If all items have the same price then a random item will be picked.
+Example:
+Order contains the following 4 items:
+Product ID: product1, Price: USD 20
+Product ID: product1, Price: USD 10
+Product ID: product2, Price: USD 10
+Product ID: product2, Price: USD 10
+When calling the canceled items endpoint with only
+product1
+, then the item priced at USD 10 will be marked as canceled first.
+When the canceled items endpoint is called again with
+product1
+, then the remaining item priced at USD 20 will be marked as canceled.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+uuid
+required
+string
+Unique ID for a fulfillment request.
+Request Body schema:
+application/json
+product_ids
+required
+Array of
+strings
+non-empty
+A list of product IDs, e.g. SKU that will be canceled.
+Responses
+201
+Successfully processed.
+400
+The request failed because the provided request is invalid and can't be converted into
+the internal NewStore representation.
+404
+The request failed because fulfillment request with provided uuid wasn't found
+409
+The request failed because one or more items were already shipped, rejected or canceled.
+post
+/fulfillment_requests/{uuid}/canceled_items
+/v0/d
+/fulfillment_requests/{uuid}/canceled_items
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"product_ids"
+:
+[
+"1000041"
+,
+"1000201"
+]
+}
+Response samples
+400
+404
+409
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"Bad payload"
+:
+{
+"value"
+:
+{
+"error_code"
+:
+"payload_conversion_failed"
+,
+"error_description"
+:
+"The provided payload failed to be converted to the NewStore model, check if the data is in the right format."
+}
+}
+,
+"Already rejected"
+:
+{
+"value"
+:
+{
+"error_code"
+:
+"already_rejected"
+,
+"error_description"
+:
+"The fulfillment request has already been rejected."
+}
+}
+}
+Get item rejection status
+Returns a list of all rejected items in a fulfillment
+request. Use this method to check if a item in a fulfillment
+request was successfully rejected.
+Note:
+This only applies to orders routed to a DC or
+  warehouse for fulfillment.
+Important:
+You cannot reject an item after it has been
+  shipped or canceled.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+uuid
+required
+string
+Unique ID for a fulfillment request.
+Responses
+200
+Successfully processed.
+404
+The rejection status is not yet available for the fulfillment request.
+get
+/fulfillment_requests/{uuid}/reject_items
+/v0/d
+/fulfillment_requests/{uuid}/reject_items
+Response samples
+200
+Content type
+application/json
+Example
+Successfully rejected items
+Failed rejected items
+Successful and failed rejected items
+Successfully rejected items
+Copy
+Expand all
+Collapse all
+{
+"rejected_items"
+:
+[
+{
+"accepted_at"
+:
+"2018-10-17T13:57:59.349425Z"
+,
+"product_id"
+:
+"1000041"
+,
+"received_at"
+:
+"2018-10-17T13:57:59.296839Z"
+,
+"rejection_reason"
+:
+"no_inventory"
+}
+]
+}
+Reject items
+Marks some or all items of a fulfillment request as not
+fulfillable. Provide a rejection reason for each item.
+Typical reasons are
+no_inventory
+to mark items as rejected
+due to missing inventory or
+cannot_fulfill
+if the DC is not
+able to fulfill the request.
+Note:
+This only applies to orders routed to a DC or
+  warehouse for fulfillment.
+To cancel a fulfillment request that is routed to a store,
+contact the
+support team
+.
+To address all products for a given fulfillment request,
+supply an empty product-id; see payload example
+Special case; with no specificity
+-- this operation will defensively fail
+with an
+invalid_item
+error if more than one object is
+supplied.
+Note:
+In case the order contains multiple items wit the same product ID, the least expensive one will be picked first. 
+If all items have the same price then a random item will be picked.
+Example:
+Order contains the following 4 items:
+Product ID: product1, Price: USD 20
+Product ID: product1, Price: USD 10
+Product ID: product2, Price: USD 10
+Product ID: product2, Price: USD 10
+When calling the reject items endpoint with only
+product1
+, then the item priced at USD 10 will be marked as rejected first.
+When the reject items endpoint is called again with
+product1
+, then the remaining item priced at USD 20 will be marked as rejected.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+uuid
+required
+string
+Unique ID for a fulfillment request.
+Request Body schema:
+application/json
+missing_items
+required
+Array of
+objects
+non-empty
+Array
+(non-empty)
+product_ids
+required
+Array of
+strings
+[ items
+>= 0 characters
+]
+A list of product identifiers of all items that can't be fulfilled
+reason
+required
+string
+(
+Rejection reason
+)
+Enum
+:
+"no_inventory"
+"cannot_fulfill"
+The reason why the products couldn't be fulfilled.
+Responses
+201
+Successfully processed.
+400
+The request failed. The possible reasons are:
+The shipment of the fulfillment request has started.
+The fulfillment request ID is invalid for this service.
+The fulfillment request ID has already been rejected.
+Items in the request have already been rejected.
+The provided product IDs do not belong to the fulfillment request.
+A mixed payload of product-ids and empty product-ids
+post
+/fulfillment_requests/{uuid}/reject_items
+/v0/d
+/fulfillment_requests/{uuid}/reject_items
+Request samples
+Payload
+Content type
+application/json
+Example
+Regular case; specified product identifiers
+Special case; with no specificity
+Regular case; specified product identifiers
+Copy
+Expand all
+Collapse all
+{
+"missing_items"
+:
+[
+{
+"product_ids"
+:
+[
+"123456"
+,
+"7890123"
+]
+,
+"reason"
+:
+"no_inventory"
+}
+,
+{
+"product_ids"
+:
+[
+"654321"
+]
+,
+"reason"
+:
+"cannot_fulfill"
+}
+]
+}
+Response samples
+400
+Content type
+application/json
+Example
+Already rejected
+Already shipped
+Item already shipped
+Item already rejected
+Item already canceled
+Invalid item
+Fulfillment request invalid
+Reject items request conversion_failed
+Already rejected
+Copy
+{
+"error_code"
+:
+"already_rejected"
+,
+"error_description"
+:
+"The fulfillment request has already been rejected."
+}
+Get rejection status
+Deprecated
+Note:
+This method is deprecated. Use the
+Get item rejection status method
+instead.
+Returns the rejection status of a fulfillment request. Use it to check whether a request has been successfully
+processed as rejected or not.
+This method only works if the
+Reject request method
+was used
+to reject the fulfillment request.
+Important:
+You cannot reject a request after one or more of its items have been shipped.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+uuid
+required
+string
+Unique ID for a fulfillment request.
+Responses
+200
+Successfully processed.
+404
+The rejection status is not yet available for the fulfillment request.
+get
+/fulfillment_requests/{uuid}/rejection
+/v0/d
+/fulfillment_requests/{uuid}/rejection
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"rejection_reason"
+:
+"no_inventory"
+,
+"missing_product_ids"
+:
+[
+"string"
+]
+,
+"error_code"
+:
+"string"
+,
+"received_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"accepted_at"
+:
+"2019-08-24T14:15:22Z"
+}
+Reject fulfillment request
+Deprecated
+Note:
+This method is deprecated. Use the
+Reject items method
+instead.
+Rejects a fulfillment request and all the items it contains. Specify the rejection reason (
+rejection_reason
+):
+cannot_fulfill
+: Marks all items in the fulfillment request as rejected due to an inability to fulfill the request.
+In this case, the
+missing_items
+field in the payload has to be empty.
+no_inventory
+: Marks specific items in the fulfillment request as rejected due to missing inventory.
+In this case, the
+missing_items
+field has to be set with the IDs of the items that cannot be fulfilled.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+uuid
+required
+string
+Unique ID for a fulfillment request.
+Request Body schema:
+application/json
+rejection_reason
+required
+string
+Enum
+:
+"no_inventory"
+"cannot_fulfill"
+missing_product_ids
+Array of
+strings
+List of identifiers of the items concerned by the rejection request.
+Responses
+201
+Successfully processed. se the
+Reject items method
+to
+check whether the rejection has been successfully processed.
+400
+The request is invalid. The possible reasons are:
+The shipment of the fulfillment request has started.
+The fulfillment request ID is invalid.
+The fulfillment request ID has already been rejected.
+Items in the request have already been rejected.
+The format of the rejection reason is invalid.
+The provided item ID does not belong to the fulfillment request.
+post
+/fulfillment_requests/{uuid}/rejection
+/v0/d
+/fulfillment_requests/{uuid}/rejection
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"rejection_reason"
+:
+"no_inventory"
+,
+"missing_product_ids"
+:
+[
+"string"
+]
+}
+Response samples
+400
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"already_shipped"
+,
+"error_description"
+:
+"string"
+}
+Resend fulfillment request
+Resends the specified fulfillment request, regardless of its shipment status (
+acknowledged
+,
+shipped
+or
+rejected
+).
+Use this method if NewStore was unable to send the fulfillment request.
+Note:
+This only applies to orders routed to a DC or warehouse for fulfillment.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+uuid
+required
+string
+Unique ID for a fulfillment request.
+Responses
+200
+Successfully processed.
+404
+A fulfillment request with the given ID was not found.
+post
+/fulfillment_requests/{uuid}/resend
+/v0/d
+/fulfillment_requests/{uuid}/resend
+Get shipping status
+Retrieves the shipment status of a fulfillment request. Use it to check if the shipment of a fulfillment request has been
+successfully processed or not.
+Note:
+This only applies to orders routed to a DC or warehouse for fulfillment.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+uuid
+required
+string
+Unique ID for a fulfillment request.
+Responses
+200
+Successfully processed.
+404
+The shipment status is not yet available for the fulfillment request.
+get
+/fulfillment_requests/{uuid}/shipment
+/v0/d
+/fulfillment_requests/{uuid}/shipment
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"failed_shipments"
+:
+[
+{
+"error_code"
+:
+"shipment_already_started"
+,
+"carrier"
+:
+"FEDEX"
+,
+"carrier_service_level"
+:
+"FEDEX_GROUND"
+,
+"product_id"
+:
+"1000041"
+,
+"received_at"
+:
+"2018-10-17T14:02:02.814707Z"
+,
+"tracking_code"
+:
+"1234567890"
+}
+]
+,
+"successful_shipments"
+:
+[
+{
+"accepted_at"
+:
+"2018-10-17T14:02:02.872814Z"
+,
+"carrier"
+:
+"FEDEX"
+,
+"carrier_service_level"
+:
+"FEDEX_GROUND"
+,
+"product_id"
+:
+"1000041"
+,
+"received_at"
+:
+"2018-10-17T14:02:02.814707Z"
+,
+"tracking_code"
+:
+"1234567890"
+,
+"tracking_url"
+:
+"
+https://www.fedex.com/fedextrack/?tracknumbers=1234567890
+"
+}
+]
+}
+Update shipping status
+Marks some or all items of a fulfillment request as shipped.
+Note:
+This only applies to orders routed to a DC or warehouse for fulfillment.
+To mark an item as shipped, which was part of an order that is routed to a store for fulfillment,
+contact the
+support team
+.
+Note:
+In case the order contains multiple items wit the same product ID, the most expensive one will be picked first. 
+If all items have the same price then a random item will be picked.
+Example:
+Order contains the following 4 items:
+Product ID: product1, Price: USD 20
+Product ID: product1, Price: USD 10
+Product ID: product2, Price: USD 10
+Product ID: product2, Price: USD 10
+When calling the shipment endpoint with only
+product1
+, then the item priced at USD 20 will be marked as shipped first.
+When the shipment endpoint is called again with
+product1
+, then the remaining item priced at USD 10 will be marked as shipped.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+uuid
+required
+string
+Unique ID for a fulfillment request.
+Request Body schema:
+application/json
+line_items
+required
+Array of
+objects
+Array
+product_ids
+required
+Array of
+strings
+shipment
+required
+object
+Responses
+200
+The shipment notification was received successfully, but is a duplicate. The notification was already received and processed before.
+Use the
+Get shipping status
+to check if
+the shipment notification has been successfully processed.
+201
+The shipment notification was received successfully and will be processed.
+Use the
+Get shipping status
+to check if
+the shipment notification was successfully processed.
+400
+The request is invalid. The possible reasons are:
+The fulfillment request ID has already been rejected.
+The fulfillment request ID is invalid.
+The shipment information for some products conflicts with the existing shipment information. For
+example
+item1
+is marked as
+shipped
+with carrier 'Foo' in the request, but has already been
+posted with carrier
+Bar
+in an earlier request. In case the order contains multiple items with the same product id and not all items are shipped yet, the request can be tried again.
+The format of the shipment information is invalid.
+The provided item ID does not belong to the fulfillment request.
+post
+/fulfillment_requests/{uuid}/shipment
+/v0/d
+/fulfillment_requests/{uuid}/shipment
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"line_items"
+:
+[
+{
+"product_ids"
+:
+[
+"1000001"
+,
+"1000061"
+]
+,
+"shipment"
+:
+{
+"tracking_code"
+:
+"1234"
+,
+"tracking_url"
+:
+"
+https://www.fedex.com/fedextrack/?tracknumbers=1234
+"
+,
+"carrier"
+:
+"FEDEX"
+,
+"carrier_service_level"
+:
+"FEDEX_GROUND"
+}
+}
+]
+}
+Response samples
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"error_code"
+:
+"already_rejected"
+,
+"error_description"
+:
+"string"
+,
+"conflicting_items"
+:
+[
+"string"
+]
+}
+Previous
+Customer Profile Updates API
+Next
+Fulfillment Request API
+Copyright © 2025 NewStore, Inc.

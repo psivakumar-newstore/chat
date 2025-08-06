@@ -1,0 +1,550 @@
+openapi: 3.0.0
+info:
+  title: Promotions configuration API
+  description: >
+    Use this API to manage configurations related to
+
+    [promotions](/docs/nomapp/nom-discounts-coupons.html#managing-automatic-promotions)
+    set up
+
+    for your business in the NewStore platform.
+
+
+    Currently, you can use this API to configure a list of products that will be
+    excluded from
+
+    promotions globally across your business. For more information, see the
+
+    [configuration
+    guide](/docs/development/configuration/config-discount-exclusions.html#configuring-a-list-of-global-discount-exclusions).
+  contact:
+    email: team-checkout@newstore.com
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: The local development server
+  - url: https://dodici.x.newstore.net/v1/c
+    description: The sandbox server
+tags:
+  - name: Promotions configuration
+paths:
+  /config/promotion:
+    parameters:
+      - name: request_id
+        in: header
+        schema:
+          type: string
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+    get:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Promotions configuration
+      summary: Get promotions configuration
+      description: >
+        Retrieves the current configuration for promotions set up for your
+        business.
+      operationId: getConfig
+      responses:
+        '200':
+          description: Current configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      not_discountable_products:
+                        type: array
+                        items:
+                          type: string
+                          description: List of not discountable Product IDs.
+                    title: Promotion Tenant Configuration
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+    patch:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Promotions configuration
+      summary: Update promotions configuration
+      description: >
+        Updates the current configuration for promotions set up for your
+        business.
+      operationId: updateConfig
+      parameters:
+        - name: version
+          in: query
+          schema:
+            type: string
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            schema:
+              description: Tenant configuration object.
+              type: object
+              properties:
+                not_discountable_products:
+                  type: array
+                  items:
+                    type: string
+                    description: List of not discountable Product IDs.
+              title: Promotion Tenant Configuration
+      responses:
+        '200':
+          description: The updated configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      not_discountable_products:
+                        type: array
+                        items:
+                          type: string
+                          description: List of not discountable Product IDs.
+                    title: Promotion Tenant Configuration
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: invalid_request
+                messages:
+                  - Wrong datetime format
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '409':
+          description: The version key is out of date, configuration was updated
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: conflict_version
+                messages:
+                  - The version is out of date
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+    post:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Promotions configuration
+      summary: Replace promotions configuration
+      description: >
+        Replaces or creates a new configuration for promotions set up for your
+        business.
+      operationId: replaceConfig
+      parameters:
+        - name: version
+          in: query
+          schema:
+            type: string
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            schema:
+              description: Tenant configuration object.
+              type: object
+              properties:
+                not_discountable_products:
+                  type: array
+                  items:
+                    type: string
+                    description: List of not discountable Product IDs.
+              title: Promotion Tenant Configuration
+      responses:
+        '200':
+          description: The updated configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      not_discountable_products:
+                        type: array
+                        items:
+                          type: string
+                          description: List of not discountable Product IDs.
+                    title: Promotion Tenant Configuration
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: invalid_request
+                messages:
+                  - Wrong datetime format
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '409':
+          description: The version key is out of date, configuration was updated
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: conflict_version
+                messages:
+                  - The version is out of date
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+components:
+  schemas:
+    UpdateRequest:
+      description: Tenant configuration object.
+      type: object
+      properties:
+        not_discountable_products:
+          type: array
+          items:
+            type: string
+            description: List of not discountable Product IDs.
+      title: Promotion Tenant Configuration
+    ConfigResponse:
+      description: Update configuration response
+      type: object
+      properties:
+        value:
+          description: Tenant configuration object.
+          type: object
+          properties:
+            not_discountable_products:
+              type: array
+              items:
+                type: string
+                description: List of not discountable Product IDs.
+          title: Promotion Tenant Configuration
+        version:
+          description: Current Configuration version
+          type: string
+        updated_at:
+          description: RFC3339 date time format with timezone
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+          example: '2021-12-31T23:59:59Z'
+        updated_by:
+          description: Internal User ID
+          type: string
+    Error:
+      description: Error message response
+      properties:
+        error_code:
+          description: |-
+            Error code value. Possible values:
+            * not_found: tenant not found, or tenant key in header is blank;
+            * internal: internal server error;
+            * invalid_request: invalid request;
+            * validation_failed: validation of request failed;
+          type: string
+        messages:
+          type: array
+          items:
+            type: string
+    datetime_tz:
+      description: RFC3339 date time format with timezone
+      type: string
+      pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+      example: '2021-12-31T23:59:59Z'
+    Config:
+      description: Tenant configuration object.
+      type: object
+      properties:
+        not_discountable_products:
+          type: array
+          items:
+            type: string
+            description: List of not discountable Product IDs.
+      title: Promotion Tenant Configuration
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+x-annotation-crossOriginAllowed: true

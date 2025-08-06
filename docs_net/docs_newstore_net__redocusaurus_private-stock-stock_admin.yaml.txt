@@ -1,0 +1,516 @@
+openapi: 3.0.0
+info:
+  title: Stock Admin API
+  version: 0.1.0
+  x-audience: internal-company
+  x-api-id: stock-admin-062023
+  description: >
+    This internal stock API provides access to
+
+    [availability](https://docs.newstore.com/docs/glossary#available-to-promise)
+    values in the platform.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /stock/unallocated_items:
+    post:
+      summary: Get unallocated items
+      operationId: createUnallocatedItems
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: Get unallocated items request
+              description: Use this API to fetch unallocated items, filtered by ATPKeys.
+              required:
+                - atp_keys
+              properties:
+                atp_keys:
+                  type: array
+                  minItems: 1
+                  maxItems: 2000
+                  items:
+                    type: object
+                    description: >-
+                      ATP key is the combination of product id and fulfillment
+                      node id.
+                    required:
+                      - product_id
+                      - fulfillment_node_id
+                    properties:
+                      product_id:
+                        type: string
+                        description: The id of the product.
+                        minLength: 1
+                      fulfillment_node_id:
+                        type: string
+                        description: The id of the fulfillment node.
+                        minLength: 1
+            example:
+              atp_keys:
+                - product_id: 1000012
+                  fulfillment_node_id: US01
+        description: A list of ATP keys
+      responses:
+        '200':
+          description: Unallocated items response.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: List of unallocated items count
+                description: >-
+                  Response of valid request for fetching unallocated items
+                  count, filtered by product IDs or ATPKeys.
+                required:
+                  - items
+                properties:
+                  items:
+                    type: array
+                    maxItems: 2000
+                    items:
+                      type: object
+                      required:
+                        - product_id
+                        - fulfillment_node_id
+                        - count
+                      properties:
+                        product_id:
+                          type: string
+                          description: The id of the product for this unallocated count.
+                        fulfillment_node_id:
+                          type: string
+                          description: >-
+                            The id of the fulfillment node for this unallocated
+                            count.
+                        count:
+                          type: number
+                          description: The number of unallocated items for this atp key.
+                          minimum: 0
+                          multipleOf: 1
+              example:
+                items:
+                  - product_id: 1000012
+                    fulfillment_node_id: US01
+                    count: 10
+                  - product_id: 1000012
+                    fulfillment_node_id: US02
+                    count: 12
+        '400':
+          description: Something was wrong with the request
+        '500':
+          description: An internal error occurred.
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Human readable error message
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the count for unallocated items for a specified set of ``ATP
+        keys``, where
+
+        ATP keys are defined as a combination of the product ID and fulfillment
+        location.
+
+
+        The number of unallocated items returned in the response payload is the
+        number of
+
+        items that are sellable on hand, after removing the number of safety
+        stock items and
+
+        allocations.
+
+
+        **Note**: This API only supports requesting for 2000 items. If more
+        items need to be requested,
+
+        use multiple requests.
+    get:
+      summary: Get unallocated items for a product
+      operationId: listUnallocatedItemsByProductId
+      responses:
+        '200':
+          description: List unallocated items.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: List of unallocated items count
+                description: >-
+                  Response of valid request for fetching unallocated items
+                  count, filtered by product IDs or ATPKeys.
+                required:
+                  - items
+                properties:
+                  items:
+                    type: array
+                    maxItems: 2000
+                    items:
+                      type: object
+                      required:
+                        - product_id
+                        - fulfillment_node_id
+                        - count
+                      properties:
+                        product_id:
+                          type: string
+                          description: The id of the product for this unallocated count.
+                        fulfillment_node_id:
+                          type: string
+                          description: >-
+                            The id of the fulfillment node for this unallocated
+                            count.
+                        count:
+                          type: number
+                          description: The number of unallocated items for this atp key.
+                          minimum: 0
+                          multipleOf: 1
+              example:
+                items:
+                  - product_id: 1000012
+                    fulfillment_node_id: US01
+                    count: 10
+                  - product_id: 1000012
+                    fulfillment_node_id: US02
+                    count: 12
+        '400':
+          description: Something was wrong with the request
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Product ID is empty
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        '500':
+          description: An internal error occurred.
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Human readable error message
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the count for unallocated items for the specified product ID.
+        In this request,
+
+        the ATP keys are defined as a combination of the same product ID and
+
+        different fulfillment locations.
+
+
+        The number of unallocated items returned in the response payload is the
+        number of
+
+        items that are sellable on hand, after removing the number of safety
+        stock items and
+
+        allocations.
+
+
+        **Note**: This API only supports requesting for 2000 items. If more
+        items need to be requested,
+
+        use multiple requests.
+      parameters:
+        - in: query
+          name: product_id
+          schema:
+            type: string
+          description: The product ID of the item.
+  /stock/products/availability:
+    post:
+      summary: Get ATP by product ids
+      operationId: listProductAvailability
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: Get availabilities for products request.
+              description: >-
+                Use this API to fetch ATP information, filtered by products. The
+                response will be paginated, with a max page size of 2000 items
+              required:
+                - products
+                - page_number
+                - page_size
+              properties:
+                products:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    description: Products ID
+                page_number:
+                  type: number
+                  description: >-
+                    The page number of paginated response. The page number
+                    starts at 1
+                  minimum: 1
+                  multipleOf: 1
+                page_size:
+                  type: number
+                  description: >-
+                    The max size of the paginated response. This value should
+                    not be more than 2000.
+                  maximum: 2000
+                  minimum: 1
+                  multipleOf: 1
+            example:
+              products:
+                - '1000001'
+                - '1000002'
+                - '1000003'
+              page_number: 1
+              page_size: 500
+        description: A list of ATP keys
+      responses:
+        '200':
+          description: List of ATP keys and ATP.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Get availabilities by products request.
+                description: >-
+                  Paginated response of valid request for fetching
+                  availabilities by products.
+                required:
+                  - items
+                  - total_count
+                  - has_more
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - product_id
+                        - fulfillment_node_id
+                        - atp
+                      properties:
+                        product_id:
+                          type: string
+                          description: The id of the product for this unallocated count.
+                        fulfillment_node_id:
+                          type: string
+                          description: >-
+                            The id of the fulfillment node for this unallocated
+                            count.
+                        atp:
+                          type: number
+                          description: The number of items available to promise.
+                          minimum: 0
+                          multipleOf: 1
+                  has_more:
+                    type: boolean
+                    description: >-
+                      Boolean value which indicates if the result has more pages
+                      to be fetched
+              example:
+                items:
+                  - product_id: 1000012
+                    fulfillment_node_id: US01
+                    atp: 35
+                  - product_id: 1000012
+                    fulfillment_node_id: DC01
+                    atp: 100
+                has_more: false
+        '400':
+          description: Something was wrong with the request
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Human readable error for bad or malformed request
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        '500':
+          description: An internal error occurred.
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Human readable error message
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the atp for the specified product IDs.
+
+        **Note**: This API only supports requesting for 2000 items. If more
+        items need to be requested fetch the next
+
+        page. The boolean ``has_more`` and the number ``total_count`` indicates
+        if there are more pages to be fetched.
+  /fulfillment_node/{fulfillment_node_id}/update_store_mapping:
+    parameters:
+      - name: fulfillment_node_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The identifier of the fulfillment node.
+    patch:
+      summary: Update the store mapping.
+      operationId: updateStoreMapping
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - store_id
+              properties:
+                store_id:
+                  type: string
+                  description: >-
+                    New store id for the provided fulfillment node. If value is
+                    an empty string the store id will be removed from the
+                    provided fulfillment node.
+            examples:
+              Update store id to new value:
+                value:
+                  store_id: 06d2a32a-b251-4751-83c6-81517a46e79f
+              Remove store id:
+                value:
+                  store_id: ''
+      responses:
+        '204':
+          description: The store id mapping for the fulfillment node was updated.
+        '400':
+          description: Something was wrong with the request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    description: List of error messages
+                    type: array
+                    items:
+                      type: string
+                  request_id:
+                    type: string
+              example:
+                messages:
+                  - 'store_id: store_id is required'
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        '404':
+          description: The provided fulfillment node id does not exist.
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Fulfillment node US01 not found
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        '500':
+          description: An internal error occurred.
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Human readable error message
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        default:
+          description: Unexpected Error
+      description: >
+        Updates the store mapping for the provided fulfillment node in the
+        NewStore platform. 
+
+        This operation will not affect any ATP values in the platform.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

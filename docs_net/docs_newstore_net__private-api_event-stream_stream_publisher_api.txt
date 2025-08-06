@@ -1,0 +1,1291 @@
+Event stream configuration API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Event Gateway API
+Event stream configuration API
+Event-Stream Webhooks
+Webhook API
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+Integration registration
+get
+List registered integrations
+post
+Register new integration
+patch
+Update the integration
+get
+Get integration details
+del
+Delete the integration
+Integration operation
+post
+Start the integration
+post
+Stop the integration
+get
+Get integration log
+Rejected events
+get
+List rejected events
+get
+Get rejected event
+del
+Delete rejected event
+post
+Retry rejected event
+API docs by Redocly
+Event stream configuration API
+(
+1.0
+)
+Download OpenAPI specification
+:
+Download
+Integration registration
+List registered integrations
+Lists all configured integrations.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Information about all configured integrations.
+500
+Internal server error.
+get
+/eventstream
+/api/v1/org/integrations
+/eventstream
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"integrations"
+:
+[
+{
+"id"
+:
+"erp-netsuite-integration-001"
+,
+"status"
+:
+"running"
+,
+"integration_type"
+:
+"permanent"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+https://netsuite.example.com/one/events
+"
+,
+"api_key"
+:
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+}
+,
+{
+"id"
+:
+"erp-netsuite-integration-002"
+,
+"status"
+:
+"running"
+,
+"integration_type"
+:
+"permanent"
+,
+"starts_at"
+:
+"2019-01-17T12:00:00.000Z"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+https://netsuite.example.com/two/events
+"
+,
+"api_key"
+:
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+}
+,
+{
+"id"
+:
+"sap-integration-001"
+,
+"status"
+:
+"stopped"
+,
+"integration_type"
+:
+"temporary"
+,
+"starts_at"
+:
+"2019-01-17T12:00:00.000Z"
+,
+"ends_at"
+:
+"2019-02-21T23:59:00.000Z"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+https://sap01.example.com/two/events
+"
+,
+"api_key"
+:
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+}
+,
+{
+"id"
+:
+"sap-s3-integration-002"
+,
+"status"
+:
+"stopped"
+,
+"integration_type"
+:
+"permanent"
+,
+"starts_at"
+:
+"2019-01-17T12:00:00.000Z"
+,
+"s3_parameters"
+:
+{
+"aws_access_key_id"
+:
+"some_s3_access_key_id"
+,
+"aws_secret_access_key"
+:
+"some_s3_secret_key"
+,
+"aws_region"
+:
+"us-east-1"
+,
+"bucket"
+:
+"sap_export"
+,
+"key_prefix"
+:
+"newstore_integration_002"
+}
+}
+]
+}
+Register new integration
+Registers a new integration. You can specify how the events will be sent to you:
+via the
+webhook
+. The events are provided in real time.
+via file upload to the S3 bucket of your choice. An upload typically occurs every 5 minutes.
+By default, you will receive all the events that NewStore can provide.
+To only receive specific events, use the
+filter_conditions
+property
+to set filters on entities and/or events. To see all entities and
+events, see the
+entity model
+.
+When you call this method, the integration starts automatically, you do not need to call the
+Start
+integration
+method. At most 10 integrations can be registered.
+You can also use this method to replay events by date. To do this, set a start and end date
+when you call this method. The use of an end date registers a
+temporary
+integration that will receive
+all events that were emitted between the start and end date. When the last event of the end date is emitted,
+the integration is automatically stopped.
+In case of webhook integration, if you use the
+api_key
+property then every call to the URL set in the
+callback_url
+property includes the line
+Authorization: Bearer <api_key>
+in its header.
+In case of S3 integration, the events are stored in multiple files with the following name:
+s3://{bucket}/{key_prefix}/{tenant}/{timestamp}-data-{random_string}.export
+, where:
+bucket
+and
+key_prefix
+are the parameters you specified in
+s3_parameters
+.
+timestamp
+is the time, when the file was created on the server, in epoch millis.
+Every file contains multiple JSON objects, one per event, delimited by a newline character.
+The events are described with the same schema as in the
+webhook
+.
+A new file is started every 5 minutes, or when the size of the current file reaches 50 MiB, whichever happens first.
+Note:
+The start and end date as well as integration type can not be modified after creation.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+One of
+object
+object
+callback_parameters
+required
+object
+(
+Webhook Parameters
+)
+Configuration parameters for webhook's callback.
+id
+required
+string
+[ 1 .. 50 ] characters
+^[a-z0-9-]+$
+The identifier for this integration. It must be a unique value consisting of lowercase alphabetic characters, numbers and dashes. An example would be erp-1.
+integration_type
+required
+string
+Enum
+:
+"temporary"
+"permanent"
+Type of the integration. Temporary integrations can not be updated and will be deleted automatically once the last event has been sent.
+starts_at
+string
+<
+date-time
+>
+UTC timestamp from which events are being emitted. Must not be in the future. Optional for permanent integrations and mandatory for temporary integrations.
+ends_at
+string
+<
+date-time
+>
+UTC timestamp until which events are being emitted. Not available for permanent integrations. Mandatory for temporary integrations.
+filter_conditions
+object or object
+Configuration parameters for event- and entity-type filtering.
+Responses
+200
+The integration was registered successfully.
+400
+Bad request. Also returned when the maximum number of integrations is reached.
+409
+Conflict. Another integration with the specified ID already exists.
+500
+Internal server error.
+post
+/eventstream
+/api/v1/org/integrations
+/eventstream
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"webhook"
+:
+{
+"id"
+:
+"erp-netsuite-integration-002"
+,
+"integration_type"
+:
+"permanent"
+,
+"starts_at"
+:
+"2019-01-17T12:00:00.000Z"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+https://sap01.example.com/two/events
+"
+,
+"api_key"
+:
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+}
+,
+"aws"
+:
+{
+"id"
+:
+"s3-integration-01"
+,
+"integration_type"
+:
+"temporary"
+,
+"s3_parameters"
+:
+{
+"aws_access_key_id"
+:
+"EXAMPLEACCESSKEYID1"
+,
+"aws_secret_access_key"
+:
+"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+,
+"aws_region"
+:
+"us-west-2"
+,
+"bucket"
+:
+"company_bucket"
+,
+"key_prefix"
+:
+"mycompany-integration-1"
+}
+}
+,
+"webhookEntityAndEventFilters"
+:
+{
+"id"
+:
+"erp-netsuite-integration-002"
+,
+"integration_type"
+:
+"permanent"
+,
+"starts_at"
+:
+"2019-01-17T12:00:00.000Z"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+https://sap01.example.com/two/events
+"
+,
+"api_key"
+:
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+,
+"filter_conditions"
+:
+{
+"event_filter"
+:
+[
+"order.created"
+,
+"refund_request.issued"
+]
+,
+"entity_filter"
+:
+[
+"fulfillment_request"
+,
+"return"
+]
+}
+}
+,
+"webhookEntityFilters"
+:
+{
+"id"
+:
+"erp-netsuite-integration-002"
+,
+"integration_type"
+:
+"permanent"
+,
+"starts_at"
+:
+"2019-01-17T12:00:00.000Z"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+https://sap01.example.com/two/events
+"
+,
+"api_key"
+:
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+,
+"filter_conditions"
+:
+{
+"entity_filter"
+:
+[
+"fulfillment_request"
+,
+"return"
+]
+}
+}
+,
+"webhookEventFilters"
+:
+{
+"id"
+:
+"erp-netsuite-integration-002"
+,
+"integration_type"
+:
+"permanent"
+,
+"starts_at"
+:
+"2019-01-17T12:00:00.000Z"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+https://sap01.example.com/two/events
+"
+,
+"api_key"
+:
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+,
+"filter_conditions"
+:
+{
+"event_filter"
+:
+[
+"order.created"
+,
+"refund_request.issued"
+]
+}
+}
+}
+Response samples
+200
+400
+409
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"sap-integration-001"
+,
+"status"
+:
+"running"
+,
+"integration_type"
+:
+"temporary"
+,
+"starts_at"
+:
+"2019-01-17T12:00:00.000Z"
+,
+"ends_at"
+:
+"2019-02-21T23:59:00.000Z"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+https://sap01.example.com/two/events
+"
+,
+"api_key"
+:
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+}
+Update the integration
+Updates the specified integration and returns the updated state.
+Important:
+Stop the integration before you update it.
+The typical update workflow is:
+Stop the integration using the
+Stop integration
+method.
+Poll the
+Get integration
+method until
+status
+is
+stopped
+.
+Update the integration using the
+Update integration
+method.
+Start the integration using the
+Start integration
+method.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+integration_id
+required
+string
+Unique identifier of the integration.
+Request Body schema:
+application/json
+callback_parameters
+object
+(
+Webhook Parameters
+)
+Configuration parameters for webhook's callback.
+s3_parameters
+object
+(
+S3 Parameters
+)
+Configuration parameters for upload to amazon s3.
+filter_conditions
+object or object
+Configuration parameters for event- and entity-type filtering.
+Responses
+200
+The integration was updated.
+400
+Bad request.
+404
+Integration with given ID was not found.
+500
+Internal server error.
+patch
+/eventstream/{integration_id}
+/api/v1/org/integrations
+/eventstream/{integration_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+https://integrator-api.example.com/v0/events
+"
+,
+"api_key"
+:
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+}
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"sap-integration-001"
+,
+"status"
+:
+"running"
+,
+"integration_type"
+:
+"temporary"
+,
+"starts_at"
+:
+"2019-01-17T12:00:00.000Z"
+,
+"ends_at"
+:
+"2019-02-21T23:59:00.000Z"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+https://sap01.example.com/two/events
+"
+,
+"api_key"
+:
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+}
+Get integration details
+Returns details about an existing integration.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+integration_id
+required
+string
+Unique identifier of the integration.
+Responses
+200
+Get details about the requested integration.
+404
+Integration with given ID was not found.
+500
+Internal server error.
+get
+/eventstream/{integration_id}
+/api/v1/org/integrations
+/eventstream/{integration_id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"sap-integration-001"
+,
+"status"
+:
+"running"
+,
+"integration_type"
+:
+"temporary"
+,
+"starts_at"
+:
+"2019-01-17T12:00:00.000Z"
+,
+"ends_at"
+:
+"2019-02-21T23:59:00.000Z"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+https://sap01.example.com/two/events
+"
+,
+"api_key"
+:
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+}
+Delete the integration
+Deletes an existing integration.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+integration_id
+required
+string
+Unique identifier of the integration.
+Responses
+200
+Integration was successfully deleted.
+404
+Integration with given ID was not found.
+500
+Internal server error.
+delete
+/eventstream/{integration_id}
+/api/v1/org/integrations
+/eventstream/{integration_id}
+Response samples
+404
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Integration operation
+Start the integration
+Starts the specified integration. NewStore Omnichannel Cloud starts emitting events
+to the receiving URL.
+You can check the status of the integration with the
+Get integration
+method.
+Note:
+When an integration was stopped, it must be restarted within 30 days in order to receive
+all events which occurred while it was stopped. If the integration gets restarted more than 30 days after
+being stopped, it will only receive events which occurred after the point in time when it was restarted.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+integration_id
+required
+string
+Unique identifier of the integration.
+Responses
+200
+The integration was started.
+404
+Integration with given ID was not found.
+500
+Internal server error.
+post
+/eventstream/{integration_id}/_start
+/api/v1/org/integrations
+/eventstream/{integration_id}/_start
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"webhook-integration-1"
+,
+"status"
+:
+"running"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+http://0.0.0.0:12345/eventSuccessful
+"
+}
+,
+"integration_type"
+:
+"permanent"
+,
+"starts_at"
+:
+"2019-07-07T00:00:00Z"
+}
+Stop the integration
+Stops the specified integration. No events are emitted once the integration is stopped.
+You can check the status of the integration with the
+Get integration
+method.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+integration_id
+required
+string
+Unique identifier of the integration.
+Responses
+200
+The integration was stopped.
+404
+Integration with given ID was not found.
+500
+Internal server error.
+post
+/eventstream/{integration_id}/_stop
+/api/v1/org/integrations
+/eventstream/{integration_id}/_stop
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"webhook-integration-1"
+,
+"status"
+:
+"stopped"
+,
+"callback_parameters"
+:
+{
+"callback_url"
+:
+"
+http://0.0.0.0:12345/eventSuccessful
+"
+}
+,
+"integration_type"
+:
+"permanent"
+,
+"starts_at"
+:
+"2019-07-07T00:00:00Z"
+}
+Get integration log
+Returns the last 50 integration log entries.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+integration_id
+required
+string
+Unique identifier of the integration.
+Responses
+200
+Lists the last 50 log entries of the integration.
+404
+Integration with given ID was not found.
+500
+Internal server error.
+get
+/eventstream/{integration_id}/logs
+/api/v1/org/integrations
+/eventstream/{integration_id}/logs
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"entries"
+:
+[
+{
+"action"
+:
+"integration_stopped"
+,
+"reason"
+:
+"Stopped via API."
+,
+"created_at"
+:
+"2019-09-13T08:04:00.000Z"
+}
+,
+{
+"action"
+:
+"retry_triggered"
+,
+"reason"
+:
+"Request to URL http://example.com/webhook failed. Reason: too many requests (HTTP status code 429). Payload: <payload details>"
+,
+"created_at"
+:
+"2019-09-12T15:21:00.000Z"
+}
+,
+{
+"action"
+:
+"retry_triggered"
+,
+"reason"
+:
+"Request to URL http://example.com/webhook failed. Reason: too many requests (HTTP status code 429). Payload: <payload details>"
+,
+"created_at"
+:
+"2019-09-12T15:20:00.000Z"
+}
+,
+{
+"action"
+:
+"integration_started"
+,
+"reason"
+:
+"Started via API."
+,
+"created_at"
+:
+"2019-09-12T12:00:00.000Z"
+}
+]
+}
+Rejected events
+List rejected events
+Lists the events that were rejected by the integration (HTTP status code 400).
+Up to 30 rejected events are stored. To delete some events, use the
+Delete rejected event method
+.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+integration_id
+required
+string
+Unique identifier of the integration.
+Responses
+200
+Lists all events which have been rejected by the integration. Integrations reject events by sending 400 as response.
+404
+Integrations with given ID was not found.
+500
+Internal server error.
+get
+/eventstream/{integration_id}/rejected_events
+/api/v1/org/integrations
+/eventstream/{integration_id}/rejected_events
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"rejected_events"
+:
+[
+{
+"created_at"
+:
+"2019-09-13T08:04:00.000Z"
+,
+"id"
+:
+"1a8a5052-8741-4daf-982e-e0a12990335a"
+}
+,
+{
+"created_at"
+:
+"2019-09-13T08:01:00.000Z"
+,
+"id"
+:
+"045cb397-9dca-4305-81e5-4ad0b6ad242c"
+}
+,
+{
+"created_at"
+:
+"2019-09-13T06:52:00.000Z"
+,
+"id"
+:
+"c35e7a43-cad2-4f2a-8c54-ad1328373b41"
+}
+]
+}
+Get rejected event
+Get the payload of the rejected event.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+event_id
+required
+string
+Unique identifier of the rejected event.
+integration_id
+required
+string
+Unique identifier of the integration.
+Responses
+200
+The payload of the rejected event.
+404
+Rejected event or integration with given ID was not found.
+500
+Internal server error.
+get
+/eventstream/{integration_id}/rejected_events/{event_id}
+/api/v1/org/integrations
+/eventstream/{integration_id}/rejected_events/{event_id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"tenant"
+:
+"businessname"
+,
+"name"
+:
+"order.items_cancelled"
+,
+"published_at"
+:
+"2010-01-01T12:00:00.000Z"
+,
+"payload"
+:
+{
+"id"
+:
+"1431b891-c056-4f80-9d34-06479b383417"
+,
+"items"
+:
+[
+{
+"id"
+:
+"8c2a657e-e8c7-4f1b-b6d5-ab27d2ec87a1"
+,
+"product_id"
+:
+"ASDF1000"
+,
+"fulfillment_location_id"
+:
+"US01"
+}
+,
+{
+"id"
+:
+"9c027c6f-2918-457e-9051-0c6a349701df"
+,
+"product_id"
+:
+"ASDF1001"
+,
+"fulfillment_location_id"
+:
+"US01"
+}
+]
+}
+}
+Delete rejected event
+Deletes the rejected event permanently. NewStore stores 30 rejected events so we recommend that you
+delete the rejected events that you have handled.
+To list all the rejected events, use the
+List rejected events method
+.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+event_id
+required
+string
+Unique identifier of the rejected event.
+integration_id
+required
+string
+Unique identifier of the integration.
+Responses
+200
+Rejected event was successfully deleted.
+404
+Rejected event or integration with given ID was not found.
+500
+Internal server error.
+delete
+/eventstream/{integration_id}/rejected_events/{event_id}
+/api/v1/org/integrations
+/eventstream/{integration_id}/rejected_events/{event_id}
+Response samples
+404
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Retry rejected event
+Sends the rejected event to the defined endpoint of the integration again.
+In case the integration responded with a 200 response code, the rejected event will be automatically
+removed from the rejected event list.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+event_id
+required
+string
+Unique identifier of the rejected event.
+integration_id
+required
+string
+Unique identifier of the integration.
+Responses
+200
+The rejected event was successfully delivered to the integration.
+404
+Rejected event or integration with given ID was not found.
+500
+Internal server error.
+502
+The integration had a problem processing the rejected even.
+post
+/eventstream/{integration_id}/rejected_events/{event_id}/_retry
+/api/v1/org/integrations
+/eventstream/{integration_id}/rejected_events/{event_id}/_retry
+Response samples
+404
+500
+502
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Previous
+Event Gateway API
+Next
+Event-Stream Webhooks
+Copyright © 2025 NewStore, Inc.

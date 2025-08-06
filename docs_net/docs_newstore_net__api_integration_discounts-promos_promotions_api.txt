@@ -1,0 +1,1688 @@
+Automatic Promotions | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Automatic Promotions
+Promotions Configuration
+Coupons
+Integration Configurations
+Loyalty
+Manage Stackable Coupons
+Reason Codes
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+Get Promotion
+put
+Update Promotion
+post
+Create Promotion
+get
+List Promotions
+post
+Search Promotions
+API docs by Redocly
+Automatic Promotions
+(
+1.0
+)
+Download OpenAPI specification
+:
+Download
+NewStore Support
+:
+support@newstore.com
+License:
+NewStore Private
+Use this API to manage Automatic Promotions in NewStore, such as creating, retrieving, or updating promotions.
+You can use these methods to create automatic promotions for specific products or for the whole cart, which are applied automatically during checkout in NewStore Associate App.
+For a guide on how to use automatic promotions via NewStore Omnichannel Manager, see
+this guide
+. Also you can find additinal information in
+process documentation
+DISCLAIMER:
+Coupon fields should not contain any PII, this information may be removed.
+Get Promotion
+Retrieves the specified automatic promotion by ID. To retrieve the promotion ID, use the list promotions API.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The ID of the promotion.
+Responses
+200
+A promotion plus HATEOAS fields.
+404
+An error response.
+500
+An error response.
+get
+/promotion/{id}
+The staging/production server
+/v0/promotions
+/promotion/{id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Example
+Response CartLevelPercentage Promotion Without Timezone
+Response CartLevelPercentage Promotion With Timezone
+Response CartLevelFixed Promotion Without Timezone
+Response CartLevelFixed Promotion With Timezone
+Response ProductLevelPercentage Promotion Without Timezone
+Response ProductLevelPercentage Promotion With Timezone
+Response ProductLevelFixed Promotion Without Timezone
+Response ProductLevelFixed Promotion With Timezone
+Response BogoPercentage Promotion Without Timezone
+Response BogoPercentage Promotion With Timezone
+Response BogoFixed Promotion Without Timezone
+Response BogoFixed Promotion With Timezone
+Response BundlePercentage Promotion Without Timezone
+Response BundlePercentage Promotion With Timezone
+Response BundleFixed Promotion Without Timezone
+Response BundleFixed Promotion With Timezone
+Response FreeShippingPercentage Promotion Without Timezone
+Response FreeShippingPercentage Promotion With Timezone
+Response CartLevelPercentage Promotion Without Timezone
+Copy
+Expand all
+Collapse all
+{
+"links"
+:
+{
+"self"
+:
+"/promotion/64357c41-cad8-4000-8000-d998be563098"
+}
+,
+"promotion"
+:
+{
+"id"
+:
+"64357c41-cad8-4000-8000-d998be563098"
+,
+"name"
+:
+"Black Friday Promo"
+,
+"description"
+:
+"Black Friday Promo"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"createdAt"
+:
+"2023-04-11T00:00:00"
+,
+"createdBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"updatedAt"
+:
+"2023-04-11T00:00:00"
+,
+"updatedBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"localizedTimezone"
+:
+true
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"type"
+,
+"value"
+:
+"gold member"
+,
+"schema"
+:
+1
+}
+,
+"version"
+:
+"a43a5a2d-1424-4c80-a252-992d489062eb"
+}
+}
+Update Promotion
+Updates the specified promotion with new information.The only property that cannot be updated is the category.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The ID of the promotion.
+Request Body schema:
+application/json
+Update promotion request.
+name
+required
+string
+The name of the promotion.
+validFrom
+required
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the promotion becomes valid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+validTo
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the promotion becomes invalid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+category
+required
+CartLevelPercentageCategory (object) or CartLevelFixedCategory (object) or ProductLevelPercentageCategory (object) or ProductLevelFixedCategory (object) or BogoPercentageCategory (object) or BogoFixedCategory (object) or BundlePercentageCategory (object) or BundleFixedCategory (object) or FreeShipping (object)
+The actual promotion kind.
+active
+boolean
+Indicates whether the promotions is active or not.
+currencies
+required
+Array of
+objects
+(
+Currency
+)
+A list of conditions on currencies to satisfy in order for the promotion to be applied.
+stores
+Array of
+strings
+Indicates in which stores the promotion can be used. A list of IDs states that the promotion can be used in the given stores while an empty array states that the promotion can be used in any store.
+localizedTimezone
+boolean
+Optional, this property determines local timezone validity for the promotion. If true, UTC is assumed with no timezone required in "validFrom" and "validTo". If false, timezone must be specified in those fields.
+exclusive
+boolean
+Indicates whether the promotion is exclusive or not.
+segment
+object or null
+(
+Segment
+)
+Represents customer segmentation. Use this method to create coupons that apply to specific groups of customers (such as VIP customers, gold or silver card members, etc).
+version
+required
+string
+A UUID representing the version of the promotion.
+Responses
+200
+A promotion plus HATEOAS fields.
+400
+An error response.
+404
+An error response.
+409
+An error response.
+500
+An error response.
+put
+/promotion/{id}
+The staging/production server
+/v0/promotions
+/promotion/{id}
+Request samples
+Payload
+Content type
+application/json
+Example
+Update CartLevelPercentage Promotion Without Timezone
+Update CartLevelPercentage Promotion With Timezone
+Update CartLevelFixed Promotion Without Timezone
+Update CartLevelFixed Promotion With Timezone
+Update ProductLevelPercentage Promotion Without Timezone
+Update ProductLevelPercentage Promotion With Timezone
+Update ProductLevelFixed Promotion Without Timezone
+Update ProductLevelFixed Promotion With Timezone
+Update BogoPercentage Promotion Without Timezone
+Update BogoPercentage Promotion With Timezone
+Update BogoFixed Promotion Without Timezone
+Update BogoFixed Promotion With Timezone
+Update BundlePercentage Promotion Without Timezone
+Update BundlePercentage Promotion With Timezone
+Update BundleFixed Promotion Without Timezone
+Update BundleFixed Promotion With Timezone
+Update FreeShippingPercentage Promotion Without Timezone
+Update FreeShippingPercentage Promotion With Timezone
+Update CartLevelPercentage Promotion Without Timezone
+Copy
+Expand all
+Collapse all
+{
+"name"
+:
+"Black Friday Promo"
+,
+"description"
+:
+"The Black Friday Promo"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"localizedTimezone"
+:
+true
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"type"
+,
+"value"
+:
+"gold member"
+,
+"schema"
+:
+1
+}
+,
+"version"
+:
+"a43a5a2d-1424-4c80-a252-992d489062eb"
+}
+Response samples
+200
+400
+404
+409
+500
+Content type
+application/json
+Example
+Response CartLevelPercentage Promotion Without Timezone
+Response CartLevelPercentage Promotion With Timezone
+Response CartLevelFixed Promotion Without Timezone
+Response CartLevelFixed Promotion With Timezone
+Response ProductLevelPercentage Promotion Without Timezone
+Response ProductLevelPercentage Promotion With Timezone
+Response ProductLevelFixed Promotion Without Timezone
+Response ProductLevelFixed Promotion With Timezone
+Response BogoPercentage Promotion Without Timezone
+Response BogoPercentage Promotion With Timezone
+Response BogoFixed Promotion Without Timezone
+Response BogoFixed Promotion With Timezone
+Response BundlePercentage Promotion Without Timezone
+Response BundlePercentage Promotion With Timezone
+Response BundleFixed Promotion Without Timezone
+Response BundleFixed Promotion With Timezone
+Response FreeShippingPercentage Promotion Without Timezone
+Response FreeShippingPercentage Promotion With Timezone
+Response CartLevelPercentage Promotion Without Timezone
+Copy
+Expand all
+Collapse all
+{
+"links"
+:
+{
+"self"
+:
+"/promotion/64357c41-cad8-4000-8000-d998be563098"
+}
+,
+"promotion"
+:
+{
+"id"
+:
+"64357c41-cad8-4000-8000-d998be563098"
+,
+"name"
+:
+"Black Friday Promo"
+,
+"description"
+:
+"Black Friday Promo"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"createdAt"
+:
+"2023-04-11T00:00:00"
+,
+"createdBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"updatedAt"
+:
+"2023-04-11T00:00:00"
+,
+"updatedBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"localizedTimezone"
+:
+true
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"type"
+,
+"value"
+:
+"gold member"
+,
+"schema"
+:
+1
+}
+,
+"version"
+:
+"a43a5a2d-1424-4c80-a252-992d489062eb"
+}
+}
+Create Promotion
+Creates a specified automatic promotion.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+Create promotion request.
+name
+required
+string
+The name of the promotion.
+validFrom
+required
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the promotion becomes valid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+validTo
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the promotion becomes invalid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+category
+required
+CartLevelPercentageCategory (object) or CartLevelFixedCategory (object) or ProductLevelPercentageCategory (object) or ProductLevelFixedCategory (object) or BogoPercentageCategory (object) or BogoFixedCategory (object) or BundlePercentageCategory (object) or BundleFixedCategory (object) or FreeShipping (object)
+The actual promotion kind.
+active
+boolean
+Indicates whether the promotions is active or not.
+currencies
+required
+Array of
+objects
+(
+Currency
+)
+A list of conditions on currencies to satisfy in order for the promotion to be applied.
+stores
+Array of
+strings
+Indicates in which stores the promotion can be used. A list of IDs states that the promotion can be used in the given stores while an empty array states that the promotion can be used in any store.
+localizedTimezone
+boolean
+Optional, this property determines local timezone validity for the promotion. If true, UTC is assumed with no timezone required in "validFrom" and "validTo". If false, timezone must be specified in those fields.
+exclusive
+boolean
+Indicates whether the promotion is exclusive or not.
+segment
+object or null
+(
+Segment
+)
+Represents customer segmentation. Use this method to create coupons that apply to specific groups of customers (such as VIP customers, gold or silver card members, etc).
+Responses
+201
+A promotion plus HATEOAS fields.
+400
+An error response.
+409
+An error response.
+500
+An error response.
+post
+/promotion
+The staging/production server
+/v0/promotions
+/promotion
+Request samples
+Payload
+Content type
+application/json
+Example
+Create CartLevelPercentage Promotion Without Timezone
+Create CartLevelPercentage Promotion With Timezone
+Create CartLevelFixed Promotion Without Timezone
+Create CartLevelFixed Promotion With Timezone
+Create ProductLevelPercentage Promotion Without Timezone
+Create ProductLevelPercentage Promotion With Timezone
+Create ProductLevelFixed Promotion Without Timezone
+Create ProductLevelFixed Promotion With Timezone
+Create BogoPercentage Promotion Without Timezone
+Create BogoPercentage Promotion With Timezone
+Create BogoFixed Promotion Without Timezone
+Create BogoFixed Promotion With Timezone
+Create BundlePercentage Promotion Without Timezone
+Create BundlePercentage Promotion With Timezone
+Create BundleFixed Promotion Without Timezone
+Create BundleFixed Promotion With Timezone
+Create FreeShippingPercentage Promotion Without Timezone
+Create FreeShippingPercentage Promotion With Timezone
+Create CartLevelPercentage Promotion Without Timezone
+Copy
+Expand all
+Collapse all
+{
+"name"
+:
+"Black Friday Promo"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"localizedTimezone"
+:
+true
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"type"
+,
+"value"
+:
+"gold member"
+,
+"schema"
+:
+1
+}
+}
+Response samples
+201
+400
+409
+500
+Content type
+application/json
+Example
+Response CartLevelPercentage Promotion Without Timezone
+Response CartLevelPercentage Promotion With Timezone
+Response CartLevelFixed Promotion Without Timezone
+Response CartLevelFixed Promotion With Timezone
+Response ProductLevelPercentage Promotion Without Timezone
+Response ProductLevelPercentage Promotion With Timezone
+Response ProductLevelFixed Promotion Without Timezone
+Response ProductLevelFixed Promotion With Timezone
+Response BogoPercentage Promotion Without Timezone
+Response BogoPercentage Promotion With Timezone
+Response BogoFixed Promotion Without Timezone
+Response BogoFixed Promotion With Timezone
+Response BundlePercentage Promotion Without Timezone
+Response BundlePercentage Promotion With Timezone
+Response BundleFixed Promotion Without Timezone
+Response BundleFixed Promotion With Timezone
+Response FreeShippingPercentage Promotion Without Timezone
+Response FreeShippingPercentage Promotion With Timezone
+Response CartLevelPercentage Promotion Without Timezone
+Copy
+Expand all
+Collapse all
+{
+"links"
+:
+{
+"self"
+:
+"/promotion/64357c41-cad8-4000-8000-d998be563098"
+}
+,
+"promotion"
+:
+{
+"id"
+:
+"64357c41-cad8-4000-8000-d998be563098"
+,
+"name"
+:
+"Black Friday Promo"
+,
+"description"
+:
+"Black Friday Promo"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"createdAt"
+:
+"2023-04-11T00:00:00"
+,
+"createdBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"updatedAt"
+:
+"2023-04-11T00:00:00"
+,
+"updatedBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"localizedTimezone"
+:
+true
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"type"
+,
+"value"
+:
+"gold member"
+,
+"schema"
+:
+1
+}
+,
+"version"
+:
+"a43a5a2d-1424-4c80-a252-992d489062eb"
+}
+}
+List Promotions
+Retrieves all automatic promotions.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+count
+required
+integer
+<= 150
+The number of promotions to get at once.
+page
+required
+integer
+>= 1
+The page number.
+partial-category
+boolean
+Default:
+true
+Example:
+partial-category=true
+This flag should be always present with
+true
+value , it prevents loads of categories.
+Responses
+200
+A page of promotions, the links for the previous and next pages and pagination information.
+400
+An error response.
+500
+An error response.
+get
+/promotion
+The staging/production server
+/v0/promotions
+/promotion
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"links"
+:
+{
+"self"
+:
+"/promotion/64357c41-cad8-4000-8000-d998be563098"
+}
+,
+"promotion"
+:
+{
+"id"
+:
+"64357c41-cad8-4000-8000-d998be563098"
+,
+"name"
+:
+"Black Friday Promo"
+,
+"description"
+:
+"Black Friday Promo"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"createdAt"
+:
+"2023-04-11T00:00:00"
+,
+"createdBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"updatedAt"
+:
+"2023-04-11T00:00:00"
+,
+"updatedBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"localizedTimezone"
+:
+true
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"type"
+,
+"value"
+:
+"gold member"
+,
+"schema"
+:
+1
+}
+,
+"version"
+:
+"a43a5a2d-1424-4c80-a252-992d489062eb"
+}
+}
+,
+{
+"links"
+:
+{
+"self"
+:
+"/promotion/633e9b5e-983b-4000-8000-bdde1340e55f"
+}
+,
+"promotion"
+:
+{
+"id"
+:
+"633e9b5e-983b-4000-8000-bdde1340e55f"
+,
+"name"
+:
+"Promotion for hoodies"
+,
+"description"
+:
+"Promotion for hoodies"
+,
+"validFrom"
+:
+"2023-04-27T00:00:00"
+,
+"validTo"
+:
+"2023-04-30T23:59:59"
+,
+"category"
+:
+{
+"kind"
+:
+"ProductLevelFixed"
+,
+"includedCategories"
+:
+[
+{
+"path"
+:
+[
+"Shop"
+,
+"Accessories"
+]
+}
+]
+,
+"includedProducts"
+:
+[ ]
+,
+"excludedProducts"
+:
+[ ]
+,
+"shopId"
+:
+"storefront-catalog-en"
+,
+"locale"
+:
+"en-us"
+,
+"discounts"
+:
+[
+{
+"amount"
+:
+50
+,
+"currency"
+:
+"EUR"
+}
+,
+{
+"amount"
+:
+50
+,
+"currency"
+:
+"USD"
+}
+]
+}
+,
+"active"
+:
+false
+,
+"createdAt"
+:
+"2023-04-27T13:15:55Z"
+,
+"createdBy"
+:
+"3227aa4cdff85694a7788450e3c269b2"
+,
+"updatedAt"
+:
+"2022-10-06T09:09:50Z"
+,
+"updatedBy"
+:
+"3227aa4cdff85694a7788450e3c269b2"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+150
+}
+,
+{
+"code"
+:
+"USD"
+,
+"minimumCartValue"
+:
+150
+}
+]
+,
+"stores"
+:
+[ ]
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"member"
+,
+"value"
+:
+"VIP"
+,
+"schema"
+:
+1
+}
+,
+"version"
+:
+"6255ca9a-a025-4846-826a-f69fd6da4917"
+}
+}
+]
+,
+"links"
+:
+{
+"next"
+:
+"/promotion?count=2&page=1"
+,
+"previous"
+:
+null
+}
+,
+"pagination"
+:
+{
+"count"
+:
+2
+,
+"page"
+:
+1
+,
+"total"
+:
+15
+}
+}
+Search Promotions
+Searchs for the specified promotions.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+count
+required
+integer
+<= 150
+The number of promotions to get at once.
+page
+required
+integer
+>= 1
+The page number.
+Request Body schema:
+application/json
+Search promotion request.
+name
+string
+The name of the promotion.
+kind
+Array of
+kind (string)
+The promotion type.
+validFrom
+string
+^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$
+The date the promotion becomes valid.
+validTo
+string
+^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$
+The date the promotion becomes invalid.
+active
+boolean
+Indicates whether the promotions is active or not.
+segment
+string
+Indicates the
+Key
+or
+Value
+of customer profile extended attribute.
+partial
+boolean
+Default:
+false
+Partially returns the data of each promotion.
+Responses
+200
+A page of promotions, the links for the previous and next pages and pagination information.
+400
+An error response.
+500
+An error response.
+post
+/promotion/search
+The staging/production server
+/v0/promotions
+/promotion/search
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"name"
+:
+"promo"
+,
+"kind"
+:
+[
+"CartLevelPercentage"
+,
+"ProductLevelFixed"
+]
+,
+"validFrom"
+:
+"2023-11-01T00:00:00Z"
+,
+"validTo"
+:
+"2023-12-01T00:00:00Z"
+,
+"active"
+:
+true
+,
+"segment"
+:
+"member"
+,
+"partial"
+:
+false
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"links"
+:
+{
+"self"
+:
+"/promotion/64357c41-cad8-4000-8000-d998be563098"
+}
+,
+"promotion"
+:
+{
+"id"
+:
+"64357c41-cad8-4000-8000-d998be563098"
+,
+"name"
+:
+"Black Friday Promo"
+,
+"description"
+:
+"Black Friday Promo"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"createdAt"
+:
+"2023-04-11T00:00:00"
+,
+"createdBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"updatedAt"
+:
+"2023-04-11T00:00:00"
+,
+"updatedBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"localizedTimezone"
+:
+true
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"type"
+,
+"value"
+:
+"gold member"
+,
+"schema"
+:
+1
+}
+,
+"version"
+:
+"a43a5a2d-1424-4c80-a252-992d489062eb"
+}
+}
+,
+{
+"links"
+:
+{
+"self"
+:
+"/promotion/633e9b5e-983b-4000-8000-bdde1340e55f"
+}
+,
+"promotion"
+:
+{
+"id"
+:
+"633e9b5e-983b-4000-8000-bdde1340e55f"
+,
+"name"
+:
+"Promotion for hoodies"
+,
+"description"
+:
+"Promotion for hoodies"
+,
+"validFrom"
+:
+"2023-04-27T00:00:00"
+,
+"validTo"
+:
+"2023-04-30T23:59:59"
+,
+"category"
+:
+{
+"kind"
+:
+"ProductLevelFixed"
+,
+"includedCategories"
+:
+[
+{
+"path"
+:
+[
+"Shop"
+,
+"Accessories"
+]
+}
+]
+,
+"includedProducts"
+:
+[ ]
+,
+"excludedProducts"
+:
+[ ]
+,
+"shopId"
+:
+"storefront-catalog-en"
+,
+"locale"
+:
+"en-us"
+,
+"discounts"
+:
+[
+{
+"amount"
+:
+50
+,
+"currency"
+:
+"EUR"
+}
+,
+{
+"amount"
+:
+50
+,
+"currency"
+:
+"USD"
+}
+]
+}
+,
+"active"
+:
+false
+,
+"createdAt"
+:
+"2023-04-27T13:15:55Z"
+,
+"createdBy"
+:
+"3227aa4cdff85694a7788450e3c269b2"
+,
+"updatedAt"
+:
+"2022-10-06T09:09:50Z"
+,
+"updatedBy"
+:
+"3227aa4cdff85694a7788450e3c269b2"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+150
+}
+,
+{
+"code"
+:
+"USD"
+,
+"minimumCartValue"
+:
+150
+}
+]
+,
+"stores"
+:
+[ ]
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"member"
+,
+"value"
+:
+"VIP"
+,
+"schema"
+:
+1
+}
+,
+"version"
+:
+"6255ca9a-a025-4846-826a-f69fd6da4917"
+}
+}
+]
+,
+"links"
+:
+{
+"next"
+:
+"/promotion?count=2&page=1"
+,
+"previous"
+:
+null
+}
+,
+"pagination"
+:
+{
+"count"
+:
+2
+,
+"page"
+:
+1
+,
+"total"
+:
+15
+}
+}
+Previous
+Template Service
+Next
+Promotions Configuration
+Copyright © 2025 NewStore, Inc.

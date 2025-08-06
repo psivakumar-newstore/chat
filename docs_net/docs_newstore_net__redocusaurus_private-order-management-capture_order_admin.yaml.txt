@@ -1,0 +1,281 @@
+openapi: 3.0.0
+info:
+  title: Capture Order
+  version: 1.0.0
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+    url: https://newstoreinc.slack.com/archives/CBDLEJLTB
+  x-audience: internal-company
+  x-api-id: capture-order-1.0.0
+  x-domain-gateway-integration:
+    serviceName: sales-order-capture
+    eks:
+      cluster: shared-eks
+      ingress:
+        targetNamespace: team-order-management
+  description: Capture Order HTTP API
+tags:
+  - name: orders
+    description: Capture orders
+servers:
+  - url: https://{tenant}.{environment}.newstore.net/order-management
+    variables:
+      tenant:
+        default: dodici
+      environment:
+        default: p
+        enum:
+          - p
+          - s
+paths:
+  /orders:
+    post:
+      summary: Capture orders
+      operationId: createOrder
+      tags:
+        - orders
+      security:
+        - oauth:
+            - order-management:orders:write
+      parameters:
+        - in: header
+          name: Request-Id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Tenant
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-Newstore-Tenant
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: >-
+          The schema for the request body can be found
+          [here](https://gitlab.com/newstore/engineering/order-management/order-management/-/blob/main/services/sales_order/definitions/schemas/add_sales_order_items.json).
+          The same schema is used for `AddSalesOrderItemsJSON` gRPC call.
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        '200':
+          description: >-
+            Order captured successfully. The schema for the response body can be
+            found
+            [here](https://gitlab.com/newstore/engineering/order-management/order-management/-/blob/main/services/sales_order/definitions/components/sales_order.json).
+            The same schema is used for `AddSalesOrderItemsJSON` gRPC call.
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: >
+            Bad Request
+
+
+            This can happen if the request body is malformed. The request can
+            only be retried if the error described 
+
+            in the response body is fixed.
+          content:
+            application/problem+json:
+              examples:
+                Schema validation error:
+                  summary: Schema validation error
+                  value:
+                    error_code: bad_request
+                    message: >-
+                      Validation of capture order failed with error: 'items' is
+                      a required property.
+                    request_id: df28c7a4-1fb4-426a-abe3-e1f7fe8bd053
+                Invalid tier 2 injection:
+                  summary: Invalid tier 2 injection
+                  value:
+                    error_code: bad_request
+                    message: >-
+                      [input_error:invalid_tier2_order_injection] Number of
+                      shipments should be 1 for injected order, Shipping address
+                      is required for injected order, Routing strategy should be
+                      external, Fulfilment node id is required in tier 2
+                      external order
+                    request_id: df28c7a4-1fb4-426a-abe3-e1f7fe8bd053
+                Prices not rounded according to currency:
+                  summary: Prices not rounded according to currency
+                  value:
+                    error_code: bad_request
+                    message: >-
+                      [input_error:price_not_rounded_according_currency] Total
+                      discount '20.123' for item
+                      4edf0eab-1011-4b24-9369-a8d73b5b33c7 is not rounded
+                      according to currency standards
+                    request_id: df28c7a4-1fb4-426a-abe3-e1f7fe8bd053
+                Invalid order injection:
+                  summary: Invalid order injection
+                  value:
+                    error_code: bad_request
+                    message: >-
+                      [input_error:invalid_order_injection] Invalid order
+                      injection with external routing strategy
+                    request_id: df28c7a4-1fb4-426a-abe3-e1f7fe8bd053
+              schema:
+                type: object
+                required:
+                  - error_code
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A short reference that identifies the problem type.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A short, human-readable summary of the problem type.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier of the failed request.
+        '409':
+          description: >
+            Conflict
+
+
+            This can happen if the request body is malformed and contains
+            order-item-level identifiers that were 
+
+            previously associated with different order-level identifiers.
+          content:
+            application/problem+json:
+              examples:
+                Conflict error:
+                  summary: Conflict error
+                  value:
+                    error_code: conflict
+                    message: >-
+                      Order capture payload is conflicting with existing
+                      database records.
+                    request_id: df28c7a4-1fb4-426a-abe3-e1f7fe8bd053
+              schema:
+                type: object
+                required:
+                  - error_code
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A short reference that identifies the problem type.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A short, human-readable summary of the problem type.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier of the failed request.
+        '500':
+          description: >
+            Internal Error
+
+
+            This can happen if there is an unexpected error while processing the
+            request. It is acceptable to 
+
+            automatically retry the request.
+          content:
+            application/problem+json:
+              examples:
+                Gateway token error:
+                  summary: Gateway token error
+                  value:
+                    error_code: internal_server_error
+                    message: >-
+                      Couldn't capture order due to an internal error.
+                      [internal_error:order_creation_failure] Order creation
+                      failed due to: [environment_error:gateway_token_error]
+                      gateway token error: failed to create token due to error:
+                      Request to
+                      'https://id.p.newstore.net/auth/realms/
+/protocol/openid-connect/token'
+                      failed because it exceeded the configured timeout of 5.0
+                      seconds.
+                    request_id: df28c7a4-1fb4-426a-abe3-e1f7fe8bd053
+                Sequence not configured error:
+                  summary: Sequence not configured error
+                  value:
+                    error_code: internal_server_error
+                    message: Sequence for tenant is not configured.
+                    request_id: df28c7a4-1fb4-426a-abe3-e1f7fe8bd053
+                DB Operational error:
+                  summary: DB operational error
+                  value:
+                    error_code: internal_server_error
+                    message: >-
+                      Couldn't capture order due to an internal error.
+                      [environment_error:db_operational_error] Order creation
+                      failed due to a database error
+                    request_id: df28c7a4-1fb4-426a-abe3-e1f7fe8bd053
+                Internal Server Error:
+                  summary: Internal server error
+                  value:
+                    error_code: internal_server_error
+                    message: >-
+                      Couldn't capture order due to an internal error.
+                      [internal_error:unexpected_error] unexpected error
+                    request_id: df28c7a4-1fb4-426a-abe3-e1f7fe8bd053
+              schema:
+                type: object
+                required:
+                  - error_code
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A short reference that identifies the problem type.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A short, human-readable summary of the problem type.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier of the failed request.
+        default:
+          description: Unexpected error
+components:
+  securitySchemes:
+    oauth:
+      flows:
+        clientCredentials:
+          scopes:
+            order-management:orders:write: Grants privileges to capture orders
+          tokenUrl: >-
+            https://id.{stage}.newstore.net/auth/realms/{tenant}/protocol/openid-connect/token
+      type: oauth2
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - error_code
+      properties:
+        error_code:
+          type: string
+          minLength: 1
+          description: A short reference that identifies the problem type.
+        message:
+          type: string
+          minLength: 1
+          description: A short, human-readable summary of the problem type.
+        request_id:
+          type: string
+          minLength: 1
+          description: Unique identifier of the failed request.

@@ -1,0 +1,93 @@
+openapi: 3.0.0
+info:
+  title: Adyen configuration API
+  version: '1.0'
+  description: |
+    This API can be used to store and read the Adyen integration configuration.
+servers:
+  - url: https://dodici.x.newstore.net/_/v1/org/psps/adyen
+paths:
+  /stores/{store_id}/config:
+    parameters:
+      - in: path
+        name: store_id
+        required: true
+        description: >
+          The store identifier in NewStore. Use the
+
+          [List stores
+          method](/newstore-cloud/store_operations/store.html#operation/listStores)
+          method to retrieve the store ID.
+        schema:
+          type: string
+    get:
+      summary: Get Adyen store config
+      description: Retrieves the Adyen configuration corresponding to the specified store.
+      operationId: getStoreConfig
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: The store configuration was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                title: Adyen store config
+                description: Adyen configuration specific to a store.
+                type: object
+                required:
+                  - merchant_account
+                properties:
+                  merchant_account:
+                    type: string
+                    description: The merchant account used to process payments.
+                  adyen_store_id:
+                    type: string
+                    description: The identifier for the store on the Adyen platform.
+              examples:
+                StoreConfig:
+                  summary: Store config
+                  value:
+                    merchant_account: NewStorePOS
+                    adyen_store_id: '1001'
+        '404':
+          description: The config was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: API error
+                description: Error response from the API in case the request fails.
+                required:
+                  - message
+                  - error_code
+                properties:
+                  error_code:
+                    type: string
+                    description: The code of the error that occured.
+                  message:
+                    type: string
+                    description: Details about the error that occured.
+                  request_id:
+                    type: string
+                    description: The request that failed.
+              examples:
+                ErrorResponse:
+                  value:
+                    request_id: bab5c739-b259-4f29-b378-6145e0602d45
+                    error_code: config_not_found
+                    message: Adyen was not configured.
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}

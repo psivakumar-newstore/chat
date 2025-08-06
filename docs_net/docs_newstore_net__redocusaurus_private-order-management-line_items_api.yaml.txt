@@ -1,0 +1,128 @@
+openapi: 3.0.0
+info:
+  title: Order line internal APIs
+  version: v0
+  contact:
+    name: Team Order Management
+    email: team-order-management@newstore.com
+  description: >
+    Use this API to manage order line items. This is an internal API and should
+    not be shared or used outside of NewStore.
+servers:
+  - url: https://dodici.x.newstore.net/v0
+tags:
+  - name: Cancel line item
+    description: |
+      Use this resource to cancel line items.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /line_item/{uuid}/cancel:
+    post:
+      tags:
+        - Cancel line item
+      summary: Cancel line item
+      description: >
+        Use this resource to cancel line items.
+
+
+        **Note:** 
+
+        1. This is an internal API and should not be shared or used outside of
+        NewStore.
+
+        2. This API only supports pre-ordered line items and will throw an error
+        for other line items.
+
+        3. The line item can only be cancelled for non-terminal item statuses.
+      operationId: cancel_line_item
+      parameters:
+        - in: path
+          name: uuid
+          required: true
+          schema:
+            type: string
+          description: UUID of the order item.
+      responses:
+        '200':
+          description: Successfully cancelled order item by UUID.
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: Error code
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              examples:
+                bad_request_validation_failed:
+                  summary: Validation failed
+                  description: |
+                    Bad request because the request is not valid.
+                  value:
+                    error_code: bad_request
+                    message: >-
+                      Validation of cancel order request failed with error:
+                      'reason' is a required property.
+                    request_id: ec2f3c9bb016ba971bf6074098363
+                item_not_cancelable_any_longer:
+                  summary: Order item is no longer cancelable.
+                  description: |
+                    Order item is no longer cancelable.
+                  value:
+                    error_code: item_not_cancelable_any_longer
+                    message: >-
+                      Item d6e7c7ea-e6f1-4259-9729-fb880d81bfc1 for order
+                      GD10001 cannot be cancelled any longer.
+                    request_id: ec2f3c9bb016ba971bf6074098363
+                not_preordered:
+                  summary: The Order item can't be canceled.
+                  description: >
+                    Cancellation for this item is not allowed because the item
+                    is not pre-ordered.
+                  value:
+                    error_code: not_preordered
+                    message: >-
+                      Item 57787cdb-3474-47b5-b3ec-7b776731309e is not
+                      pre-ordered.
+                    request_id: ec2f3c9bb016ba971bf6074098363
+        '404':
+          description: Order item with provided UUID was not found.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                error_code: internal_server_error
+                message: Couldn't process request due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6074098363

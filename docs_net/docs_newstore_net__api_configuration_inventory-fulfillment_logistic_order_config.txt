@@ -1,0 +1,1813 @@
+Logistic Order configuration API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Configuration APIs
+Inventory and fulfillment
+Associate (Deprecated)
+DC Fulfillment Node Config API
+Delivery Options configuration API
+Configuration API
+Logistic Order configuration API
+Stock configuration API
+Fulfillment requests
+Order management
+Checkout
+Payment
+NOM and app
+Fiscalization and taxes
+Promotions
+Webhooks
+New Generation APIs
+get
+Get order cancelation policies
+post
+Set order cancelation policies
+get
+Get automatic routing config for on hold orders
+post
+Enable automatic routing config for on hold orders
+get
+Get automatic routing config for orders to fulfillment locations
+post
+Enable automatic routing config for orders to fulfillment locations
+get
+Get shipping offer update config for DC orders
+post
+Skip shipping offer updates for DC orders
+get
+Get config to request external ATP data
+post
+Enable config to request external ATP data
+get
+List shipments limits
+post
+Update or create a shipment limit
+get
+Enable capacity based routing feature
+post
+Update capacity based routing feature toggle
+get
+Get routing insights
+API docs by Redocly
+Logistic Order configuration API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Get order cancelation policies
+Retrieves the configuration based on which it is determined if orders in your business are
+canceled automatically in case of a conflict.
+The configuration also contains the reasons for which orders can be canceled automatically.
+For more information about the properties, see the
+guide
+.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Value was successfully retrieved.
+500
+Internal server error.
+get
+/config/routing/cancel_on_conflict
+/v0
+/config/routing/cancel_on_conflict
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"value"
+:
+{
+"default"
+:
+true
+,
+"reasons_to_overwrite_default"
+:
+[
+"failed_fulfillment_node_mapping"
+,
+"not_enough_stock_to_create_allocation"
+]
+}
+,
+"updated_at"
+:
+"2021-08-23T12:54:10.381175Z"
+}
+Set order cancelation policies
+Sets the configuration based on which it is determined if orders in your business are
+canceled automatically in case of a conflict.
+The configuration also contains the reasons for which orders can be canceled automatically.
+For more information about the properties, see the
+guide
+.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+value
+required
+object
+Order cancellation policies.
+default
+boolean
+Default:
+true
+Determines whether orders are canceled automatically in case of a conflict.
+reasons_to_overwrite_default
+Array of
+strings
+non-empty
+Items
+Enum
+:
+"insufficient_stock"
+"failed_fulfillment_node_mapping"
+"shipping_offer_update_error"
+"error"
+"not_enough_stock_to_create_allocation"
+A list of reasons to prevent an automatic cancelation of an order (in case default is 'true') or to prevent an order being in the conflict state.
+Responses
+200
+Value was successfully updated.
+400
+Bad request.
+500
+Internal server error.
+post
+/config/routing/cancel_on_conflict
+/v0
+/config/routing/cancel_on_conflict
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"value"
+:
+{
+"default"
+:
+true
+,
+"reasons_to_overwrite_default"
+:
+[
+"failed_fulfillment_node_mapping"
+,
+"not_enough_stock_to_create_allocation"
+]
+}
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+}
+Get automatic routing config for on hold orders
+Retrieves the current configuration that determines if on hold orders are routed to
+fulfillment locations automatically when stock becomes available in these locations.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Value was successfully retrieved.
+500
+Internal server error.
+get
+/config/routing/enable_automatic_rerouting
+/v0
+/config/routing/enable_automatic_rerouting
+Response samples
+200
+500
+Content type
+application/json
+Copy
+{
+"value"
+:
+true
+,
+"updated_at"
+:
+"2021-08-23T12:54:05.721904Z"
+}
+Enable automatic routing config for on hold orders
+Sets the configuration that determines if on hold orders are routed to
+fulfillment locations automatically when stock becomes available in these locations.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+value
+required
+boolean
+Tenant-based release toggle for the automatic rerouting feature in order to roll it out on a per tenant basis.
+Responses
+200
+Value was successfully updated.
+400
+Bad request.
+500
+Internal server error.
+post
+/config/routing/enable_automatic_rerouting
+/v0
+/config/routing/enable_automatic_rerouting
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"value"
+:
+true
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+}
+Get automatic routing config for orders to fulfillment locations
+Retrieves the configuration that determines if orders will be automatically routed to
+fulfillment locations where stock has become available, even if these locations had
+rejected the order fulfillment request earlier, due to insufficient stock at
+these locations.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Value was successfully retrieved.
+500
+Internal server error.
+get
+/config/routing/reroute_to_rejected_fulfillment_nodes
+/v0
+/config/routing/reroute_to_rejected_fulfillment_nodes
+Response samples
+200
+500
+Content type
+application/json
+Copy
+{
+"value"
+:
+true
+,
+"updated_at"
+:
+"2021-08-23T12:54:05.721904Z"
+}
+Enable automatic routing config for orders to fulfillment locations
+Sets the configuration that determines if orders will be automatically routed to
+fulfillment locations where stock has become available, even if these locations had
+rejected the order fulfillment request earlier, due to insufficient stock at
+these locations.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+value
+required
+boolean
+Tells the routing engine if it should ignore fulfillment nodes that already rejected the fulfillment request at hand.
+Responses
+200
+Value was successfully updated.
+400
+Bad request.
+500
+Internal server error.
+post
+/config/routing/reroute_to_rejected_fulfillment_nodes
+/v0
+/config/routing/reroute_to_rejected_fulfillment_nodes
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"value"
+:
+true
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+}
+Get shipping offer update config for DC orders
+Retrieves the current configuration, which determines if NewStore skips updating shipping
+offers when orders are routed to a warehouse or DC for fulfillment. By default, this is set to
+true
+.
+We recommend setting this configuration to
+true
+.
+Please be aware that having this value set to
+true
+can cause a fulfillment request routed to DC to have an empty shipping provider field if the tenant is also configured, skipping soft routing on an order injection.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Value was successfully retrieved.
+500
+Internal server error.
+get
+/config/routing/skip_shipping_offer_update_for_dc_orders
+/v0
+/config/routing/skip_shipping_offer_update_for_dc_orders
+Response samples
+200
+500
+Content type
+application/json
+Copy
+{
+"value"
+:
+true
+,
+"updated_at"
+:
+"2021-08-23T12:54:05.721904Z"
+}
+Skip shipping offer updates for DC orders
+Sets the configuration that allows NewStore to skip updating shipping offers when orders
+are routed to a warehouse or DC for fulfillment.
+We recommend setting this configuration to
+true
+.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+value
+required
+boolean
+Determines whether an order routed to a DC needs a shipping offer update.
+Responses
+200
+Value was successfully updated.
+400
+Bad request.
+500
+Internal server error.
+post
+/config/routing/skip_shipping_offer_update_for_dc_orders
+/v0
+/config/routing/skip_shipping_offer_update_for_dc_orders
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"value"
+:
+true
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+}
+Get config to request external ATP data
+Specifies if ATP is requested from an external source or from NewStore.
+If set to
+true
+, NewStore uses ATP from an external availability source such as
+an
+external OMS
+.
+If not set or set to
+false
+, NewStore retrieves ATP based on
+the stock on hand) for the products.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Value was successfully retrieved.
+500
+Internal server error.
+get
+/config/routing/uses_external_atp
+/v0
+/config/routing/uses_external_atp
+Response samples
+200
+500
+Content type
+application/json
+Copy
+{
+"value"
+:
+true
+,
+"updated_at"
+:
+"2021-08-23T12:54:05.721904Z"
+}
+Enable config to request external ATP data
+Specifies if ATP is requested from an external source or from NewStore.
+If set to
+true
+, NewStore uses ATP from an external availability source such as
+an
+external OMS
+.
+If not set or set to
+false
+, NewStore retrieves ATP based on
+the stock on hand for the products.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+value
+required
+boolean
+If true, use availability service to request ATP data; otherwise use unallocated items count.
+Responses
+200
+Value was successfully updated.
+400
+Bad request.
+500
+Internal server error.
+post
+/config/routing/uses_external_atp
+/v0
+/config/routing/uses_external_atp
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"value"
+:
+true
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+}
+List shipments limits
+List all shipments limits. This method is limited to return a maximum of 10.000 shipments limits per tenant.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Succesfully returning list of shipments limits
+500
+An internal error occurred.
+get
+/routing/shipments_limit
+/v0
+/routing/shipments_limit
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"shipments_limit"
+:
+[
+{
+"currency"
+:
+"USD"
+,
+"service_level"
+:
+"EVERYDAY"
+,
+"limit_exceeded_when"
+:
+[
+{
+"shipment_count_gt"
+:
+1
+,
+"order_amount_lt"
+:
+50
+}
+]
+}
+,
+{
+"currency"
+:
+"USD"
+,
+"service_level"
+:
+"EXPRESS"
+,
+"limit_exceeded_when"
+:
+[
+{
+"shipment_count_gt"
+:
+1
+,
+"order_amount_lt"
+:
+300
+}
+,
+{
+"shipment_count_gt"
+:
+2
+,
+"order_amount_lt"
+:
+500
+}
+]
+}
+]
+}
+Update or create a shipment limit
+Upsert a shipment limit for a (
+currency
+,
+service_level
+) pair.
+An order will be marked as a conflict if any limit on
+limit_exceeded_when
+is reached.
+It is not allowed to have two limits with the same
+shipment_count_gt
+value.
+The
+order_amount_lt
+of a given limit should be greater than or equal to others limits with
+smaller
+shipment_count_gt
+.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+currency
+required
+string
+= 3 characters
+Currency alpha code in ISO 4217 format. Per example USD, EUR or JPY
+service_level
+required
+string
+Shipping service level
+limit_exceeded_when
+required
+Array of
+objects
+Responses
+204
+Shipment limit was set successfully.
+400
+Invalid input data
+Duplicate
+shipment_count_gt
+on
+limit_exceeded_when
+array
+Inconsistent
+order_amount_lt
+value. It should be greater or equal rules with smaller
+shipment_count_gt
+.
+Missing required field
+500
+An internal error occurred.
+post
+/routing/shipments_limit
+/v0
+/routing/shipments_limit
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"currency"
+:
+"USD"
+,
+"service_level"
+:
+"EVERYDAY"
+,
+"limit_exceeded_when"
+:
+[
+{
+"shipment_count_gt"
+:
+1
+,
+"order_amount_lt"
+:
+50.01
+}
+,
+{
+"shipment_count_gt"
+:
+2
+,
+"order_amount_lt"
+:
+200.01
+}
+]
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"invalid_input_data"
+,
+"message"
+:
+"order_amount_lt of shipment_count_gt=2 must greater of equal 300 USD."
+,
+"request_id"
+:
+"ec2f3c9bb016ba971bf6074098363"
+}
+Enable capacity based routing feature
+Retrieves the current configuration that determines if orders are routed to fulfillment locations based on a capacity aware algorithm.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Succesfully returning the value of the capacity based routing toggle
+500
+An internal error occurred.
+get
+/config/routing/enable_capacity_based_routing
+/v0
+/config/routing/enable_capacity_based_routing
+Response samples
+200
+500
+Content type
+application/json
+Copy
+{
+"value"
+:
+true
+,
+"updated_at"
+:
+"2021-08-23T12:54:05.721904Z"
+}
+Update capacity based routing feature toggle
+Sets the current configuration that determines if orders are routed to
+fulfillment locations based on a capacity aware algorithm.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+value
+required
+boolean
+Tenant-based release toggle for the feature of capacity-based routing.
+Responses
+200
+Value was successfully updated.
+400
+Bad request.
+500
+Internal server error.
+post
+/config/routing/enable_capacity_based_routing
+/v0
+/config/routing/enable_capacity_based_routing
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"value"
+:
+true
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+}
+Get routing insights
+Get insights on routing and shipment details for orders being processed in the NewStore platform.
+This includes details such as:
+Items in the order
+The fulfillment location that is assigned to fulfill orders
+The time when the shipment was dispatched from the fulfillment location
+Order routing strategies
+Service levels
+Data is retained up to 45 days for successfully routed order items. Until order items have been successfully routed, related data is retained indefinitely.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_id
+required
+string
+A sales order UUID or external order ID
+Responses
+200
+Successfully returning routing insights for the specified order
+404
+Not found
+No path parameter
+500
+An internal error occurred.
+get
+/routing/insights/order/{order_id}
+/v0
+/routing/insights/order/{order_id}
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"insights"
+:
+{
+"external_id"
+:
+"S52417708"
+,
+"sales_order_id"
+:
+"4734b6f7-f8b4-5563-8cb2-5625e0d44279"
+,
+"sales_order_item_ids"
+:
+[
+"43892439-ebec-4fa6-875a-bb90a44e31e8"
+,
+"61a49a5d-ac8e-48a8-bbd2-4e3ba564d813"
+,
+"b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3"
+]
+,
+"created_at"
+:
+"2021-11-16T01:17:11.026310"
+,
+"sales_order_items"
+:
+{
+"43892439-ebec-4fa6-875a-bb90a44e31e8"
+:
+{
+"updated_at"
+:
+"2021-11-18T15:04:51.403631"
+,
+"product_id"
+:
+"406204209452"
+,
+"routing_status"
+:
+"cancelled"
+,
+"conflict_reason"
+:
+null
+,
+"cancellation_reason"
+:
+"cancellation_request"
+,
+"service_levels"
+:
+{
+"current"
+:
+"Everyday Shipping (1-9 business days)"
+,
+"original"
+:
+"Everyday Shipping (1-9 business days)"
+}
+,
+"strategies"
+:
+{
+"current"
+:
+{
+"strategy"
+:
+"manual"
+,
+"fulfillment_node_id"
+:
+"0980"
+}
+,
+"original"
+:
+{
+"strategy"
+:
+"default"
+}
+}
+,
+"fulfillment_locations"
+:
+{
+"current"
+:
+"0980"
+,
+"original"
+:
+null
+}
+,
+"correlation"
+:
+{
+"current_logistic_order_id"
+:
+"ee61b3ad-634d-43b2-bedc-a9910dc33946"
+,
+"current_fulfillment_request_id"
+:
+"7c50b8f8-a5df-43df-9dac-e0fe45d3eb36"
+,
+"logistic_order_ids"
+:
+[
+"35842663-8f87-4192-ace5-7af6a55130a8"
+,
+"c6e15aa3-e341-4151-b8b8-09decb12358c"
+,
+"ee61b3ad-634d-43b2-bedc-a9910dc33946"
+]
+}
+}
+,
+"61a49a5d-ac8e-48a8-bbd2-4e3ba564d813"
+:
+{
+"updated_at"
+:
+"2021-11-17T16:14:45.666304"
+,
+"product_id"
+:
+"406001514728"
+,
+"routing_status"
+:
+"processed"
+,
+"conflict_reason"
+:
+null
+,
+"cancellation_reason"
+:
+null
+,
+"service_levels"
+:
+{
+"current"
+:
+"Everyday Shipping (1-9 business days)"
+,
+"original"
+:
+"Everyday Shipping (1-9 business days)"
+}
+,
+"strategies"
+:
+{
+"current"
+:
+{
+"strategy"
+:
+"default"
+}
+,
+"original"
+:
+{
+"strategy"
+:
+"default"
+}
+}
+,
+"fulfillment_locations"
+:
+{
+"current"
+:
+"0980"
+,
+"original"
+:
+null
+}
+,
+"correlation"
+:
+{
+"current_logistic_order_id"
+:
+"7fc3c66e-854c-4ca9-bdbb-b5dc486f1135"
+,
+"current_fulfillment_request_id"
+:
+"78e66957-f480-409b-8be1-a2cdee05950a"
+,
+"logistic_order_ids"
+:
+[
+"35842663-8f87-4192-ace5-7af6a55130a8"
+,
+"7fc3c66e-854c-4ca9-bdbb-b5dc486f1135"
+]
+}
+}
+,
+"b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3"
+:
+{
+"updated_at"
+:
+"2021-11-17T16:14:45.666304"
+,
+"product_id"
+:
+"406503043931"
+,
+"routing_status"
+:
+"processed"
+,
+"conflict_reason"
+:
+null
+,
+"cancellation_reason"
+:
+null
+,
+"service_levels"
+:
+{
+"current"
+:
+"Everyday Shipping (1-9 business days)"
+,
+"original"
+:
+"Everyday Shipping (1-9 business days)"
+}
+,
+"strategies"
+:
+{
+"current"
+:
+{
+"strategy"
+:
+"default"
+}
+,
+"original"
+:
+{
+"strategy"
+:
+"default"
+}
+}
+,
+"fulfillment_locations"
+:
+{
+"current"
+:
+"0980"
+,
+"original"
+:
+null
+}
+,
+"correlation"
+:
+{
+"current_logistic_order_id"
+:
+"7fc3c66e-854c-4ca9-bdbb-b5dc486f1135"
+,
+"current_fulfillment_request_id"
+:
+"78e66957-f480-409b-8be1-a2cdee05950a"
+,
+"logistic_order_ids"
+:
+[
+"35842663-8f87-4192-ace5-7af6a55130a8"
+,
+"7fc3c66e-854c-4ca9-bdbb-b5dc486f1135"
+]
+}
+}
+}
+,
+"activities"
+:
+[
+{
+"timestamp"
+:
+"2022-03-13T22:07:14.025397"
+,
+"type"
+:
+"inventory check"
+,
+"summary"
+:
+"n/a"
+,
+"value"
+:
+{
+"inventory"
+:
+{
+"US01"
+:
+"1"
+}
+}
+,
+"correlation"
+:
+{
+"logistic_order_uuid"
+:
+"35842663-8f87-4192-ace5-7af6a55130a8"
+,
+"sales_order_item_ids"
+:
+[
+"43892439-ebec-4fa6-875a-bb90a44e31e8"
+,
+"61a49a5d-ac8e-48a8-bbd2-4e3ba564d813"
+,
+"b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3"
+]
+,
+"ancestor_logistic_order_uuid"
+:
+null
+,
+"service_levels"
+:
+{
+"current"
+:
+null
+,
+"original"
+:
+"Everyday Shipping (1-9 business days)"
+}
+,
+"routing_strategies"
+:
+{
+"current"
+:
+{
+"43892439-ebec-4fa6-875a-bb90a44e31e8"
+:
+{
+"strategy"
+:
+"default"
+}
+,
+"61a49a5d-ac8e-48a8-bbd2-4e3ba564d813"
+:
+{
+"strategy"
+:
+"default"
+}
+,
+"b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3"
+:
+{
+"strategy"
+:
+"default"
+}
+}
+,
+"original"
+:
+{
+"43892439-ebec-4fa6-875a-bb90a44e31e8"
+:
+{
+"strategy"
+:
+"default"
+}
+,
+"61a49a5d-ac8e-48a8-bbd2-4e3ba564d813"
+:
+{
+"strategy"
+:
+"default"
+}
+,
+"b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3"
+:
+{
+"strategy"
+:
+"default"
+}
+}
+}
+,
+"fulfillment_request"
+:
+{
+"fulfillment_request_id"
+:
+"5987417f-17f5-431c-9272-ea6cbfefd20a"
+,
+"fulfillment_node_id"
+:
+null
+,
+"dispatched_at"
+:
+null
+}
+}
+}
+,
+{
+"timestamp"
+:
+"2022-03-22T22:07:14.025397"
+,
+"type"
+:
+"inventory check"
+,
+"summary"
+:
+"n/a"
+,
+"value"
+:
+{
+"inventory"
+:
+{
+"US01"
+:
+"0"
+}
+}
+,
+"correlation"
+:
+{
+"logistic_order_uuid"
+:
+"c6e15aa3-e341-4151-b8b8-09decb12358c"
+,
+"sales_order_item_ids"
+:
+[
+"43892439-ebec-4fa6-875a-bb90a44e31e8"
+]
+,
+"ancestor_logistic_order_uuid"
+:
+"35842663-8f87-4192-ace5-7af6a55130a8"
+,
+"service_levels"
+:
+{
+"current"
+:
+null
+,
+"original"
+:
+"Everyday Shipping (1-9 business days)"
+}
+,
+"routing_strategies"
+:
+{
+"current"
+:
+{
+"43892439-ebec-4fa6-875a-bb90a44e31e8"
+:
+{
+"strategy"
+:
+"manual"
+,
+"fulfillment_node_id"
+:
+"0980"
+}
+}
+,
+"original"
+:
+{
+"43892439-ebec-4fa6-875a-bb90a44e31e8"
+:
+{
+"strategy"
+:
+"default"
+}
+}
+}
+,
+"fulfillment_request"
+:
+{
+"fulfillment_request_id"
+:
+"792a016f-0cf4-4aed-9cd3-21fd4b69e3ee"
+,
+"fulfillment_node_id"
+:
+null
+,
+"dispatched_at"
+:
+null
+}
+}
+}
+,
+{
+"timestamp"
+:
+"2022-03-23T22:07:14.025397"
+,
+"type"
+:
+"inventory check"
+,
+"summary"
+:
+"n/a"
+,
+"value"
+:
+{
+"inventory"
+:
+{
+"181"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"880"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"980"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"9774"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"9774082101"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"9754-1"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"EGCFulfillmentCenter"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"EGCFulfillmentDC"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"0103"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"RegStore8"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"RegStore7"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"181-Test2"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"9754-400"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"181-Test1"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"RegStore1"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"WindsorDC"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"RegStore4"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"RegStore3"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"0109"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"OutletStore2"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"9754-200"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"WindsorEGCDummyDC"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"OutletStore3"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"OutletStore4"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"Westfield Palm Desert - Dummy1"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"OutletStore5"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"OutletStore7"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"OutletStore8"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"TestDC"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"INVALID-NODE"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"Windsor DC"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"Westfield Palm Desert - Dummy"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"WindsorEGiftCardDC"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"WindsorDigitalGCDummyDC"
+:
+{
+"407001043492"
+:
+"0"
+}
+,
+"9774-1"
+:
+{
+"407001043492"
+:
+"0"
+}
+}
+}
+,
+"correlation"
+:
+{
+"logistic_order_uuid"
+:
+"7fc3c66e-854c-4ca9-bdbb-b5dc486f1135"
+,
+"sales_order_item_ids"
+:
+[
+"61a49a5d-ac8e-48a8-bbd2-4e3ba564d813"
+,
+"b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3"
+]
+,
+"ancestor_logistic_order_uuid"
+:
+"35842663-8f87-4192-ace5-7af6a55130a8"
+,
+"service_levels"
+:
+{
+"current"
+:
+"Everyday Shipping (1-9 business days)"
+,
+"original"
+:
+"Everyday Shipping (1-9 business days)"
+}
+,
+"routing_strategies"
+:
+{
+"current"
+:
+{
+"61a49a5d-ac8e-48a8-bbd2-4e3ba564d813"
+:
+{
+"strategy"
+:
+"default"
+}
+,
+"b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3"
+:
+{
+"strategy"
+:
+"default"
+}
+}
+,
+"original"
+:
+{
+"61a49a5d-ac8e-48a8-bbd2-4e3ba564d813"
+:
+{
+"strategy"
+:
+"default"
+}
+,
+"b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3"
+:
+{
+"strategy"
+:
+"default"
+}
+}
+}
+,
+"fulfillment_request"
+:
+{
+"fulfillment_request_id"
+:
+"78e66957-f480-409b-8be1-a2cdee05950a"
+,
+"fulfillment_node_id"
+:
+"0980"
+,
+"dispatched_at"
+:
+"2021-11-16T01:17:13.523159"
+}
+}
+}
+]
+}
+}
+Previous
+Configuration API
+Next
+Stock configuration API
+Copyright © 2025 NewStore, Inc.

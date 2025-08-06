@@ -1,0 +1,184 @@
+Loading master data
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Loading master data
+Updated on
+May 14, 2025
+Published on Apr 11, 2025
+4 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+The first step in setting up the NewStore platform for trade is loading foundational data. NewStore uses a single load mechanism to manage the import of products, categories, availability, prices, and associated data. This section covers how the data load mechanism works and highlights various integration patterns. For more in-depth information on product, category, and price modeling, refer to the
+this
+section.
+Identifying data source
+Selecting the appropriate source for foundational data requires an assessment of data completeness from a NewStore perspective. The master system may not always serve as the ideal data source if it lacks critical attributes.
+For example: Retailers using a NetSuite and Shopify setup might choose Shopify as the data source since NetSuite does not store attributes such as images and variant details.
+Prerequistes
+To follow along with this section, you will need:
+Sample payloads available in the
+Tutorial & Sample data section in this page.
+.
+Access to an internet-based service for hosting newly created ZIP files publicly via
+HTTPS
+(example, Google Drive, Dropbox, AWS S3, Microsoft OneDrive).
+Import process
+NewStore employs a unified import job system to efficiently manage data ingestion. This system is designed for auto-scaling and asynchronous processing, ensuring quick data integration.
+Key considerations
+Timing
+: During high-traffic periods such as
+Black Friday/Cyber Monday (BFCM)
+, retailers should upload their data
+at least 48 hours prior
+to ensure readiness.
+Data Availability
+: A completed import job does not immediately mean the data is ready for use.
+Post-import processing
+occurs, which is not visible to end users.
+Load Order
+: There is no strict dependency on the order of data imports. However, for a product to appear in the Associate App, both
+product and price data
+must be present.
+Import job system: Two-step process
+NewStore's import system operates in two stages:
+Step 1: Registering the import data type
+Each import job requires defining the type of data being loaded (example, products, categories, prices). This ensures the system processes and integrates the data correctly. This step requires API authentication, see here for more information.
+Step 2: Invoking the job system
+Once the import job is registered, the system initiates data ingestion, processing it asynchronously for optimized performance.
+API authentication and access
+Before initiating the import process, API credentials must be created to authenticate access.
+Steps to create API credentials:
+Navigate to the
+API Credentials Management
+section.
+Generate new credentials with the appropriate scope and privileges.
+Ensure correct permissions are assigned, as they cannot be modified later.
+The Import API does not support OAuth 2.0. Instead:
+Use HTTP: NewStoreAccessToken for authorization.
+Select
+Support Legacy APIs
+when configuring the API client.
+Creating a store on NewStore: A step-by-step guide
+Creating a store on NewStore is a 2-step process that requires defining a store entity and associating a fulfillment location. Before you begin, ensure you have created the necessary master data, including catalog locale and price book.
+Step 1: Define a store entity
+To create a store, you will need to provide the following key attributes in the payload:
+Store ID
+: A unique identifier that cannot be edited after store creation.
+Store name
+: The name of your store.
+Master data attributes
+: Catalog locale and price book, which must be associated with the store.
+Time zone
+: The time zone of your store, in tz database timezone format.
+Address
+: The physical address of your store, including latitude and longitude. These coordinates will be used for Buy Online, Pickup In-Store (BOPIS) functionality.
+Tax inclusivity
+: Indicate whether the price book associated with the store is tax-inclusive or exclusive.
+Step 2: Associate a fulfillment location
+Once you have defined your store entity, you must associate a fulfillment location. A fulfillment location is a logical entity where NewStore associates inventory-related data and transactions. To create a fulfillment location, follow the inventory import tutorial provided.
+The payload for associating a fulfillment location requires two main attributes:
+Store ID
+: The unique identifier of your store.
+Fulfillment ID
+: The unique identifier of your fulfillment location.
+Note that the fulfillment ID and the mapping between the store ID and fulfillment ID are created during the initial inventory load and cannot be changed afterward.
+Key considerations
+When defining a store, keep the following considerations in mind:
+Integration
+: Store and fulfillment location IDs will be passed to/from the platform via APIs and event streams.
+Human-Readable IDs
+: Ensure that fulfillment location IDs are easily identifiable and human-readable, as they will be displayed in certain screens within NewStore Omnichannel Manager.
+Example
+To illustrate the importance of human-readable IDs, consider the following example:
+On the order page in NewStore Omnichannel Manager, the store ID is displayed under the channel, and the fulfillment location ID is displayed under fulfillment location.
+Similarly, on the inventory pages, the fulfillment location ID is displayed under fulfillment location.
+By following these steps and considerations, you can successfully create a store on NewStore and set yourself up for success.
+Tutorial & Sample data
+Refer
+Using API clients
+for tutorial on authenticate API calls using API clients.
+Refer
+Using integration users
+to generate the Authentication is managed in an OAuth 2.0.
+As of September 2023, authentication with APIs must be done via API clients  and NewStore will stop supporting authenticating with integration users soon. Follow the migration guide  if you already use integration users.
+When importing data, use a direct link to the file, such as an AWS S3 presigned URL or a Google Drive direct link generated via a link generator tool or any URL that alows the platform to directly download the zip file with out entering any credentials or previewing the file.
+Refer
+Importing Products
+and
+Importing Prices
+for the tutorial for catalog and price import. The zip file URL should be a direct download link to the files. Once the import job is done, the platform will index the data and depending on the amount of data, it will take sometime for the data to show up in NOM.
+For importing stock information, refer to the
+Importing stock information
+tutorial. Refer
+Setting up a store
+for the steps to create a new store. The zip file URL should be a direct download link to the files.
+Once a store or fulfillment location is created, it cannot be deleted or remapped. Ensure accurate data during import and creation to avoid issues.
+You can find the sample payload for the catalog and pricebook below.
+sample-catalog-price-store
+23.18 KB
+Was this article helpful?
+Yes
+No
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

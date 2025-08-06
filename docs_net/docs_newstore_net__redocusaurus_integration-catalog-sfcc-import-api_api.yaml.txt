@@ -1,0 +1,1545 @@
+openapi: 3.0.0
+info:
+  title: Import Data API
+  version: v0
+  description: >
+    Use this resource to import products, categories, price books, and stock on
+    hand into NewStore.
+
+    For more information on how to prepare your data and import it, see the
+
+    [tutorial](/developers/tutorials/import-products) or the
+
+    [integration guide](/developers/guides/importdata) in our documentation.
+
+
+    **Note:** Before you import data, ensure that you have
+
+    [created a
+    store](/api/integration/inventory-management/store_api/#tag/Stores/operation/createStore).
+
+
+    As indicated in the documentation, to import the data, create a zip file
+    from the folder that contains the
+
+    JSON files for the entities you are importing. Upload the zip file to a URI
+    that NewStore can access.
+
+
+    **Important**:
+
+    - We recommend importing data in a single import job, via a single file that
+    does
+
+    not exceed 500 MB. However, if an import job needs to be broken down into
+    multiple imports,
+
+    ensure that each new import job is run after a **5 minute** interval, where
+    product data should
+
+    not exceed 500 MB, and all other entities should not exceed 80 MB.
+
+    - The default limit for creating import jobs is ``20`` for all import jobs
+    except for product imports, the limit for which is ``10``.
+
+    If you reach the limit with current open import jobs, NewStore keeps them in
+    the ``received`` state and API responds with a ``429`` error.
+
+    We recommend you to either start your import jobs in the ``received`` state
+    or mark them as failed using the [Set import job status to failed
+    method](/api/integration/catalog-sfcc/import-api_api/#operation/set-status-to-failed).
+
+    Keeping them in the ``received`` or ``waiting`` state adds to the total
+    number of import jobs considered against the limit.
+
+    - When an import job is finished, the system takes some time to process the
+    data. 
+
+    Usually this means only a few minutes, but in rare cases, when the system is
+    under pressure it can take 24-48 hours to make the imported information
+    available.
+
+
+    NewStore supports HTTPS URIs and Amazon S3 bucket URIs as long as we can
+    access them to download the files. You should consider longer TTL (time to
+    live) for such files, at least in the range of days, because these files are
+    not immediately downloaded but internally queued for import.
+
+    It may happen that during high traffic on the platform, your import might be
+    delayed even for hours. So having a longer TTL can prevent failure in these
+    imports.
+
+
+    This API allows you to import the following entities.
+
+
+    **Note**: If you decide to import each entity separately, create import jobs
+    for each data entity
+
+    in this sequence: ``Products > Stock > Pricebooks > Categories (optional)``
+
+
+    ### Server requirements for image download
+
+
+    NewStore provides an option to specify an image download URL in products or
+    categories to be imported. We expects that the server pointed in the URL
+    meets following service-level objectives with each import:
+
+
+    - 99.99 % server response HTTP codes should be `HTTP 200`.
+
+    - 99.99 % latency of server responses should be under `10 seconds`.
+
+    - When a server cannot respond in time, it should return `HTTP 429`.
+    NewStore will make the best effort to retry the image download.
+
+
+    NewStore attempts up to 5 continuous GET requests. Each request with 20s
+    timeout to read whole response. Response HTTP 429 is considered as retryable
+    error. Each retry is delayed by 0.5s as backoff.
+
+    All non-200, 4xx, and 5xx HTTP status codes are considered unrecoverable and
+    will lead to missing images in the imported products and categories.
+
+
+    As network between NewStore and image server is volatile, sometimes few
+    images won't be downloaded. The image failure feedback is logged in the
+    import error page. So it is advised to setup monitoring and retry import of
+    products and categories with failed images. For products with no images in
+    the app, the Newstore default product image will be used. As a result, such
+    products are still sellable but store associates will have problems
+    identifying them in the app.
+
+
+    NewStore does caching of all downloaded images and requests only new images.
+    So in case of duplicate images, only new images will be downloaded from the
+    image server.
+
+
+    Every request contains:
+
+
+    - `User-Agent` header identifying NewStore requests (it can be used to
+    simply identify NewStore requests in firewalls). The current value to
+    identify NewStore requests in `NewStoreCatalogImageStore/1.0`.
+
+
+    To find and fix these errors, see the [Troubleshooting
+    Guide](/developers/guides/importdata#troubleshooting-imports).
+
+
+    ### Products
+
+
+    The only way you can create or update products, is by importing them into
+    NewStore.
+
+
+    A product in NewStore usually refers to a stock-keeping unit (SKU) as
+    `product_id` but can be
+
+    replaced with any other unique identifier.
+
+
+    Products are imported into a `shop` for a specific locale. A shop represents
+    the hierarchical
+
+    entity into which you import products and categories. It is not a physical
+    store.
+
+
+    A `variant_group_id` connects all the variants of a product. Each product
+    must be unique to a variant
+
+    group in a shop, and cannot be assigned to multiple variant groups. Even if
+    a product has only one variant,
+
+    create a variant group to contain the single product variant.
+
+
+    When importing data to multiple fulfillment locations in your business, use
+    the
+
+    ``availabilities_store_ids`` property to specify the ID of the stores or DCs
+    where
+
+    you want to import data.
+
+
+    If you are importing more than one category, use the ``categories`` >
+    ``is_main`` property to
+
+    specify the main category for the product. This category is displayed
+    against relevant products
+
+    in the `Catalog` tab in Newstore Omnichannel Manager. For more information,
+    see the
+
+    [guide](/developers/guides/importdata#formatting-import).
+
+
+    The product details that you provide during import determine the product
+    attributes that are
+
+    displayed in NewStore applications and the information that is included in
+    reports.
+
+    Missing information that is not required during an import might still impact
+    your business workflow,
+
+    based on your integrations.
+
+
+    For example, **Toby Sweater, Black, Size 6**, and **Toby Sweater
+
+    Beige, Size 6**, are `variants` and have different `SKU`s. They are created
+    as two separate
+
+    products and in this example, they belong to the same variant group
+    (`variant_group_id`).
+
+
+    To enable pre-orders for a product, set the `preorder_start`
+
+    property to the date when pre-orders should begin.
+
+
+    For more information, see:
+
+
+    - [JSON schema to import
+    products](/developers/guides/products/importdata/#product-import-file-format)
+    -
+      **Do not** use this method to import products. This is only the documentation of the schema.
+    - [Import tutorial](/developers/tutorials/import-products)
+
+    - [Integration guide](/developers/guides/importdata)
+
+
+
+    ### Categories
+
+
+    The only way you can create or update product categories, is by importing
+    them into NewStore.
+
+
+    A category refers to the hierarchy applied to your products, in order to
+    organize them.
+
+    Product categories may differ across different sales channels. For example,
+    the category for
+
+    `Toby Sweater Black Size 6` could be **Shop > Clothing**  or **Featured >
+    Winter**.
+
+
+    Categories are imported into a `shop`, and for a specific `locale`.
+
+
+    **Important**: Since categories are already imported with the product
+    import, importing categories
+
+    separately is only required if you want them to be accessible via the [List
+    categories
+
+    method](/api/integration/catalog-sfcc/customer-app-api_api/#tag/Categories/operation/listCategories).
+    Such an import will also
+
+    allow you to add pictures and a description for each category and enable
+    sorting sub-categories.
+
+
+    For more information, see:
+
+
+    - [JSON schema to import
+    categories](/developers/guides/catalog-integration/importdata#categories-import-file-format)
+    -
+      **Do not** use this method to import categories. This is only the documentation of the schema.
+    - [Import tutorial](/developers/tutorials/import-products)
+
+    - [Integration guide](/developers/guides/importdata)
+
+
+    ### Price books
+
+
+    The only way you can create or update price books is by importing them into
+    NewStore.
+
+
+    A price book is a collection of prices for products, in a specific currency.
+    You can import
+
+    multiple price books. For example, each sales channel can have a different
+    price book.
+
+
+    **Important:** Ensure that you specify the correct number of decimal places
+    for monetary values of prices,
+
+    according to the specified currency. For example, if the currency is
+    specified as ``USD``
+
+    and the price has more than 2 decimal places, it is considered as invalid by
+    the platform.
+
+
+    For more information, see
+
+    [pricing dependencies on
+    currency](/product/processes/about-payments/#currency-rounding).
+
+
+    To understand the the JSON schema for importing `price books`, see
+
+    [JSON schema for price
+    books](/developers/guides/catalog-integration/importdata#prices-import-file-format).
+    **Do not** use this method to import
+
+    price books. This is only documentation of the schema.
+
+
+    To import your price books, use the import process described
+
+    in [Importing data](/developers/guides/importdata).
+
+
+    ### Stock
+
+
+    The only way you can create or update stock on hand, is by importing it into
+    NewStore.
+
+
+    Stock refers to the total inventory, at a particular time. Unlike products,
+    you import
+
+    stock into a fulfillment location (distribution center or store), and not
+    into a `shop`.
+
+
+    **Note:** Ensure that you provide the correct value for the
+    `fulfillment_node_id` property
+
+    during the stock import. Deleting a `fulfillment_node_id` with a wrong value
+    is currently not possible.
+
+
+    To specify if the quantity you are importing for a product is the new ATP or
+    stock on hand for
+
+    the product at the specified fulfillment location, use the `mode` property.
+
+
+    To import future inventory at the fulfillment location,
+
+    use the `future_inventory` property, with the `mode` property set to `atp`.
+
+
+    For more information, see:
+
+
+    - [JSON schema to import
+    stock](/developers/guides/catalog-integration/importdata#availabilities-import-file-format)
+    -
+      **Do not** use this method to import stock. This is only the documentation of the schema.
+    - [Import tutorial](/developers/tutorials/import-products)
+
+    - [Tutorial to import future
+    inventory](/developers/tutorials/import-inventory-and-stock#tuto-future-inventory)
+
+    - [Integration guide](/developers/guides/importdata)
+
+    - [Fulfillment configuration
+    API](/api/integration/order-management/newstore_ff_config_api/)
+
+
+    ### Distribution Centers
+
+
+    There are two ways to create a distribution center (DC) or warehouse for
+    your business:
+
+
+    - When you import stock, the location of the stock is automatically created
+    as a `fulfillment_node_id`
+      in NewStore. To indicate that the fulfillment location in `fulfillment_node_id` is a DC,
+      ensure that the `store_id` is set to `null`. To configure a DC that is created using this method,
+      contact the support team.
+
+    - Use this
+    [tutorial](/developers/tutorials/import-inventory-and-stock#tuto-create-warehouse)
+      to create and configure a DC on your own.
+
+    For more information, see:
+
+
+    - [JSON schema to import
+    stock](/developers/guides/products/importdata/#availabilities-import-file-format)
+    -
+      **Do not** use this method to import stock. This is only the documentation of the schema.
+    - [Import tutorial](/developers/tutorials/import-products)
+
+    - [Integration guide](/developers/guides/importdata)
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+security:
+  - newStoreAccessToken: []
+paths:
+  /import:
+    get:
+      parameters:
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >
+            The field to filter and its filter value(s). The field is specified
+            in subscript notation and its
+
+            values are comma separated. When the value is expression of a range,
+            the min and max range are
+
+            separated by the pipe character (`|`).
+
+
+            **Examples**:
+              1. `?filter[state]=failed`
+              2. `?filter[state]=processing,finished`
+              3. `?filter[entities]=products`
+              4. `?filter[completed_at]=2016-10-01|2016-10-15`
+              5. `?filter[state]=processing,finished&filter[completed_at]=2016-10-01|2016-10-15`
+        - name: offset
+          in: query
+          required: false
+          description: The page offset.
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: count
+          in: query
+          required: false
+          description: The number of requested import jobs.
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+        - name: sort
+          in: query
+          required: false
+          description: >-
+            Sorts the returned values. Takes two values separated by the pipe
+            character (`|`), the field to sort and the sort order.
+          schema:
+            type: string
+          example: completed_at|desc
+      summary: List import jobs
+      operationId: list-import-jobs
+      description: >
+        Returns a list of import jobs.
+
+
+        **Note:** Import jobs are deleted after 30 days and not returned by this
+        method anymore.**
+      responses:
+        '200':
+          description: The list of import jobs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetImportJobsResponse'
+        '400':
+          description: >
+            The requested count and offset resulted in a list fragment greater
+            than the maximum count
+
+            of the import job list. Change your pagination parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: |
+            An error occurred while trying to retrieve the list of import jobs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create import job
+      operationId: create-import-job
+      description: >
+        Creates an import job to import data into NewStore. The job will not be
+        processed automatically.
+
+        To process it, use the [Start import job
+        method](/api/integration/catalog-sfcc/import-api_api/#operation/start-import-job).
+
+
+        **Important**: The import job's `source_uri` property must point to a
+        ZIP file for each entity. The
+
+        uncompressed file size must be lower than 240 MB for products. For other
+        import entities, the file size
+
+        must be lower than 80 MB.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostImportJobRequest'
+        required: true
+      responses:
+        '201':
+          description: >
+            The import request has been submitted successfully. The job's state
+            is `received`.
+
+            To process it, use the [Start import job
+            method](/api/integration/catalog-sfcc/import-api_api/#operation/start-import-job).
+
+
+            Use the [Get import job
+            method](/api/integration/catalog-sfcc/import-api_api/#operation/get-import-job)
+            with the returned `import_id`
+
+            to check the status of the import job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostImportJobResponse'
+        '422':
+          description: >
+            This error can occur when you try to create an import job with an
+            erroneous `type` property.
+
+            To fix this issue, use the `entities` property instead.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: >
+            The import job is not created. We recommend that requests are queued
+            so messages are not lost.
+
+            Retry only after the recommended time specified in the `header` has
+            passed.
+
+
+            This error occurs if:
+
+            - Imports are disabled (Contact
+            [support](https://support.newstore.com/) for further details.)
+
+            - You reach the configured rate limit for import jobs with one or
+            more of the imported entities.
+
+              Newstore does not internally queue a job to prevent overloading internal queues.
+              The platform will not create a new import job for the specified entity until some jobs in queue or being processed are finished.
+
+              The default limits specified for each entity are:
+
+               - Products:       10
+               - Categories:     20
+               - Prices:         20
+               - Availabilities: 20
+
+              To increase the default limits for your business, contact [support](https://support.newstore.com/).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers:
+            Retry-After:
+              schema:
+                type: string
+              description: >-
+                Number of seconds client should wait until next retry request,
+                so too many tries are not rejected.
+        '500':
+          description: |
+            An error occurred while trying to retrieve the list of import jobs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /import/{import_id}:
+    parameters:
+      - name: import_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >-
+          Identifier received in the response of [Create import job
+          method](/api/integration/catalog-sfcc/import-api_api#operation/create-import-job)
+    get:
+      summary: Get import job
+      operationId: get-import-job
+      description: >
+        Retrieves the status information of the specified import job. See the
+
+        [list of statuses](/developers/guides/importdata#statuses) for more
+
+        information. You can also see the status of an import job in NewStore
+        Omnichannel Manager.
+
+        See this [guide](/product/nomapp/nom-catalog#view-catalog-imports)
+
+        for more information.
+
+
+        **Important:** The `finished` status does not mean that there were no
+        errors.
+
+
+        To know if the import was successful, use the [List import
+        errors](/api/integration/catalog-sfcc/import-api_api#operation/list-errors-for-import)
+
+        method and check if it returns an empty array.
+
+
+        **Related methods:**
+
+        - [Get import
+        chunk](/api/integration/catalog-sfcc/import-api_api#operation/get-import-chunk)
+
+        - [List import
+        errors](/api/integration/catalog-sfcc/import-api_api#operation/list-errors-for-import)
+
+        - [Start import
+        job](/api/integration/catalog-sfcc/import-api_api#operation/start-import-job)
+
+
+        **Note:** Import jobs are deleted after 30 days and not returned by this
+        method anymore.**
+      responses:
+        '200':
+          description: The current status of the import job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetImportJobIdResponse'
+        '404':
+          description: No job with the given `import_id` exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: |
+            An error occurred while trying to retrieve the list of import jobs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /import/{import_id}/start:
+    parameters:
+      - name: import_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >-
+          Identifier received in the response of [Create import job
+          method](/api/integration/catalog-sfcc/import-api_api#operation/create-import-job)
+    post:
+      summary: Start import job
+      operationId: start-import-job
+      description: >
+        Adds the import job to the processing queue. It is automatically
+        processed when it reaches
+
+        the first position of the queue.
+
+
+        After you call this method, the following updates happen:
+
+
+        1- The state of the job is automatically updated:
+           - While the job is waiting to be processed, `state` is set to `waiting`, and the job
+             starts when previous waiting jobs have been processed.
+           - When the job is being processed, the `state` is set to `processing`.
+
+        2- The import job `transformed_uri` property is set. This field must
+        point to a ZIP file
+           containing all the JSON files to import.
+           This field cannot point to a JSON file.
+
+        Each JSON file must:
+
+        - Contain only one type of entity, formatted as described in the
+        `/products`, `/availability`, `/categories`
+          and `/prices` methods.
+        - Have the entity type it describes ("products", "categories",
+        "availabilities", "prices")
+          in its path/filename.
+
+          For example, if you have a file containing the prices of your products, you can name it `prices_1.json`.
+
+        **Related methods:**
+
+        - [Get import
+        job](/api/integration/catalog-sfcc/import-api_api/#operation/get-import-job)
+
+        - [Get import
+        chunk](/api/integration/catalog-sfcc/import-api_api#operation/get-import-chunk)
+
+        - [List import
+        errors](/api/integration/catalog-sfcc/import-api_api#operation/list-errors-for-import)
+
+
+        **Note:** Import jobs are deleted after 30 days and not handled by this
+        method anymore.**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartImportJobRequest'
+        required: true
+      responses:
+        '200':
+          description: >
+            The import request has been submitted successfully.
+
+            Use the [Get import job
+            method](/api/integration/catalog-sfcc/import-api_api/#operation/get-import-job)
+            to check the status of the
+
+            import job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartImportJobResponse'
+        '400':
+          description: >
+            The body contains wrong data or the job is not in a valid state to
+            be started. Job must be in received state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: |
+            The import job ID could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: |
+            An error occurred while trying to start the import job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /import/{import_id}/errors:
+    parameters:
+      - name: import_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          Identifier received in the response of [Create import job
+          method](/api/integration/catalog-sfcc/import-api_api#operation/create-import-job)
+    get:
+      summary: List import errors
+      operationId: list-import-errors
+      description: >
+        Retrieves a list of errors for the specified import job.
+
+        You can also see a list of errors for an import job in NewStore
+        Omnichannel Manager.
+
+        See this [guide](/product/nomapp/nom-catalog#view-catalog-imports)
+
+        for more information.
+
+
+        **Note:** Import jobs are deleted after 30 days and not returned by this
+        method anymore.**
+      responses:
+        '200':
+          description: |
+            Current errors of the import job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListImportErrorsResponse'
+        '404':
+          description: |
+            The import job ID could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: |
+            An error occurred while trying to retrieve the import job errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Save import errors
+      operationId: save-import-errors
+      description: >
+        Saves import errors to the database. Use it to report errors occurring
+        during an import.
+
+        For example, transformation services, integration scripts such as lambda
+        functions can
+
+        call this method to report errors.
+
+
+        **Note:** Import jobs are deleted after 30 days and not handled by this
+        method anymore.**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateImportItemErrorList'
+        required: true
+      responses:
+        '200':
+          description: |
+            The errors have been saved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateImportItemErrorResponse'
+        '400':
+          description: |
+            The body contains wrong data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: |
+            The import job ID could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: |
+            An error occurred while trying to retrieve the import job errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /import/{import_id}/set_fail:
+    parameters:
+      - name: import_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >-
+          Identifier received in the response of [Create import job
+          method](/api/integration/catalog-sfcc/import-api_api#operation/create-import-job)
+    post:
+      summary: Set import job status to failed
+      operationId: set-status-to-failed
+      description: >
+        Sets the specified import job's status to `failed` for the specified
+        reason.
+
+
+        **Related methods:**
+
+        - [Get import
+        job](/api/integration/catalog-sfcc/import-api_api#operation/get-import-job)
+
+        - [List import
+        errors](/api/integration/catalog-sfcc/import-api_api#operation/list-errors-for-import)
+
+
+        **Note:** Import jobs are deleted after 30 days and not handled by this
+        method anymore.**
+      requestBody:
+        content:
+          application/json:
+            example:
+              reason: incorrect data
+            schema:
+              $ref: '#/components/schemas/ImportSetFailRequest'
+        required: true
+      responses:
+        '200':
+          description: >
+            The import job's status has been set to `failed` for the specified
+            reason.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetImportJobIdResponse'
+        '400':
+          description: >
+            The import job can not be transitioned into failed state. 
+
+            This might be related to being currently in a state that can not be
+            failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: |
+            The import job ID could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: |
+            An error occurred while trying to retrieve update the import job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /import/{import_id}/chunks:
+    parameters:
+      - name: import_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >-
+          Identifier received in the response of [Create import job
+          method](/api/integration/catalog-sfcc/import-api_api#operation/create-import-job)
+    get:
+      summary: List import chunks
+      operationId: list-import-chunks
+      description: >
+        Retrieves chunk information for the specified import job.
+
+
+        A import job is split into chunks of items. Use this method to get
+        information about each of these chunks.
+
+        Chunks are only created once the import job has reached the `processing`
+        status.
+
+
+        **Related methods:**
+
+        - [Get import
+        job](/api/integration/catalog-sfcc/import-api_api#operation/get-import-job)
+
+
+        **Note:** Chunks are deleted after 30 days and not returned by this
+        method anymore.**
+      responses:
+        '200':
+          description: |
+            Current chunks of the specified import job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListImportChunksResponse'
+        '404':
+          description: |
+            The import job ID could not be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: >
+            An error occurred while trying to retrieve the chunks of the import
+            job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      description: Error response with additional information.
+      required:
+        - request_id
+        - message
+      properties:
+        request_id:
+          type: string
+          description: Unique ID to identify the request.
+        message:
+          type: string
+          description: Detailed error message.
+    GetImportJobsResponse:
+      type: object
+      description: Provides a list of import jobs.
+      required:
+        - items
+      allOf:
+        - $ref: '#/components/schemas/PaginatedResponse'
+        - type: object
+          properties:
+            items:
+              type: array
+              description: A list of information about all the import jobs.
+              items:
+                $ref: '#/components/schemas/ImportJobItem'
+    ImportJobItem:
+      type: object
+      description: Provides the status for the import request.
+      properties:
+        import_id:
+          type: string
+          description: The unique identifier of the import job.
+        entities:
+          type: string
+          description: >-
+            The type of data provided in the import job. If multiple entities,
+            will be comma separated
+        received_at:
+          type: string
+          description: >-
+            The UTC timestamp indicating when the corresponding import request
+            was received.
+        completed_at:
+          type: string
+          description: The UTC timestamp indicating when the import request was completed.
+        name:
+          type: string
+          description: The name of the job.
+        state:
+          type: string
+          description: >-
+            The state of the import job. When not all chunks are done yet, the
+            state is 'progress'. When all import chunks failed, the state is
+            'failed'. When all chunks were successfully processed, the state is
+            'finished'. When all chunks are done and at least one failed, the
+            state is 'partially_failed'.
+          enum:
+            - received
+            - waiting
+            - processing
+            - failed
+            - finished
+            - cleaning
+            - partially_failed
+        full:
+          type: boolean
+          description: >-
+            Determines if the job is a full or a partial import. A full import
+            deletes the existing data and imports the new data. A partial import
+            adds data on top of existing data.
+          default: false
+    PaginatedResponse:
+      type: object
+      description: Contains default fields for paginated APIs.
+      required:
+        - pagination_info
+      properties:
+        pagination_info:
+          type: object
+          required:
+            - count
+            - total
+            - offset
+            - prev_url
+            - next_url
+          properties:
+            count:
+              description: Contains the count of the contained array.
+              type: integer
+            total:
+              description: >-
+                Contains the total count of documents. This property is 'null'
+                if the API is not able to determine the total count.
+              type: integer
+              nullable: true
+            offset:
+              description: Contains the current offset.
+              type: integer
+            prev_url:
+              description: >-
+                An URI that can be used to get the previous page. This property
+                is 'null' if the current page is equal to the first page.
+              type: string
+              format: uri
+              nullable: true
+            next_url:
+              description: >-
+                A URI that can be used to get the next page. This property is
+                'null' if the current page is equal to the last page.
+              type: string
+              format: uri
+              nullable: true
+    PostImportJobRequest:
+      type: object
+      description: Contains an array of products.
+      required:
+        - provider
+        - source_uri
+        - entities
+      properties:
+        provider:
+          type: string
+          description: >-
+            The name of the provider of the data, for example, Salesforce
+            Commerce Cloud.
+        source_uri:
+          type: string
+          format: uri
+          description: >-
+            File location of the original file from the provider (only for
+            information). The uncompressed file size per entity must be lower
+            than 80 MB.
+        name:
+          type: string
+          description: The name of the job.
+        type:
+          type: string
+          description: >-
+            DEPRECATED: The type of the job. Use the 'entities' property
+            instead.
+        entities:
+          type: array
+          description: >-
+            The type of data provided in this request. The possible values of
+            this fields also determine the naming convention of the JSON files
+            you might import in a ZIP file via the 'POST
+            /import/{import_id}/start' method.
+          items:
+            type: string
+            enum:
+              - products
+              - categories
+              - availabilities
+              - prices
+              - dwre_orders
+          uniqueItems: true
+        full:
+          type: boolean
+          description: >-
+            Determines if the job is a full or a partial import. 
+
+
+            **When using the full parameter with a value of true, all existing
+            product catalogs in the system will be permanently deleted before 
+
+            new data is imported. This action is irreversible and cannot be
+            undone or recovered. We strongly advise using this parameter only 
+
+            when a complete catalog replacement is absolutely necessary. Please
+            proceed with extreme caution and ensure you have a full backup 
+
+            of your data before initiating a request with full: true.**
+
+
+            A partial import simply adds data on top of existing data. NewStore
+            does not support full import for the ``availabilities`` entity. 
+
+            Full imports are only supported for ``products``, ``categories``,
+            and ``prices``.
+
+
+            If a full import job contains the ``availabilities`` entity,
+            NewStore does not import the ``availabilities`` data.
+          default: false
+        shop:
+          type: string
+          description: >-
+            The shop the import is being made for. Required when multiple
+            imports are desired at the same time.
+        locale:
+          type: string
+          description: >-
+            The locale the import is being made for. Required when multiple
+            imports are desired at the same time.
+        availabilities_store_ids:
+          type: array
+          description: >-
+            The stores' id the import is being made for. Required when multiple
+            availabilities imports are desired at the same time.
+          items:
+            type: string
+          uniqueItems: true
+    PostImportJobResponse:
+      type: object
+      description: Provides the ID for the newly created import job.
+      properties:
+        id:
+          description: >-
+            Unique identifier of the created import job. Use it to retrieve the
+            import job status via the 'GET /import/{import_id}' method.
+          type: string
+    StartImportJobRequest:
+      type: object
+      description: Requires the transformed URI in order to start the import job
+      required:
+        - transformed_uri
+      properties:
+        transformed_uri:
+          type: string
+          format: uri
+          description: >-
+            URI to the ZIP file containing the source files in the required
+            NewStore JSON format. This field cannot be set to a different value
+            once it's been set the first time. Each JSON file in the ZIP file
+            must contain the entity type it represents in its filename. For
+            example, if you have a file for prices, it must contain 'prices' in
+            its filename. The list of entity names can be found in the 'Create
+            import job' method documentation. This URI must be either an HTTPS
+            URIs or an Amazon S3 bucket URI, and NewStore must have access to
+            it.
+    StartImportJobResponse:
+      type: object
+      description: Provides the status for the import request.
+      properties:
+        import_id:
+          type: string
+          description: The unique identifier of the job.
+        source:
+          type: string
+          description: The source provided by the import request.
+        provider:
+          type: string
+          description: The name of the provider of the data, for example, Demandware.
+        entities:
+          type: array
+          description: The type of data provided in the import job.
+          items:
+            type: string
+            enum:
+              - products
+              - categories
+              - availabilities
+              - prices
+          minItems: 1
+          uniqueItems: true
+        source_uri:
+          type: string
+          description: >-
+            The file location of the original file from the provider (only for
+            information).
+        transformed_uri:
+          type: string
+        revision:
+          type: integer
+          format: int64
+          description: >-
+            The revision of the job with this set of entities. A change from a
+            job with an entity of lower revision, will not overwrite an already
+            recorded newer revision. The revision is determined at the time of
+            job start.
+        name:
+          type: string
+          description: The name of the job.
+        received_at:
+          type: string
+          format: date-time
+          description: >-
+            The UTC timestamp indicating when the corresponding import request
+            was received.
+        completed_at:
+          type: string
+          nullable: true
+          format: date-time
+          description: >-
+            The UTC timestamp indicating when the import request was completed.
+            'completed_at' is null when the response is used for the
+            'processing' state.
+        state:
+          type: string
+          description: >-
+            The state of the import job. When not all chunks are done yet, the
+            state is 'progress'. When all import chunks failed, the state is
+            'failed'. When all chunks were successfully processed, the state is
+            'finished'. When all chunks are done and at least one failed, the
+            state is 'partially_failed'.
+          enum:
+            - received
+            - waiting
+            - processing
+            - failed
+            - finished
+            - cleaning
+            - partially_failed
+        reason:
+          type: string
+          description: The reason why the import job failed.
+        full:
+          type: boolean
+          description: >-
+            Determines if the job is a full or a partial import. A full import
+            deletes the existing data and imports the new data. A partial import
+            adds data on top of existing data.
+          default: false
+        shop:
+          type: string
+          description: >-
+            The shop the import is being made for. Used when multiple
+            availabilities imports are desired at the same time. Only appears if
+            supplied in the Create Import request.
+        locale:
+          type: string
+          description: >-
+            The locale the import is being made for. Used when multiple
+            availabilities imports are desired at the same time. Only appears if
+            supplied in the Create Import request.
+        availabilities_store_ids:
+          type: array
+          description: >-
+            The ids of the stores the import is being made for. Used when
+            multiple availabilities imports are desired at the same time. Only
+            appears if supplied in the Create Import request.
+          items:
+            type: string
+        version:
+          type: integer
+          format: int64
+          description: Deprecated.
+        all_import_requests_published:
+          type: boolean
+          description: Used internally.
+        cleaned_entities:
+          type: array
+          items:
+            type: string
+          description: Used internally.
+    ListImportErrorsResponse:
+      type: object
+      description: Provides the error log information for the import request.
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          description: The import error message.
+          items:
+            $ref: '#/components/schemas/ImportItemError'
+    ImportItemError:
+      title: Import item error
+      type: object
+      description: Import item error message.
+      required:
+        - entity_type
+        - entity_id
+        - reason
+        - created_at
+      properties:
+        entity_type:
+          type: string
+          description: Type of the entity to be imported.
+          enum:
+            - products
+            - categories
+            - availabilities
+            - prices
+            - images
+        entity_id:
+          type: string
+          description: Entity ID of the import log (product id, image url).
+        reason:
+          type: string
+          description: Import log message entry.
+        created_at:
+          type: string
+          format: date-time
+          description: >-
+            The UTC timestamp that indicates when the corresponding import log
+            error was recorded.
+    CreateImportItemErrorList:
+      type: array
+      description: import item error list
+      items:
+        $ref: '#/components/schemas/CreateImportItemError'
+    CreateImportItemError:
+      type: object
+      required:
+        - error_id
+        - entity_type
+        - entity_id
+        - reason
+      properties:
+        error_id:
+          type: string
+          description: A random uuid that identify this error
+          format: uuid
+        entity_type:
+          type: string
+          description: The import entity for which this error occurred.
+          enum:
+            - products
+            - categories
+            - availabilities
+            - prices
+        entity_id:
+          type: string
+          description: The ID of the import item which failed to be imported.
+          minLength: 1
+          maxLength: 255
+        reason:
+          type: string
+          description: The error message or reason why an item failed to be imported.
+          minLength: 1
+    CreateImportItemErrorResponse:
+      type: object
+      required:
+        - acknowledged
+      properties:
+        acknowledged:
+          type: boolean
+          description: >-
+            Indicates if the provided import item errors where successfully
+            pushed to the related import job.
+    GetImportJobIdResponse:
+      type: object
+      description: Provides the status for the import request.
+      properties:
+        import_id:
+          type: string
+          description: The unique identifier of the job.
+        source:
+          type: string
+          description: The source provided by the import request.
+        provider:
+          type: string
+          description: The name of the provider of the data, for example, Demandware.
+        entities:
+          type: array
+          description: The type of data provided in the import job.
+          items:
+            type: string
+            enum:
+              - products
+              - categories
+              - availabilities
+              - prices
+          minItems: 1
+          uniqueItems: true
+        source_uri:
+          type: string
+          description: >-
+            The file location of the original file from the provider (only for
+            information).
+        transformed_uri:
+          type: string
+        revision:
+          type: integer
+          format: int64
+          description: >-
+            The revision of the job with this set of entities. A change from a
+            job with an entity of lower revision, will not overwrite an already
+            recorded newer revision. The revision is determined at the time of
+            job start.
+        name:
+          type: string
+          description: The name of the job.
+        received_at:
+          type: string
+          format: date-time
+          description: >-
+            The UTC timestamp indicating when the corresponding import request
+            was received.
+        completed_at:
+          type: string
+          nullable: true
+          format: date-time
+          description: >-
+            The UTC timestamp indicating when the import request was completed.
+            'completed_at' is null when the response is used for the
+            'processing' state.
+        state:
+          type: string
+          description: >-
+            The state of the import job. When not all chunks are done yet, the
+            state is 'progress'. When all import chunks failed, the state is
+            'failed'. When all chunks were successfully processed, the state is
+            'finished'. When all chunks are done and at least one failed, the
+            state is 'partially_failed'.
+          enum:
+            - received
+            - waiting
+            - processing
+            - failed
+            - finished
+            - cleaning
+            - partially_failed
+        reason:
+          type: string
+          description: The reason why the import job failed.
+        full:
+          type: boolean
+          description: >-
+            Determines if the job is a full or a partial import. A full import
+            deletes the existing data and imports the new data. A partial import
+            adds data on top of existing data.
+          default: false
+    ImportSetFailRequest:
+      type: object
+      description: Contains the reason why the import job failed.
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          description: The reason why the import job failed.
+    ListImportChunksResponse:
+      type: object
+      description: Provides chunk information for the import request.
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImportItemChunk'
+    ImportItemChunk:
+      type: object
+      title: Import job chunk information.
+      required:
+        - chunk_id
+        - created_at
+        - size
+      properties:
+        chunk_id:
+          description: Identifier of the chunk.
+          type: string
+        created_at:
+          description: Time when the chunk was created.
+          type: string
+          format: date-time
+        completed_at:
+          description: Time when the chunk processing was completed.
+          type: string
+          format: date-time
+          nullable: true
+        size:
+          description: Number of items in the chunk.
+          type: integer
+          format: int64
+        failed:
+          description: Indicates if this chunk failed to be processed.
+          type: boolean
+        failure_message:
+          description: The reason of the failure.
+          type: string
+        entity:
+          type: string
+          description: Type of the entity imported in chunk.
+          enum:
+            - products
+            - categories
+            - availabilities
+            - prices
+            - images
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

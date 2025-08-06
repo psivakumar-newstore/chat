@@ -1,0 +1,728 @@
+info:
+  contact:
+    name: Team Delivery
+    email: team-delivery@newstore.com
+  description: >-
+    EasyPost adapter is an implementation of the [NewStore Shipping options
+    webhook](https://docs.newstore.net/newstore-cloud/hooks_shipping.html) that
+    allows you to use EasyPost as a shipping provider. As an integrator,
+    implement the methods of this resource to integrate multiple shipping
+    providers through the EasyPost adapter with NewStore Omnichannel Cloud. Use
+    the EasyPost adapter to offer shipping options and delivery booking requests
+    from NewStore Omnichannel Cloud, through the EasyPost shipment API.
+  title: EasyPost Adapter
+  version: 1.0.0
+servers:
+  - url: https://easypost.delivery.c.v.newstore.net
+paths:
+  /{tenant}/config:
+    get:
+      operationId: get-easypost-shipping-configuration
+      summary: Get Easypost shipping configuration
+      description: >-
+        Retrieves the shipping configuration of the retailer that is integrated
+        with the EasyPost adapter. Credentials are redacted but you can still
+        push the configuration using the PUT endpoint with the REDACTED value:
+        we will use the current value. A new value will be validated before
+        saving the configuration.
+      security:
+        - BearerAuth:
+            - newstore:configuration:read
+      responses:
+        '200':
+          description: EasyPost shipping configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EasypostAdapterConfig'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+        default:
+          description: Unexpected Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: create-or-update-easypost-shipping-configuration
+      summary: Create or update Easypost shipping configuration
+      description: >
+        Creates or updates the shipping configuration of the retailer that is
+        integrated with the EasyPost adapter. Any current data in the existing
+        configuration is overwritten using this request.
+
+
+        A few notes on this configuration:
+
+
+        * When an account has a large number of carrier accounts, please do
+        associate a Fulfillment Node to a Carrier Account. Not doing so will
+        result in long response time, waste of resources, extra easypost charges
+        and possibly order injection issues.
+
+        * Once the easypost API Key has been set, it is forbidden to change it.
+        This is to prevent options that were already generated to become
+        completely invalid in case the api key isn't from the same account. If
+        you really need to change this key, please open a case in the NewStore
+        Support Portal and we will discuss the best way to do that.
+      security:
+        - BearerAuth:
+            - newstore:configuration:write
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EasypostAdapterConfig'
+            examples:
+              full:
+                summary: Example with all values set, even optional ones
+                value:
+                  easypost_api_key: EKxxxxxx-your-tenant-easypost-API-Key
+                  base_customization_url: http://example.com/customization/
+                  ignore_customization_failure_on_booking: true
+                  newstore_username: user@newstore.com
+                  newstore_password: password
+                  newstore_url: https://tenant.x.newstore.com/v0/
+                  shipment_creation_options:
+                    ups:
+                      by_drone: true
+                    fedex:
+                      label_format: PDF
+                      delivery_confirmation: SIGNATURE
+                  carrier_accounts:
+                    ups:
+                      US01: ca_us_01
+                      US02: ca_us_02
+                    fedex:
+                      US01: ca_us_02
+                      US02: ca_us_03
+      responses:
+        '200':
+          description: EasyPost shipping configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EasypostAdapterConfig'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+        default:
+          description: Unexpected Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: delete-easypost-shipping-configuration
+      summary: Delete Easypost shipping configuration
+      description: >-
+        Deletes the shipping configuration of the retailer that is integrated
+        with the EasyPost adapter.
+      security:
+        - BearerAuth:
+            - newstore:configuration:write
+      responses:
+        '204':
+          description: Successfully deleted.
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+        default:
+          description: Unexpected Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /{tenant}/update:
+    post:
+      operationId: update-package-status
+      summary: EasyPost Webhook Endpoint to update a delivery tracking
+      description: >-
+        This endpoint is a webhook that can be set in EasyPost to update
+        delivery tracking. This in turn calls NewStore's Delivery Set Shipment
+        Status endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EasyPostWebHookUpdate'
+      responses:
+        '200':
+          description: Status update has been successful up to NewStore systems.
+          content:
+            application/json:
+              schema:
+                type: enum
+                enum:
+                  - assigned
+                  - in_transit
+                  - out_for_delivery
+                  - delivered
+                  - returned
+                  - canceled
+  /{tenant}/{carrier}/shipping_offers:
+    post:
+      operationId: create-shipping-option
+      summary: Create shipping option
+      description: >-
+        Creates a shipment in EasyPost and returns related rates as possible
+        shipping options for NewStore to use.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingOffersRequest'
+      responses:
+        '200':
+          description: Shipping options that represent possible delivery windows.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShippingOffer'
+  /{tenant}/{carrier}/shipments:
+    post:
+      operationId: book-shipment
+      summary: Book shipment
+      description: >-
+        Books the shipment created in EasyPost using the [Create shipping
+        option](#operation/Create%20shipping%20option) method, with the
+        specified shipping option.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookShipmentRequest'
+      responses:
+        '200':
+          description: Shipment and return booking references.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookShipmentResponse'
+  /{tenant}/{carrier}/manifests:
+    post:
+      operationId: create-manifest
+      summary: Create Manifest (also named ScanForm)
+      description: >-
+        Regroupe multiple shipments under a single Manifest in order to simplify
+        handover to carrier.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateManifest'
+      responses:
+        '200':
+          description: Manifest references.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateManifestResponse'
+  /{tenant}/{carrier}/shipments/{tracking_code}/_cancel:
+    post:
+      operationId: cancel-shipment
+      summary: Cancel shipment
+      description: Cancels a booked shipment using the tracking code.
+      responses:
+        '200':
+          description: Successfully cancelled.
+openapi: 3.0.2
+components:
+  schemas:
+    Cost:
+      required:
+        - currency
+        - amount
+      properties:
+        currency:
+          type: string
+        amount:
+          type: number
+          format: decimal
+    EasypostAdapterProblemResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri-reference
+        request_id:
+          type: string
+        status:
+          type: integer
+          minimum: 100
+          maximum: 600
+          exclusiveMaximum: true
+          format: int32
+        title:
+          type: string
+        type:
+          type: string
+          default: about:blank
+          format: uri-reference
+    Price:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: decimal
+        currency:
+          type: string
+      required:
+        - amount
+        - currency
+    Weight:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: decimal
+        unit: {}
+      required:
+        - amount
+        - unit
+    Dimensions:
+      type: object
+      properties:
+        unit: {}
+        width:
+          type: number
+          format: decimal
+        height:
+          type: number
+          format: decimal
+        length:
+          type: number
+          format: decimal
+      required:
+        - height
+        - length
+        - unit
+        - width
+    CustomsItemInfo:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Short product description for a customs declaration.
+        hs_number:
+          type: string
+          pattern: '[0-9]{6}'
+          description: >-
+            Harmonized System number used by customs authorities to identify
+            products for duties and taxes.
+        hts_number:
+          type: string
+          pattern: '[0-9]{10}'
+          description: >-
+            Harmonized Tariff Schedule number used by customs authorities to
+            identify products for duties and taxes.
+        origin_country:
+          type: string
+      required:
+        - description
+        - hs_number
+        - origin_country
+    ItemWithCustomsInfo:
+      type: object
+      properties:
+        price:
+          $ref: '#/components/schemas/Price'
+        weight:
+          $ref: '#/components/schemas/Weight'
+        dimensions:
+          $ref: '#/components/schemas/Dimensions'
+        identifier:
+          type: object
+          additionalProperties: {}
+        customs_info:
+          $ref: '#/components/schemas/CustomsItemInfo'
+    Item:
+      type: object
+      properties:
+        price:
+          $ref: '#/components/schemas/Price'
+        weight:
+          $ref: '#/components/schemas/Weight'
+        dimensions:
+          $ref: '#/components/schemas/Dimensions'
+        identifier:
+          type: object
+          additionalProperties: {}
+    CreateManifestResponse:
+      properties:
+        document_url:
+          type: string
+          description: URL of the Manifest/ScanForm document to print.
+        id:
+          type: string
+          description: ID of the Manifest/ScanForm
+    BookShipmentResponse:
+      properties:
+        cost:
+          $ref: '#/components/schemas/Cost'
+        offer:
+          type: string
+          description: >-
+            a serialized value matching the offer that has been booked. it can
+            be the same value as provided in the book shipment request. this
+            offer will be used when creating manifests (scanforms), or any other
+            taskthat requires to identify the shipment. for easypost, it is a
+            combo of shipment id and rate id.custom adapters implementing this
+            API can have their own logic, as this value is never inspected or
+            changed once retrieved by NewStore.
+        label_url:
+          type: string
+        tracking_code:
+          type: string
+        tracking_url:
+          type: string
+        commercial_invoice_url:
+          type: string
+          description: URL of the commercial invoice document for international shipments.
+        return_offer:
+          type: string
+        return_cost:
+          $ref: '#/components/schemas/Cost'
+        return_label_url:
+          type: string
+        return_tracking_code:
+          type: string
+        return_tracking_url:
+          type: string
+        return_commercial_invoice_url:
+          type: string
+          description: URL of the commercial invoice document for international shipments.
+    EasypostAdapterConfig:
+      type: object
+      properties:
+        easypost_api_key:
+          type: string
+          description: The API key provided by EasyPost.
+        base_customization_url:
+          type: string
+          description: >-
+            The customization webhook URL to customize the data used to create
+            the shipment.
+        ignore_customization_failure_on_booking:
+          type: boolean
+          description: >-
+            If set to true, the EasyPost adapter books a shipment with
+            non-customized data if the call to the "base customization URL"
+            fails. If set to false, the shipment is not booked if the call to
+            the "base customization URL" fails. The value of the flag does not
+            affect the processing of shipping options for the shipment.
+        newstore_username:
+          type: string
+          description: The username provided by NewStore.
+        newstore_password:
+          type: string
+          description: the password provided by NewStore.
+        newstore_url:
+          type: string
+          description: >-
+            Optional: The base URL to NewStore API. This is used to push package
+            status update from carriers.
+        shipment_creation_options:
+          type: object
+          description: The name of the shipping carrier in lowercase.
+          example:
+            fedex:
+              easypost_option_key: >-
+                easypost_option_value: see
+                https://docs.easypost.com/docs/shipments/options#options-object
+          additionalProperties:
+            type: object
+            description: >-
+              The options to create an EasyPost shipment. For more information,
+              see the EasyPost documentation:
+              https://docs.easypost.com/docs/shipments/options#options-object.
+            additionalProperties: {}
+        carrier_accounts:
+          type: object
+          description: The name of the shipping carrier in lowercase.
+          example:
+            fedex:
+              newstore_fulfillment_node_id: 'ca_xxxxxx: easypost carrier account id'
+          additionalProperties:
+            type: object
+            description: >-
+              The fulfilment node id, which represents a location in NewStore
+              Omnichannel Cloud.
+            additionalProperties:
+              type: string
+              description: The carrier account provided by EasyPost (starts with ca_).
+      required:
+        - easypost_api_key
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code.
+        message:
+          type: string
+          description: Description of the error.
+      required:
+        - error
+        - message
+    EasyPostWebHookUpdateResult:
+      type: object
+      properties:
+        tracking_code:
+          type: string
+        status: {}
+        updated_at:
+          type: string
+          format: null
+          pattern: null
+      required:
+        - status
+        - tracking_code
+        - updated_at
+    EasyPostWebHookUpdate:
+      type: object
+      properties:
+        description:
+          type: string
+        result:
+          $ref: '#/components/schemas/EasyPostWebHookUpdateResult'
+      required:
+        - description
+        - result
+    PartialAddress:
+      type: object
+      properties:
+        zip_code:
+          type: string
+        country_code:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        address_line_1:
+          type: string
+        address_line_2:
+          type: string
+        company:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        phone:
+          type: string
+      required:
+        - country_code
+    Address:
+      type: object
+      properties:
+        zip_code:
+          type: string
+        country_code:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        address_line_1:
+          type: string
+        address_line_2:
+          type: string
+        company:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        phone:
+          type: string
+      required:
+        - address_line_1
+        - country_code
+        - first_name
+        - last_name
+    Deliverable:
+      type: object
+      properties:
+        quantity:
+          type: integer
+        item:
+          $ref: '#/components/schemas/ItemWithCustomsInfo'
+      required:
+        - item
+        - quantity
+    CustomsShipmentInfo:
+      type: object
+      properties:
+        customs_signer:
+          type: string
+          description: >-
+            A name of the person who is certifying that the information provided
+            on the customs form is accurate
+      required:
+        - customs_signer
+    ShippingOffersRequest:
+      type: object
+      properties:
+        ready_by:
+          type: string
+          format: date-time
+        shipping_address:
+          $ref: '#/components/schemas/PartialAddress'
+        sender_address:
+          $ref: '#/components/schemas/Address'
+        provider_rate:
+          type: string
+        service_level:
+          type: string
+        deliverables:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Deliverable'
+        fulfillment_node_id:
+          type: string
+        customs_info:
+          $ref: '#/components/schemas/CustomsShipmentInfo'
+      required:
+        - deliverables
+        - provider_rate
+        - ready_by
+        - sender_address
+        - service_level
+        - shipping_address
+    DeliveryEstimate:
+      type: object
+      properties:
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+        guaranteed:
+          type: boolean
+    ShippingPrice:
+      type: object
+      properties:
+        price:
+          type: number
+        currency:
+          type: string
+      required:
+        - currency
+        - price
+    ShippingOffer:
+      type: object
+      properties:
+        offer:
+          type: string
+        provider_rate:
+          type: string
+        service_level:
+          type: string
+        delivery_estimate:
+          $ref: '#/components/schemas/DeliveryEstimate'
+        quote:
+          $ref: '#/components/schemas/ShippingPrice'
+    Offer:
+      type: object
+      properties:
+        shipment_id:
+          type: string
+        rate_id:
+          type: string
+      required:
+        - rate_id
+        - shipment_id
+    PackageOptions:
+      type: object
+      properties:
+        weight:
+          $ref: '#/components/schemas/Weight'
+        dimensions:
+          $ref: '#/components/schemas/Dimensions'
+      required:
+        - weight
+    BookShipmentRequest:
+      type: object
+      properties:
+        rate:
+          type: string
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ItemWithCustomsInfo'
+        offer:
+          readOnly: true
+          allOf:
+            - $ref: '#/components/schemas/Offer'
+        booking_method: {}
+        sender_address:
+          $ref: '#/components/schemas/Address'
+        shipping_address:
+          $ref: '#/components/schemas/Address'
+        package_option:
+          $ref: '#/components/schemas/PackageOptions'
+        fulfillment_node_id:
+          type: string
+        demand_location_id:
+          type: string
+        external_order_id:
+          type: string
+        customs_info:
+          $ref: '#/components/schemas/CustomsShipmentInfo'
+      required:
+        - booking_method
+        - external_order_id
+        - items
+        - rate
+        - sender_address
+        - shipping_address
+    CreateManifest:
+      type: object
+      properties:
+        offers:
+          type: array
+          items:
+            type: string
+      required:
+        - offers

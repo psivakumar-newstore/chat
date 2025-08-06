@@ -1,0 +1,59 @@
+openapi: 3.0.0
+info:
+  title: Customer Care Order Support API
+  version: '0.1'
+  x-audience: internal-company
+  x-api-id: customr-care-order-support-062023
+  description: >
+    This is an internal API for the customer support team, to re-index orders in
+    the NewStore platform.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/_/v0/dontuse
+security:
+  - newStoreAccessToken: []
+paths:
+  /index/customer_care_order:
+    post:
+      summary: Reindex single customer order
+      operationId: createSingleCustomerOrder
+      requestBody:
+        content:
+          application/json:
+            example:
+              order_id: ad6b2c2d-5b31-4818-8764-9f4d2ea0fe6d
+            schema:
+              title: Update a specific customer order.
+              type: object
+              description: Request for indexing a specific customer order.
+              properties:
+                order_id:
+                  type: string
+                  description: Unique order UUID of the order which should be indexed.
+        required: true
+      responses:
+        '204':
+          description: The indexing has been executed successfully.
+        '400':
+          description: Bad Request - Request data is invalid.
+        '404':
+          description: Order doesn't exist
+        '409':
+          description: Failed to execute index request due to a concurrenct request
+        '500':
+          description: An internal error occurred.
+        default:
+          description: Unexpected Error
+      description: >
+        Updates a *single* customer order if data is missing in NOM or an order
+        needs a manual data
+
+        update, making the re-indexing of the existing order necessary.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

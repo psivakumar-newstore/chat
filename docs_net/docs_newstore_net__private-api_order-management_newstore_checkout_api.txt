@@ -1,0 +1,384 @@
+NewStore Checkout API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Capture Order
+External Order API
+Sales order historic import API
+Order Injection configuration
+Order line internal APIs
+Service Level API
+Customer Care Order Support API
+Fulfillment App API
+NewStore Checkout API
+Order status notifications API
+Support API
+Sales Order Support API
+External OMS Config API
+API to manage sales order configurations
+Shopping API
+Swap products in order
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+get
+Get Shopping Cart
+post
+Create payment session
+post
+Process payment
+API docs by Redocly
+NewStore Checkout API
+(
+0
+)
+Download OpenAPI specification
+:
+Download
+Use this API to pay with customer phone (ApplePay) for the cart created by the associate .
+Get Shopping Cart
+Returns read-only shopping cart information matching the given identifier.
+path
+Parameters
+cart_token
+required
+string
+(
+Cart token
+)
+Example:
+7e44748c-5a6d-4b7a-b705-9b5711e47777
+Represents a token that you can use in the context of
+NewStore Checkout
+.
+Responses
+200
+The cart as checked out by the associate.
+404
+Cart not found.
+500
+Internal Server Error.
+get
+/newstorecheckout/carts/{cart_token}
+/_/v0
+/newstorecheckout/carts/{cart_token}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"cart"
+:
+{
+"balance_due"
+:
+{
+"amount"
+:
+25.22
+,
+"currency"
+:
+"USD"
+}
+}
+,
+"configuration"
+:
+{
+"tenant_url"
+:
+"
+https://example.com
+"
+,
+"tenant_url_label"
+:
+"Example Fashion Website"
+,
+"web_drop_in"
+:
+{
+"enabled"
+:
+true
+,
+"locale"
+:
+"en-US"
+,
+"country_code"
+:
+"US"
+,
+"environment"
+:
+"test"
+,
+"merchant_account"
+:
+"ExamplePOS"
+,
+"apple_pay"
+:
+{
+"merchant_id"
+:
+"an_apple_pay_merchant_id"
+,
+"supported_networks"
+:
+[
+"visa"
+,
+"amex"
+]
+}
+,
+"google_pay"
+:
+{
+"merchant_id"
+:
+"a_google_pay_merchant_id"
+}
+,
+"paypal"
+:
+{
+"merchant_id"
+:
+"a_paypal_merchant_id"
+}
+}
+}
+}
+Create payment session
+Creates a session on a digital wallet for the cart to be checked out. You require a session
+to initiate a payment.
+path
+Parameters
+cart_token
+required
+string
+(
+Cart token
+)
+Example:
+7e44748c-5a6d-4b7a-b705-9b5711e47777
+Represents a token that you can use in the context of
+NewStore Checkout
+.
+Request Body schema:
+application/json
+payment_wallet
+required
+string
+Enum
+:
+"APPLE_PAY"
+"PAYPAL"
+Source of the payment. Example: APPLE_PAY.
+Responses
+200
+Session data from the digital wallet provider.
+400
+Bad request.
+404
+Cart not found.
+500
+Internal Server Error.
+post
+/newstorecheckout/carts/{cart_token}/payment_sessions
+/_/v0
+/newstorecheckout/carts/{cart_token}/payment_sessions
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"payment_wallet"
+:
+"APPLE_PAY"
+}
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+{
+"merchantSessionIdentifier"
+:
+"SSH0B04032167A04B0BA994927C24"
+,
+"epochTimestamp"
+:
+1560946702269
+,
+"merchantIdentifier"
+:
+"6962377928D9A9E689AD95BF65"
+,
+"signature"
+:
+"308006092a8643d049c000000000000"
+,
+"displayName"
+:
+""
+,
+"domainName"
+:
+"newstorecheckout.example.com"
+,
+"nonce"
+:
+"e3beeae6"
+,
+"expiresAt"
+:
+1560950302269
+}
+Process payment
+Triggers a payment process for the cart. Make sure you
+created a session
+first.
+The payment will be authorized (and possibly captured depending on the PSP configuration)
+and then it will be added to the cart.
+path
+Parameters
+cart_token
+required
+string
+(
+Cart token
+)
+Example:
+7e44748c-5a6d-4b7a-b705-9b5711e47777
+Represents a token that you can use in the context of
+NewStore Checkout
+.
+Request Body schema:
+application/json
+payment_token
+required
+string
+Token which represents the right to perform payment.
+payment_provider
+required
+string
+Value
+:
+"ADYEN"
+The payment service provider. Example: ADYEN.
+payment_wallet
+required
+string
+Enum
+:
+"APPLE_PAY"
+"DIRECT"
+"GOOGLE_PAY"
+"PAYPAL"
+Source of the payment. Example: APPLE_PAY.
+amount
+required
+number
+The amount that needs to be paid.
+currency
+required
+string
+The currency code in ISO-4217 format.
+customer
+object
+billing_address
+object
+Responses
+200
+Successfully paid for the cart.
+400
+Bad request.
+404
+Cart not found.
+500
+Internal Server Error.
+post
+/newstorecheckout/carts/{cart_token}/_pay
+/_/v0
+/newstorecheckout/carts/{cart_token}/_pay
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"amount"
+:
+25.22
+,
+"currency"
+:
+"USD"
+,
+"payment_token"
+:
+"A-PAYMENT-TOKEN"
+,
+"payment_provider"
+:
+"ADYEN"
+,
+"payment_wallet"
+:
+"APPLE_PAY"
+}
+Response samples
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"request_id"
+:
+"XXX-YYYY-ZZZZ-XYZ-XYZ"
+,
+"messages"
+:
+[
+"payment_wallet.payment_wallet: payment_wallet must be one of the following: APPLE_PAY, PAYPAL"
+]
+}
+Previous
+Fulfillment App API
+Next
+Order status notifications API
+Copyright © 2025 NewStore, Inc.

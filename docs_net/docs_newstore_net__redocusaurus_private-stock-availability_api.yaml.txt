@@ -1,0 +1,77 @@
+openapi: 3.0.0
+info:
+  title: Availabilities API
+  version: v0
+  contact:
+    name: Team Order Management
+    email: team-order-management@newstore.com
+  description: >
+    Represents the availability to promise ([ATP](/docs/glossary.html#term-ATP))
+    quantity of all products only
+
+    considering the default price book.
+
+
+    ATP is calculated by subtracting the sum of all allocations, reservations,
+    and safety
+
+    stock quantity, from the stock on hand. At NewStore, ATP is also the sum of
+    the
+
+    current ATP and [future ATP](/docs/glossary.html#term-future-ATP).
+
+
+    For example, use it to get the ATP of the products to perform a
+    reconciliation with your ERP.
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /export/availabilities:
+    get:
+      responses:
+        '200':
+          description: >
+            A list of `{ productId : quantityAvailable }`. This request should
+            never return an error.
+          content:
+            application/json:
+              example:
+                products:
+                  - product_id: '1005506'
+                    atp: 6
+                  - product_id: '1005507'
+                    atp: 5
+              schema:
+                title: Check availability Response
+                description: Response schema for getting availability of products
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      description: Schema for product info details
+                      properties:
+                        product_id:
+                          type: string
+                          minLength: 1
+                        atp:
+                          type: integer
+                          minimum: 0
+                    minItems: 0
+      description: >
+        **Important:** Do not use this method if you have more than one
+        location.
+
+
+        Retrieves the current (global) availability to promise for all products.
+      summary: Get ATP
+      operationId: get_atp

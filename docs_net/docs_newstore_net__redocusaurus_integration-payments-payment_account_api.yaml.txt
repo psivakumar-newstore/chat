@@ -1,0 +1,1037 @@
+openapi: 3.0.0
+info:
+  title: Payment Accounts API
+  version: '0'
+  description: >
+
+    This association is done by assigning the same ID to the payment account and
+    the entity it is linked to.
+
+
+    Payments
+
+      Represents a payment account used during order placement.
+      It has a balance and stores the transactions and the financial instruments that modified its balance.
+
+      Use this resource to retrieve information about a payment account.
+      A payment account can also be used to track the balance and transactions of other entities
+      created by the NewStore platform. For example, a payment account can be associated with an entity such as a sales order, a customer,
+      or a shopping bag by assigning the same ID to the payment account and to the entity.
+
+      **Note** - Currently, NewStore only supports assigning the same ID to a payment account and the related sales order.
+servers:
+  - url: https://dodici.x.newstore.net/v0/c
+paths:
+  /payments/accounts/{account_id}:
+    parameters:
+      - name: account_id
+        description: >
+          Unique ID of a payment account. It is the same ID as the entity the
+          payment account is assigned to.
+
+          For example, use the internal ID (`uuid`) of a sales order.
+        required: true
+        in: path
+        schema:
+          title: account ID
+          description: >
+            Unique ID of a payment account. It is the same ID as the entity the
+            payment account is assigned to.
+
+            For example, use the internal ID (`uuid`) of a sales order.
+          type: string
+    get:
+      operationId: GetPayment
+      summary: Get Payments
+      description: >
+        Returns a snapshot of the account at the time of the request.
+
+        The account balance that you retrieve is positive (> 0) whenever
+        payments are authorized, but not captured yet.
+
+        For example, when items are still waiting for fulfillment. If the
+        account balance is negative, you might have over-captured the order,
+
+        which means that you have captured an amount bigger than the requested
+        amount.
+      responses:
+        '200':
+          description: |
+            The snapshot of the account at the time of the request is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Current payment account status
+                properties:
+                  balance:
+                    type: number
+                    description: The current balance of the account.
+                  transactions:
+                    type: array
+                    description: The list of the transactions in the account.
+                    items:
+                      type: object
+                      title: Transaction
+                      description: Every account posting that may affect the balance.
+                      required:
+                        - transaction_id
+                        - credit
+                        - debit
+                        - currency
+                      properties:
+                        transaction_id:
+                          type: string
+                          description: >-
+                            A unique identifier that is attached to the cause of
+                            this transaction. The attachment to the cause,
+                            instead of an arbitrary key, is important for
+                            idempotency. E.g. for a placed order the transaction
+                            id should be the order id as this guarantees that if
+                            the same order is replayed, the transaction won't be
+                            duplicated.
+                        correlation_id:
+                          type: string
+                          description: >-
+                            The correlation id of the operation that resulted
+                            into this transaction.
+                        debit:
+                          type: number
+                          description: The amount debited to the account.
+                        credit:
+                          type: number
+                          description: >-
+                            The amount credited on the account. Mutually
+                            exclusive with debit.
+                        inserted_at:
+                          type: string
+                          format: date-time
+                          description: The time when the transaction was registered.
+                        currency:
+                          type: string
+                          description: Currency code in ISO-4217 format.
+                        processed_at:
+                          type: string
+                          format: date-time
+                          description: The timestamp when the transaction was processed.
+                        metadata:
+                          type: object
+                          nullable: true
+                          description: An opaque set of metadata for the transaction.
+                  instruments:
+                    type: array
+                    description: >-
+                      The list of financial instrument snapshots the account
+                      contains
+                    items:
+                      type: object
+                      title: Instrument
+                      description: Financial instrument
+                      required:
+                        - id
+                        - payment_method
+                        - payment_provider
+                        - refund_amount
+                        - capture_amount
+                        - authorize_amount
+                        - currency
+                        - metadata
+                      properties:
+                        id:
+                          type: string
+                          description: The unique identifier of the financial instrument.
+                        payment_method:
+                          type: string
+                          description: >-
+                            The payment method. Possible values: cash,
+                            credit_card, gift_card, paypal.
+                        payment_wallet:
+                          type: string
+                          description: >-
+                            Source of the financial instrument. For example:
+                            Apple Pay, Android Pay.
+                        payment_provider:
+                          type: string
+                          description: The payment service provider.
+                        refund_amount:
+                          type: number
+                          description: >-
+                            The total amount refunded on that financial
+                            instrument.
+                        capture_amount:
+                          type: number
+                          description: >-
+                            The total amount captured on that financial
+                            instrument.
+                        authorize_amount:
+                          type: number
+                          description: >-
+                            The total amount authorized on that financial
+                            instrument.
+                        currency:
+                          type: string
+                          description: The currency code in ISO-4217 format.
+                        original_transactions:
+                          type: array
+                          description: The unprocessed transaction of the instrument.
+                          items:
+                            title: A financial instrument transaction
+                            type: object
+                            required:
+                              - instrument_id
+                              - transaction_id
+                              - capture_amount
+                              - refund_amount
+                            properties:
+                              instrument_id:
+                                type: string
+                                description: >-
+                                  The unique identifier of the financial
+                                  instrument. Newstore owns this identifier.
+                              payment_provider:
+                                type: string
+                                description: >-
+                                  The payment provider that was used to perform
+                                  the transaction.
+                              payment_method:
+                                type: string
+                                description: >-
+                                  The payment method used to perform the
+                                  transaction.
+                              payment_wallet:
+                                type: string
+                                description: >-
+                                  Source of the financial instrument. For
+                                  example: Apple Pay, Android Pay.
+                              transaction_id:
+                                type: string
+                                description: ' A unique identifier that is attached to the cause of this transaction.'
+                              correlation_id:
+                                type: string
+                                description: ' The correlation ID of the operation that resulted in the transaction.'
+                              reason:
+                                type: string
+                                description: >-
+                                  The action that triggered generation of the
+                                  respective transaction (ex. capture, refund,
+                                  etc)
+                              capture_amount:
+                                type: number
+                                description: >-
+                                  The amount that was authorized or captured.
+                                  Positive value for authorization, negative for
+                                  capture
+                              refund_amount:
+                                type: number
+                                description: >-
+                                  The amount that was credited for refund or the
+                                  amount refunded. Positive for credits,
+                                  negative for refunds.
+                              currency:
+                                type: string
+                                description: The currency code in ISO-4217 format.
+                              metadata:
+                                type: object
+                                description: >-
+                                  Internal opaque object containing the data
+                                  required by the payment provider to process
+                                  the payment.
+                        transactions:
+                          type: array
+                          items:
+                            type: object
+                            description: >-
+                              Not defined yet! Will contain a normalized format
+                              of Financial Instrument Transactions. 
+                        metadata:
+                          type: object
+                          description: >-
+                            Internal opaque object containing the data required
+                            by the payment provider to process the payment. The
+                            value of this field originally comes from the
+                            '/financial_instruments' webhook.
+        '404':
+          description: |
+            The account does not exist.
+  /payments/accounts/{account_id}/summary:
+    parameters:
+      - name: account_id
+        description: >
+          Unique ID of a payment account. It is the same ID as the entity the
+          payment account is assigned to.
+
+          For example, use the internal ID (`uuid`) of a sales order.
+        required: true
+        in: path
+        schema:
+          title: account ID
+          description: >
+            Unique ID of a payment account. It is the same ID as the entity the
+            payment account is assigned to.
+
+            For example, use the internal ID (`uuid`) of a sales order.
+          type: string
+      - name: linked_accounts
+        in: query
+        schema:
+          type: string
+        description: >-
+          Additional payment account identifier that should be aggregated in the
+          response body.
+    get:
+      operationId: GetPaymentSummary
+      summary: Get summary of a payment account
+      description: Returns the summary of the account history.
+      responses:
+        '200':
+          description: |
+            The summary of the account history is returned.
+          content:
+            application/json:
+              schema:
+                title: Account summary
+                type: object
+                properties:
+                  payments:
+                    type: array
+                    items:
+                      type: object
+                      description: >-
+                        Contains the payment information. Can be used for
+                        multiple payments against multiple credit sources (i.e.
+                        store credit + CC)
+                      properties:
+                        activities:
+                          type: array
+                          description: >-
+                            A list of activities. For example
+                            authorization-pending, authorization-authorized,
+                            capture-captured...
+                          items:
+                            type: object
+                            properties:
+                              correlation_id:
+                                type: string
+                                description: Correlation id of the payment.
+                              created_at:
+                                description: >-
+                                  The time the activity was recorded, this can
+                                  be null in case canceled activity.
+                                format: date-time
+                                type: string
+                              processed_at:
+                                type: string
+                                format: date-time
+                                description: >-
+                                  The timestamp when the transaction was
+                                  processed. Example 2019-02-17T00:00:37.
+                              name:
+                                type: string
+                                description: >-
+                                  The name of the activity. E.g.
+                                  authorization-pending,
+                                  authorization-authorized,
+                                  authorization-failed, capture-pending,
+                                  capture-captured etc.
+                              metadata:
+                                type: object
+                                properties:
+                                  amount:
+                                    type: number
+                                    description: The monetary value of the activity.
+                                  currency:
+                                    type: string
+                                    description: >-
+                                      Currency code shown and billed to the
+                                      consumer.
+                                    maxLength: 3
+                                  transaction_id:
+                                    type: string
+                                    description: >-
+                                      The external identifier of the transaction
+                                      generated by the payment provider, if
+                                      available.
+                                  error_message:
+                                    description: >-
+                                      Details the error that happened during the
+                                      payment, if any. This message is displayed
+                                      in Omnichannel Manager. Is filled only in
+                                      *-failed cases.
+                                    type: string
+                                  error_code:
+                                    description: >-
+                                      The external code of the error. Is filled
+                                      only in *-failed cases.
+                                    type: string
+                        id:
+                          type: string
+                          description: An identifier of the payment.
+                        amount:
+                          type: number
+                          description: The monetary value of the payment.
+                        status:
+                          type: string
+                          description: >-
+                            The status of the last activity on the Payment. E.g.
+                            authorization-pending authorization-authorized
+                            authorization-failed capture-pending
+                            capture-captured etc.
+                        currency:
+                          description: >-
+                            The currency of the amount as 3 character ISO-4217
+                            code. Example USD, EUR.
+                          maxLength: 3
+                          type: string
+                        date:
+                          description: The time the last activity was made on the Payment.
+                          format: date-time
+                          type: string
+                        psp:
+                          type: string
+                          description: >-
+                            The payment service provider (PSP). For example,
+                            adyen, stripe, vzero, braintree.
+                        method:
+                          description: >-
+                            The method customer paid for the order. For example,
+                            credit_card/cash.
+                          type: string
+                        wallet:
+                          type: string
+                          description: >-
+                            The payment wallet used in the transaction. For
+                            example, APPLE_PAY/GOOGLE_PAY, or direct (when no
+                            wallet was used).
+                          maxLength: 64
+                        origin:
+                          type: string
+                          description: >-
+                            The origin of the payment. For example,
+                            newstore_checkout.
+                          maxLength: 64
+                        payment_information:
+                          type: string
+                          description: >-
+                            Any payment information related to the payment
+                            method used. For example, the last 4 digits of the
+                            credit card number.
+                        category:
+                          type: string
+                          description: >-
+                            Describes if it is a Payment (authorization or
+                            capture) or Refund.
+        '404':
+          description: |
+            The account does not exist.
+  /payments/accounts/{account_id}/_precalculate_refund:
+    parameters:
+      - name: account_id
+        description: >
+          Unique ID of a payment account. It is the same ID as the entity the
+          payment account is assigned to.
+
+          For example, use the internal ID (`uuid`) of a sales order.
+        required: true
+        in: path
+        schema:
+          title: account ID
+          description: >
+            Unique ID of a payment account. It is the same ID as the entity the
+            payment account is assigned to.
+
+            For example, use the internal ID (`uuid`) of a sales order.
+          type: string
+    post:
+      operationId: PrecalculateRefund
+      summary: Precalculate the payment instruments for a future refund
+      description: >-
+        Returns a list of payment instruments and amounts for a future refund,
+        given the account state and refund amount.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+                - currency
+              properties:
+                amount:
+                  type: number
+                  minimum: 0
+                  description: A positive amount to be refunded
+                currency:
+                  type: string
+                  minLength: 3
+                  maxLength: 3
+                strategy:
+                  description: >-
+                    The strategy to apply when processing the request. If no
+                    strategy is specified the default configured strategy is
+                    used.
+                  type: string
+                  minLength: 0
+                  maxLength: 100
+            examples:
+              PrecalculateRefundRequest:
+                summary: Amount to refund.
+                value:
+                  amount: 10.05
+                  currency: USD
+      responses:
+        '200':
+          description: |
+            The list of instruments and amounts to refund.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - instruments
+                properties:
+                  instruments:
+                    type: array
+                    minLength: 1
+                    description: A list of payment methods and amounts to refund to.
+                    items:
+                      type: object
+                      required:
+                        - payment_method
+                        - amount
+                        - currency
+                      properties:
+                        payment_method:
+                          type: string
+                          minLength: 1
+                          description: The payment method for the refund
+                        amount:
+                          type: string
+                          minLength: 1
+                          description: The amount to be refunded
+                        currency:
+                          type: string
+                          minLength: 3
+                          maxLength: 3
+                        card_details:
+                          type: object
+                          description: Additional credit card details
+                          properties:
+                            brand:
+                              type: string
+                              description: The card's brand
+                            last_four_digits:
+                              type: string
+                              description: The card number's last four digits
+        '400':
+          description: |
+            Refund failed due to insufficient funds or bad request data.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - error_message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  error_message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            The account does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - error_message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  error_message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '500':
+          description: |
+            Refund failed due to an internal error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - error_message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  error_message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /payments/historical:
+    post:
+      operationId: HistoricalImport
+      summary: Historical import
+      description: Store payment data for a historical order.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: API to import payment data for historical orders
+              type: object
+              required:
+                - external_order_id
+                - account_id
+                - placed_at
+                - store_id
+                - currency
+                - payments
+              properties:
+                external_order_id:
+                  description: '(Previously: external_id) External order ID visible in NOM.'
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                account_id:
+                  description: >-
+                    (Previously: sales_order_uuid) The account that this payment
+                    belongs to, usually sales_order_uuid
+                  type: string
+                  maxLength: 36
+                  minLength: 36
+                placed_at:
+                  type: string
+                  description: >-
+                    Date representation of when the order was placed, containing
+                    date, time and timezone as defined by
+                    https://tools.ietf.org/html/rfc3339 (ISO 8601).
+                  format: date-time
+                store_id:
+                  type: string
+                  description: ID of the store where this order was placed.
+                  maxLength: 256
+                currency:
+                  description: >-
+                    The currency for all the prices contained within this
+                    payload.
+                  type: string
+                  enum:
+                    - AED
+                    - AFN
+                    - ALL
+                    - AMD
+                    - ANG
+                    - AOA
+                    - ARS
+                    - AUD
+                    - AWG
+                    - AZN
+                    - BAM
+                    - BBD
+                    - BDT
+                    - BGN
+                    - BHD
+                    - BIF
+                    - BMD
+                    - BND
+                    - BOB
+                    - BOV
+                    - BRL
+                    - BSD
+                    - BTN
+                    - BWP
+                    - BYN
+                    - BZD
+                    - CAD
+                    - CDF
+                    - CHE
+                    - CHF
+                    - CHW
+                    - CLF
+                    - CLP
+                    - CNY
+                    - COP
+                    - COU
+                    - CRC
+                    - CUC
+                    - CUP
+                    - CVE
+                    - CZK
+                    - DJF
+                    - DKK
+                    - DOP
+                    - DZD
+                    - EGP
+                    - ERN
+                    - ETB
+                    - EUR
+                    - FJD
+                    - FKP
+                    - GBP
+                    - GEL
+                    - GHS
+                    - GIP
+                    - GMD
+                    - GNF
+                    - GTQ
+                    - GYD
+                    - HKD
+                    - HNL
+                    - HRK
+                    - HTG
+                    - HUF
+                    - IDR
+                    - ILS
+                    - INR
+                    - IQD
+                    - IRR
+                    - ISK
+                    - JMD
+                    - JOD
+                    - JPY
+                    - KES
+                    - KGS
+                    - KHR
+                    - KMF
+                    - KPW
+                    - KRW
+                    - KWD
+                    - KYD
+                    - KZT
+                    - LAK
+                    - LBP
+                    - LKR
+                    - LRD
+                    - LSL
+                    - LYD
+                    - MAD
+                    - MDL
+                    - MGA
+                    - MKD
+                    - MMK
+                    - MNT
+                    - MOP
+                    - MRU
+                    - MUR
+                    - MVR
+                    - MWK
+                    - MXN
+                    - MXV
+                    - MYR
+                    - MZN
+                    - NAD
+                    - NGN
+                    - NIO
+                    - NOK
+                    - NPR
+                    - NZD
+                    - OMR
+                    - PAB
+                    - PEN
+                    - PGK
+                    - PHP
+                    - PKR
+                    - PLN
+                    - PYG
+                    - QAR
+                    - RON
+                    - RSD
+                    - RUB
+                    - RWF
+                    - SAR
+                    - SBD
+                    - SCR
+                    - SDG
+                    - SEK
+                    - SGD
+                    - SHP
+                    - SLL
+                    - SOS
+                    - SRD
+                    - SSP
+                    - STN
+                    - SVC
+                    - SYP
+                    - SZL
+                    - THB
+                    - TJS
+                    - TMT
+                    - TND
+                    - TOP
+                    - TRY
+                    - TTD
+                    - TWD
+                    - TZS
+                    - UAH
+                    - UGX
+                    - USD
+                    - USN
+                    - UYI
+                    - UYU
+                    - UYW
+                    - UZS
+                    - VES
+                    - VND
+                    - VUV
+                    - WST
+                    - XAF
+                    - XAG
+                    - XAU
+                    - XBA
+                    - XBB
+                    - XBC
+                    - XBD
+                    - XCD
+                    - XDR
+                    - XOF
+                    - XPD
+                    - XPF
+                    - XPT
+                    - XSU
+                    - XTS
+                    - XUA
+                    - XXX
+                    - YER
+                    - ZAR
+                    - ZMW
+                    - ZWL
+                payments:
+                  type: array
+                  maxItems: 40
+                  items:
+                    type: object
+                    description: >-
+                      A payment supplied for this order. Only payments that are
+                      already authorized or captured are supported. Tokens that
+                      are not authorized are not supported. The validity of a
+                      payment is not checked during import, so an order with
+                      invalid payments is imported successfully and fulfilled.
+                      For example, a payment validity issue can be a voided
+                      authorization or an incorrect payment amount.
+                    required:
+                      - instrument_id
+                      - amount
+                      - method
+                      - processed_at
+                    properties:
+                      amount:
+                        description: The amount paid.
+                        type: number
+                        minimum: 0
+                        multipleOf: 0.01
+                        exclusiveMinimum: true
+                      method:
+                        type: string
+                        description: >-
+                          The selected payment method. Typical values are
+                          'cash', 'credit_card' or 'gift_card'. Other values are
+                          possible depending on your payment providers.
+                        minLength: 1
+                        maxLength: 64
+                      wallet:
+                        type: string
+                        description: >-
+                          The payment wallet used in the transaction. For
+                          example, apple_pay, google_pay, paypal etc.
+                        minLength: 1
+                        maxLength: 64
+                        default: direct
+                      processed_at:
+                        type: string
+                        description: >-
+                          Date representation of when the payment was processed,
+                          containing date, time and timezone as defined by
+                          https://tools.ietf.org/html/rfc3339 (ISO 8601).
+                        format: date-time
+                      metadata:
+                        description: Payment method specific information.
+                        maxProperties: 100
+                        type: object
+                      adyen_merchant_account:
+                        description: >-
+                          (Previously in metadata.provider_account_id) Required
+                          for Adyen
+                        type: string
+                      card_details:
+                        description: >-
+                          Details about credit card payment. These details will
+                          show up in NOM and events.
+                        type: object
+                        properties:
+                          brand:
+                            description: Credit card brand such as visa or amex.
+                            type: string
+                          last_four_digits:
+                            description: Last four digits of the credit card.
+                            type: string
+                      provider:
+                        type: string
+                        description: >-
+                          (Previously: processor) Identifies the payment
+                          provider (processor) used to process the payment.
+                        minLength: 1
+                        maxLength: 32
+                        default: non_integrated
+                      instrument_id:
+                        type: string
+                        description: >-
+                          (Previously: correlation_ref) Identifies the payment
+                          for the given order among all payments. This
+                          identifier must be unique for a given retailer,
+                          regardless of the payment processor.
+                        minLength: 1
+                        maxLength: 128
+            examples:
+              HistoricalRequest:
+                summary: Import historical data.
+                value:
+                  external_order_id: HISTORIC_ORDER_123
+                  account_id: 547cf43d-487a-4311-b630-346880725628
+                  placed_at: '2018-10-08T07:06:08.067Z'
+                  store_id: 807b05a4-5554-5302-a67f-aa3293107e92
+                  currency: USD
+                  payments:
+                    - provider: adyen
+                      instrument_id: ch_1DIsE9GMCeo3G7b40EbEjfZX
+                      amount: 68.78
+                      method: credit_card
+                      wallet: apple_pay
+                      metadata: {}
+                      processed_at: '2018-10-08T07:06:08.067Z'
+                      adyen_merchant_account: NewStorePOS
+                      card_details:
+                        brand: visa
+                        last_four_digits: '1234'
+                    - instrument_id: asdgretesg3tgdfAASdasd
+                      amount: 100.21
+                      method: gift_card
+                      processed_at: '2018-10-08T07:06:08.067Z'
+      responses:
+        '200':
+          description: Ok response without response payload.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: >-
+                      An optional message. Only one is currently supported:
+                      `Order already exists`, which will be returned if
+                      requested import for account already exists in our DB.
+                  status:
+                    type: string
+                    minLength: 2
+                    description: Status will always be OK on http status 200 code.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+        '400':
+          description: Error response containing error description.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - error_message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  error_message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '500':
+          description: |
+            Refund failed due to an internal error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - error_message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  error_message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+components:
+  schemas: {}
+  responses: {}
+  requestBodies: {}
+  parameters: {}
+  examples: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}
+security:
+  - newStoreAccessToken: []

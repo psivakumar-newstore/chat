@@ -1,0 +1,278 @@
+openapi: 3.0.0
+info:
+  title: Adyen notifications API
+  version: '1.0'
+  description: >
+    This API will be used by Adyen to forward payment events. The API represents
+    Adyen configuration
+
+    for stores in your business, including notifications reflecting a payment
+    status update.
+
+
+    The [Register payment status
+    update](/newstore-cloud/payment/psp_adyen.html#operation/PaymentStatusUpdate)
+
+    method provided under this resource must be
+
+    [added as webhooks to your Adyen
+    setup](https://docs.adyen.com/development-resources/notifications).
+servers:
+  - url: https://dodici.x.newstore.net/_/v1/org/psps/adyen
+paths:
+  /notifications:
+    summary: Adyen payment notifications
+    description: >
+      Represents an Adyen notification reflecting a payment status update.
+
+      The methods provided under this resource must be [added as webhooks to
+      your Adyen
+      setup](https://docs.adyen.com/development-resources/notifications).
+    post:
+      operationId: PaymentStatusUpdate
+      summary: Register payment status update
+      description: >
+        This method must be [called by
+        Adyen](https://docs.adyen.com/development-resources/notifications).
+
+        This interface conforms to Adyen's notification structure.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Payment status update notification
+              type: object
+              description: >-
+                Information related to a payment status update. Schema adapted
+                from
+                https://docs.adyen.com/development-resources/notifications/notifications-api
+              required:
+                - live
+                - notificationItems
+              properties:
+                live:
+                  type: string
+                  description: >-
+                    Specifies whether the event that triggered the notification
+                    happened on the test or live environment.
+                notificationItems:
+                  type: array
+                  description: >-
+                    List of payment notifications. The list contains a single
+                    item.
+                  items:
+                    type: object
+                    description: >-
+                      A container object for the details included in the
+                      notification.
+                    required:
+                      - NotificationRequestItem
+                  properties:
+                    NotificationRequestItem:
+                      type: object
+                      description: >-
+                        Information about the event that triggered the
+                        notification. Some fields depend on the type of event
+                        that triggered the notification.
+                      required:
+                        - additionalData
+                        - amount
+                        - pspReference
+                        - eventCode
+                        - eventDate
+                        - merchantAccountCode
+                        - operations
+                        - merchantReference
+                        - paymentMethod
+                        - success
+                      properties:
+                        additionalData:
+                          type: object
+                          description: >-
+                            Additional information about the shopper or the
+                            transaction.
+                          required:
+                            - hmacSignature
+                          properties:
+                            hmacSignature:
+                              type: string
+                              description: >-
+                                Signature of the payload calculated using a
+                                secret HMAC key.
+                            shopperReference:
+                              type: string
+                              description: >-
+                                The ID that uniquely identifies the shopper.
+                                This shopperReference is the same as the
+                                shopperReference used in the initial payment.
+                                This field is returned in case of recurring
+                                contract notifications.
+                            shopperEmail:
+                              type: string
+                              description: >-
+                                The shopper's email address. This field is
+                                returned in case of recurring contract
+                                notifications.
+                            authCode:
+                              type: string
+                              description: >-
+                                Authorisation code. When the payment is
+                                authorised successfully, this field holds the
+                                authorisation code for the payment. When the
+                                payment is not authorised, this field is empty.
+                            cardSummary:
+                              type: string
+                              description: >-
+                                The last 4 digits of the credit card. Only
+                                digits are allowed. No alphabetic characters.
+                            expiryDate:
+                              type: string
+                              description: 'The card expiry date in the format: MM/YYYY.'
+                            authorisedAmountValue:
+                              type: string
+                              description: >-
+                                Value of the amount authorised. For reference:
+                                https://docs.adyen.com/development-resources/notifications/notifications-api#notificationrequestitem-additionaldata
+                            authorisedAmountCurrency:
+                              type: string
+                              description: Currency of the authorised amount.
+                        amount:
+                          type: object
+                          required:
+                            - value
+                            - currency
+                          properties:
+                            value:
+                              type: integer
+                              description: >-
+                                Amount with the decimal points so $10.30 is
+                                represented as 1030. Different currencies have
+                                different number of decimal points. More
+                                information on
+                                https://docs.adyen.com/development-resources/currency-codes.
+                            currency:
+                              type: string
+                              minLength: 3
+                              maxLength: 3
+                              description: >-
+                                The currency of the amount as 3 character
+                                ISO-4217 code. Example USD, EUR.
+                        pspReference:
+                          type: string
+                          minLength: 16
+                          maxLength: 16
+                          description: >-
+                            Adyen's 16-character unique reference associated
+                            with the transaction/the request.
+                        eventCode:
+                          type: string
+                          description: The type of event that triggered the notification.
+                        eventDate:
+                          type: string
+                          description: >-
+                            The time of the event. Format: ISO 8601;
+                            YYYY-MM-DDThh:mm:ssTZD.
+                        merchantAccountCode:
+                          type: string
+                          description: The merchant account name.
+                        operations:
+                          type: array
+                          description: >-
+                            This field holds a list of the modification
+                            operations supported by the transaction the
+                            notification item refers to.
+                          items:
+                            type: string
+                            description: >-
+                              The available operations in the list give
+                              information on the follow-up actions concerning
+                              the payment.
+                            enum:
+                              - CANCEL
+                              - CAPTURE
+                              - REFUND
+                        merchantReference:
+                          type: string
+                          description: The reference assigned to the original payment.
+                        originalReference:
+                          type: string
+                          description: >-
+                            If the notification item is about a payment
+                            authorisation, this field is not populated and is
+                            blank. If the notification item is about a
+                            modification, the originalReference value
+                            corresponds to the payment request assigned to the
+                            original payment.
+                        paymentMethod:
+                          type: string
+                          description: >-
+                            Example payment methods that can be set to this
+                            field: visa , mc , ideal , elv , wallie , and so on.
+                            This field is populated only in authorisation
+                            notifications.
+                        reason:
+                          type: string
+                          description: >-
+                            This field is included only in some notifications
+                            and its value varies depending on whether the
+                            outcome of the event is successful or not. For
+                            reference:
+                            https://docs.adyen.com/development-resources/notifications/notifications-api#reason-field-values
+                        success:
+                          type: string
+                          description: >-
+                            The outcome of the event, set to either true or
+                            false.
+            examples:
+              Notification Request:
+                value:
+                  live: 'false'
+                  notificationItems:
+                    - NotificationRequestItem:
+                        - additionalData: null
+                          requestId: A_REQUEST
+                          hmacSignature: +JWKfq4ynALK+FFzGgHnp1jSMQJMBJeb87dlph24sXw=
+                      eventCode: AUTHORISATION
+                      success: 'true'
+                      eventDate: '2019-06-28T18:03:50+01:00'
+                      merchantAccountCode: MERCHANT_ACCOUNT
+                      pspReference: '7914073381342284'
+                      merchantReference: REFERENCE
+                      operations:
+                        - CAPTURE
+                      paymentMethod: visa
+                      amount:
+                        value: 1130
+                        currency: EUR
+      responses:
+        '200':
+          description: The notification was processed.
+          content:
+            application/json:
+              schema:
+                title: Response to payment status update notification
+                description: Informs Adyen about the notification acknowledgement.
+                type: array
+                maxItems: 1
+                minItems: 1
+                items:
+                  type: string
+                  description: 'Notification acknowledgement status. Example: accepted.'
+              examples:
+                Accepted:
+                  value:
+                    - accepted
+        '401':
+          description: Authorization header didn't match the expectation.
+        '403':
+          description: Could not validate message signature.
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}

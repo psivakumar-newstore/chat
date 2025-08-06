@@ -1,0 +1,426 @@
+Item Return API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Availabilities Export API
+Customer Profile Updates API
+Fulfillment Provider API
+Fulfillment Request API
+Historical order import API
+Item Return API
+Item Return API
+Location API
+Manager approval
+Fulfillment Configuration API
+Manager Approval Rules API
+Order API
+Order Injection API
+Order Notes API
+Order information retrieval API
+Safety Stock API
+Availabilities API
+Stock insights API
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+List returns for order
+post
+Create return (legacy)
+get
+Get return
+API docs by Redocly
+Item Return API
+(
+0.1
+)
+Download OpenAPI specification
+:
+Download
+List returns for order
+Retrieves the list of all returns for the order.
+Related methods:
+Get return
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_id
+required
+string
+The identifier for the order.
+Responses
+200
+500
+Internal Server Error.
+get
+/orders/{order_id}/returns
+/v0/d
+/orders/{order_id}/returns
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"refunded_amount"
+:
+775.19
+,
+"return_id"
+:
+"1fc4d366-40ca-4e36-b38f-66393bda517a"
+,
+"returned_from"
+:
+"27a39710-4b2d-43fd-b636-5f7aed3073a2"
+,
+"currency"
+:
+"USD"
+,
+"return_items"
+:
+[
+{
+"product_id"
+:
+"1000031"
+}
+]
+}
+,
+{
+"refunded_amount"
+:
+666.32
+,
+"return_id"
+:
+"97fada4f-8eaf-4e91-aebd-c289c10c3311"
+,
+"returned_from"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"currency"
+:
+"USD"
+,
+"return_items"
+:
+[
+{
+"product_id"
+:
+"1000001"
+}
+]
+}
+]
+Create return (legacy)
+Initiates the return process for item(s) in an order.
+Imports a historical return into NewStore when
+is_historical
+is set to true.
+You must specify the condition code for an item when creating a return.
+NewStore creates condition codes for your business.
+To retrieve the list of condition codes configured for your business, contact
+the support team.
+If the refund amount is not provided in the request, it is calculated by the platform:
+If only some items from the order are returned, sum of the item prices is refunded.
+If the config property
+refund_shipping_cost
+is set to
+True
+and all items in the
+order are returned, the amount refunded includes the sum of the item prices and the
+shipping costs.
+If the config property
+refund_shipping_cost
+is not set, or set to
+False
+,
+the sum of the item prices is refunded. Shipping costs are not included in this amount,
+and not refunded.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_id
+required
+string
+The identifier for the order.
+Request Body schema:
+application/json
+is_historical
+boolean
+Set to true, if the return is historical, i.e. it was processed by an external system.
+returned_at
+string or null
+<
+date-time
+>
+The time when the item was returned. If this property is not set in the request, it is set to the current time.
+returned_from
+required
+string
+non-empty
+The fulfillment_node_id of the location to which the item was returned.
+refund_amount
+number or null
+The amount to be refunded. If this property is not set in the request, it is calculated automatically.
+items
+required
+Array of
+objects
+non-empty
+extended_attributes
+Array of
+objects
+<= 100 items
+This is a list of read-only objects that can be used to display additional information.
+Responses
+201
+The return was successfully created.
+400
+The provided data is incorrect.
+404
+The order was not found.
+409
+Your return policy does not allow this return, or this return was already requested.
+500
+Internal Server Error.
+post
+/orders/{order_id}/returns
+/v0/d
+/orders/{order_id}/returns
+Request samples
+Payload
+Content type
+application/json
+Example
+Regular return.
+A return with zero refund amount.
+Historical return.
+Regular return.
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"product_id"
+:
+"1000031"
+,
+"return_reason"
+:
+"Wrong size"
+,
+"return_code"
+:
+1
+,
+"item_condition"
+:
+"Resell"
+,
+"condition_code"
+:
+1
+}
+,
+{
+"product_id"
+:
+"1000032"
+,
+"return_reason"
+:
+"Damaged"
+,
+"return_code"
+:
+2
+,
+"item_condition"
+:
+"Scrap"
+,
+"condition_code"
+:
+2
+}
+]
+,
+"returned_from"
+:
+"27a39710-4b2d-43fd-b636-5f7aed3073a2"
+}
+Response samples
+201
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"refunded_amount"
+:
+775.19
+,
+"return_id"
+:
+"1fc4d366-40ca-4e36-b38f-66393bda517a"
+,
+"returned_from"
+:
+"27a39710-4b2d-43fd-b636-5f7aed3073a2"
+,
+"currency"
+:
+"USD"
+,
+"return_items"
+:
+[
+{
+"product_id"
+:
+"1000031"
+}
+,
+{
+"product_id"
+:
+"1000032"
+}
+]
+}
+Get return
+Retrieves the specified return.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+return_id
+required
+string
+The identifier for the returns.
+order_id
+required
+string
+The identifier for the order.
+Responses
+200
+The return with the given uuid.
+404
+The return was not found.
+500
+Internal Server Error.
+get
+/orders/{order_id}/returns/{return_id}
+/v0/d
+/orders/{order_id}/returns/{return_id}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"refunded_amount"
+:
+1406.75
+,
+"return_id"
+:
+"76ba2c90-c413-438e-8040-a3585a2db770"
+,
+"returned_from"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"currency"
+:
+"USD"
+,
+"return_items"
+:
+[
+{
+"product_id"
+:
+"1000061"
+,
+"item_condition"
+:
+"Sellable"
+,
+"condition_code"
+:
+1
+,
+"return_reason"
+:
+"Too small"
+,
+"return_code"
+:
+2
+}
+,
+{
+"product_id"
+:
+"1000221"
+,
+"item_condition"
+:
+"Scrap"
+,
+"condition_code"
+:
+2
+,
+"return_reason"
+:
+"Damaged"
+,
+"return_code"
+:
+1
+}
+]
+}
+Previous
+Historical order import API
+Next
+Item Return API
+Copyright © 2025 NewStore, Inc.

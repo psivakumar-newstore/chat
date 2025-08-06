@@ -1,0 +1,252 @@
+Migrating from Customer Profile API v0 to v2
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Migrating from Customer Profile API v0 to v2
+Updated on
+Nov 13, 2024
+Published on Oct 1, 2024
+3 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+To read more about the two versions of the Customer Profile API, see the OpenAPI specifications provided here:
+v0 documentation
+v2 documentation
+Pre-requisites
+Before you start the migration process, ensure that you have:
+Checked current API calls to
+customer_profile
+from your integration
+Found the impacted fields as listed in the sections below.
+List of changes
+Authentication
+The authentication process for V2 is different then v0. Check the following links to get started with it:
+Getting started
+Authorization
+Name fields
+In the new
+Customer API v2
+, there are 2 naming conventions for customer profiles:
+Full Name field
+: Concatenate the name fields and use just one field
+full_name
+when creating or updating a customer profile.
+Update any usage of the pair of fields
+first_name
+and
+last_name
+in the old version of the API with the new
+full_name
+field.
+First Name and Last Name fields
+: Retain the usage of the
+first_name
+and
+last_name
+fields.
+This option is useful if you have downstream applications that rely on these 2 fields and you prefer not changing to a single
+full_name
+field.
+Phone numbers
+Add error handling for phone number validation to your code if you create or update a profile.
+The country code of the phone number is now part of the phone number. The field
+country_code
+in the old version of the API is now obsolete and is not returned. Use the
+phone_number
+field as is in
+v2
+.
+The Customer API v2 includes enhanced phone number validation by conforming to the E.164 standard. See
+Customer profile
+.
+Deprecated fields
+For
+store_name
+,
+Use the field
+store_id
+and this
+method
+to get the required details.
+For
+created_by_name
+,
+Use the field
+created_by
+and this
+method
+to get the required details.
+For
+addresses
+,
+Use the
+GET addresses method
+to get the addresses for a customer profile.
+Extended attributes
+The format for extended attributes has now changed from an array to a map.
+In
+v0
+this looked like:
+[
+    {
+        "name": "string",
+        "value": "string"
+    }
+]
+In
+v2
+, the extended attributes look like this:
+{
+    "loyalty_id": {
+        "data_type": "string",
+        "value": "0123456789"
+    }
+}
+A new field
+data_type
+has been added to represent the data returned. The value is always stored as a string, but you can now specify the type of data you are storing in the
+value
+field.
+Updating a customer profile
+When updating a customer profile, use the HTTP
+PATCH method
+in
+v2
+instead of the
+PUT method
+in
+v0
+.
+You no longer need to provide a value for the
+revision
+field for the update. Instead, you must include a
+last_updated_at
+field, which will be compared with the current value of the
+updated_at
+field in the profile.
+The 2 fields must have the same value, otherwise the server returns a
+409 conflict
+error, as shown here:
+{
+    "message": "conflict",
+    "request_id": "7b2e635a-3a02-49df-98fb-46438e3fe842"
+}
+Requesting deletion of a customer profile
+To request a customer profile deletion in
+v2
+you'll use need to use this
+POST method
+instead of this
+POST method
+in
+v0
+. with the following body:
+{
+    "operation": "delete"
+}
+FAQs on the impact of migration
+This section describes the Frequently Asked Questions on the impact of migration on retailers.
+What changes do you expect in the event stream?
+There are no changes in the Event Stream. The first step is to move the API to a newer version.
+If you have already moved to v2:
+The
+full_name
+field is split by the first space. Everything before the first space is saved as
+first_name
+, and everything after that is saved as
+last_name
+.
+The address type is set to
+shipping
+.
+What happens when you inject orders with customer profiles?
+The order injection feature is integrated with the new API and it correctly imports profiles. Contact the
+support team
+for any help with troubleshooting.
+What happens when you inject orders with shipping and billing addresses?
+The order injection feature is integrated with the new API and it correctly imports addresses. Contact the
+support team
+for any help with troubleshooting.
+How does the data migration affect the names and phone numbers of customers?
+The migration of customer names is not needed. Only the API layer has been changed for now. The persistence layer will follow after we migrate all interfaces.
+The migration of customer phone numbers is not needed either. Even if
+invalid
+phone numbers are present (the API returns invalid phone numbers, if available), Omnichannel Manager and Associate App are not affected. However, if you try to create and update customer profiles with invalid phone numbers, the apps will display error messages.
+Related topics
+Configuring customizations in NewStore Associate App
+Consumer Profile API v0 documentation
+Consumer Profile API v2 documentation
+Was this article helpful?
+Yes
+No
+Tags
+api
+consumer
+customer
+customer profile
+developer
+migration
+newstore platform
+v0 to v1
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

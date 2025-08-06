@@ -1,0 +1,82 @@
+openapi: 3.0.0
+info:
+  title: Catalog Reporting API
+  description: Catalog Reporting API
+  contact:
+    name: Team Catalog
+    url: >-
+      https://gitlab.com/newstore/engineering/customer-and-catalog/services/catalog-indexer
+    email: team-customer-and-catalog@newstore.com
+  version: 0.0.1
+servers:
+  - url: https://dodici.s.newstore.net/api/v1
+  - url: https://dodici.p.newstore.net/api/v1
+security:
+  - newStoreAccessToken: []
+paths:
+  /catalogs/report:
+    get:
+      description: Get catalog report
+      parameters:
+        - in: query
+          name: fromToken
+          description: >-
+            Opaque value, without any further meaning than providing pointer to
+            next page. It is ok to omit it for first request. For next requests
+            please provide token from previous response otherwise returned
+            values will be always same.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Return page of with product reports
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogReportExport'
+        '403':
+          description: Unauthorized
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CatalogReportExport:
+      type: object
+      required:
+        - page
+      properties:
+        page:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductReport'
+        nextToken:
+          type: string
+          description: >-
+            It is opaque value, to continue to the next page of products. It
+            will be null when there  is no next page.
+    ProductReport:
+      type: object
+      required:
+        - product_id
+        - variant_group_id
+        - is_available
+        - has_price
+        - locale
+        - catalog
+      properties:
+        product_id:
+          type: string
+        variant_group_id:
+          type: string
+        is_available:
+          type: boolean
+        has_price:
+          type: boolean
+        locale:
+          type: string
+        catalog:
+          type: string

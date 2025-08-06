@@ -1,0 +1,158 @@
+Migrating from Token API v0 to API clients
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Migrating from Token API v0 to API clients
+Updated on
+Nov 13, 2024
+Published on Oct 1, 2024
+1 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+As of September 2023, authentication with our APIs must be done via API clients. NewStore will stop supporting authenticating with integration users soon. This article describes how to migrate the authentication for your API calls.
+The new token endpoint is using the
+Client Credentials Grant
+and requires a
+client_id
+/
+client_secret
+pair.
+The migration requires two steps:
+Creating an API client as a one-time action
+Obtaining a temporary access token with API client credentials
+Creating API client
+Note
+This feature is only available to users with Admin privileges by default. To allow other roles to manage API clients, grant them the
+Manage API clients
+permission.
+Navigate to the NewStore Omnichannel Manager.
+Go to
+Settings
+-
+User & Roles
+-
+API clients
+.
+Create an API Client by providing a name, optional description, token TTL and select scopes or
+Support Legacy APIs
+.
+Note
+Support Legacy APIs
+means no scopes are associated with the client. Scope validation is only enforced by APIs documented on the
+developer portal
+.
+Copy the
+client_id
+and
+client_secret
+.
+Important
+Save the
+client_secret
+to a secure location as it is revealed only during the client creation.
+Use the credentials to obtain an access token as described in the next section.
+Obtaining access token
+Use the following code snippet to first exchange the OAuth2 API client credentials for an access token. The access token is an object containing information for authorizing client requests and refreshing the token itself.
+curl -X POST \
+  --url 'https://id.p.newstore.net/auth/realms/{tenant}/protocol/openid-connect/token' \
+  --header 'Accept: application/json' \
+  --header 'Content-Type: application/x-www-form-urlencoded' \
+  --data-urlencode 'grant_type=client_credentials' \
+  --data-urlencode 'client_id={CLIENT_ID}' \
+  --data-urlencode 'client_secret={CLIENT_SECRET}'
+In the above snippet, adjust the following data:
+tenant
+is typically the name of your company, plus a stage variable. For example:
+company-sandbox
+company-staging
+company (production)
+CLIENT_ID
+and
+CLIENT_SECRET
+from the API client created in the first step of this article.
+The response from the token method looks similar to this:
+{
+    "access_token": "eyJhbGciOiJ....",
+    "expires_in": 86400,
+    "refresh_expires_in": 0,
+    "token_type": "Bearer",
+    "not-before-policy": 0,
+    "scope": "email profile"
+}
+Include the returned token in the Authorization header of a request:
+Authorization: Bearer <access_token from the response above>
+Note
+The new tokens are compatible with all exposed endpoints.
+Was this article helpful?
+Yes
+No
+Tags
+api client
+api clients
+client credentials grant
+developer
+newstore platform
+oauth2
+token
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

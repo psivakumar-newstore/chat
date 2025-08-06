@@ -1,0 +1,1109 @@
+In-store Pickup API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Documents Configuration
+In-store Pickup API
+Receipts
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+post
+Generate in-store pickup options
+post
+Create in-store pickup config
+get
+Get in-store pickup config
+del
+Delete in-store pickup config
+put
+Update in-store pickup config
+post
+Create in-store pickup config for store
+get
+Get in-store pickup config for store
+put
+Update in-store pickup config for store
+del
+Delete in-store pickup config for store
+API docs by Redocly
+In-store Pickup API
+(
+0
+)
+Download OpenAPI specification
+:
+Download
+Generate in-store pickup options
+Generates a list of in-store pickup options for the given geographic location,
+taking the
+in-store pickup config
+into account.
+The returned options are sorted by proximity to the provided geo-location.
+Important
+: The
+search_radius
+property is in kilometers.
+Note:
+The validity of a shipping offer token can vary based on the shipping
+provider and shipping offer.
+For in-store pickup orders, a shipping offer token does not expire.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+location
+required
+object
+(
+Location
+)
+A reference geo-location. For example, the location of the customer.
+bag
+required
+Array of
+objects
+(
+Bag
+)
+options
+object
+In-store pickup options request parameters.
+Responses
+200
+In-store pickup options were generated.
+400
+No in-store pickup options found for the specified criteria.
+post
+/in_store_pickup_options
+/v0/d
+/in_store_pickup_options
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"location"
+:
+{
+"geo"
+:
+{
+"latitude"
+:
+19.762803
+,
+"longitude"
+:
+-70.421836
+}
+}
+,
+"bag"
+:
+[
+{
+"product_id"
+:
+"1000831"
+,
+"quantity"
+:
+2
+}
+,
+{
+"product_id"
+:
+"1000692"
+,
+"quantity"
+:
+1
+}
+]
+,
+"options"
+:
+{
+"search_radius"
+:
+30
+,
+"limit"
+:
+3
+,
+"show_stores_without_atp"
+:
+true
+}
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"options"
+:
+[
+{
+"fulfillment_node_id"
+:
+"US01"
+,
+"store"
+:
+{
+"store_id"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"label"
+:
+"US store"
+,
+"physical_address"
+:
+{
+"address_line_1"
+:
+"1 Manhattan Ave"
+,
+"address_line_2"
+:
+null
+,
+"province"
+:
+null
+,
+"state"
+:
+"NY"
+,
+"zip_code"
+:
+"11206"
+,
+"city"
+:
+"Brooklyn"
+,
+"country_code"
+:
+"US"
+,
+"latitude"
+:
+40.7022251
+,
+"longitude"
+:
+-73.9441071
+}
+,
+"image_url"
+:
+"
+https://www.newstore.com/wp-content/uploads/2016/12/NewStore-primary-logo_svg-1.svg
+"
+,
+"phone_number"
+:
+"1-617-555-0180"
+,
+"business_hours"
+:
+[
+{
+"from_time"
+:
+"09:00"
+,
+"to_time"
+:
+"18:00"
+,
+"weekday"
+:
+0
+,
+"earliest_pick_up"
+:
+"12:00"
+,
+"latest_pick_up"
+:
+"16:00"
+}
+]
+}
+,
+"has_atp"
+:
+true
+,
+"in_store_pickup_option"
+:
+{
+"shipping_offer_token"
+:
+"JWT_TOKEN"
+,
+"delivery_time"
+:
+"Available now"
+,
+"cost"
+:
+{
+"currency_code"
+:
+"USD"
+,
+"price"
+:
+0
+}
+}
+}
+,
+{
+"fulfillment_node_id"
+:
+"US02"
+,
+"store"
+:
+{
+"store_id"
+:
+"b88bb48f-5507-4600-baa4-f8fbb9cae332"
+,
+"label"
+:
+"Centre Street Store"
+,
+"physical_address"
+:
+{
+"address_line_1"
+:
+"251 Centre St"
+,
+"address_line_2"
+:
+null
+,
+"province"
+:
+null
+,
+"state"
+:
+"NY"
+,
+"zip_code"
+:
+"10013"
+,
+"city"
+:
+"New York"
+,
+"country_code"
+:
+"US"
+,
+"latitude"
+:
+40.7205815
+,
+"longitude"
+:
+-73.9981101
+}
+,
+"image_url"
+:
+"
+https://www.newstore.com/wp-content/uploads/2016/12/NewStore-primary-logo_svg-1.svg
+"
+,
+"phone_number"
+:
+"+49 1337 123457"
+}
+,
+"in_store_pickup_option"
+:
+{
+"shipping_offer_token"
+:
+"JWT_TOKEN"
+,
+"delivery_time"
+:
+"Pick up in 5-6 days"
+,
+"cost"
+:
+{
+"currency_code"
+:
+"USD"
+,
+"price"
+:
+0
+}
+}
+}
+]
+}
+Create in-store pickup config
+Creates the initial in-store pickup config for all stores in your
+business. Overrides all existing global and store-specific config values.
+Important
+: The
+default_search_radius
+property is in kilometers.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+global
+required
+object
+Represents a global configuration that applies to all stores.
+stores
+object
+Responses
+201
+The config was successfully created.
+400
+The input data is invalid.
+409
+The config for the tenant already exists.
+500
+An internal error occurred.
+post
+/in_store_pickup_config
+/v0/d
+/in_store_pickup_config
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"global"
+:
+{
+"display_name"
+:
+"In store pickup"
+,
+"grace_period"
+:
+0
+,
+"default_search_radius"
+:
+10
+}
+,
+"stores"
+:
+{
+"US-01"
+:
+{
+"delivery_time"
+:
+"Available now"
+,
+"delivery_time_if_not_available"
+:
+"Pick up in 5-6 days"
+,
+"cost"
+:
+{
+"price"
+:
+0
+,
+"tax_code"
+:
+"FR"
+,
+"currency_code"
+:
+"USD"
+}
+}
+,
+"US-02"
+:
+{
+"delivery_time"
+:
+"Available now"
+,
+"delivery_time_if_not_available"
+:
+"Pick up in 3-4 days"
+,
+"cost"
+:
+{
+"price"
+:
+10
+,
+"tax_code"
+:
+"FR"
+,
+"currency_code"
+:
+"USD"
+}
+}
+}
+}
+Response samples
+201
+400
+409
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"global"
+:
+{
+"display_name"
+:
+"In store pickup"
+,
+"grace_period"
+:
+0
+,
+"default_search_radius"
+:
+10
+}
+,
+"stores"
+:
+{
+"US-01"
+:
+{
+"delivery_time"
+:
+"Available now"
+,
+"delivery_time_if_not_available"
+:
+"Pick up in 5-6 days"
+,
+"cost"
+:
+{
+"price"
+:
+0
+,
+"tax_code"
+:
+"FR"
+,
+"currency_code"
+:
+"USD"
+}
+}
+,
+"US-02"
+:
+{
+"delivery_time"
+:
+"Available now"
+,
+"delivery_time_if_not_available"
+:
+"Pick up in 3-4 days"
+,
+"cost"
+:
+{
+"price"
+:
+10
+,
+"tax_code"
+:
+"FR"
+,
+"currency_code"
+:
+"USD"
+}
+}
+}
+}
+Get in-store pickup config
+Retrieves the global and store-specific in-store pickup configurations.
+Important
+: The
+default_search_radius
+property is in kilometers.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+The config was successfully fetched.
+404
+The global config for the tenant was not found.
+500
+An internal error occurred.
+get
+/in_store_pickup_config
+/v0/d
+/in_store_pickup_config
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"global"
+:
+{
+"display_name"
+:
+"In store pickup"
+,
+"grace_period"
+:
+0
+,
+"default_search_radius"
+:
+10
+}
+,
+"stores"
+:
+{
+"US-01"
+:
+{
+"delivery_time"
+:
+"Available now"
+,
+"delivery_time_if_not_available"
+:
+"Pick up in 5-6 days"
+,
+"cost"
+:
+{
+"price"
+:
+0
+,
+"tax_code"
+:
+"FR"
+,
+"currency_code"
+:
+"USD"
+}
+}
+,
+"US-02"
+:
+{
+"delivery_time"
+:
+"Available now"
+,
+"delivery_time_if_not_available"
+:
+"Pick up in 3-4 days"
+,
+"cost"
+:
+{
+"price"
+:
+10
+,
+"tax_code"
+:
+"FR"
+,
+"currency_code"
+:
+"USD"
+}
+}
+}
+}
+Delete in-store pickup config
+Deletes the in-store pickup config set up for your business.
+When you delete the config, in-store pickup is disabled across all stores.
+Authorizations:
+newStoreAccessToken
+Responses
+204
+The pickup config was deleted. None of your stores support in-store pickup anymore.
+500
+An internal error occurred.
+delete
+/in_store_pickup_config
+/v0/d
+/in_store_pickup_config
+Response samples
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Update in-store pickup config
+Updates the global pickup config.
+Important
+: The
+default_search_radius
+property is in kilometers.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+display_name
+string
+User-facing name of the in-store pickup shipping option. This string should help the stock room worker understand that the order is an in-store pickup order.
+default_limit
+integer
+>= 0
+The default number of fulfillment nodes that should be returned if no limit is provided in the request.
+grace_period
+number
+Time in seconds for the order to stay in grace period.
+default_search_radius
+number
+Default radius in kilometers for searching stores, supporting in-store pickup option.
+Responses
+200
+The config was successfully updated.
+400
+The input data is invalid.
+500
+An internal error occurred.
+put
+/in_store_pickup_config/global
+/v0/d
+/in_store_pickup_config/global
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"display_name"
+:
+"In store pickup"
+,
+"grace_period"
+:
+0
+,
+"default_search_radius"
+:
+10
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+{
+"display_name"
+:
+"In store pickup"
+,
+"grace_period"
+:
+0
+,
+"default_search_radius"
+:
+10
+}
+Create in-store pickup config for store
+Creates a new pickup config for the store.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+= 1 properties
+property name*
+additional property
+object
+(
+Store config
+)
+Represents a store configuration.
+delivery_time
+string
+Estimated delivery time as a human-readable string if all items are available in the store.
+delivery_time_if_not_available
+string
+Estimated delivery time as a human-readable string if one or more items are unavailable in the store.
+cost
+object
+Responses
+201
+The config was successfully updated.
+400
+The input data is invalid.
+409
+The config for the store already exists.
+500
+An internal error occurred.
+post
+/in_store_pickup_config/stores
+/v0/d
+/in_store_pickup_config/stores
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"US-01"
+:
+{
+"delivery_time"
+:
+"Available now"
+,
+"delivery_time_if_not_available"
+:
+"Pick up in 5-6 days"
+,
+"cost"
+:
+{
+"price"
+:
+0
+,
+"tax_code"
+:
+"FR"
+,
+"currency_code"
+:
+"USD"
+}
+}
+}
+Response samples
+201
+400
+409
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"US-01"
+:
+{
+"delivery_time"
+:
+"Available now"
+,
+"delivery_time_if_not_available"
+:
+"Pick up in 5-6 days"
+,
+"cost"
+:
+{
+"price"
+:
+0
+,
+"tax_code"
+:
+"FR"
+,
+"currency_code"
+:
+"USD"
+}
+}
+}
+Get in-store pickup config for store
+Retrieves the store config.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+store_id
+required
+string
+The identifier of the store.
+Responses
+200
+The store config was fetched.
+404
+Config for the store, identified by given
+store_id
+, was not found.
+500
+An internal error occurred.
+get
+/in_store_pickup_config/stores/{store_id}
+/v0/d
+/in_store_pickup_config/stores/{store_id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"delivery_time"
+:
+"Available now"
+,
+"delivery_time_if_not_available"
+:
+"Pick up in 3-4 days"
+,
+"cost"
+:
+{
+"price"
+:
+10
+,
+"tax_code"
+:
+"FR"
+,
+"currency_code"
+:
+"USD"
+}
+}
+Update in-store pickup config for store
+Modifies the existing store config or creates a new one if it does not exist.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+store_id
+required
+string
+The identifier of the store.
+Request Body schema:
+application/json
+delivery_time
+string
+Estimated delivery time as a human-readable string if all items are available in the store.
+delivery_time_if_not_available
+string
+Estimated delivery time as a human-readable string if one or more items are unavailable in the store.
+cost
+object
+Responses
+200
+The store config was successfully created or updated.
+400
+The input data is invalid.
+500
+An internal error occurred.
+put
+/in_store_pickup_config/stores/{store_id}
+/v0/d
+/in_store_pickup_config/stores/{store_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"delivery_time"
+:
+"Available now"
+,
+"delivery_time_if_not_available"
+:
+"Pick up in 3-4 days"
+,
+"cost"
+:
+{
+"price"
+:
+10
+,
+"tax_code"
+:
+"FR"
+,
+"currency_code"
+:
+"USD"
+}
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"delivery_time"
+:
+"Available now"
+,
+"delivery_time_if_not_available"
+:
+"Pick up in 3-4 days"
+,
+"cost"
+:
+{
+"price"
+:
+10
+,
+"tax_code"
+:
+"FR"
+,
+"currency_code"
+:
+"USD"
+}
+}
+Delete in-store pickup config for store
+Deletes the in-store pickup config for a store.
+When you delete the config, in-store pickup is disabled for the store.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+store_id
+required
+string
+The identifier of the store.
+Responses
+204
+The store config was deleted. The store does not support in-store pickup anymore.
+404
+Config for the store, identified by given store_id, was not found.
+500
+An internal error occurred.
+delete
+/in_store_pickup_config/stores/{store_id}
+/v0/d
+/in_store_pickup_config/stores/{store_id}
+Response samples
+404
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Previous
+Documents Configuration
+Next
+Receipts
+Copyright © 2025 NewStore, Inc.

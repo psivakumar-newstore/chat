@@ -1,0 +1,3050 @@
+openapi: 3.0.0
+info:
+  title: Fulfillment App API
+  description: Implements endpoints used by the app.
+  version: '0.1'
+  contact:
+    name: Team Inventory
+    url: https://apidocs.newstore.io
+    email: team-inventory@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+tags:
+  - name: Store fulfillment requests
+    description: >
+      Use this resource to manage orders that are currently in the process of
+      being fulfilled by a store or are in
+
+      transit from or to a store.
+paths:
+  /consumer_data/{correlation_id}:
+    post:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: The body contains the result of the call to store the consumer data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  successful:
+                    description: Always true when the request was successful
+                    type: boolean
+                required:
+                  - successful
+        '500':
+          description: An internal error occurred.
+      description: Stores the consumer data.
+      operationId: storeConsumerData
+      summary: Stores the consumer data.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Used to record consumer data
+              type: object
+              properties:
+                email:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                phone_number:
+                  type: string
+              required:
+                - email
+        required: true
+    parameters:
+      - name: correlation_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Identifier for the corresponding sales order.
+  /fulfillment_associate:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                title: Get current FulfillmentAssociate
+                type: object
+                properties:
+                  associate:
+                    $ref: '#/components/schemas/associate'
+                required:
+                  - associate
+        '404':
+          description: The associate was not found.
+        '500':
+          description: An internal error occurred.
+      description: >-
+        Returns the associate object associated with the token sent with the
+        header.
+      operationId: getAssociate
+      summary: Get associate
+    put:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                title: Get current FulfillmentAssociate
+                type: object
+                properties:
+                  associate:
+                    $ref: '#/components/schemas/associate'
+                required:
+                  - associate
+        '404':
+          description: The associate was not found.
+        '500':
+          description: An internal error occurred.
+      description: Updates the associate object.
+      summary: Update associate
+      operationId: updateAssociate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: Response schema for getting all FulfillmentLogisticOrders
+              title: Get all FulfillmentLogisticOrders
+              type: object
+              properties:
+                status:
+                  enum:
+                    - can_receive_requests
+                    - cannot_receive_requests
+                    - not_available
+                  type: string
+              required:
+                - status
+        required: true
+  /fulfillment_associate/_reassign:
+    post:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Something wrong happened to the request.
+          content:
+            application/json:
+              schema:
+                description: Information related to the error.
+                title: Error from provider rates request
+                example:
+                  error:
+                    code: associates_in_different_stores
+                    description: >-
+                      Chosen associates are not assigned to the same store,
+                      choose another associate.
+                    extended_attributes: {}
+                type: object
+                properties:
+                  error:
+                    description: Error object.
+                    type: object
+                    properties:
+                      code:
+                        description: Identifier of the error type.
+                        type: string
+                      description:
+                        description: Error description.
+                        type: string
+                      extended_attributes:
+                        description: Any additional information that could be useful.
+                        type: object
+                    required:
+                      - code
+                      - description
+                required:
+                  - error
+        '404':
+          description: Associate to be assigned was not found.
+          content:
+            application/json:
+              schema:
+                description: Information related to the error.
+                title: Error from provider rates request
+                example:
+                  error:
+                    code: user_not_found
+                    description: 'Failed to find associate with id: 33JB3UROr1S3Je9hDaRh7f.'
+                    extended_attributes: {}
+                type: object
+                properties:
+                  error:
+                    description: Error object.
+                    type: object
+                    properties:
+                      code:
+                        description: Identifier of the error type.
+                        type: string
+                      description:
+                        description: Error description.
+                        type: string
+                      extended_attributes:
+                        description: Any additional information that could be useful.
+                        type: object
+                    required:
+                      - code
+                      - description
+                required:
+                  - error
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                description: Information related to the error.
+                title: Error from provider rates request
+                type: object
+                properties:
+                  error:
+                    description: Error object.
+                    type: object
+                    properties:
+                      code:
+                        description: Identifier of the error type.
+                        type: string
+                      description:
+                        description: Error description.
+                        type: string
+                      extended_attributes:
+                        description: Any additional information that could be useful.
+                        type: object
+                    required:
+                      - code
+                      - description
+                required:
+                  - error
+      description: >-
+        Reassign the list of open fulfillment logistic orders to another
+        associate.
+      summary: Reassign orders to new associate
+      operationId: reassignOrders
+      requestBody:
+        content:
+          application/json:
+            example:
+              current_associate_id: 22IB3UROr1S3Je9hDaRh7f
+              new_associate_id: 33JB3UROr1S3Je9hDaRh7f
+            schema:
+              title: >-
+                Reassign all open FulfillmentLogisticOrders to another
+                associate.
+              type: object
+              properties:
+                current_associate_id:
+                  type: string
+                new_associate_id:
+                  type: string
+              required:
+                - current_associate_id
+                - new_associate_id
+        required: true
+  /fulfillment_logistic_orders:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema:
+                description: Response schema for getting all FulfillmentLogisticOrders
+                title: A list of all FulfillmentLogisticOrders
+                type: object
+        '500':
+          description: An internal error occurred.
+      description: >-
+        Gets a list of all fulfillment logistic orders for the current
+        associate.
+      summary: List all logistic orders
+      operationId: listAllLogisticOrders
+      parameters:
+        - name: offset
+          in: query
+          description: The page offset.
+          schema:
+            minimum: 0
+            default: 0
+            type: integer
+        - name: count
+          in: query
+          description: The number of requested documents.
+          schema:
+            minimum: 1
+            default: 10
+            type: integer
+        - name: q
+          in: query
+          description: A free text search for orders.
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: >
+            The field to sort and its sorting order. These 2 values are
+            separated by the pipe character (`|`).
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: >
+            The field to filter and its filter value(s); field is specified in
+            subscript notation and its
+
+            values are comma separated. When the value is expression of a range,
+            the min and max range are
+
+            separated by the "pipe" (|) character.
+          schema:
+            type: string
+  /fulfillment_logistic_orders/completed:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                description: >-
+                  Response schema for getting all completed
+                  FulfillmentLogisticOrders
+                title: A list of all completed FulfillmentLogisticOrders
+                type: object
+                properties:
+                  fulfillment_logistic_orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/fulfillmentLogisticOrder'
+                required:
+                  - fulfillment_logistic_orders
+        '500':
+          description: An internal error occurred.
+      description: >-
+        Gets a list of all completed fulfillment logistic orders for the current
+        associate.
+      summary: List completed logistic orders
+      operationId: listCompletedLogisticOrders
+  /fulfillment_logistic_orders/open:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema:
+                description: Response schema for getting all open FulfillmentLogisticOrders
+                title: A list of all open FulfillmentLogisticOrders
+                type: object
+                properties:
+                  fulfillment_logistic_orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/fulfillmentLogisticOrder'
+                required:
+                  - fulfillment_logistic_orders
+        '500':
+          description: An internal error occurred.
+      description: >-
+        Gets a list of all the open fulfillment logistic orders for the current
+        associate.
+      summary: List open logistic orders
+      operationId: listOpenLogisticOrders
+  /fulfillment_logistic_orders/{uuid}:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                description: Response schema for a certain FulfillmentLogisticOrder
+                title: A FulfillmentLogisticOrder
+                type: object
+                properties:
+                  fulfillment_logistic_order:
+                    $ref: '#/components/schemas/fulfillmentLogisticOrder'
+                  package_options_info:
+                    type: object
+                    properties:
+                      default_package_option_uuid:
+                        maxLength: 36
+                        minLength: 36
+                        type: string
+                      options:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/packageOptionInfo'
+                    required:
+                      - options
+                      - default_package_option_uuid
+                required:
+                  - fulfillment_logistic_order
+        '202':
+          description: The request was accepted and is currently being processed.
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      status_identifier:
+                        type: string
+                    required:
+                      - status_identifier
+                      - message
+                required:
+                  - status
+        '404':
+          description: The fulfillment logistic order was not found.
+        '422':
+          description: An error happened which needs NewStore support actions.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: A temporary error happened which can be retried.
+      description: Retrieves the specified fulfillment logistic order.
+      summary: Get logistic order
+      operationId: getLogisticOrder
+      parameters:
+        - name: Retry-After
+          in: header
+          required: true
+          description: The time after the request can be retried.
+          schema:
+            type: string
+    parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the fulfillment logistic order.
+  /fulfillment_logistic_orders/{uuid}/driver_location:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                description: Response schema for getting all FulfillmentLogisticOrders
+                title: Get all FulfillmentLogisticOrders
+                type: object
+                properties:
+                  driver_location:
+                    type: object
+                    properties:
+                      gps_date:
+                        type: string
+                        format: date-time
+                      latitude:
+                        type: string
+                      longitude:
+                        type: string
+                      status_hash:
+                        type: string
+                    required:
+                      - longitude
+                      - latitude
+                      - status_hash
+                      - gps_date
+                required:
+                  - driver_location
+        '404':
+          description: The delivery or fulfillment logistic order was not found.
+        '500':
+          description: An internal error occurred.
+      description: Returns the current driver location for same day delivery orders.
+      summary: Get driver location
+      operationId: getDriverLocation
+    parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the fulfillment logistic order.
+  /fulfillment_logistic_orders/{uuid}/initiate_return:
+    post:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: Response schema for the FulfillmentLogisticOrder action
+                title: >-
+                  Response for initiating a return for items in
+                  FulfillmentLogisticOrder
+                type: object
+                properties:
+                  return_uuid:
+                    description: uuid of the return process
+                    maxLength: 36
+                    minLength: 36
+                    type: string
+                required:
+                  - return_uuid
+        '404':
+          description: The sales order was not found.
+        '422':
+          description: The provided request body is not valid.
+        '500':
+          description: An internal error occurred.
+      description: Initiates the return process for the specified items.
+      summary: Initiate return
+      operationId: initiateReturn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: >-
+                Request schema for initiate_return FulfillmentLogisticOrder
+                action
+              title: >-
+                Request for initiating a return for items in
+                FulfillmentLogisticOrder
+              type: object
+              properties:
+                returned_order_items:
+                  description: A list of objects, containing returned items
+                  minItems: 1
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/returnedItem'
+                sales_order_uuid:
+                  maxLength: 36
+                  minLength: 36
+                  type: string
+                store_id:
+                  description: The store where the return is initiated from.
+                  type: string
+              required:
+                - returned_order_items
+                - sales_order_uuid
+        required: true
+    parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the fulfillment logistic order.
+  /fulfillment_logistic_orders/{uuid}/{action}:
+    post:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                description: Response schema for a certain FulfillmentLogisticOrder
+                title: A FulfillmentLogisticOrder
+                type: object
+                properties:
+                  fulfillment_logistic_order:
+                    $ref: '#/components/schemas/fulfillmentLogisticOrder'
+                  package_options_info:
+                    type: object
+                    properties:
+                      default_package_option_uuid:
+                        maxLength: 36
+                        minLength: 36
+                        type: string
+                      options:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/packageOptionInfo'
+                    required:
+                      - options
+                      - default_package_option_uuid
+                required:
+                  - fulfillment_logistic_order
+        '202':
+          description: The request was accepted and is currently being processed.
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      status_identifier:
+                        type: string
+                    required:
+                      - status_identifier
+                      - message
+                required:
+                  - status
+        '400':
+          description: Something wrong happened to the request
+        '404':
+          description: Something was not found.
+        '422':
+          description: An error happened which needs NewStore support actions.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: A temporary error happened which should be retried.
+      description: Performs a specific action to fulfill an order.
+      summary: Execute action
+      operationId: executeAction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: Perform a certain action for a FulfillmentLogisticOrder
+              title: 'POST FulfillmentLogisticOrder action '
+              type: object
+              properties:
+                boxes:
+                  description: >-
+                    A list of boxes for the packing step. Each box can contain
+                    multiple items.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      index:
+                        description: The box's order index number
+                        type: integer
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            external_identifier:
+                              $ref: '#/components/schemas/externalIdentifier'
+                            order_item_uuid:
+                              maxLength: 36
+                              minLength: 36
+                              type: string
+                          required:
+                            - external_identifier
+                            - order_item_uuid
+                      itn:
+                        description: The box's itn, needed for easypost, if order>$2500
+                        type: string
+                      package_option_uuid:
+                        description: The selected package option UUID
+                        maxLength: 36
+                        minLength: 36
+                        type: string
+                    required:
+                      - items
+                      - index
+                items:
+                  description: >-
+                    A list of fulfillment logistic order item UUIDs. This is
+                    necessary for request fulfillment documents.
+                  type: array
+                  items:
+                    maxLength: 36
+                    minLength: 36
+                    type: string
+                itn:
+                  description: >-
+                    The box's itn, needed for easypost, if order>$2500. It is
+                    used in skip_packing action
+                  type: string
+                mispacked_items:
+                  description: >-
+                    A list of objects, containing mispacked item product_id and
+                    mispacked_quantity
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      mispacked_quantity:
+                        description: Number of mispacked products.
+                        type: integer
+                      product_id:
+                        description: The identifier for the product.
+                        type: string
+                    required:
+                      - product_id
+                      - mispacked_quantity
+                mispicked_items:
+                  description: >-
+                    A list of objects, containing mispicked item product_id and
+                    mispicked_quantity
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      mispicked_quantity:
+                        description: Number of mispicked products.
+                        type: integer
+                      product_id:
+                        description: The identifier for the product.
+                        type: string
+                    required:
+                      - product_id
+                      - mispicked_quantity
+                package_number:
+                  description: Specifies the number of the current package
+                  type: integer
+                scanned_order_items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      external_identifier:
+                        $ref: '#/components/schemas/externalIdentifier'
+                      itn:
+                        type: string
+                      order_item_uuid:
+                        maxLength: 36
+                        minLength: 36
+                        type: string
+                    required:
+                      - order_item_uuid
+                      - external_identifier
+              required:
+                - boxes
+                - itn
+                - package_number
+                - items
+                - scanned_order_items
+                - mispicked_items
+                - mispacked_items
+        required: true
+      parameters:
+        - name: Retry-After
+          in: header
+          required: true
+          description: The time after the request can be retried.
+          schema:
+            type: string
+    parameters:
+      - name: action
+        in: path
+        required: true
+        schema:
+          enum:
+            - accept
+            - decline
+            - mispick
+            - mispack
+            - start_packing
+            - finish_packing
+            - ready_for_pickup
+            - confirm_handover
+          type: string
+        description: The specific action to perform for the fulfillment logistic order.
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the fulfillment logistic order.
+  /products/{id}:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: |
+            The product with the given id exists.
+          content:
+            application/json:
+              schema:
+                description: >-
+                  Detailed information about a single product including
+                  information about variation properties of products of the same
+                  group
+                title: Product detail information
+                type: object
+        '404':
+          description: The product was not found.
+        '500':
+          description: An internal error occurred.
+      description: |
+        Returns the product with the given ID.
+      summary: Get product
+      operationId: getProduct
+      parameters:
+        - name: locale
+          in: query
+          description: >-
+            A locale code. Can be used to fetch product information in different
+            languages.
+          schema:
+            type: string
+        - name: catalog
+          in: query
+          description: >-
+            DEPRECATED. Use `shop` instead. The identifier of the product
+            catalog.
+          schema:
+            type: string
+        - name: shop
+          in: query
+          description: The identifier of the shop the product belongs to.
+          schema:
+            type: string
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the product.
+  /returns/{return_uuid}:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: The return data for this return uuid
+                type: object
+                properties:
+                  currency_code:
+                    description: Currency code shown and billed to the consumer.
+                    maxLength: 3
+                    minLength: 3
+                    type: string
+                  refund_note_url:
+                    description: The url which links to the refund note of this return.
+                    type: string
+                  refunded_amount:
+                    description: The refunded amount of this return.
+                    type: number
+                  return_fee:
+                    description: The amount of the return fee for this return.
+                    type: number
+                required:
+                  - refunded_amount
+                  - return_fee
+                  - refund_note_url
+                  - currency_code
+        '202':
+          description: The return process is still in progress.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Gets the return information of the provided return uuid.
+      summary: Get return info
+      operationId: getReturnInfo
+    parameters:
+      - name: return_uuid
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the return.
+  /setup_data:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SetupData'
+        '404':
+          description: The associate or store was not found.
+        '500':
+          description: An internal error occurred.
+      description: >-
+        Retrieves a dictionary with all the necessary data to set up the
+        NewStore app.
+      operationId: getData
+      summary: Get data
+      parameters:
+        - name: locale
+          in: query
+          description: >-
+            A locale code. Can be used to fetch product information in different
+            languages.
+          schema:
+            type: string
+  /stores/{store_id}/printer_locations:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer Locations
+                type: object
+                properties:
+                  printer_locations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/printerLocation'
+                required:
+                  - printer_locations
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Returns the list of printer locations set up in the store.
+      summary: List printer locations.
+      operationId: listPrinterLocations
+    post:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer Location
+                type: object
+                properties:
+                  printer_location:
+                    $ref: '#/components/schemas/printerLocation'
+                required:
+                  - printer_location
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Creates a new printer location.
+      operationId: createPrinterLocation
+      summary: Create printer location
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Schema for creating a Printer Location
+              type: object
+              properties:
+                name:
+                  minLength: 1
+                  type: string
+                store_id:
+                  maxLength: 256
+                  minLength: 1
+                  type: string
+              required:
+                - name
+                - store_id
+        required: true
+    parameters:
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the store.
+  /stores/{store_id}/printer_locations/{uuid}:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer Location
+                type: object
+                properties:
+                  printer_location:
+                    $ref: '#/components/schemas/printerLocation'
+                required:
+                  - printer_location
+        '404':
+          description: The printer location was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Returns the printer location with the given ID.
+      summary: Get printer location
+      operationId: getPrinterLocation
+    put:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer Location
+                type: object
+                properties:
+                  printer_location:
+                    $ref: '#/components/schemas/printerLocation'
+                required:
+                  - printer_location
+        '404':
+          description: The printer location was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Update existing printer location with the given UUID.
+      summary: Update printer location.
+      operationId: updatePrinterLocation
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              title: Schema for updating an existing Printer Location
+              type: object
+              properties:
+                name:
+                  minLength: 1
+                  type: string
+              required:
+                - name
+        required: true
+    delete:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: The printer location was deleted successfully.
+        '404':
+          description: The printer location was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Remove the printer location with the given UUID.
+      summary: Delete printer location
+      operationId: deletePrinterLocation
+    parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the printer location.
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the store.
+  /stores/{store_id}/printers:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer
+                type: object
+                properties:
+                  printers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/printer'
+                required:
+                  - printers
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Returns the list of printers set up in the store.
+      summary: List printers
+      operationId: listPrinters
+    post:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer
+                type: object
+                properties:
+                  printer:
+                    $ref: '#/components/schemas/printer'
+                required:
+                  - printer
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Creates a new printer.
+      summary: Create printer
+      operationId: createPrinter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Schema for creating a Printer
+              type: object
+              $ref: '#/components/schemas/printerData'
+        required: true
+    parameters:
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the store.
+  /stores/{store_id}/printers/{uuid}:
+    get:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer
+                type: object
+                properties:
+                  printer:
+                    $ref: '#/components/schemas/printer'
+                required:
+                  - printer
+        '404':
+          description: The printer was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Returns the printer with the given ID.
+      summary: Get printer
+      operationId: getPrinter
+    put:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                title: Printer
+                type: object
+                properties:
+                  printer:
+                    $ref: '#/components/schemas/printer'
+                required:
+                  - printer
+        '404':
+          description: The printer was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Updates existing printer with the given UUID.
+      operationId: updatePrinter
+      summary: Update printer
+      requestBody:
+        content:
+          appplication/json:
+            schema:
+              title: Schema for updating an existing Printer
+              type: object
+              $ref: '#/components/schemas/printerData'
+        required: true
+    delete:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: The printer was deleted successfully.
+        '404':
+          description: The printer was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Removes the printer with the given UUID.
+      summary: Delete printer
+      operationId: deletePrinter
+    parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the printer.
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the store.
+  /test_notifications:
+    post:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '202':
+          description: The request was accepted and the notification should be sent.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      status_identifier:
+                        type: string
+                    required:
+                      - status_identifier
+                      - message
+                required:
+                  - status
+        '500':
+          description: An internal error occurred.
+      description: >-
+        Sends a test notification to the user. Use this method to verify the
+        notification setup.
+      summary: Sends test notification.
+      operationId: sendTestNotification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: Send a test notification to the user
+              type: object
+              properties:
+                message:
+                  description: >-
+                    The message that will be sent in the notification, a default
+                    message is used if none is provided.
+                  type: string
+                notification_type:
+                  minLength: 1
+                  type: string
+              required:
+                - notification_type
+        required: true
+  /unassigned_fulfillment_request_count:
+    get:
+      tags:
+        - Store fulfillment requests
+      summary: Unassigned fufillment requests.
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                description: >-
+                  Response scheme with the count of store fulfillment queue
+                  unassigned requests, based on priority
+                title: The count of store fulfillment queue unassigned requests
+                type: object
+        '204':
+          description: No content available.
+        '500':
+          description: An internal error occurred.
+      description: >-
+        Gets the count of unassigned fulfillment requests, based on the
+        priority.
+      operationId: getUnassignedCount
+components:
+  schemas:
+    SetupData:
+      description: Setup data for mobile application response
+      title: Setup data for mobile application response
+      type: object
+      properties:
+        adjustment_configuration:
+          description: Configures the adjustment feature of the Fulfillment App.
+          type: object
+          properties:
+            manual_adjustment_enabled:
+              description: >-
+                Determines whether the user can manually change the quantity of
+                items in the adjustment.
+              default: true
+              type: boolean
+          required:
+            - manual_adjustment_enabled
+        asn_configuration:
+          description: ASN-related configurations.
+          type: object
+          properties:
+            allow_asn_overreceiving:
+              description: >-
+                If it is true, allow to receive more items than specified in
+                ASN.
+              type: boolean
+          required:
+            - allow_asn_overreceiving
+        associate:
+          $ref: '#/components/schemas/associate'
+        channels:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                description: The channel used to send notifications via our provider.
+                minLength: 1
+                type: string
+              type:
+                description: >-
+                  Determines the notification channel type. Possible values are:
+                  `push`, `message`.
+                minLength: 1
+                type: string
+            required:
+              - name
+              - type
+        cycle_count_configuration:
+          description: Tenant specific configuration for cycle count functionality.
+          type: object
+          properties:
+            count_modification_enabled:
+              description: Determines whether the cycle count manual adjustment is enabled.
+              type: boolean
+            stock_on_hand_visible:
+              description: Determines whether the stock on hand should be shown.
+              type: boolean
+          required:
+            - stock_on_hand_visible
+            - count_modification_enabled
+        feature_toggle:
+          $ref: '#/components/schemas/featureToggle'
+        inventory_receiving_configuration:
+          description: Tenant specific configuration for inventory-related functionality.
+          type: object
+          properties:
+            blind_receiving_enabled:
+              description: >-
+                Determines whether receiving inventory into the store without an
+                ASN is permitted.
+              type: boolean
+            manual_receiving_enabled:
+              description: Determines whether the user can manually adjust item quantity.
+              type: boolean
+            order_ref:
+              description: Order reference field configurations.
+              type: object
+              properties:
+                enabled:
+                  description: Determines if `Order Reference` field is visible or not.
+                  type: boolean
+                label:
+                  description: '`Order Reference` field label.'
+                  type: string
+              required:
+                - enabled
+                - label
+            shipment_ref:
+              description: Shipment reference field configurations.
+              type: object
+              properties:
+                enabled:
+                  description: Determines if `Shipment Reference` field is visible or not.
+                  type: boolean
+                label:
+                  description: '`Shipment Reference` field label.'
+                  type: string
+              required:
+                - enabled
+                - label
+          required:
+            - manual_receiving_enabled
+            - blind_receiving_enabled
+            - shipment_ref
+            - order_ref
+        notification_channels:
+          description: DEPRECATED. Use the 'channels' property instead.
+          type: array
+          items:
+            type: string
+        order_item_external_identifier_settings:
+          description: Encapsulated settings of external identifiers usage
+          type: object
+          properties:
+            display_identifiers:
+              description: >-
+                A list of identifiers, ordered by priority in which they should
+                be shown in the NewStore App
+              type: array
+              items:
+                type: string
+            scan_identifier:
+              description: The identifier which should be scanned in the NewStore App.
+              type: string
+          required:
+            - display_identifiers
+            - scan_identifier
+        return_process_configuration:
+          description: Return process specific configuration used by the NewStore App
+          type: object
+          properties:
+            blind_return_enabled:
+              description: The flag to enable/disable blind returns.
+              type: boolean
+            quality_inspection_options:
+              description: >-
+                A list of quality inspection options and codes used during the
+                return process.
+              type: array
+              items:
+                type: object
+                properties:
+                  code:
+                    description: The code associated with this option.
+                    type: integer
+                  option:
+                    description: The displayed option as string.
+                    type: string
+                required:
+                  - code
+                  - option
+            return_reasons:
+              description: A list of reasons and codes used during the return process.
+              type: array
+              items:
+                type: object
+                properties:
+                  code:
+                    description: The code associated with this reason.
+                    type: integer
+                  reason:
+                    description: 'The displayed reason as string.  '
+                    type: string
+                  reasons:
+                    description: >-
+                      Multi-language dictionary of reason messages. Map key
+                      should follow ISO 639-1 and values will be the translated
+                      message.
+                    minLength: 1
+                    type: object
+                required:
+                  - code
+                  - reason
+                  - reasons
+          required:
+            - return_reasons
+        scanning_configuration:
+          description: Tenant specific configuration for scanning component
+          type: object
+          properties:
+            barcode_types:
+              description: >-
+                A list of barcode types that can be scanned by app, like [qr,
+                databar, ...]
+              type: array
+              items:
+                description: The type of barcode that we support to scan in the app
+                enum:
+                  - qr
+                  - databar
+                  - dataMatrix
+                  - databarExpanded
+                  - ean8
+                  - ean13
+                  - code128
+                  - interleaved2of5
+                  - pdf417
+                  - code93
+                  - code39
+                  - upce
+                  - upca
+                type: string
+          required:
+            - barcode_types
+        store:
+          $ref: '#/components/schemas/store'
+        store_fulfillment_queue_visibility_enabled:
+          description: True if the store fulfillment queue visibility is configured
+          type: boolean
+        tenant_configuration:
+          description: Tenant specific configuration used by the NewStore App
+          type: object
+          properties:
+            PubNub:
+              description: PubNub configuration keys
+              type: object
+              properties:
+                authentication_key:
+                  type: string
+                publish_key:
+                  type: string
+                subscribe_key:
+                  type: string
+              required:
+                - publish_key
+                - subscribe_key
+                - authentication_key
+          required:
+            - PubNub
+        transfers_configuration:
+          description: Tenant configuration for transfer transactions.
+          type: object
+          properties:
+            manual_adjustment_enabled:
+              description: >-
+                Determines whether the user can manually adjust the transferred
+                quantities.
+              default: true
+              type: boolean
+          required:
+            - manual_adjustment_enabled
+        use_document_printer_for_return_label:
+          description: >-
+            A value to determine whether to use document printer when printing
+            return label in retail app
+          type: boolean
+      required:
+        - notification_channels
+        - channels
+        - associate
+        - store
+        - store_fulfillment_queue_visibility_enabled
+        - tenant_configuration
+        - scanning_configuration
+        - use_document_printer_for_return_label
+        - inventory_receiving_configuration
+        - cycle_count_configuration
+        - transfers_configuration
+        - adjustment_configuration
+        - asn_configuration
+        - feature_toggle
+    address:
+      title: Shared address schema
+      type: object
+      properties:
+        address_line_1:
+          type: string
+        address_line_2:
+          type: string
+        city:
+          type: string
+        country_code:
+          $ref: '#/components/schemas/countryCode'
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone:
+          type: string
+        province:
+          type: string
+        salutation:
+          description: e.g. Mr., Ms., Mrs., ...
+          type: string
+        second_name:
+          type: string
+        state:
+          type: string
+        suffix:
+          description: e.g. Jr., Sr., III, ...
+          type: string
+        title:
+          description: e.g. Dr., Prof., Pres., ...
+          type: string
+        zip_code:
+          type: string
+      required:
+        - address_line_1
+        - address_line_2
+        - city
+        - country_code
+        - first_name
+        - last_name
+        - phone
+        - province
+        - salutation
+        - second_name
+        - state
+        - suffix
+        - title
+        - zip_code
+    associate:
+      type: object
+      properties:
+        absent_since:
+          type: string
+          format: date-time
+        completed_tasks_count:
+          type: integer
+        created_at:
+          description: The time when this row was created.
+          type: string
+          format: date-time
+        email:
+          maxLength: 100
+          minLength: 1
+          type: string
+        first_name:
+          maxLength: 256
+          minLength: 1
+          type: string
+        id:
+          description: The referencing user id from our SSO service
+          maxLength: 256
+          minLength: 1
+          type: string
+        image_url:
+          type: string
+        is_available:
+          description: Describes whether the associate can get an order request or not.
+          type: boolean
+        last_name:
+          maxLength: 256
+          minLength: 1
+          type: string
+        open_tasks_count:
+          type: integer
+        revision:
+          description: >-
+            Revision of the row. Starts with 1 and is incremented on each
+            update.
+          minimum: 1
+          type: integer
+        status:
+          enum:
+            - can_receive_requests
+            - cannot_receive_requests
+            - not_available
+          type: string
+        store_id:
+          maxLength: 256
+          minLength: 1
+          type: string
+        telephone_number:
+          maxLength: 32
+          type: string
+        tenant:
+          maxLength: 256
+          minLength: 1
+          type: string
+        updated_at:
+          description: The time when this row was last updated.
+          type: string
+          format: date-time
+      required:
+        - id
+        - first_name
+        - last_name
+        - email
+        - store_id
+        - status
+        - telephone_number
+        - open_tasks_count
+        - completed_tasks_count
+        - is_available
+    businessHour:
+      description: Represents store business hours information
+      type: object
+      properties:
+        earliest_pick_up:
+          pattern: ^\d{2}:\d{2}$
+          type: string
+        from_time:
+          pattern: ^\d{2}:\d{2}$
+          type: string
+        latest_pick_up:
+          pattern: ^\d{2}:\d{2}$
+          type: string
+        store_id:
+          nullable: true
+          type: string
+          maxLength: 256
+          minLength: 1
+        to_time:
+          pattern: ^\d{2}:\d{2}$
+          type: string
+        uuid:
+          maxLength: 36
+          minLength: 36
+          type: string
+        weekday:
+          description: Value represents week day starting from Monday
+          maximum: 6
+          minimum: 0
+          type: integer
+      required:
+        - from_time
+        - to_time
+        - weekday
+    countryCode:
+      description: >-
+        Shipping origin country code. Must be
+ISO-3166 reference
+enum:
+        - AD
+        - AE
+        - AF
+        - AG
+        - AI
+        - AL
+        - AM
+        - AO
+        - AQ
+        - AR
+        - AS
+        - AT
+        - AU
+        - AW
+        - AX
+        - AZ
+        - BA
+        - BB
+        - BD
+        - BE
+        - BF
+        - BG
+        - BH
+        - BI
+        - BJ
+        - BL
+        - BM
+        - BN
+        - BO
+        - BQ
+        - BR
+        - BS
+        - BT
+        - BV
+        - BW
+        - BY
+        - BZ
+        - CA
+        - CC
+        - CD
+        - CF
+        - CG
+        - CH
+        - CI
+        - CK
+        - CL
+        - CM
+        - CN
+        - CO
+        - CR
+        - CU
+        - CV
+        - CW
+        - CX
+        - CY
+        - CZ
+        - DE
+        - DJ
+        - DK
+        - DM
+        - DO
+        - DZ
+        - EC
+        - EE
+        - EG
+        - EH
+        - ER
+        - ES
+        - ET
+        - FI
+        - FJ
+        - FK
+        - FM
+        - FO
+        - FR
+        - GA
+        - GB
+        - GD
+        - GE
+        - GF
+        - GG
+        - GH
+        - GI
+        - GL
+        - GM
+        - GN
+        - GP
+        - GQ
+        - GR
+        - GS
+        - GT
+        - GU
+        - GW
+        - GY
+        - HK
+        - HM
+        - HN
+        - HR
+        - HT
+        - HU
+        - ID
+        - IE
+        - IL
+        - IM
+        - IN
+        - IO
+        - IQ
+        - IR
+        - IS
+        - IT
+        - JE
+        - JM
+        - JO
+        - JP
+        - KE
+        - KG
+        - KH
+        - KI
+        - KM
+        - KN
+        - KP
+        - KR
+        - KW
+        - KY
+        - KZ
+        - LA
+        - LB
+        - LC
+        - LI
+        - LK
+        - LR
+        - LS
+        - LT
+        - LU
+        - LV
+        - LY
+        - MA
+        - MC
+        - MD
+        - ME
+        - MF
+        - MG
+        - MH
+        - MK
+        - ML
+        - MM
+        - MN
+        - MO
+        - MP
+        - MQ
+        - MR
+        - MS
+        - MT
+        - MU
+        - MV
+        - MW
+        - MX
+        - MY
+        - MZ
+        - NA
+        - NC
+        - NE
+        - NF
+        - NG
+        - NI
+        - NL
+        - 'NO'
+        - NP
+        - NR
+        - NU
+        - NZ
+        - OM
+        - PA
+        - PE
+        - PF
+        - PG
+        - PH
+        - PK
+        - PL
+        - PM
+        - PN
+        - PR
+        - PS
+        - PT
+        - PW
+        - PY
+        - QA
+        - RE
+        - RO
+        - RS
+        - RU
+        - RW
+        - SA
+        - SB
+        - SC
+        - SD
+        - SE
+        - SG
+        - SH
+        - SI
+        - SJ
+        - SK
+        - SL
+        - SM
+        - SN
+        - SO
+        - SR
+        - SS
+        - ST
+        - SV
+        - SX
+        - SY
+        - SZ
+        - TC
+        - TD
+        - TF
+        - TG
+        - TH
+        - TJ
+        - TK
+        - TL
+        - TM
+        - TN
+        - TO
+        - TR
+        - TT
+        - TV
+        - TW
+        - TZ
+        - UA
+        - UG
+        - UM
+        - US
+        - UY
+        - UZ
+        - VA
+        - VC
+        - VE
+        - VG
+        - VI
+        - VN
+        - VU
+        - WF
+        - WS
+        - YE
+        - YT
+        - ZA
+        - ZM
+        - ZW
+      type: string
+    deliveryDetails:
+      type: object
+      properties:
+        carrier:
+          minLength: 1
+          type: string
+        delivered_at:
+          type: string
+          format: date-time
+        delivery_ends_at:
+          type: string
+          format: date-time
+        delivery_starts_at:
+          type: string
+          format: date-time
+        display_name:
+          minLength: 1
+          type: string
+        map_tracking:
+          type: boolean
+        return_carrier:
+          minLength: 1
+          type: string
+        return_display_name:
+          minLength: 1
+          type: string
+      required:
+        - carrier
+        - delivered_at
+        - delivery_ends_at
+        - delivery_starts_at
+        - display_name
+        - map_tracking
+        - return_carrier
+        - return_display_name
+    document:
+      title: Document of a Fulfillment Logistic Order
+      type: object
+      properties:
+        created_at:
+          description: The time when this row was created.
+          type: string
+          format: date-time
+        document_type:
+          description: The type of this document
+          enum:
+            - packing_slip
+            - invoice
+            - sales_receipt
+            - return_form
+            - shipment_label
+            - return_shipment_label
+          type: string
+        fulfillment_logistic_order_uuid:
+          description: Matches the equivalent FulfillmentLogisticOrder uuid.
+          maxLength: 36
+          minLength: 36
+          type: string
+        permalink:
+          description: The url for this document
+          type: string
+        revision:
+          description: >-
+            Revision of the row. Starts with 1 and is incremented on each
+            update.
+          minimum: 1
+          type: integer
+        tenant:
+          maxLength: 256
+          minLength: 1
+          type: string
+        updated_at:
+          description: The time when this row was last updated.
+          type: string
+          format: date-time
+        uuid:
+          description: Unique identifier of this document item
+          maxLength: 36
+          minLength: 36
+          type: string
+      required:
+        - tenant
+        - created_at
+        - updated_at
+        - revision
+        - uuid
+        - document_type
+        - permalink
+        - fulfillment_logistic_order_uuid
+    externalIdentifier:
+      description: This object can contain the product item identifier used by a costumer
+      type: object
+      properties:
+        EAN:
+          type: string
+        EPC:
+          type: string
+        SKU:
+          type: string
+      required:
+        - EAN
+        - EPC
+        - SKU
+    featureToggle:
+      description: Contains features activated/deactivated in the Fulfillment App.
+      type: object
+      properties:
+        cycle_counting_enabled:
+          type: boolean
+        in_store_checkout_discount:
+          type: boolean
+        inventory_adjustments_enabled:
+          type: boolean
+        inventory_receiving_enabled:
+          type: boolean
+        packages_new_labeling_flow:
+          type: boolean
+        return_process_enabled:
+          type: boolean
+        transfers_enabled:
+          type: boolean
+      required:
+        - cycle_counting_enabled
+        - in_store_checkout_discount
+        - inventory_adjustments_enabled
+        - inventory_receiving_enabled
+        - packages_new_labeling_flow
+        - return_process_enabled
+        - transfers_enabled
+    fulfillmentLogisticOrder:
+      type: object
+      properties:
+        _fulfillment_associate_id:
+          nullable: true
+          type: string
+          maxLength: 256
+        action_performed_by:
+          description: >-
+            associate_id and name of the associate who performed the last
+            action.
+          type: object
+          properties:
+            associate_id:
+              description: The referencing user id from our SSO service
+              maxLength: 256
+              minLength: 1
+              type: string
+            associate_name:
+              maxLength: 256
+              type: string
+          required:
+            - associate_id
+            - associate_name
+        billing_address:
+          description: Consumer's billing address
+          nullable: true
+          $ref: '#/components/schemas/address'
+        consumer_email:
+          maxLength: 256
+          type: string
+        consumer_name:
+          nullable: true
+          type: string
+          maxLength: 256
+        consumer_uuid:
+          type: string
+          maxLength: 36
+          minLength: 36
+        created_at:
+          description: The time when this row was created.
+          type: string
+          format: date-time
+        currency_consumer:
+          description: Currency code shown and billed to the consumer.
+          maxLength: 3
+          minLength: 3
+          type: string
+        delivery_details:
+          $ref: '#/components/schemas/deliveryDetails'
+        documents:
+          description: Representation of each document from the FLO
+          type: array
+          items:
+            $ref: '#/components/schemas/document'
+        external_id:
+          maxLength: 256
+          type: string
+        fulfillment_associate_name:
+          nullable: true
+          type: string
+          maxLength: 256
+        fulfillment_associate_telephone_number:
+          nullable: true
+          type: string
+          maxLength: 32
+        fulfillment_request_id:
+          description: Internal identifier of the fulfillment request.
+          maxLength: 36
+          minLength: 36
+          type: string
+        fulfillment_status:
+          enum:
+            - new
+            - pending
+            - pending_timeout
+            - pending_declined
+            - picking
+            - mispick
+            - packing
+            - packing_in_process
+            - mispack
+            - labeling
+            - ready
+            - shipped
+            - delivered
+            - rejected
+            - cancelled
+          type: string
+        gift_wrapping:
+          description: The gift wrapping object applied on order level
+          nullable: true
+          $ref: '#/components/schemas/giftWrapping'
+        is_fulfilled:
+          description: Order was fulfilled at order creation time (in-store purchase).
+          default: false
+          type: boolean
+        item_quantity:
+          minimum: 1
+          type: integer
+        logistic_order_uuid:
+          maxLength: 36
+          minLength: 36
+          type: string
+        next_fulfillment_status:
+          enum:
+            - pending
+            - picking
+            - packing
+            - labeling
+            - ready
+            - shipped
+            - delivered
+          type: string
+        order_items:
+          description: Representation of each order item instance
+          type: array
+          items:
+            $ref: '#/components/schemas/orderItem'
+        packages:
+          description: The packages information for the logistic order
+          type: array
+          items:
+            $ref: '#/components/schemas/package'
+        past_fulfillment_associates:
+          type: array
+          items:
+            type: string
+        payment:
+          $ref: '#/components/schemas/payment'
+        placed_at:
+          type: string
+          format: date-time
+        price_taxes:
+          description: >-
+            The Sum of all price_tax values of all Items in the
+            fulfillment_logistic_order.
+          type: number
+        prices:
+          $ref: '#/components/schemas/prices'
+        refunds:
+          description: All refunds for this fulfillment logistic order.
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/refundNote'
+        revision:
+          description: >-
+            Revision of the row. Starts with 1 and is incremented on each
+            update.
+          minimum: 1
+          type: integer
+        sales_order_uuid:
+          maxLength: 36
+          minLength: 36
+          type: string
+        shipping_address:
+          $ref: '#/components/schemas/address'
+        shipping_option:
+          $ref: '#/components/schemas/shippingOption'
+        started_at:
+          nullable: true
+          type: string
+          format: date-time
+        store_id:
+          maxLength: 256
+          minLength: 1
+          type: string
+        tenant:
+          maxLength: 256
+          minLength: 1
+          type: string
+        tenant_order_id:
+          type: string
+        timer_duration:
+          nullable: true
+          type: integer
+        timer_ends_at:
+          nullable: true
+          type: string
+          format: date-time
+        timer_uuid:
+          type: string
+          maxLength: 36
+          minLength: 36
+        total_price:
+          description: The Sum of total_price_taxes and total_price_net.
+          type: number
+        total_price_net:
+          description: >-
+            The Sum of all price_unit_net values of all items in the
+            fulfillment_logistic_order.
+          type: number
+        updated_at:
+          description: The time when this row was last updated.
+          type: string
+          format: date-time
+        uuid:
+          maxLength: 36
+          minLength: 36
+          type: string
+      required:
+        - uuid
+        - consumer_uuid
+        - shipping_address
+        - fulfillment_status
+        - sales_order_uuid
+        - logistic_order_uuid
+        - item_quantity
+        - order_items
+    giftWrapping:
+      description: The gift wrapping object
+      type: object
+      properties:
+        message:
+          description: Message typed by consumer
+          type: string
+        price:
+          description: The gift wrapping net price
+          type: number
+      required:
+        - message
+        - price
+    orderItem:
+      title: Single item instance of a Fulfillment Logistic Order
+      type: object
+      properties:
+        bin_locations:
+          nullable: true
+          type: array
+          items:
+            description: Each bin location for the product, if available
+            type: string
+        created_at:
+          description: The time when this row was created.
+          type: string
+          format: date-time
+        external_identifier:
+          $ref: '#/components/schemas/externalIdentifier'
+        fulfillment_logistic_order_uuid:
+          description: Matches the equivalent FulfillmentLogisticOrder uuid.
+          maxLength: 36
+          minLength: 36
+          type: string
+        logistic_order_item_uuid:
+          description: Matches the equivalent LogisticOrder uuid.
+          maxLength: 36
+          minLength: 36
+          type: string
+        price_unit:
+          description: The price of one item with taxes.
+          type: number
+        price_unit_discounted:
+          description: Price discounted of one item
+          type: number
+        price_unit_net:
+          description: The price of one item without taxes and without any discounts.
+          type: number
+        price_unit_tax:
+          description: Amount of tax added to the net price.
+          type: number
+        prices:
+          type: object
+          properties:
+            item_price:
+              description: Display price of an item.
+              type: number
+            item_price_discounted:
+              description: Display price of an item, including discounts
+              nullable: true
+              type: number
+            revision:
+              description: >-
+                Revision of the row. Starts with 1 and is incremented on each
+                update.
+              minimum: 1
+              type: integer
+          required:
+            - item_price
+            - item_price_discounted
+            - revision
+        product_attributes:
+          $ref: '#/components/schemas/productAttributes'
+        product_id:
+          description: Id of the product that is this LogisticOrder's line item
+          maxLength: 256
+          type: string
+        product_image_url:
+          description: Image of the product with variations chosen by the consumer.
+          type: string
+        product_name:
+          description: >-
+            Human-readable name of the product that is this LogisticOrder's line
+            item
+          nullable: true
+          type: string
+          maxLength: 512
+        return_code:
+          description: The code of the return reason.
+          nullable: true
+          type: integer
+        return_reason:
+          description: The reason why the item was returned.
+          nullable: true
+          type: string
+        returned_at:
+          description: The date when the item was returned.
+          type: string
+          format: date-time
+        revision:
+          description: >-
+            Revision of the row. Starts with 1 and is incremented on each
+            update.
+          minimum: 1
+          type: integer
+        sales_order_item_uuid:
+          description: Maps the order item to the sales order item.
+          nullable: true
+          type: string
+          maxLength: 36
+          minLength: 36
+        shipping_weight_unit:
+          description: The chosen weight unit.
+          enum:
+            - g
+            - kg
+            - lb
+          type: string
+        shipping_weight_value:
+          description: Weight of the product, numeric value.
+          type: number
+        tenant:
+          maxLength: 256
+          minLength: 1
+          type: string
+        updated_at:
+          description: The time when this row was last updated.
+          type: string
+          format: date-time
+        uuid:
+          description: Unique identifier of this order item
+          maxLength: 36
+          minLength: 36
+          type: string
+      required:
+        - created_at
+        - updated_at
+        - revision
+        - uuid
+        - product_id
+        - product_image_url
+        - product_name
+        - product_attributes
+        - shipping_weight_unit
+        - shipping_weight_value
+        - external_identifier
+        - prices
+    package:
+      type: object
+      properties:
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              document_type:
+                minLength: 1
+                type: string
+              number_of_copies:
+                minimum: 1
+                type: integer
+              permalink:
+                nullable: true
+                type: string
+                minLength: 1
+              printer_type:
+                description: The printer on which the document is printed.
+                enum:
+                  - label_printer
+                  - document_printer
+                type: string
+            required:
+              - document_type
+              - permalink
+              - number_of_copies
+              - printer_type
+        index:
+          minimum: 0
+          type: integer
+        order_item_ids:
+          type: array
+          items:
+            maxLength: 36
+            minLength: 36
+            type: string
+        package_option_name:
+          nullable: true
+          type: string
+          minLength: 1
+        package_option_uuid:
+          nullable: true
+          type: string
+          maxLength: 36
+          minLength: 36
+        return_tracking_code:
+          nullable: true
+          type: string
+          minLength: 1
+        revision:
+          minimum: 1
+          type: integer
+        tracking_code:
+          nullable: true
+          type: string
+          minLength: 1
+        uuid:
+          maxLength: 36
+          minLength: 36
+          type: string
+        weight:
+          description: Total weight of the package
+          type: number
+        weight_unit:
+          minLength: 1
+          type: string
+      required:
+        - uuid
+        - revision
+        - index
+        - tracking_code
+        - order_item_ids
+        - weight_unit
+        - weight
+        - package_option_name
+        - package_option_uuid
+        - documents
+    packageOptionInfo:
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+        package_option_uuid:
+          maxLength: 36
+          minLength: 36
+          type: string
+        weight:
+          minimum: 0
+          exclusiveMinimum: true
+          type: number
+        weight_unit:
+          enum:
+            - lb
+            - oz
+            - kg
+            - g
+          type: string
+      required:
+        - package_option_uuid
+        - name
+        - weight
+        - weight_unit
+    payment:
+      description: An object with payment related information like credit card number.
+      type: object
+      properties:
+        credit_card_number:
+          description: Last four digits of the credit card send by Stripe
+          maxLength: 4
+          type: string
+        method_code:
+          description: Method of the payment
+          type: string
+        method_label:
+          description: Label for the payment method
+          type: string
+        payment_metadata:
+          type: object
+          properties:
+            card_brand:
+              description: 'Information about the brand ex: Visa, Mastercard '
+              type: string
+          required:
+            - card_brand
+        psp:
+          description: Payment services provider
+          type: string
+      required:
+        - psp
+        - method_label
+    prices:
+      description: An object with prices related information
+      type: object
+      properties:
+        currency:
+          description: Currency code shown to the consumer.
+          maxLength: 3
+          minLength: 3
+          type: string
+        discounts:
+          description: List of discounts applied to the order
+          type: array
+          items:
+            description: A discount object
+            type: object
+            properties:
+              discount_type:
+                description: Type of discount (percentage, fix)
+                enum:
+                  - percentage
+                  - fixed
+                type: string
+              discount_value:
+                description: Original discount value (percentage or fix amount)
+                minimum: 0
+                type: number
+              discounted_amount:
+                description: The calculated value of the discount
+                minimum: 0
+                type: number
+            required:
+              - discount_type
+              - discount_value
+              - discounted_amount
+        order_net:
+          description: >-
+            The Sum of all price_unit_net values of all items in the
+            fulfillment_logistic_order.
+          type: number
+        order_return_fee:
+          description: The Sum of return fees applied to this FLO.
+          type: number
+        order_tax:
+          description: >-
+            The Sum of all price_tax values of all Items in the
+            fulfillment_logistic_order.
+          type: number
+        order_total:
+          description: The Sum of total_price_taxes and total_price_net.
+          type: number
+        revision:
+          description: >-
+            Revision of the row. Starts with 1 and is incremented on each
+            update.
+          minimum: 1
+          type: integer
+      required:
+        - revision
+        - order_total
+        - order_net
+        - order_tax
+        - order_return_fee
+        - currency
+    printer:
+      type: object
+      additionalProperties: false
+      allOf:
+        - $ref: '#/components/schemas/printerData'
+        - properties:
+            created_at:
+              description: The time when this printer was created.
+              type: string
+              format: date-time
+            revision:
+              description: >-
+                Revision of the printer. Starts with 1 and is incremented on
+                each update.
+              type: integer
+            tenant:
+              maxLength: 256
+              type: string
+            updated_at:
+              description: The time when this printer was last updated.
+              type: string
+              format: date-time
+            uuid:
+              maxLength: 36
+              minLength: 36
+              type: string
+          type: object
+    printerData:
+      type: object
+      additionalProperties: false
+      properties:
+        ipv4:
+          type: string
+          format: ipv4
+          maxLength: 16
+        ipv6:
+          type: string
+          format: ipv6
+          maxLength: 40
+        location:
+          maxLength: 100
+          type: string
+        mac_address:
+          maxLength: 32
+          minLength: 17
+          type: string
+        manufacturer:
+          enum:
+            - Virtual
+            - Star
+            - AirPrint
+          type: string
+        model:
+          maxLength: 64
+          minLength: 3
+          type: string
+        name:
+          maxLength: 64
+          minLength: 3
+          type: string
+        paper_size:
+          nullable: true
+          type: string
+          maxLength: 32
+        printer_location_id:
+          type: string
+          maxLength: 36
+          minLength: 36
+        store_id:
+          maxLength: 256
+          minLength: 1
+          type: string
+        type:
+          enum:
+            - document_printer
+            - label_printer
+          type: string
+        url:
+          maxLength: 256
+          type: string
+      required:
+        - type
+        - store_id
+        - manufacturer
+        - name
+    returnedItem:
+      type: object
+      properties:
+        order_item_uuid:
+          maxLength: 36
+          minLength: 36
+          type: string
+        quality_inspection_code:
+          description: The code of the quality inspection option
+          type: integer
+        quality_inspection_option:
+          description: >-
+            The option chosen by the associate indicating the quality of the
+            returned product
+          type: string
+        return_code:
+          description: The code of the return reason
+          type: integer
+        return_reason:
+          description: The reason why the item was returned.
+          type: string
+        sales_order_item_uuid:
+          maxLength: 36
+          minLength: 36
+          type: string
+      required:
+        - order_item_uuid
+        - return_reason
+        - return_code
+    printerLocation:
+      type: object
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        name:
+          type: string
+        printers:
+          type: array
+          items:
+            $ref: '#/components/schemas/printer'
+        revision:
+          type: integer
+        store_id:
+          maxLength: 256
+          minLength: 1
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+        uuid:
+          maxLength: 36
+          minLength: 36
+          type: string
+      required:
+        - uuid
+        - name
+        - store_id
+        - created_at
+        - updated_at
+        - revision
+    productAttributes:
+      title: Product Attributes
+      type: object
+      properties:
+        variation_additional_1_value:
+          description: An additional variation selection, e.g. material
+          maxLength: 100
+          type: string
+        variation_additional_2_value:
+          description: An additional variation selection, e.g. material
+          maxLength: 100
+          type: string
+        variation_color_value:
+          maxLength: 100
+          type: string
+        variation_size_value:
+          maxLength: 100
+          type: string
+      required:
+        - variation_additional_1_value
+        - variation_additional_2_value
+        - variation_color_value
+        - variation_size_value
+    refundNote:
+      type: object
+      properties:
+        refund_note_url:
+          description: Refund Note URL.
+          type: string
+        return_uuid:
+          description: A unique identifier for this return.
+          maxLength: 36
+          minLength: 36
+          type: string
+      required:
+        - return_uuid
+    shippingMethods:
+      type: array
+      items:
+        enum:
+          - traditional_carrier
+          - same_day_delivery
+          - in_store_pick_up
+          - in_store_handover
+        type: string
+    shippingOption:
+      properties:
+        cost:
+          description: Cost of the shipment for the selected option.
+          type: number
+        country_code:
+          $ref: '#/components/schemas/countryCode'
+        delivery_details:
+          description: >-
+            Shipping option display details, in case of traditional carrier
+            contains estimated delivery time.
+          type: string
+        display_name:
+          description: Shipping option display name.
+          minLength: 1
+          type: string
+        fulfillment_node_id:
+          description: Identifier of the fulfillment node preselected for that shipment.
+          type: string
+        service_level_identifier:
+          description: Unique identifier of the shipping option.
+          type: string
+        shipping_carrier:
+          description: Shipping carrier code, e.g. 'USPS' or 'Deliv'.
+          type: string
+        shipping_option_token:
+          description: >-
+            JSON web token containing the carrier information required to book a
+            delivery.
+          type: string
+        shipping_type:
+          description: Identifies the type of the shipment e.g. same-day delivery.
+          enum:
+            - traditional_carrier
+            - same_day_delivery
+            - in_store_pick_up
+            - in_store_handover
+          type: string
+        tax:
+          description: Tax amount related to the shipment.
+          type: number
+        timeslot:
+          description: The delivery time slot information, if a time slot is offered.
+          type: object
+          properties:
+            delivery_window:
+              description: The estimated time interval when the delivery will take place.
+              type: object
+              properties:
+                ends_at:
+                  description: The end of the delivery window time interval.
+                  type: string
+                expires_at:
+                  description: The date until when the offered time slot can be booked.
+                  nullable: true
+                  type: string
+                id:
+                  description: >-
+                    The unique identifier of the delivery window. Deprecated.
+                    Use 'delivery_window.id' from the decoded
+                    shipping_option_token instead.
+                  nullable: true
+                  type: string
+                starts_at:
+                  description: The beginning of the delivery window time interval.
+                  type: string
+              required:
+                - starts_at
+                - ends_at
+                - expires_at
+            id:
+              description: >-
+                The identifier of the delivery time slot. Deprecated. Use
+                'delivery_window.id' from the decoded shipping_option_token
+                instead.
+              type: string
+          required:
+            - delivery_window
+        zip_code:
+          description: Shipping origin zip code.
+          type: string
+      required:
+        - shipping_type
+        - cost
+        - tax
+      type: object
+    store:
+      type: object
+      properties:
+        active_status:
+          type: boolean
+        business_hours:
+          type: array
+          items:
+            $ref: '#/components/schemas/businessHour'
+        catalog:
+          description: >-
+            The name of the catalog containing the list of products that can be
+            sold at this store.
+          nullable: true
+          type: string
+          maxLength: 256
+        completed_tasks_count:
+          type: integer
+        created_at:
+          format: date-time
+          type: string
+        gift_wrapping:
+          type: boolean
+        image_url:
+          type: string
+        label:
+          maxLength: 256
+          type: string
+        locale:
+          description: >-
+            The locale of the catalog assigned to the store. The product data in
+            the catalog is displayed based on the locale specified here.
+          nullable: true
+          type: string
+          maxLength: 32
+        manager_id:
+          maxLength: 32
+          type: string
+        open_tasks_count:
+          type: integer
+        physical_address:
+          $ref: '#/components/schemas/address'
+        printers:
+          type: array
+          items:
+            $ref: '#/components/schemas/printer'
+        queue_prioritization:
+          description: >-
+            Prioritize the orders in the order queue for this store. Higher
+            numbers have priority over lower. Shipping types with equal priority
+            are served first come, first serve. Also, all shippign types not
+            listed have equal low priority. If empty, the following default
+            applies: [{"priority": 3, "shipping_type": "in_store_pickup"},
+            {"priority": 2, "shipping_type": "same_day_delivery"}, {"priority":
+            1, "shipping_type": "traditional_carrier"}]
+          type: array
+          items:
+            type: object
+            properties:
+              display_priority_type:
+                description: >-
+                  Determines how an unassigned order is displayed in the
+                  frontend to give associate an overview, how many orders are
+                  left in the queue.
+                enum:
+                  - priority
+                  - normal
+                type: string
+              priority:
+                description: >-
+                  Priority assigned to this shipping type. Higher numbers have
+                  priority over lower. Equal priorities are served first come,
+                  first serve.
+                maximum: 1000
+                minimum: 1
+                type: integer
+              shipping_type:
+                description: >-
+                  The type of shipping: 'traditional_carrier' is a delivery next
+                  day or more days, 'same_day_delivery' is a delivery on the
+                  same day in a given timeslot, i.e. between 2 PM and 4 PM,
+                  `in_store_pick_up` is the consumer picking up in a prticular
+                  store.
+                enum:
+                  - traditional_carrier
+                  - same_day_delivery
+                  - in_store_pick_up
+                  - DHL_PAKET
+                type: string
+            required:
+              - priority
+              - shipping_type
+        shipping_address:
+          $ref: '#/components/schemas/address'
+        store_id:
+          maxLength: 256
+          minLength: 1
+          type: string
+        supported_shipping_methods:
+          $ref: '#/components/schemas/shippingMethods'
+        tenant:
+          maxLength: 256
+          type: string
+        timezone:
+          maxLength: 256
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - label
+        - tenant
+        - store_id
+  responses: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}

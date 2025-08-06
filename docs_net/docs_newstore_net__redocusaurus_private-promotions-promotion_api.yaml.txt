@@ -1,0 +1,1435 @@
+openapi: 3.0.0
+info:
+  title: Discount Rule API
+  version: v0
+  description: >
+    Represents a discount rule defining a type of discount. For example,
+    shipping is free when
+
+    the order value reaches $70.
+
+
+    A discount rule is not an applicable discount, but it is needed to create a
+    coupon definition
+
+    leading to a [coupon](/docs/glossary.html#term-coupon). Using the coupon
+    applies the discount. For more information,
+
+    see the coupons [guide](/docs/development/api/guides/coupons.html).
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+paths:
+  /discount_rules:
+    post:
+      summary: Create discount rule
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '201':
+          description: The discount rule was successfully created.
+          content:
+            application/json:
+              example:
+                discount_rule:
+                  schema:
+                    amount: 30
+                    created_at: '2018-10-26T09:42:30.869Z'
+                    currency: EUR
+                    description: 30% Cyber Month
+                    id: 467ad6df-eb07-4288-b8ed-ce0e5b224552
+                    label: 30%today
+                    minimum_order_amount: 0
+                    priority: 10
+                    scope: order
+                    shipping_price_limit: 0
+                    type: percentage
+                    updated_at: '2018-10-26T09:42:30.869Z'
+              schema:
+                title: Discount Rule
+                type: object
+                allOf:
+                  - title: Discount Rule
+                    type: object
+                    required:
+                      - label
+                      - scope
+                      - type
+                      - amount
+                      - currency
+                    oneOf:
+                      - properties:
+                          label:
+                            type: string
+                            description: >-
+                              Unique name of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          description:
+                            type: string
+                            description: >-
+                              Description of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          scope:
+                            type: string
+                            description: >-
+                              Scope of the discount to be applied on, the whole
+                              order value, individual item's value or the
+                              shipping costs. In case of `item` scope at least
+                              one item or category identifier has to be
+                              specified in the list of `items` or `categories`.
+                            enum:
+                              - order
+                              - item
+                              - shipping
+                          currency:
+                            type: string
+                            description: >-
+                              The currency code of the amount property (in case
+                              of a fixed discount) as well as the
+                              minimum_order_amount. The currency of the discount
+                              rule and the order that it should be applied on
+                              must match.
+                            maxLength: 3
+                            minLength: 3
+                          priority:
+                            type: integer
+                            description: >-
+                              Defines the priority in which the discount rules
+                              are applied. Higher values mean higher priority.
+                            default: 0
+                            minimum: 0
+                          minimum_order_amount:
+                            description: >-
+                              Minimum order total value in the given currency
+                              before the discount rule can be applied.
+                            type: number
+                            minimum: 0
+                          shipping_price_limit:
+                            description: >-
+                              Shipping price limit, i.e. do not apply this
+                              shipping discount rule to shipping options with
+                              prices higher than this limit
+                            type: number
+                            minimum: 0
+                          type:
+                            type: string
+                            enum:
+                              - fixed
+                          amount:
+                            description: Fixed amount in the given currency to be applied
+                            type: number
+                            minimum: 0
+                          items:
+                            description: >-
+                              A list of product IDs. Each item included in this
+                              list is discounted by the provided amount upon
+                              checkout. The list is only taken into account for
+                              discount rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                          categories:
+                            description: >-
+                              A list of category identifiers. Each item
+                              belonging to a category specified in this list is
+                              discounted by the provided amount upon checkout.
+                              The list is only taken into account for discount
+                              rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                      - properties:
+                          label:
+                            type: string
+                            description: >-
+                              Unique name of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          description:
+                            type: string
+                            description: >-
+                              Description of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          scope:
+                            type: string
+                            description: >-
+                              Scope of the discount to be applied on, the whole
+                              order value, individual item's value or the
+                              shipping costs. In case of `item` scope at least
+                              one item or category identifier has to be
+                              specified in the list of `items` or `categories`.
+                            enum:
+                              - order
+                              - item
+                              - shipping
+                          currency:
+                            type: string
+                            description: >-
+                              The currency code of the amount property (in case
+                              of a fixed discount) as well as the
+                              minimum_order_amount. The currency of the discount
+                              rule and the order that it should be applied on
+                              must match.
+                            maxLength: 3
+                            minLength: 3
+                          priority:
+                            type: integer
+                            description: >-
+                              Defines the priority in which the discount rules
+                              are applied. Higher values mean higher priority.
+                            default: 0
+                            minimum: 0
+                          minimum_order_amount:
+                            description: >-
+                              Minimum order total value in the given currency
+                              before the discount rule can be applied.
+                            type: number
+                            minimum: 0
+                          shipping_price_limit:
+                            description: >-
+                              Shipping price limit, i.e. do not apply this
+                              shipping discount rule to shipping options with
+                              prices higher than this limit
+                            type: number
+                            minimum: 0
+                          type:
+                            type: string
+                            enum:
+                              - percentage
+                          amount:
+                            description: Percentage to be applied
+                            type: number
+                            minimum: 0
+                            maximum: 100
+                          items:
+                            description: >-
+                              A list of product IDs. Each item included in this
+                              list is discounted by the provided amount upon
+                              checkout. The list is only taken into account for
+                              discount rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                          categories:
+                            description: >-
+                              A list of category identifiers. Each item
+                              belonging to a category specified in this list is
+                              discounted by the provided amount upon checkout.
+                              The list is only taken into account for discount
+                              rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                  - required:
+                      - id
+                    properties:
+                      id:
+                        description: Unique name identifying the created discount rule
+                        type: string
+                        minLength: 1
+        '400':
+          description: >
+            - Input data is invalid.
+
+            - Price (``amount``) is specified with invalid number of decimal
+            places according to the specified currency.
+              For example, if the currency is specified as ``USD`` and the product price has more
+              than 2 decimal places, it is considered as invalid by the platform.
+              For more information, see
+              [pricing dependencies on currency](/docs/processes/about-payments.html#managing-product-pricing-dependencies-on-currency).
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: A discount rule with given identifier already exists.
+      description: >
+        Creates a discount rule.
+
+
+        **Important:** Ensure that you specify the value of the ``amount``
+        property correctly,
+
+        according to the specified currency. For example, if the currency is
+        specified as ``USD``
+
+        and the product price (``amount``) has more than 2 decimal places, it is
+        considered as
+
+        invalid by the platform.
+
+
+        For more information, see
+
+        [pricing dependencies on
+        currency](/docs/processes/about-payments.html#managing-product-pricing-dependencies-on-currency).
+      operationId: CreateDiscountRule
+      requestBody:
+        content:
+          application/json:
+            example:
+              discount_rule_fixed:
+                schema:
+                  description: half-price
+                  amount: 50
+                  currency: EUR
+                  scope: order
+                  type: fixed
+                  priority: 10
+                  label: BOGOF2910
+              discount_rule_order:
+                schema:
+                  description: 30% Cyber Month
+                  amount: 30
+                  currency: EUR
+                  scope: order
+                  type: percentage
+                  priority: 10
+                  label: 30%today
+              discount_rule_shipping:
+                schema:
+                  label: Free Shipping
+                  scope: shipping
+                  currency: USD
+                  priority: 59
+                  minimum_order_amount: 10
+                  shipping_price_limit: 4
+                  type: percentage
+                  amount: 100
+            schema:
+              title: Create discount rule request
+              type: object
+              required:
+                - label
+                - scope
+                - type
+                - amount
+                - currency
+              oneOf:
+                - properties:
+                    label:
+                      type: string
+                      description: >-
+                        Unique name of the discount rule. The value is trimmed
+                        before it is stored.
+                      minLength: 1
+                    description:
+                      type: string
+                      description: >-
+                        Description of the discount rule. The value is trimmed
+                        before it is stored.
+                      minLength: 1
+                    scope:
+                      type: string
+                      description: >-
+                        Scope of the discount to be applied on, the whole order
+                        value, individual item's value or the shipping costs. In
+                        case of `item` scope at least one item or category
+                        identifier has to be specified in the list of `items` or
+                        `categories`.
+                      enum:
+                        - order
+                        - item
+                        - shipping
+                    currency:
+                      type: string
+                      description: >-
+                        The currency code of the amount property (in case of a
+                        fixed discount) as well as the minimum_order_amount. The
+                        currency of the discount rule and the order that it
+                        should be applied on must match.
+                      maxLength: 3
+                      minLength: 3
+                    priority:
+                      type: integer
+                      description: >-
+                        Defines the priority in which the discount rules are
+                        applied. Higher values mean higher priority.
+                      default: 0
+                      minimum: 0
+                    minimum_order_amount:
+                      description: >-
+                        Minimum order total value in the given currency before
+                        the discount rule can be applied.
+                      type: number
+                      minimum: 0
+                    shipping_price_limit:
+                      description: >-
+                        Shipping price limit, i.e. do not apply this shipping
+                        discount rule to shipping options with prices higher
+                        than this limit
+                      type: number
+                      minimum: 0
+                    type:
+                      type: string
+                      enum:
+                        - fixed
+                    amount:
+                      description: Fixed amount in the given currency to be applied
+                      type: number
+                      minimum: 0
+                    items:
+                      description: >-
+                        A list of product IDs. Each item included in this list
+                        is discounted by the provided amount upon checkout. The
+                        list is only taken into account for discount rules with
+                        scope `item`
+                      type: array
+                      items:
+                        type: string
+                    categories:
+                      description: >-
+                        A list of category identifiers. Each item belonging to a
+                        category specified in this list is discounted by the
+                        provided amount upon checkout. The list is only taken
+                        into account for discount rules with scope `item`
+                      type: array
+                      items:
+                        type: string
+                - properties:
+                    label:
+                      type: string
+                      description: >-
+                        Unique name of the discount rule. The value is trimmed
+                        before it is stored.
+                      minLength: 1
+                    description:
+                      type: string
+                      description: >-
+                        Description of the discount rule. The value is trimmed
+                        before it is stored.
+                      minLength: 1
+                    scope:
+                      type: string
+                      description: >-
+                        Scope of the discount to be applied on, the whole order
+                        value, individual item's value or the shipping costs. In
+                        case of `item` scope at least one item or category
+                        identifier has to be specified in the list of `items` or
+                        `categories`.
+                      enum:
+                        - order
+                        - item
+                        - shipping
+                    currency:
+                      type: string
+                      description: >-
+                        The currency code of the amount property (in case of a
+                        fixed discount) as well as the minimum_order_amount. The
+                        currency of the discount rule and the order that it
+                        should be applied on must match.
+                      maxLength: 3
+                      minLength: 3
+                    priority:
+                      type: integer
+                      description: >-
+                        Defines the priority in which the discount rules are
+                        applied. Higher values mean higher priority.
+                      default: 0
+                      minimum: 0
+                    minimum_order_amount:
+                      description: >-
+                        Minimum order total value in the given currency before
+                        the discount rule can be applied.
+                      type: number
+                      minimum: 0
+                    shipping_price_limit:
+                      description: >-
+                        Shipping price limit, i.e. do not apply this shipping
+                        discount rule to shipping options with prices higher
+                        than this limit
+                      type: number
+                      minimum: 0
+                    type:
+                      type: string
+                      enum:
+                        - percentage
+                    amount:
+                      description: Percentage to be applied
+                      type: number
+                      minimum: 0
+                      maximum: 100
+                    items:
+                      description: >-
+                        A list of product IDs. Each item included in this list
+                        is discounted by the provided amount upon checkout. The
+                        list is only taken into account for discount rules with
+                        scope `item`
+                      type: array
+                      items:
+                        type: string
+                    categories:
+                      description: >-
+                        A list of category identifiers. Each item belonging to a
+                        category specified in this list is discounted by the
+                        provided amount upon checkout. The list is only taken
+                        into account for discount rules with scope `item`
+                      type: array
+                      items:
+                        type: string
+        required: true
+    get:
+      summary: List discount rules
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: The list of discount rules is returned.
+          content:
+            application/json:
+              example:
+                discount_rule_list:
+                  schema:
+                    items:
+                      - amount: 30
+                        created_at: '2018-10-26T09:42:30.869Z'
+                        currency: EUR
+                        description: 30% Cyber Month
+                        id: 467ad6df-eb07-4288-b8ed-ce0e5b224552
+                        label: 30%today
+                        minimum_order_amount: 0
+                        priority: 10
+                        scope: order
+                        shipping_price_limit: 0
+                        type: percentage
+                        updated_at: '2018-10-26T09:42:30.869Z'
+                      - amount: 100
+                        created_at: '2018-10-26T09:42:30.869Z'
+                        currency: EUR
+                        description: 100$ discount
+                        id: 467ad6df-eb07-4288-b8ed-ce0e5b224553
+                        label: 100bucks
+                        minimum_order_amount: 0
+                        priority: 10
+                        scope: order
+                        shipping_price_limit: 0
+                        type: fixed
+                        updated_at: '2018-10-26T09:42:30.869Z'
+                    pagination_info:
+                      count: 10
+                      next_url: >-
+                        /discounts?count=10&locale=en-US&offset=10&sort=created_at%7Cdesc
+                      offset: 0
+                      prev_url: null
+                      total: 6032
+              schema:
+                title: Discount Rules
+                description: List of discount rules
+                required:
+                  - items
+                properties:
+                  items:
+                    type: array
+                    items:
+                      title: Discount Rule
+                      type: object
+                      allOf:
+                        - title: Discount Rule
+                          type: object
+                          required:
+                            - label
+                            - scope
+                            - type
+                            - amount
+                            - currency
+                          oneOf:
+                            - properties:
+                                label:
+                                  type: string
+                                  description: >-
+                                    Unique name of the discount rule. The value
+                                    is trimmed before it is stored.
+                                  minLength: 1
+                                description:
+                                  type: string
+                                  description: >-
+                                    Description of the discount rule. The value
+                                    is trimmed before it is stored.
+                                  minLength: 1
+                                scope:
+                                  type: string
+                                  description: >-
+                                    Scope of the discount to be applied on, the
+                                    whole order value, individual item's value
+                                    or the shipping costs. In case of `item`
+                                    scope at least one item or category
+                                    identifier has to be specified in the list
+                                    of `items` or `categories`.
+                                  enum:
+                                    - order
+                                    - item
+                                    - shipping
+                                currency:
+                                  type: string
+                                  description: >-
+                                    The currency code of the amount property (in
+                                    case of a fixed discount) as well as the
+                                    minimum_order_amount. The currency of the
+                                    discount rule and the order that it should
+                                    be applied on must match.
+                                  maxLength: 3
+                                  minLength: 3
+                                priority:
+                                  type: integer
+                                  description: >-
+                                    Defines the priority in which the discount
+                                    rules are applied. Higher values mean higher
+                                    priority.
+                                  default: 0
+                                  minimum: 0
+                                minimum_order_amount:
+                                  description: >-
+                                    Minimum order total value in the given
+                                    currency before the discount rule can be
+                                    applied.
+                                  type: number
+                                  minimum: 0
+                                shipping_price_limit:
+                                  description: >-
+                                    Shipping price limit, i.e. do not apply this
+                                    shipping discount rule to shipping options
+                                    with prices higher than this limit
+                                  type: number
+                                  minimum: 0
+                                type:
+                                  type: string
+                                  enum:
+                                    - fixed
+                                amount:
+                                  description: >-
+                                    Fixed amount in the given currency to be
+                                    applied
+                                  type: number
+                                  minimum: 0
+                                items:
+                                  description: >-
+                                    A list of product IDs. Each item included in
+                                    this list is discounted by the provided
+                                    amount upon checkout. The list is only taken
+                                    into account for discount rules with scope
+                                    `item`
+                                  type: array
+                                  items:
+                                    type: string
+                                categories:
+                                  description: >-
+                                    A list of category identifiers. Each item
+                                    belonging to a category specified in this
+                                    list is discounted by the provided amount
+                                    upon checkout. The list is only taken into
+                                    account for discount rules with scope `item`
+                                  type: array
+                                  items:
+                                    type: string
+                            - properties:
+                                label:
+                                  type: string
+                                  description: >-
+                                    Unique name of the discount rule. The value
+                                    is trimmed before it is stored.
+                                  minLength: 1
+                                description:
+                                  type: string
+                                  description: >-
+                                    Description of the discount rule. The value
+                                    is trimmed before it is stored.
+                                  minLength: 1
+                                scope:
+                                  type: string
+                                  description: >-
+                                    Scope of the discount to be applied on, the
+                                    whole order value, individual item's value
+                                    or the shipping costs. In case of `item`
+                                    scope at least one item or category
+                                    identifier has to be specified in the list
+                                    of `items` or `categories`.
+                                  enum:
+                                    - order
+                                    - item
+                                    - shipping
+                                currency:
+                                  type: string
+                                  description: >-
+                                    The currency code of the amount property (in
+                                    case of a fixed discount) as well as the
+                                    minimum_order_amount. The currency of the
+                                    discount rule and the order that it should
+                                    be applied on must match.
+                                  maxLength: 3
+                                  minLength: 3
+                                priority:
+                                  type: integer
+                                  description: >-
+                                    Defines the priority in which the discount
+                                    rules are applied. Higher values mean higher
+                                    priority.
+                                  default: 0
+                                  minimum: 0
+                                minimum_order_amount:
+                                  description: >-
+                                    Minimum order total value in the given
+                                    currency before the discount rule can be
+                                    applied.
+                                  type: number
+                                  minimum: 0
+                                shipping_price_limit:
+                                  description: >-
+                                    Shipping price limit, i.e. do not apply this
+                                    shipping discount rule to shipping options
+                                    with prices higher than this limit
+                                  type: number
+                                  minimum: 0
+                                type:
+                                  type: string
+                                  enum:
+                                    - percentage
+                                amount:
+                                  description: Percentage to be applied
+                                  type: number
+                                  minimum: 0
+                                  maximum: 100
+                                items:
+                                  description: >-
+                                    A list of product IDs. Each item included in
+                                    this list is discounted by the provided
+                                    amount upon checkout. The list is only taken
+                                    into account for discount rules with scope
+                                    `item`
+                                  type: array
+                                  items:
+                                    type: string
+                                categories:
+                                  description: >-
+                                    A list of category identifiers. Each item
+                                    belonging to a category specified in this
+                                    list is discounted by the provided amount
+                                    upon checkout. The list is only taken into
+                                    account for discount rules with scope `item`
+                                  type: array
+                                  items:
+                                    type: string
+                        - required:
+                            - id
+                          properties:
+                            id:
+                              description: Unique identifier for the created discount rule
+                              type: string
+                              minLength: 1
+                            created_at:
+                              type: string
+                              format: date-time
+                            updated_at:
+                              type: string
+                              format: date-time
+                  pagination_info:
+                    type: object
+                    description: Contains default fields for paginatable APIs.
+                    required:
+                      - count
+                      - total
+                      - offset
+                      - prev_url
+                      - next_url
+                    properties:
+                      count:
+                        description: Contains the count of the contained array.
+                        type: integer
+                      total:
+                        description: >-
+                          Contains the total count of documents. Will be null if
+                          the API is not able to determine a total count.
+                        type: integer
+                        nullable: true
+                      offset:
+                        description: Contains the current offset.
+                        type: integer
+                      prev_url:
+                        description: >-
+                          An URI that can be used to get the previous page. Will
+                          be null if the current page is the first page.
+                        type: string
+                        nullable: true
+                      next_url:
+                        description: >-
+                          An URI that can be used to get the next page. Will be
+                          null if the current page is the last page.
+                        type: string
+                        nullable: true
+                  field_ranges:
+                    type: object
+                    description: >-
+                      Available value ranges for discount rule fields available
+                      for advanced search.
+        '400':
+          description: Input data is invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+      description: Retrieves a list of discount rules.
+      operationId: ListDiscountRules
+      parameters:
+        - name: labels
+          in: query
+          description: List of labels to filter discount rules.
+          schema:
+            uniqueItems: true
+            maxItems: 20
+            type: array
+            items:
+              type: string
+        - name: advanced_search
+          in: query
+          description: >
+            Any non-empty value enables advanced search with sorting, filtering
+            and full-text queries.
+
+            If used, fields `items` and `categories` will be excluded from
+            discount rule item in the response.
+          schema:
+            type: string
+  /discount_rules/{id}:
+    get:
+      summary: Get discount rule
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: The discount rule is returned.
+          content:
+            application/json:
+              example:
+                discount_rule: ./examples/example_discount_rule_response.yaml
+              schema:
+                title: Discount Rule
+                type: object
+                allOf:
+                  - title: Discount Rule
+                    type: object
+                    required:
+                      - label
+                      - scope
+                      - type
+                      - amount
+                      - currency
+                    oneOf:
+                      - properties:
+                          label:
+                            type: string
+                            description: >-
+                              Unique name of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          description:
+                            type: string
+                            description: >-
+                              Description of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          scope:
+                            type: string
+                            description: >-
+                              Scope of the discount to be applied on, the whole
+                              order value, individual item's value or the
+                              shipping costs. In case of `item` scope at least
+                              one item or category identifier has to be
+                              specified in the list of `items` or `categories`.
+                            enum:
+                              - order
+                              - item
+                              - shipping
+                          currency:
+                            type: string
+                            description: >-
+                              The currency code of the amount property (in case
+                              of a fixed discount) as well as the
+                              minimum_order_amount. The currency of the discount
+                              rule and the order that it should be applied on
+                              must match.
+                            maxLength: 3
+                            minLength: 3
+                          priority:
+                            type: integer
+                            description: >-
+                              Defines the priority in which the discount rules
+                              are applied. Higher values mean higher priority.
+                            default: 0
+                            minimum: 0
+                          minimum_order_amount:
+                            description: >-
+                              Minimum order total value in the given currency
+                              before the discount rule can be applied.
+                            type: number
+                            minimum: 0
+                          shipping_price_limit:
+                            description: >-
+                              Shipping price limit, i.e. do not apply this
+                              shipping discount rule to shipping options with
+                              prices higher than this limit
+                            type: number
+                            minimum: 0
+                          type:
+                            type: string
+                            enum:
+                              - fixed
+                          amount:
+                            description: Fixed amount in the given currency to be applied
+                            type: number
+                            minimum: 0
+                          items:
+                            description: >-
+                              A list of product IDs. Each item included in this
+                              list is discounted by the provided amount upon
+                              checkout. The list is only taken into account for
+                              discount rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                          categories:
+                            description: >-
+                              A list of category identifiers. Each item
+                              belonging to a category specified in this list is
+                              discounted by the provided amount upon checkout.
+                              The list is only taken into account for discount
+                              rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                      - properties:
+                          label:
+                            type: string
+                            description: >-
+                              Unique name of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          description:
+                            type: string
+                            description: >-
+                              Description of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          scope:
+                            type: string
+                            description: >-
+                              Scope of the discount to be applied on, the whole
+                              order value, individual item's value or the
+                              shipping costs. In case of `item` scope at least
+                              one item or category identifier has to be
+                              specified in the list of `items` or `categories`.
+                            enum:
+                              - order
+                              - item
+                              - shipping
+                          currency:
+                            type: string
+                            description: >-
+                              The currency code of the amount property (in case
+                              of a fixed discount) as well as the
+                              minimum_order_amount. The currency of the discount
+                              rule and the order that it should be applied on
+                              must match.
+                            maxLength: 3
+                            minLength: 3
+                          priority:
+                            type: integer
+                            description: >-
+                              Defines the priority in which the discount rules
+                              are applied. Higher values mean higher priority.
+                            default: 0
+                            minimum: 0
+                          minimum_order_amount:
+                            description: >-
+                              Minimum order total value in the given currency
+                              before the discount rule can be applied.
+                            type: number
+                            minimum: 0
+                          shipping_price_limit:
+                            description: >-
+                              Shipping price limit, i.e. do not apply this
+                              shipping discount rule to shipping options with
+                              prices higher than this limit
+                            type: number
+                            minimum: 0
+                          type:
+                            type: string
+                            enum:
+                              - percentage
+                          amount:
+                            description: Percentage to be applied
+                            type: number
+                            minimum: 0
+                            maximum: 100
+                          items:
+                            description: >-
+                              A list of product IDs. Each item included in this
+                              list is discounted by the provided amount upon
+                              checkout. The list is only taken into account for
+                              discount rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                          categories:
+                            description: >-
+                              A list of category identifiers. Each item
+                              belonging to a category specified in this list is
+                              discounted by the provided amount upon checkout.
+                              The list is only taken into account for discount
+                              rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                  - required:
+                      - id
+                    properties:
+                      id:
+                        description: Unique identifier for the created discount rule
+                        type: string
+                        minLength: 1
+                      created_at:
+                        type: string
+                        format: date-time
+                      updated_at:
+                        type: string
+                        format: date-time
+        '404':
+          description: The provided ID could not be found.
+      description: Retrieves the discount rule with the given ID.
+      operationId: GetDiscountRule
+    patch:
+      summary: Update discount rule
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: The discount rule was successfully updated.
+          content:
+            application/json:
+              example:
+                discount_rule:
+                  schema:
+                    amount: 30
+                    created_at: '2018-10-26T09:42:30.869Z'
+                    currency: EUR
+                    description: 30% Cyber Month
+                    id: 467ad6df-eb07-4288-b8ed-ce0e5b224552
+                    label: 30%today
+                    minimum_order_amount: 0
+                    priority: 10
+                    scope: order
+                    shipping_price_limit: 0
+                    type: percentage
+                    updated_at: '2018-10-26T09:42:30.869Z'
+              schema:
+                title: Discount Rule
+                type: object
+                allOf:
+                  - title: Discount Rule
+                    type: object
+                    required:
+                      - label
+                      - scope
+                      - type
+                      - amount
+                      - currency
+                    oneOf:
+                      - properties:
+                          label:
+                            type: string
+                            description: >-
+                              Unique name of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          description:
+                            type: string
+                            description: >-
+                              Description of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          scope:
+                            type: string
+                            description: >-
+                              Scope of the discount to be applied on, the whole
+                              order value, individual item's value or the
+                              shipping costs. In case of `item` scope at least
+                              one item or category identifier has to be
+                              specified in the list of `items` or `categories`.
+                            enum:
+                              - order
+                              - item
+                              - shipping
+                          currency:
+                            type: string
+                            description: >-
+                              The currency code of the amount property (in case
+                              of a fixed discount) as well as the
+                              minimum_order_amount. The currency of the discount
+                              rule and the order that it should be applied on
+                              must match.
+                            maxLength: 3
+                            minLength: 3
+                          priority:
+                            type: integer
+                            description: >-
+                              Defines the priority in which the discount rules
+                              are applied. Higher values mean higher priority.
+                            default: 0
+                            minimum: 0
+                          minimum_order_amount:
+                            description: >-
+                              Minimum order total value in the given currency
+                              before the discount rule can be applied.
+                            type: number
+                            minimum: 0
+                          shipping_price_limit:
+                            description: >-
+                              Shipping price limit, i.e. do not apply this
+                              shipping discount rule to shipping options with
+                              prices higher than this limit
+                            type: number
+                            minimum: 0
+                          type:
+                            type: string
+                            enum:
+                              - fixed
+                          amount:
+                            description: Fixed amount in the given currency to be applied
+                            type: number
+                            minimum: 0
+                          items:
+                            description: >-
+                              A list of product IDs. Each item included in this
+                              list is discounted by the provided amount upon
+                              checkout. The list is only taken into account for
+                              discount rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                          categories:
+                            description: >-
+                              A list of category identifiers. Each item
+                              belonging to a category specified in this list is
+                              discounted by the provided amount upon checkout.
+                              The list is only taken into account for discount
+                              rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                      - properties:
+                          label:
+                            type: string
+                            description: >-
+                              Unique name of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          description:
+                            type: string
+                            description: >-
+                              Description of the discount rule. The value is
+                              trimmed before it is stored.
+                            minLength: 1
+                          scope:
+                            type: string
+                            description: >-
+                              Scope of the discount to be applied on, the whole
+                              order value, individual item's value or the
+                              shipping costs. In case of `item` scope at least
+                              one item or category identifier has to be
+                              specified in the list of `items` or `categories`.
+                            enum:
+                              - order
+                              - item
+                              - shipping
+                          currency:
+                            type: string
+                            description: >-
+                              The currency code of the amount property (in case
+                              of a fixed discount) as well as the
+                              minimum_order_amount. The currency of the discount
+                              rule and the order that it should be applied on
+                              must match.
+                            maxLength: 3
+                            minLength: 3
+                          priority:
+                            type: integer
+                            description: >-
+                              Defines the priority in which the discount rules
+                              are applied. Higher values mean higher priority.
+                            default: 0
+                            minimum: 0
+                          minimum_order_amount:
+                            description: >-
+                              Minimum order total value in the given currency
+                              before the discount rule can be applied.
+                            type: number
+                            minimum: 0
+                          shipping_price_limit:
+                            description: >-
+                              Shipping price limit, i.e. do not apply this
+                              shipping discount rule to shipping options with
+                              prices higher than this limit
+                            type: number
+                            minimum: 0
+                          type:
+                            type: string
+                            enum:
+                              - percentage
+                          amount:
+                            description: Percentage to be applied
+                            type: number
+                            minimum: 0
+                            maximum: 100
+                          items:
+                            description: >-
+                              A list of product IDs. Each item included in this
+                              list is discounted by the provided amount upon
+                              checkout. The list is only taken into account for
+                              discount rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                          categories:
+                            description: >-
+                              A list of category identifiers. Each item
+                              belonging to a category specified in this list is
+                              discounted by the provided amount upon checkout.
+                              The list is only taken into account for discount
+                              rules with scope `item`
+                            type: array
+                            items:
+                              type: string
+                  - required:
+                      - id
+                    properties:
+                      id:
+                        description: Unique name identifying the created discount rule
+                        type: string
+                        minLength: 1
+        '400':
+          description: >
+            - Input data is invalid.
+
+            - Price (``amount``) is specified with invalid number of decimal
+            places according to the specified currency.
+              For example, if the currency is specified as ``USD`` and the product price has more
+              than 2 decimal places, it is considered as invalid by the platform.
+              For more information, see
+              [pricing dependencies on currency](/docs/processes/about-payments.html#managing-product-pricing-dependencies-on-currency).
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+      description: >
+        Updates certain fields in the specified discount rule.
+
+
+        **Important:** Ensure that you specify the value of the ``amount``
+        property correctly,
+
+        according to the specified currency. For example, if the currency is
+        specified as ``USD``
+
+        and the product price (``amount``) has more than 2 decimal places, it is
+        considered as
+
+        invalid by the platform.
+
+
+        For more information, see
+
+        [pricing dependencies on
+        currency](/docs/processes/about-payments.html#managing-product-pricing-dependencies-on-currency).
+      operationId: PatchDiscountRule
+      requestBody:
+        content:
+          application/json:
+            example:
+              patch_discount_rule_items:
+                schema:
+                  items:
+                    - p0001
+                    - p0002
+              patch_discount_rule_min_amount:
+                schema:
+                  minimum_order_amount: 10
+            schema:
+              title: Create discount rule request
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: >-
+                    Unique name of the discount rule. The value is trimmed
+                    before it is stored.
+                  minLength: 1
+                description:
+                  type: string
+                  description: >-
+                    Description of the discount rule. The value is trimmed
+                    before it is stored.
+                  minLength: 1
+                scope:
+                  type: string
+                  description: >-
+                    Scope of the discount to be applied on, the whole order
+                    value, individual item's value or the shipping costs. In
+                    case of `item` scope at least one item or category
+                    identifier has to be specified in the list of `items` or
+                    `categories`.
+                  enum:
+                    - order
+                    - item
+                    - shipping
+                type:
+                  type: string
+                  enum:
+                    - fixed
+                    - percentage
+                amount:
+                  description: >-
+                    Fixed amount in the given currency or percentage to be
+                    applied
+                  type: number
+                  minimum: 0
+                priority:
+                  type: integer
+                  description: >-
+                    Defines the priority in which the discount rules are
+                    applied. Higher values mean higher priority.
+                  default: 0
+                  minimum: 0
+                minimum_order_amount:
+                  description: >-
+                    Minimum order total value in the given currency before the
+                    discount rule can be applied.
+                  type: number
+                  minimum: 0
+                shipping_price_limit:
+                  description: >-
+                    Shipping price limit, i.e. do not apply this shipping
+                    discount rule to shipping options with prices higher than
+                    this limit
+                  type: number
+                  minimum: 0
+                items:
+                  description: >-
+                    A list of product IDs. Each item included in this list is
+                    discounted by the provided amount upon checkout. The list is
+                    only taken into account for discount rules with scope `item`
+                  type: array
+                  items:
+                    type: string
+                categories:
+                  description: >-
+                    A list of category identifiers. Each item belonging to a
+                    category specified in this list is discounted by the
+                    provided amount upon checkout. The list is only taken into
+                    account for discount rules with scope `item`
+                  type: array
+                  items:
+                    type: string
+                currency:
+                  type: string
+                  description: >-
+                    The currency code of the amount property (in case of a fixed
+                    discount) as well as the minimum_order_amount. The currency
+                    of the discount rule and the order that it should be applied
+                    on must match.
+                  maxLength: 3
+                  minLength: 3
+        required: true
+    delete:
+      summary: Delete discount rule
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '204':
+          description: The discount rule was deleted.
+        '404':
+          description: The discount rule with the given ID could not be found.
+      description: Deletes discount rule with the given ID.
+      operationId: DeleteDiscountRule
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier of the discount rule. Use the [List discount
+          rules](#operation/ListDiscountRules)
+
+          method to retrieve the ID.
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}
+x-annotation-crossOriginAllowed: true

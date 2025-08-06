@@ -1,0 +1,813 @@
+Refund API (item level) | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Cash Drawer API
+Cash Drawer Reports API
+Cash settings
+Payment Provider Asynchronous API
+Gift Card API
+NewStore Checkout API
+NewStore Checkout Secrets API
+Payment Accounts API
+Payment Options API
+Payment troubleshoot API
+Adyen credentials API
+Refund API (order level, deprecated)
+Refund API (item level)
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+List refund requests
+post
+Create refund request
+get
+Get refund request
+post
+Calculate refund amount
+API docs by Redocly
+Refund API (item level)
+(
+1.0.0
+)
+Download OpenAPI specification
+:
+Download
+team-order-management
+:
+team-order-management@newstore.com
+Represents a refund request, triggered by a return or appeasement. It can be applied to all or specific
+items of an order. If needed, shipping costs can be refunded as well.
+A refund request can be pending, successful, or failed. A successful refund request may depend
+on the captured amount and on previous refunds (pending and successful).
+Related resources:
+Returns
+External orders
+Store and DC orders
+List refund requests
+Retrieves the list of refund requests for the specified order ordered
+by ascending creation dates. The list is empty when no refunds have been requested for
+this order.
+Use the
+Get refund request details
+method to get
+more information about each refund request.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The identifier of the order. To retrieve the order ID, use the
+List orders
+method.
+Responses
+200
+List of refund requests for order
+500
+Internal server error
+default
+Unexpected Error
+get
+/orders/{id}/refunds
+/v1/d
+/orders/{id}/refunds
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"refunds"
+:
+[
+{
+"id"
+:
+"28d07ccd-c609-46cf-bd52-c43ef70737d5"
+,
+"revision"
+:
+1
+,
+"created_at"
+:
+"2018-10-25T10:18:09.815041Z"
+,
+"updated_at"
+:
+"2018-10-25T10:18:09.815041Z"
+,
+"order_id"
+:
+"91207347-47b6-4b21-b736-5fe9ec82e9ea"
+,
+"amount"
+:
+90.3
+,
+"type"
+:
+"percentage"
+,
+"value"
+:
+100
+,
+"currency"
+:
+"USD"
+,
+"reason_code"
+:
+2
+,
+"reason"
+:
+"Item is damaged"
+,
+"note"
+:
+"The white shirt has yellow stains on it"
+,
+"requested_at"
+:
+"2018-10-25T10:18:09.783315Z"
+,
+"user_id"
+:
+"22IB3UROr1S3Je9hDaRh7f"
+,
+"user_email"
+:
+"johndoe@example.com"
+,
+"status"
+:
+"succeeded"
+,
+"is_historical"
+:
+false
+,
+"metadata"
+:
+{
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"somekey1"
+,
+"value"
+:
+"somevalue1"
+}
+,
+{
+"name"
+:
+"somekey2"
+,
+"value"
+:
+"somevalue2"
+}
+]
+}
+,
+"items"
+:
+[
+{
+"type"
+:
+"product"
+,
+"id"
+:
+"6f38b75f-3fb3-4454-975d-af0cb412f8fa"
+,
+"refund"
+:
+{
+"net"
+:
+60
+,
+"tax"
+:
+6.65
+,
+"gross"
+:
+66.65
+}
+}
+,
+{
+"type"
+:
+"shipping"
+,
+"id"
+:
+"2728c174-719d-47c3-bd5e-51ec470180fe"
+,
+"refund"
+:
+{
+"net"
+:
+22
+,
+"tax"
+:
+1.65
+,
+"gross"
+:
+23.65
+}
+}
+]
+}
+]
+}
+Create refund request
+Creates a refund request to initiate a refund. This call is asynchronous.
+A successful response means that the refund request was accepted and will be executed after there are enough
+captured funds.
+Note:
+When the refund request is successful, an email is sent to the customer if you provided their email
+address. No email is sent for historical refund requests.
+Note
+: In case of fixed type request the refund amount will be pro-rated across all specified items.
+Example:
+Request
+Refund 50$ from items:
+Item ID
+Price paid
+Item 1
+$50
+Item 2
+$75
+Item 3
+$25
+Total
+$150
+Response
+Item ID
+Refunded amount
+Details
+Item 1
+$16.67
+50 / (50 + 75 + 25) * 50 = 16.67
+Item 2
+$25
+75 / (50 + 75 + 25) * 50 = 25
+Item 3
+$8.33
+25 / (50 + 75 + 25) * 50 = 8.33
+Total refund amount
+$50
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The identifier of the order. To retrieve the order ID, use the
+List orders
+method.
+Request Body schema:
+application/json
+return_id
+string
+= 36 characters
+Identifier for the corresponding return if any.
+value
+required
+number
+>= 0
+The percentage of the refund if the type is percentage or the monetary amount if it's fixed.
+type
+required
+string
+Enum
+:
+"percentage"
+"fixed"
+The type of the refund it's either percentage or fixed.
+currency
+required
+string
+= 3 characters
+The currency this refund was issued in.
+reason_code
+integer
+The corresponding code for the return reason.
+reason
+string
+The reason why this refund was requested.
+note
+string
+Additional note for the refund reason.
+email
+string
+<
+email
+>
+Customer Email address to which a refund note will be sent in case of success. Email is not sent for historical refund requests.
+requested_at
+string
+<
+date-time
+>
+The time when the refund was requested.
+extended_attributes
+Array of
+objects
+<= 100 items
+Additional information about the refund request passed as metadata, without any processing logic associated with it in NewStore. For example, the payment provider for the refund.
+is_historical
+boolean
+Set to true if the refund request was imported from an external system and was already processed and the money was refunded.
+items
+required
+Array of
+objects or objects
+non-empty
+A list of product and/or shipping items that should be refunded.
+Responses
+201
+The refund request was accepted.
+400
+The refund request was rejected. This response is typically sent when the requested
+refund value is greater than what can be refunded.
+500
+Internal server Error.
+default
+Unexpected Error
+post
+/orders/{id}/refunds
+/v1/d
+/orders/{id}/refunds
+Request samples
+Payload
+Content type
+application/json
+Example
+Payload for creating a percentage based refund request
+Payload for creating a refund request with fixed amount
+Payload for creating a historical refund request
+Payload for creating a percentage based refund request
+Copy
+Expand all
+Collapse all
+{
+"value"
+:
+50
+,
+"currency"
+:
+"USD"
+,
+"type"
+:
+"percentage"
+,
+"reason_code"
+:
+2
+,
+"reason"
+:
+"Item is damaged"
+,
+"note"
+:
+"The white shirt has yellow stains on it"
+,
+"email"
+:
+"johndoe@example.com"
+,
+"is_historical"
+:
+false
+,
+"items"
+:
+[
+{
+"id"
+:
+"6f38b75f-3fb3-4454-975d-af0cb412f8fa"
+,
+"type"
+:
+"product"
+}
+,
+{
+"type"
+:
+"shipping"
+}
+]
+}
+Response samples
+201
+400
+500
+Content type
+application/json
+Copy
+{
+"id"
+:
+"192bb646-fff2-4a2f-bbb5-afcd5c491cc9"
+}
+Get refund request
+Retrieves the refund request details of the provided refund request identifier, for the
+specified order.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+refund_id
+required
+string
+The identifier of the refund.
+id
+required
+string
+The identifier of the order.
+Responses
+200
+Refund object
+404
+Cannot get refund with specified id
+500
+Internal server error
+default
+Unexpected Error
+get
+/orders/{id}/refunds/{refund_id}
+/v1/d
+/orders/{id}/refunds/{refund_id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"refund"
+:
+{
+"id"
+:
+"28d07ccd-c609-46cf-bd52-c43ef70737d5"
+,
+"revision"
+:
+1
+,
+"created_at"
+:
+"2018-10-25T10:18:09.815041Z"
+,
+"updated_at"
+:
+"2018-10-25T10:18:09.815041Z"
+,
+"order_id"
+:
+"91207347-47b6-4b21-b736-5fe9ec82e9ea"
+,
+"amount"
+:
+90.3
+,
+"currency"
+:
+"USD"
+,
+"value"
+:
+100
+,
+"type"
+:
+"percentage"
+,
+"reason_code"
+:
+2
+,
+"reason"
+:
+"Item is damaged"
+,
+"note"
+:
+"The white shirt has yellow stains on it"
+,
+"requested_at"
+:
+"2018-10-25T10:18:09.783315Z"
+,
+"user_id"
+:
+"22IB3UROr1S3Je9hDaRh7f"
+,
+"user_email"
+:
+"johndoe@example.com"
+,
+"status"
+:
+"succeeded"
+,
+"refund_level"
+:
+"item_level"
+,
+"is_historical"
+:
+false
+,
+"metadata"
+:
+{
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"somekey1"
+,
+"value"
+:
+"somevalue1"
+}
+,
+{
+"name"
+:
+"somekey2"
+,
+"value"
+:
+"somevalue2"
+}
+]
+}
+,
+"items"
+:
+[
+{
+"type"
+:
+"product"
+,
+"id"
+:
+"6f38b75f-3fb3-4454-975d-af0cb412f8fa"
+,
+"refund"
+:
+{
+"net"
+:
+60
+,
+"tax"
+:
+6.65
+,
+"gross"
+:
+66.65
+}
+}
+,
+{
+"type"
+:
+"shipping"
+,
+"id"
+:
+"2728c174-719d-47c3-bd5e-51ec470180fe"
+,
+"refund"
+:
+{
+"net"
+:
+22
+,
+"tax"
+:
+1.65
+,
+"gross"
+:
+23.65
+}
+}
+]
+}
+}
+Calculate refund amount
+Calculates the total refund amount for the requested items (product or shipping) that will be applied
+when creating a refund request.
+The amount is rounded according to the currency the customer used to pay the order.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The identifier of the order. To retrieve the order ID, use the
+List orders
+method.
+Request Body schema:
+application/json
+value
+required
+number
+The percentage value that should be applied as a refund, e.g. 50.0 means a 50% refund will be applied.
+items
+required
+Array of
+objects or objects
+non-empty
+A list of product and/or shipping items that should be refunded.
+Responses
+200
+Returns the calculated refund amount along wiht the list of all items included in the refund.
+400
+The calculation request was rejected. This response is typically sent when
+payload is malformed or if an order-level refund request already exists.
+404
+The order can't be found
+500
+Internal server Error.
+default
+Unexpected Error
+post
+/orders/{id}/refunds/_calculate
+/v1/d
+/orders/{id}/refunds/_calculate
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"value"
+:
+50
+,
+"items"
+:
+[
+{
+"type"
+:
+"product"
+,
+"id"
+:
+"927c702a-3cb1-48c1-9189-554bf9d0fde7"
+}
+,
+{
+"type"
+:
+"shipping"
+}
+]
+}
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"refund"
+:
+{
+"gross"
+:
+120
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"927c702a-3cb1-48c1-9189-554bf9d0fde7"
+,
+"type"
+:
+"product"
+,
+"refund"
+:
+{
+"gross"
+:
+96
+}
+}
+,
+{
+"id"
+:
+"7b1d4a63-c97f-4ca9-8771-9464c1d86fea"
+,
+"type"
+:
+"shipping"
+,
+"refund"
+:
+{
+"gross"
+:
+12
+}
+}
+,
+{
+"id"
+:
+"3e679ff2-296c-4886-aa8e-c85124621d3a"
+,
+"type"
+:
+"shipping"
+,
+"refund"
+:
+{
+"gross"
+:
+12
+}
+}
+]
+}
+Previous
+Refund API (order level, deprecated)
+Next
+Taxes Integration API
+Copyright © 2025 NewStore, Inc.

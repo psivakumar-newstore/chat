@@ -1,0 +1,222 @@
+Data reconciliation and completeness playbook
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Data reconciliation and completeness playbook
+Updated on
+Jan 31, 2025
+Published on Jan 31, 2025
+6 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+This document provides guidance for Service Integrators on best practices to maintain data consistency (parity) between NewStore and other systems, such as ERP, WMS, and similar platforms. Retailers typically aim to ensure that all orders have successfully completed the necessary workflows, which often span multiple systems. For instance, it's critical to confirm that the ERP reflects the latest stock information.
+Reconciliation is usually conducted daily, weekly, or monthly. The purpose of reconciliation is to identify any missing orders or items between NewStore and other systems and, if necessary, replay workflows to synchronize data.
+If all orders and items do not flow through their respective workflows, retailers face significant risks. Incomplete workflows can lead to inaccurate financial reporting and may prevent customers from receiving their ordered items due to inventory discrepancies or delayed shipping.
+For example, at the end of each day, the Service Integrator may send a query to the eCommerce, OMS, POS, and ERP platforms to reconcile Order IDs across all systems, ensuring data consistency.
+Overview of data extraction methods
+NewStore provides several methods for extracting data, some of which are better suited for automation than others.
+Event Stream
+: The Event Stream delivers real-time events related to actions occurring on the platform. Service integrators can subscribe to specific event topics, such as
+refund_request.issued
+or
+inventory_count.items_counted
+, to receive relevant notifications as they happen.
+GraphQL
+: GraphQL temporarily stores data from the Event Stream, allowing it to be retrieved on demand. It’s especially useful for supplementing event notifications with additional details needed by third-party systems.
+REST APIs
+: These APIs enable NewStore to communicate with a retailer’s ecosystem of partners, facilitating data sharing and coordination between NewStore and external systems.
+Omnichannel Insights
+: This tool combines all retailer data into an embedded business intelligence platform within the portal. It provides visibility into trends and the overall business state, helping retailers adjust their strategy based on analytical insights.
+Operational reports
+: These are tables or data exports that offer insights into the current status of events. They provide the latest information on omnichannel activities, POS updates, and OMS events, supporting real-time operational decisions.
+Best practices for data extraction
+APIs
+: NewStore recommends using APIs as the primary data extraction method, as they provide the most up-to-date information directly from the source, with no processing delay.
+GraphQL
+: If using APIs is complex (for example, involves multiple contexts) or lacks the necessary endpoint, GraphQL is the next best alternative.
+Event Stream
+: The Event Stream is ideal for triggering notifications that prompt further actions. For instance, when a new order is created in a store, the Event Stream can trigger an API call to retrieve the order details for ERP processing.
+For general best practices for each type of data extraction method, see the
+guide on managing data
+.
+Approaches
+Approach 1 (optimal method)
+Due to daily reconciliation across contexts that requires data from multiple sources, using GraphQL is ideal to reduce complexity in the integration.
+To support effective monthly and yearly reconciliation, a daily process using GraphQL for data extraction is required. This involves capturing daily data and storing it over time.
+However, if you choose not to use GraphQL, we recommend using the alternative approach (
+Approach 2
+) instead.
+Prerequisites
+Data storage
+: Ensure you have a solution for storing GraphQL responses over time, such as an S3 bucket in AWS, to accumulate data for future reconciliations.
+Data collection for comparison
+: Set up daily reconciliation workflows by retrieving relevant data from ERP, WMS, or other external systems, as well as from NewStore. Store and compare these data sets in an external system.
+Considerations for GraphQL reconciliation
+Limit metadata
+: When using GraphQL, reduce the metadata to essential fields only (such as Order ID, Product SKU, PSP ID) to streamline data retrieval and processing.
+Query efficiency
+: Keep GraphQL queries simple to avoid timeouts. Queries that take longer than 10 seconds will time out, so limit joins and complex operations. Manually test queries to assess their performance before scheduling.
+Data retrieval only
+: Avoid injecting data into the ERP during reconciliation; instead, fetch the necessary data to compare it in a separate environment.
+Daily reconciliation frequency
+: Perform reconciliations daily rather than monthly or quarterly. Queries that cover large periods of time will eventually timeout as data increases. This is often missed by testing with small data sets in staging, and then when moving to production data levels queries begin to timeout or become slow.
+Plan for a small GraphQL delay
+: Prepare for up to a 10 minute delay if possible, as our GraphQL data sources are updated from source data. Additionally, it is best practice to create a back-off timer on failures to query as to not make unnecessary requests to the service.
+An example of an optimal query structure
+An optimal reconciliation query only queries the required contexts in order to create parity for daily reconciliation between systems. It does not call unnecessary contexts, uses pagination, and does not try to pull data for a large period of time. All of this reduced the response time for GraphQL by reducing complexity in the response payload.
+query OrdersSortedPaginated {
+  orders(orderBy: CREATED_AT_DESC, first: 10, after: "WyJjcmVhdGVkX2F0X2Rlc2MiLFsiMjAyNS0wMS0yMlQxMzoyMTozNS42NDQiLCI1YWJhYTdhYi0zNGU3LTQwMGQtOTFlOC1hNjU5NTU1OWY1ODAiLCJkb2RpY2kiXV0=", filter: {createdAt: {greaterThanOrEqualTo:"2025-01-02", lessThan: "2025-01-03"}}) {
+    edges {
+      cursor
+      node {
+        createdAt
+        id
+        grandTotal
+        items {
+          nodes {
+            listPrice
+            itemDiscounts
+            quantity
+          }
+        }
+      }
+    }
+  }
+}
+An example of a heavy query structure
+The query structure provided here is heavy because it pulls data from multiple contexts unnecessarily for daily reconciliation. The query also pulls the same data in a nested format, and does not paginate the response, which can cause a potential query timeout and temporary integration issues.
+This query can be improved with pagination and removing nested calls. See the ideal query structure
+here
+.
+query OrdersSortedPaginated {
+  orders(filter: {createdAt: {greaterThanOrEqualTo: "2024-12-01", lessThan: "2025-01-01"}}) {
+    edges {
+      cursor
+      node {
+        id
+        grandTotal
+        items {
+          nodes {
+            listPrice
+            itemDiscounts
+            quantity
+            extendedAttributes {
+              nodes {
+                nodeId
+                order {
+                  id
+                }
+              }
+            }
+          }
+        }
+        discounts {
+          nodes {
+            nodeId
+            orderId
+          }
+        }
+        paymentAccount {
+          id
+        }
+      }
+    }
+  }
+}
+Approach 2 (alternative)
+If you have decided not to use GraphQL, use this alternative approach to:
+Query individual NewStore APIs and leverage the Event Stream
+Aggregate the data in middleware, and
+Compare with alternate systems in the middleware.
+Prerequisites
+Data storage
+: Ensure you have a solution for storing Event Stream responses over time, such as an S3 bucket in AWS or some queuing technology, to accumulate data for future reconciliations.
+Data collection for comparison
+: Event Stream integrations are set up and captured on an on-going basis.
+Considerations for Event Stream reconciliation
+Data retrieval only
+: Avoid injecting data into the ERP during reconciliation; instead, fetch the necessary data to compare it in a separate environment. Thus reducing the impact of an ERP slow down on data reconciliation.
+Daily reconciliation frequency
+: Perform reconciliations daily rather than monthly or quarterly.
+Integration tips
+If reconciliation only includes completed orders, receive Event Stream
+order.completed
+events
+If reconciliation requires open orders as well, receive Event Stream
+fulfillment_request.assigned
+events
+Retrieve order details from the Orders API
+Was this article helpful?
+Yes
+No
+Tags
+api
+data
+data model
+event stream
+graphql
+insights
+integration
+playbook
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

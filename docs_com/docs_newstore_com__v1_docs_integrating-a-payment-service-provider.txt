@@ -1,0 +1,366 @@
+Integrating a payment service provider
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Integrating a payment service provider
+Updated on
+Dec 27, 2024
+Published on Oct 1, 2024
+6 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+To integrate a
+PSP (payment service provider)
+, develop an
+adapter
+that implements the NewStore
+Payment provider webhooks
+.
+An adapter serves as an intermediary between NewStore Omnichannel Cloud and a specific
+PSP
+to enable the communication of transaction information.
+Develop an adapter for each provider and tell NewStore about the payment providers you want to integrate with. NewStore supports integrations with all payment providers.
+How payments work
+In NewStore Omnichannel Cloud, the following entities are involved in a payment transaction:
+Payment accounts
+The payment account entity can be used to track balance and payments for an entity of the platform. To do this, assign the payment account the same ID as the ID of the entity you want to track. For example, if you want to a payment account to track a sales order, create a payment account object with the ID of the sales order.
+The balance is modified when an order is modified (amendment/cancelation) and the payment amount is captured, refunded or revoked.
+Financial instruments
+A financial instrument represents a set of transactions that track changes in the
+available-for-capture
+(capturable) amount and
+available-for-refund
+(refundable) amount. A financial instrument is associated with a payment account and uniquely identified in NewStore Omnichannel Cloud.
+A financial instrument can be used to:
+Capture:
+Transfer an amount from the customer to your business. This decreases the
+available-for-capture
+amount for the specific instrument and optionally increases the
+available-for-refund
+transaction. A financial instrument supports multiple capture operations until
+available-for-capture
+amount is
+0
+. If a capture operation results in an increase in the
+available-for-refund
+amount, the convention is to return two different transactions.
+Refund:
+Transfer an amount from your business to the customer. This decreases the
+available-for-refund
+amount for the specific instrument. A financial instrument supports multiple refund operations until
+available-for-refund
+is
+0
+.
+Revoke:
+Transfer withheld funds to the customer and set the
+available-for-capture
+amount to
+0
+.
+Developing the adapter
+To develop the adapter, implement the
+Payment provider webhooks
+to execute the operations requested by NewStore Omnichannel Cloud. The main task consists of tracking the transactions in a financial instrument and ensuring that the capturable and refundable amounts are updated.
+The following sequence diagram represents a typical workflow:
+Important
+Pay attention to the idempotency keys of the requests. Ensure that you send the
+same
+response every time you receive a request with a given idempotency key.
+For example, if you receive 3 requests containing the idempotency key
+abcd
+, whether the body has changed or not, give the same response to these 3 requests.
+Workflow examples
+Depending on the instrument and the state of the order, process the NewStore request differently.
+The following examples represent some standard business cases that trigger a number of operations on the instrument all of which modify the 2 main characteristics of an instrument: the capturable and refundable amounts.
+Authorized or tokenized instrument
+Return scenario
+​
+Two items ($50 each) are shipped from 2 different location and are then returned.
+Here is an example of possible requests:
+Authorize
+request
+Capture
+request
+Capture
+request
+Refund
+request
+Refund
+request
+Context
+Customer places an order.
+One item is fulfilled.
+The other item is fulfilled.
+One item is returned.
+The other item is returned.
+Capture amount
+100
+-50
+-50
+0
+0
+Refund amount
+0
+50
+50
+-50
+-50
+Partial cancellation scenario
+​
+An order contains 2 items ($50 each):
+One item is shipped.
+The customer cancels the order (the remaining item that hasn't been shipped).
+The customer returns the received item.
+Here is an example of possible requests:
+Authorize
+request
+Capture
+request
+Revoke
+request
+Refund
+request
+Context
+Customer places an order.
+One item is fulfilled.
+The order is partially canceled.
+The fulfilled item is returned.
+Capture amount
+100
+-50
+-50
+0
+Refund amount
+0
+50
+0
+-50
+Pre-captured instrument
+For pre-captured instruments, there is no revoke since the instrument has already been captured. In this case, NewStore Omnichannel Cloud requests a revoke, but a refund operation should be performed by the payment service provider.
+Order cancellation scenario 1
+​
+The order is canceled before its fulfillment.
+Here is an example of possible requests:
+Authorize
+request
+Revoke/Refund
+request
+Context
+Customer places an order.
+Customer cancels the order.
+Capture amount
+100
+-100
+Refund amount
+0
+0
+Order cancellation scenario 2
+​
+The order is canceled after its fulfillment.
+The order contained 2 items ($50 each):
+The amount $100 was authorized and $50 was captured.
+The customer cancels the order (Subtract the captured amount $50 from the authorized amount $100 to calculate the refundable amount $50).
+The cancellation makes the remaining authorized amount $50 void.
+Here is an example of possible requests:
+Authorize
+request
+Capture
+request
+Revoke
+request
+Refund
+request
+Context
+Customer places an order.
+The order is fulfilled.
+Customer cancels the order.
+The fulfilled item is returned.
+Capture amount
+100
+-50
+-50
+0
+Refund amount
+0
+50
+0
+-50
+Prerequisites
+Before you start the integration, ensure your infrastructure offers the following:
+A web URL (HTTPs) where the requests from NewStore Omnichannel Cloud can be posted.
+An API key provided by your system to access the above URL. Insert it in the authorization header of your requests.
+Creating the financial instruments
+Creating the financial instrument is the first step before creating transactions.
+NewStore defines the instrument to create depending on the customer's payment method and PSP. For example, NewStore can get a token from Stripe that represents the card to be charged; or NewStore can receive a gift card number from the customer during checkout.
+Based on this definition of the instrument, NewStore Omnichannel Cloud calls the
+Create financial instrument
+method in order to have the adapter (your implementation) create a financial instrument that can be used to apply financial transactions as the order goes on through its
+life cycle
+.
+When receiving an instrument creation request, pay attention to:
+The
+metadata
+property.
+It is owned by NewStore but as an integrator, you decide what it contains and that you need for your implementation. A typical example is the Stripe token that was acquired when the payment was initiated. Get in touch with your contact point at NewStore to edit its content.
+The
+instrument.type
+property.
+It represents the type or state the instrument, so it also indicates whether the instrument already exists at the time of the request. This means that depending on this property, you apply a different workflow.
+It can be one of the following values:
+Instrument type
+Description
+Typical implementation
+token
+The instrument exists but is not authorized.
+Authorize the instrument and return a list of transactions.
+authorized
+The instrument is already authorized. The identifier is a reference to the authorization. For example, a Stripe charge.
+Validate the instrument's data.
+captured
+The instrument is already captured. For example, a PayPal transaction.
+Validate the instrument's data to ensure that the total amounts of capture/refund request is in the limits of the instrument.
+The response to the
+Create financial instrument
+method contains the transactions on the instrument that set the
+capturable
+and
+refundable
+amount.
+In the response, notice:
+The
+transaction_id
+property. As an integrator, you own this property. We strongly recommend that you assign a PSP-generated reference to this field instead of generating you own ID. This facilitates log analyses as this property directly corresponds to the PSP-owned transaction.
+The
+metadata
+property. You can use this field to send information to NewStore that will not be manipulated by the system but that you can retrieve in different parts of NewStore Omnichannel Cloud, for example you can output this data in the templates sent to customers.
+Refer to the
+Create financial instrument
+method documentation for the response schema.
+Capture or refund
+These operations modify the capturable and refundable amounts of the instrument.
+Capture happens at the end of the order workflow, once the items have been fulfilled. See
+Getting started with the NewStore platform
+for more information about the payment workflow.
+Refund happens when a customer returns an item.
+Once the financial instrument has been created, NewStore requests financial operations on it using the
+Capture webhook
+and the
+Refund webhook
+. Both methods have the same payloads. The response to a
+capture/refund
+call is a list of transactions that modify the capture/refund amount(s).
+Note
+Even for pre-captured instruments (type =
+captured
+), return a transaction confirming the change in the
+capture_amount
+available.
+If the request fails, NewStore retries the request till around 45 days from the time of the first call. A manual retry call does not interrupt the automated platform retries.
+Revoke
+Revoke happens when a customer cancels a complete or partial order. A partial order is when an item has been shipped and the cancelation request is received, which cancels only the items that still have not been fulfilled.
+This operations releases all withheld funds from the instrument. To request a revoke, NewStore calls the
+Revoke webhook
+. The request is similar to the
+capture/refund
+method without the
+arguments
+property. The response is a transaction that sets the balance to 0. If the instrument type is
+captured
+, you cannot ask your PSP to revoke the instrument. You have to request a refund instead.
+Important
+The instrument type changes how you respond to the
+revoke
+request. If the type is
+captured
+, you cannot revoke it and treat the
+revoke
+request as a
+refund request
+.
+Related topics
+API documentation
+Integrating Adyen
+Configuring payment providers
+Was this article helpful?
+Yes
+No
+Tags
+Adyen
+api
+Apple Pay
+Associate App
+Google Pay
+integration
+NewStore checkout
+order
+payment
+payment device
+payment options
+PayPal
+platform
+refund
+Square
+Tap to Pay on iPhone
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

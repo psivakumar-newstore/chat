@@ -1,0 +1,224 @@
+openapi: 3.0.0
+paths:
+  /catalog-locale:
+    get:
+      operationId: CatalogConfigurationController_fetchAll
+      summary: List all catalog import configurations for a tenant
+      description: List all catalog import configurations for a tenant
+      tags:
+        - ''
+      parameters:
+        - name: tenant
+          required: true
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Catalog import configurations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TenantCatalogImportConfigDTO'
+        '404':
+          description: No catalog import configurations available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImportConfigurationMessageResponse'
+        '500':
+          description: Failed to fetch catalog mappings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImportConfigurationMessageResponse'
+  /catalog-locale/{sfccCatalogName}:
+    get:
+      operationId: CatalogConfigurationController_fetch
+      summary: Lists one catalog import mapping for a tenant
+      description: Lists one catalog import mapping for a tenant
+      tags:
+        - ''
+      parameters:
+        - name: tenant
+          required: true
+          in: header
+          schema:
+            type: string
+        - name: sfccCatalogName
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Catalog import configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantCatalogImportConfigDTO'
+        '404':
+          description: No catalog import configuration available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImportConfigurationMessageResponse'
+        '500':
+          description: Failed to fetch catalog mapping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImportConfigurationMessageResponse'
+    post:
+      operationId: CatalogConfigurationController_store
+      summary: Creates or overwrites an existing catalog import configuration
+      description: Creates or overwrites an existing catalog import configuration
+      tags:
+        - ''
+      parameters:
+        - name: tenant
+          required: true
+          in: header
+          schema:
+            type: string
+        - name: sfccCatalogName
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CatalogImportConfigDTO'
+      responses:
+        '200':
+          description: Catalog import configuration successfully stored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImportConfigurationMessageResponse'
+        '400':
+          description: Failed to store catalog mapping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImportConfigurationMessageResponse'
+        '500':
+          description: Failed to store catalog mapping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImportConfigurationMessageResponse'
+    delete:
+      operationId: CatalogConfigurationController_delete
+      summary: Deletes a catalog import configuration
+      description: Deletes a catalog import configuration
+      tags:
+        - ''
+      parameters:
+        - name: tenant
+          required: true
+          in: header
+          schema:
+            type: string
+        - name: sfccCatalogName
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Catalog import configuration successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImportConfigurationMessageResponse'
+        '404':
+          description: No catalog import configuration to delete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImportConfigurationMessageResponse'
+        '500':
+          description: Failed to delete catalog mapping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImportConfigurationMessageResponse'
+info:
+  title: Catalog Locale Manager API
+  description: >-
+Description
+Catalog Locale Manager Service for SFCC NewStore
+    Connector
+  version: 1.0.0
+  contact: {}
+tags: []
+servers:
+  - url: https://{tenant}.{stage}.newstore.net/sfcc-api/v1
+    variables:
+      tenant:
+        default: dodici
+      stage:
+        default: x
+        enum:
+          - x
+          - s
+          - p
+components:
+  securitySchemes:
+    OPENAPI_JWT_CONFIG:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    TenantCatalogImportConfigDTO:
+      type: object
+      properties:
+        catalog_name:
+          type: string
+          example: brd-products-newstore
+        import_configuration:
+          type: array
+          items:
+            type: string
+      required:
+        - catalog_name
+        - import_configuration
+    CatalogImportConfigurationMessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: example message
+      required:
+        - message
+    CatalogImportConfigDTO:
+      type: object
+      properties:
+        newstore_catalog_id:
+          type: string
+          example: storefront-catalog-en
+        locale:
+          type: string
+          example: en-US
+        is_master:
+          type: boolean
+        default_locale:
+          type: string
+          example: x-default
+        master_catalog:
+          type: string
+          example: brd-products-newstore
+      required:
+        - newstore_catalog_id
+        - locale
+        - is_master
+        - default_locale
+        - master_catalog

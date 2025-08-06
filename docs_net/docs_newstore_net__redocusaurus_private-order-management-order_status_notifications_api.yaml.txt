@@ -1,0 +1,207 @@
+openapi: 3.0.0
+info:
+  title: Order status notifications API
+  description: >
+    Use these APIs to get, create and update notification options for order
+    related events.
+
+    Possible notifications are:
+
+
+    - order_pending: Sent after the order was placed.
+
+    - order_cancelled: Sent when the entire order is canceled.
+  version: v0
+servers:
+  - url: https://dodici.x.newstore.net/v0
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /config/order_status_notifications/notification_options:
+    get:
+      operationId: get-order-status-notification-options
+      summary: Get order status notification options
+      description: |
+        Get the current tenant config value for notification options
+      responses:
+        '200':
+          description: |
+            Successfully retrieved the config value
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    type: object
+                    required:
+                      - options
+                    properties:
+                      push_notification_channel_type:
+                        description: >-
+                          Push notification need a channel (type of addressing)
+                          for where to send notifications. That can be the
+                          internal customer identifier or their email.
+                        type: string
+                        enum:
+                          - customer_uuid
+                          - email
+                      options:
+                        type: object
+                        description: >-
+                          A map of enabled notifications and their respective
+                          channels.
+                        properties:
+                          order_cancelled:
+                            type: array
+                            description: Sent when the entire order is canceled.
+                            items:
+                              type: string
+                              description: Any supported notification type.
+                              enum:
+                                - email
+                                - push_notification
+                          order_pending:
+                            type: array
+                            description: Sent after the order was placed.
+                            items:
+                              type: string
+                              description: Any supported notification type.
+                              enum:
+                                - email
+                                - push_notification
+                  updated_at:
+                    type: string
+                    description: >-
+                      Contains datetime in ISO8601 UTC when config updated last
+                      time. Can be null if config value wasn't set yet
+              example:
+                value:
+                  push_notification_channel_type: email
+                  options:
+                    order_cancelled:
+                      - push_notification
+                      - email
+                    order_pending:
+                      - email
+                updated_at: '2021-07-13T20:18:25Z'
+        '404':
+          description: >-
+            Config key doesn't exist (it is not a case when key exists but just
+            not set).
+        '500':
+          description: Internal server error.
+    post:
+      operationId: set-order-status-notification-options
+      summary: Set notification options
+      description: |
+        Set the tenant config value for notification options
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  type: object
+                  required:
+                    - options
+                  properties:
+                    push_notification_channel_type:
+                      description: >-
+                        Push notification need a channel (type of addressing)
+                        for where to send notifications. That can be the
+                        internal customer identifier or their email.
+                      type: string
+                      enum:
+                        - customer_uuid
+                        - email
+                    options:
+                      type: object
+                      description: >-
+                        A map of enabled notifications and their respective
+                        channels.
+                      properties:
+                        order_cancelled:
+                          type: array
+                          description: Sent when the entire order is canceled.
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                        order_pending:
+                          type: array
+                          description: Sent after the order was placed.
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+            example:
+              value:
+                push_notification_channel_type: email
+                options:
+                  order_cancelled:
+                    - push_notification
+                    - email
+                  order_pending:
+                    - email
+      responses:
+        '200':
+          description: Successfully saved config value
+        '400':
+          description: |
+            Incorrect payload for config (validation failed).
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: |
+            Cannot update the configuration due to a race condition.
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string

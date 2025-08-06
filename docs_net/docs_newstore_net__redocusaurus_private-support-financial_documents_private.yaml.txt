@@ -1,0 +1,308 @@
+openapi: 3.0.3
+info:
+  title: Private Financial Documents API
+  version: '1.0'
+  description: |
+    This API is for internal use only.
+  contact:
+    name: Team Checkout
+    url: https://newstore.com
+    email: team-checkout@newstore.com
+  x-audience: internal-company
+  x-api-id: newstore-checkout-financial-documents-1.0.0
+  x-domain-gateway-integration:
+    serviceName: financial-documents
+    eks:
+      cluster: shared-eks
+      ingress:
+        targetNamespace: team-checkout
+        targetService: financial-documents-http
+servers:
+  - url: https://checkout.p.newstore.domains/checkout
+tags:
+  - name: Financial Document
+    description: Documents related to financial concerns.
+paths:
+  /financial-documents/return-receipts:
+    post:
+      summary: Retrieve or regenerate return receipt for order_id and refund_id
+      description: >
+        Retrieve or regenerate return_receipt for a given order. This endpoint
+        will not generate
+
+        a return receipt if it hasn't been generated before.
+      operationId: createReturnReceipt
+      tags:
+        - Financial Document
+      security:
+        - newStoreAccessToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetReturnReceiptRequest'
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnReceiptResponse'
+        '400':
+          description: Wrong request.
+        '404':
+          description: Not found.
+      parameters:
+        - in: header
+          name: request-id
+          description: ID of the request
+          schema:
+            type: string
+        - in: header
+          name: X-Newstore-Tenant
+          required: true
+          schema:
+            type: string
+  /financial-documents/sales-receipts:
+    post:
+      summary: Retrieve or generate sales receipt
+      description: |
+        Retrieve or generate a sales receipt for a given order.
+      operationId: createSalesReceipt
+      tags:
+        - Financial Document
+      security:
+        - newStoreAccessToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_id:
+                  type: string
+                  description: >-
+                    The order_id for which the sales receipt should be
+                    generated.
+                  example: 70aebf90-d913-4f57-98c3-47d67a40c1c7
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermalinkResponse'
+        '409':
+          description: Receipt already exists (emitted if there are too many requests)
+        '500':
+          description: Internal server error.
+      parameters:
+        - in: header
+          name: request-id
+          description: ID of the request
+          schema:
+            type: string
+        - in: header
+          name: X-Newstore-Tenant
+          required: true
+          schema:
+            type: string
+  /financial-documents/exchange-receipts:
+    post:
+      summary: Retrieve or generate exchange receipt
+      description: |
+        Retrieve or generate a exchange receipt for a given order.
+      operationId: createExchangeReceipt
+      tags:
+        - Financial Document
+      security:
+        - newStoreAccessToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_id:
+                  type: string
+                  description: >-
+                    The order_id for which the exchange receipt should be
+                    generated.
+                  example: 70aebf90-d913-4f57-98c3-47d67a40c1c7
+                original_order_id:
+                  type: string
+                  description: >-
+                    The original order_id for which the exchange receipt should
+                    be generated.
+                  example: 2c8a4332-d913-4f57-9f0d-4de13ea9a7db
+                return_id:
+                  type: string
+                  description: >-
+                    The return_id which the exchange receipt should be
+                    generated.
+                  example: 898286f4-b86f-4d1f-ace9-3220286e2725
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermalinkResponse'
+        '409':
+          description: Receipt already exists (emitted if there are too many requests)
+        '500':
+          description: Internal server error.
+      parameters:
+        - in: header
+          name: request-id
+          description: ID of the request
+          schema:
+            type: string
+        - in: header
+          name: X-Newstore-Tenant
+          required: true
+          schema:
+            type: string
+  /financial-documents/document-created-events/{order_id}:
+    post:
+      summary: Republish documents created events for a specific order_id
+      description: |
+        Republish documents created events for a specific order_id:
+        * financial_documents.sales_receipt_created
+        * financial_documents.return_receipt_created
+        * financial_documents.exchange_receipt_created
+        * financial_documents.invoice_created
+        * financial_documents.refund_note_created
+      operationId: createNewDocumentsCreatedEvents
+      tags:
+        - Financial Document
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: Events were replayed.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Wrong request.
+        '404':
+          description: Not found.
+      parameters:
+        - in: header
+          name: request-id
+          description: ID of the request
+          schema:
+            type: string
+        - in: header
+          name: X-Newstore-Tenant
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: tenant
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: order_id
+          required: true
+          schema:
+            type: string
+components:
+  schemas:
+    GetReturnReceiptRequest:
+      title: Get Return Receipt Request
+      description: request payload to get a return receipt document
+      type: object
+      required:
+        - order_id
+        - refund_id
+      properties:
+        order_id:
+          type: string
+          maxLength: 36
+          minLength: 36
+          description: Identifier for the corresponding sales_order
+        refund_id:
+          type: string
+          maxLength: 36
+          minLength: 36
+          description: The identifier of the refund related to this return receipt.
+        print_type:
+          type: string
+          description: >-
+            Type of the receipt printing operation (document_printed,
+            document_emailed).
+    ReturnReceiptResponse:
+      type: object
+      required:
+        - permanent_link
+      properties:
+        permanent_link:
+          type: string
+          description: The URL of the document.
+        vault_data_id:
+          type: string
+          description: ID of the document in the PII vault
+        return_id:
+          type: string
+          minLength: 1
+          maxLength: 128
+          description: Unique identifier of the return.
+        billing_address:
+          description: >-
+            The consumer's billing address for the returned order. As billing
+            address is optional for an order, this field is set to null when the
+            order doesn't have an explicit billing address set.
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              maxLength: 256
+              type: string
+          nullable: true
+        order_id:
+          type: string
+          maxLength: 256
+          description: Human readable external order identificator.
+        sales_order_uuid:
+          type: string
+          minLength: 36
+          maxLength: 36
+          description: Unique identifier of the sales order.
+        refund_id:
+          type: string
+          minLength: 36
+          maxLength: 36
+          description: The identifier of the refund related to this return receipt.
+        external_id:
+          type: string
+          description: Human readable return receipt identifier (ex. `TSE00000001`).
+        store_name:
+          type: string
+          description: Name of the store (ex. New York 5th Ave)
+    PermalinkResponse:
+      type: object
+      required:
+        - permanent_link
+      properties:
+        permanent_link:
+          type: string
+          description: The URL of the document.
+        vault_data_id:
+          type: string
+          description: ID of the document in the PII vault
+  responses: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+  links: {}
+  callbacks: {}

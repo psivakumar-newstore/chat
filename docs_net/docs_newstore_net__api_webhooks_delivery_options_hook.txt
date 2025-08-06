@@ -1,0 +1,264 @@
+Shipping Options Webhooks | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Configuration APIs
+Webhooks
+External Availability Webhook
+Custom Tax Provider Webhooks
+Fulfillment Provider Webhooks
+Shipping Provider Webhooks
+Shipping Options Webhooks
+Payment Provider Webhooks
+Gift Card Provider Webhooks
+External Order Webhook
+Event-Stream Webhooks
+New Generation APIs
+Rates
+post
+Get customized provider rates for an order
+API docs by Redocly
+Shipping Options Webhooks
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Represents the checkout step during which shipping options are required.
+This resource contains the provider rate of an order.
+A provider rate is how NewStore identifies a shipping provider and the rates they offer.
+For example,
+FedEx Overnight
+,
+UPS Next Day
+,
+DHL On-demand delivery
+.
+Note:
+If you’re looking to
+integrate a shipping provider
+for booking, updating, and canceling deliveries, see
+Shipping Provider Webhooks
+.
+A typical use case for the shipping options webhook is to define the supported shipping providers and rates for a
+specific list of products being purchased. If an ordered product is too heavy or too large, for example, these
+webhooks allow you to offer a customer
+customized shipping prices
+that can cater to this non-standard package.
+To develop an adapter, see
+shipping options
+.
+Rates
+shipping rates
+Get customized provider rates for an order
+Requests provider rates configuration, including service level, provider name, and shipping offer price.
+Any provider rate response here OVERRIDES any other provider rate configuration made in NewStore.
+This means you fully control which values are in use. If something is not available, consider it empty.
+For example,
+return_provider_rate
+is not supported through custom provider rates.
+The order of the returned rates is important
+: it will override any priority or existing order that you can
+have in your
+fulfillment configuration
+.
+Important:
+See
+Retrieving custom shipping prices
+to understand how to use the
+use_as_customer_facing_cost
+flag in the
+fulfillment configuration and the price
+source
+in your adapter.
+Request Body schema:
+application/json
+request_id
+required
+string
+Request identifier, needs to be returned in the response.
+bag
+required
+object
+shipping_address
+object
+store_id
+string
+<= 256 characters
+demand location (NOT the actual fulfillment location)
+channel_type
+string
+<= 256 characters
+Responses
+200
+Provider rates were successfully returned.
+400
+Something was wrong with the request.
+post
+/provider_rates
+/newstore_api/v0
+/provider_rates
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"request_id"
+:
+"1111.111"
+,
+"bag"
+:
+{
+"products"
+:
+[
+{
+"quantity"
+:
+1
+,
+"product_id"
+:
+"Product01"
+,
+"price"
+:
+{
+"amount"
+:
+1.2
+,
+"currency"
+:
+"USD"
+}
+,
+"weight"
+:
+{
+"value"
+:
+1
+,
+"unit"
+:
+"lb"
+}
+,
+"dimensions"
+:
+{
+"length"
+:
+5
+,
+"width"
+:
+5
+,
+"height"
+:
+5
+,
+"unit"
+:
+"in"
+}
+}
+]
+}
+,
+"shipping_address"
+:
+{
+"address_line_1"
+:
+"999 Yawkey Way"
+,
+"address_line_2"
+:
+"999nd floor"
+,
+"city"
+:
+"Boston"
+,
+"country_code"
+:
+"US"
+,
+"zip_code"
+:
+"20038"
+}
+}
+Response samples
+200
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"request_id"
+:
+"1111.111"
+,
+"provider_rates"
+:
+[
+{
+"id"
+:
+"FEDEX_2_DAY"
+,
+"service_level_identifier"
+:
+"FEDEX_2_DAY"
+,
+"provider"
+:
+"FEDEX"
+,
+"supported_routes"
+:
+[
+"*"
+]
+,
+"price"
+:
+{
+"source"
+:
+"customization_provider"
+,
+"amount"
+:
+3.5
+,
+"currency"
+:
+"USD"
+}
+}
+]
+}
+Previous
+Shipping Provider Webhooks
+Next
+Payment Provider Webhooks
+Copyright © 2025 NewStore, Inc.

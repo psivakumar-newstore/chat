@@ -1,0 +1,2006 @@
+Coupons | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Automatic Promotions
+Promotions Configuration
+Coupons
+Integration Configurations
+Loyalty
+Manage Stackable Coupons
+Reason Codes
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+post
+Create Coupon
+get
+List Coupons
+get
+Get Coupon
+put
+Update Coupon
+post
+Create coupon codes
+get
+Get Coupon Codes
+patch
+Update Coupon Codes
+post
+Create Coupon Codes Import
+get
+List Coupon Codes Import
+get
+Get Coupon Codes Import
+API docs by Redocly
+Coupons
+(
+1.0
+)
+Download OpenAPI specification
+:
+Download
+NewStore Support
+:
+support@newstore.com
+License:
+NewStore Private
+Use this API to manage Coupons in NewStore, such as creating, retrieving, or updating coupons and coupon codes.
+You can use these methods to create coupons and coupon codes for specific products or for the whole cart, which are applied manually in NewStore Associate App.
+For a guide on how to use coupons via NewStore Omnichannel Manager, see
+this guide
+. Also you can find additinal information in
+process documentation
+DISCLAIMER:
+Coupon fields should not contain any PII, this information may be removed.
+Create Coupon
+Creates a specified coupon.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+Create coupon request.
+name
+required
+string
+The name of the coupon.
+validFrom
+required
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the coupon becomes valid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+validTo
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the coupon becomes invalid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+category
+required
+CartLevelPercentageCategory (object) or CartLevelFixedCategory (object) or ProductLevelPercentageCategory (object) or ProductLevelFixedCategory (object) or BogoPercentageCategory (object) or BogoFixedCategory (object) or FreeShipping (object)
+The actual promotion kind.
+active
+boolean
+Indicates whether the coupon is active or not.
+currencies
+required
+Array of
+objects
+(
+Currency
+)
+A list of conditions on currencies to satisfy in order for the coupon to be applied.
+singleUse
+boolean
+Indicates whether the coupon codes are single use or not.
+localizedTimezone
+boolean
+Optional, this property determines local timezone validity for the coupon. If true, UTC is assumed with no timezone required in "validFrom" and "validTo". If false, timezone must be specified in those fields.
+stores
+Array of
+strings
+Indicates in which stores the coupon can be used. A list of IDs states that the coupon can be used in the given stores while an empty array states that the coupon can be used in any store.
+consumers
+Array of
+strings
+<= 10000 items
+Indicates by which consumers the coupon can be used. A list of Customer IDs states that the coupon can be used by the given customer while an empty array states that the coupon can be used by any customer.
+externalId
+string
+Optional, The identifier of the corresponding coupon/voucher on the caller’s system.
+exclusive
+boolean
+Indicates whether the promotion is exclusive or not.
+segment
+object or null
+(
+Segment
+)
+Represents customer segmentation. Use this method to create coupons that apply to specific groups of customers (such as VIP customers, gold or silver card members, etc).
+Responses
+201
+A coupon plus HATEOAS fields.
+400
+An error response.
+409
+An error response.
+500
+An error response.
+post
+/coupon
+The staging/production server
+/v0/promotions
+/coupon
+Request samples
+Payload
+Content type
+application/json
+Example
+Create CartLevelPercentage Coupon Without Timezone
+Create CartLevelPercentage Coupon With Timezone
+Create CartLevelFixed Coupon Without Timezone
+Create CartLevelFixed Coupon With Timezone
+Create ProductLevelPercentage Coupon Without Timezone
+Create ProductLevelPercentage Coupon With Timezone
+Create ProductLevelFixed Coupon Without Timezone
+Create ProductLevelFixed Coupon With Timezone
+Create BogoPercentage Coupon Without Timezone
+Create BogoPercentage Coupon With Timezone
+Create BogoFixed Coupon Without Timezone
+Create BogoFixed Coupon With Timezone
+Create FreeShippingPercentage Coupon Without Timezone
+Create FreeShippingPercentage Coupon With Timezone
+Create CartLevelPercentage Coupon Without Timezone
+Copy
+Expand all
+Collapse all
+{
+"name"
+:
+"Black Friday Coupon"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"localizedTimezone"
+:
+true
+,
+"singleUse"
+:
+false
+,
+"consumers"
+:
+[
+"2dbb6700-d847-11ed-afa1-0242ac120002"
+,
+"3c8eb0de-d847-11ed-afa1-0242ac120002"
+]
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"type"
+,
+"value"
+:
+"gold member"
+,
+"schema"
+:
+1
+}
+}
+Response samples
+201
+400
+409
+500
+Content type
+application/json
+Example
+Response CartLevelPercentage coupon Without Timezone
+Response CartLevelPercentage coupon With Timezone
+Response CartLevelFixed coupon Without Timezone
+Response CartLevelFixed coupon With Timezone
+Response ProductLevelPercentage coupon Without Timezone
+Response ProductLevelPercentage coupon With Timezone
+Response ProductLevelFixed coupon Without Timezone
+Response ProductLevelFixed coupon With Timezone
+Response BogoPercentage coupon Without Timezone
+Response BogoPercentage coupon With Timezone
+Response BogoFixed coupon Without Timezone
+Response BogoFixed coupon With Timezone
+Response FreeShippingPercentage coupon Without Timezone
+Response FreeShippingPercentage coupon With Timezone
+Response CartLevelPercentage coupon Without Timezone
+Copy
+Expand all
+Collapse all
+{
+"links"
+:
+{
+"self"
+:
+"/coupon/64357c41-cad8-4000-8000-d998be563098"
+}
+,
+"coupon"
+:
+{
+"id"
+:
+"64357c41-cad8-4000-8000-d998be563098"
+,
+"name"
+:
+"Black Friday Coupon"
+,
+"description"
+:
+"Black Friday Coupon"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"createdAt"
+:
+"2023-04-11T00:00:00"
+,
+"createdBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"updatedAt"
+:
+"2023-04-11T00:00:00"
+,
+"updatedBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"localizedTimezone"
+:
+true
+,
+"version"
+:
+"a43a5a2d-1424-4c80-a252-992d489062eb"
+,
+"codes"
+:
+[ ]
+,
+"singleUse"
+:
+true
+,
+"consumers"
+:
+[
+"2dbb6700-d847-11ed-afa1-0242ac120002"
+,
+"3c8eb0de-d847-11ed-afa1-0242ac120002"
+]
+,
+"exclusive"
+:
+true
+}
+}
+List Coupons
+Retrieves all coupons.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+count
+required
+integer
+<= 150
+The number of coupons to get at once.
+page
+required
+integer
+>= 1
+The page number.
+name
+string
+The names of the coupons you want to get (it can be a list of comma separated values)
+code
+string
+The codes for which you want to get the coupons (it can be a list of comma separated values)
+active
+boolean
+Example:
+active=true
+This flag should be set to true to return
+running
+,
+planned
+and
+past
+coupons. If set to
+false
+it will return only disabled coupons.
+validFrom
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+Example:
+validFrom=2023-09-03T00:00:00
+By setting this field, you will only get coupons which are valid from this date onward.
+validTo
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+Example:
+validTo=2023-09-11T23:59:59
+By setting this field, you will only get coupons which are valid up to this date.
+kind[]
+string
+Enum
+:
+"CartLevelFixed"
+"CartLevelPercentage"
+"ProductLevelFixed"
+"ProductLevelPercentage"
+"BogoFixed"
+"BogoPercentage"
+"FreeShippingFixed"
+"FreeShippingPercentage"
+Example:
+kind[]=CartLevelFixed
+The type of the coupon you want to get
+segment
+string
+Example:
+segment=member
+Indicates the
+Key
+or
+Value
+of the customer profile extended attribute.
+partial-category
+boolean
+Default:
+true
+Example:
+partial-category=true
+This flag should be always present with
+true
+value , it prevents loads of categories.
+Responses
+200
+A page of coupons, the links for the previous and next pages and pagination information.
+400
+An error response.
+500
+An error response.
+get
+/coupon
+The staging/production server
+/v0/promotions
+/coupon
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"links"
+:
+{
+"self"
+:
+"/coupon/64357c41-cad8-4000-8000-d998be563098"
+}
+,
+"coupon"
+:
+{
+"id"
+:
+"64357c41-cad8-4000-8000-d998be563098"
+,
+"name"
+:
+"Black Friday Coupon"
+,
+"description"
+:
+"Black Friday Coupon"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"createdAt"
+:
+"2023-04-11T00:00:00"
+,
+"createdBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"updatedAt"
+:
+"2023-04-11T00:00:00"
+,
+"updatedBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"singleUse"
+:
+false
+,
+"localizedTimezone"
+:
+true
+,
+"codes"
+:
+[ ]
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"type"
+,
+"value"
+:
+"gold member"
+,
+"schema"
+:
+1
+}
+,
+"version"
+:
+"a43a5a2d-1424-4c80-a252-992d489062eb"
+}
+}
+,
+{
+"links"
+:
+{
+"self"
+:
+"/coupon/633e9b5e-983b-4000-8000-bdde1340e55f"
+}
+,
+"coupon"
+:
+{
+"id"
+:
+"633e9b5e-983b-4000-8000-bdde1340e55f"
+,
+"name"
+:
+"Coupon for hoodies"
+,
+"description"
+:
+"Coupon for hoodies"
+,
+"validFrom"
+:
+"2023-04-27T00:00:00"
+,
+"validTo"
+:
+"2023-04-30T23:59:59"
+,
+"category"
+:
+{
+"kind"
+:
+"ProductLevelFixed"
+,
+"includedCategories"
+:
+[
+{
+"path"
+:
+[
+"Shop"
+,
+"Accessories"
+]
+}
+]
+,
+"includedProducts"
+:
+[ ]
+,
+"excludedProducts"
+:
+[ ]
+,
+"shopId"
+:
+"storefront-catalog-en"
+,
+"locale"
+:
+"en-us"
+,
+"discounts"
+:
+[
+{
+"amount"
+:
+50
+,
+"currency"
+:
+"EUR"
+}
+,
+{
+"amount"
+:
+50
+,
+"currency"
+:
+"USD"
+}
+]
+}
+,
+"active"
+:
+false
+,
+"createdAt"
+:
+"2023-04-27T13:15:55Z"
+,
+"createdBy"
+:
+"3227aa4cdff85694a7788450e3c269b2"
+,
+"updatedAt"
+:
+"2022-10-06T09:09:50Z"
+,
+"updatedBy"
+:
+"3227aa4cdff85694a7788450e3c269b2"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+150
+}
+,
+{
+"code"
+:
+"USD"
+,
+"minimumCartValue"
+:
+150
+}
+]
+,
+"stores"
+:
+[ ]
+,
+"singleUse"
+:
+false
+,
+"localizedTimezone"
+:
+true
+,
+"codes"
+:
+[ ]
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"member"
+,
+"value"
+:
+"VIP"
+,
+"schema"
+:
+1
+}
+,
+"version"
+:
+"6255ca9a-a025-4846-826a-f69fd6da4917"
+}
+}
+]
+,
+"links"
+:
+{
+"next"
+:
+"/coupon?count=2&page=1"
+,
+"previous"
+:
+null
+}
+,
+"pagination"
+:
+{
+"count"
+:
+2
+,
+"page"
+:
+1
+,
+"total"
+:
+15
+}
+}
+Get Coupon
+Retrieves the specified coupon by ID. To retrieve the coupon ID, use the list coupon API.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The ID of the coupon.
+Responses
+200
+A coupon plus HATEOAS fields.
+404
+An error response.
+500
+An error response.
+get
+/coupon/{id}
+The staging/production server
+/v0/promotions
+/coupon/{id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Example
+Coupon Response Without Timezone
+Coupon Response With Timezone
+Coupon Response Without Timezone
+Copy
+Expand all
+Collapse all
+{
+"links"
+:
+{
+"self"
+:
+"/coupon/64357c41-cad8-4000-8000-d998be563098"
+}
+,
+"coupon"
+:
+{
+"id"
+:
+"64357c41-cad8-4000-8000-d998be563098"
+,
+"name"
+:
+"Black Friday Coupon"
+,
+"description"
+:
+"Black Friday Coupon"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"createdAt"
+:
+"2023-04-11T00:00:00Z"
+,
+"createdBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"updatedAt"
+:
+"2023-04-11T00:00:00Z"
+,
+"updatedBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"codes"
+:
+[ ]
+,
+"singleUse"
+:
+true
+,
+"localizedTimezone"
+:
+true
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+,
+"b25fd287-90cb-421c-a2b7-27691742f55b"
+]
+,
+"consumers"
+:
+[
+"2dbb6700-d847-11ed-afa1-0242ac120002"
+,
+"3c8eb0de-d847-11ed-afa1-0242ac120002"
+]
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"type"
+,
+"value"
+:
+"gold member"
+,
+"schema"
+:
+1
+}
+,
+"version"
+:
+"bf6a0288-d64e-4cb6-b534-a8a6c4724d06"
+}
+}
+Update Coupon
+Updates the specified coupon with new information. The only property that cannot be updated is the category.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The ID of the coupon.
+Request Body schema:
+application/json
+Update coupon request.
+name
+required
+string
+The name of the coupon.
+validFrom
+required
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the coupon becomes valid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+validTo
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the coupon becomes invalid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+category
+required
+CartLevelPercentageCategory (object) or CartLevelFixedCategory (object) or ProductLevelPercentageCategory (object) or ProductLevelFixedCategory (object) or BogoPercentageCategory (object) or BogoFixedCategory (object) or FreeShipping (object)
+The actual promotion kind.
+active
+boolean
+Indicates whether the coupon is active or not.
+currencies
+required
+Array of
+objects
+(
+Currency
+)
+A list of conditions on currencies to satisfy in order for the coupon to be applied.
+singleUse
+boolean
+Indicates whether the coupon codes are single use or not.
+localizedTimezone
+boolean
+Optional, this property determines local timezone validity for the coupon. If true, UTC is assumed with no timezone required in "validFrom" and "validTo". If false, timezone must be specified in those fields.
+stores
+Array of
+strings
+Indicates in which stores the coupon can be used. A list of IDs states that the coupon can be used in the given stores while an empty array states that the coupon can be used in any store.
+consumers
+Array of
+strings
+<= 10000 items
+Indicates by which consumers the coupon can be used. A list of Customer IDs states that the coupon can be used by the given customer while an empty array states that the coupon can be used by any customer.
+externalId
+string
+Optional, The identifier of the corresponding coupon/voucher on the caller’s system.
+exclusive
+boolean
+Indicates whether the promotion is exclusive or not.
+segment
+object or null
+(
+Segment
+)
+Represents customer segmentation. Use this method to create coupons that apply to specific groups of customers (such as VIP customers, gold or silver card members, etc).
+version
+required
+string
+A UUID representing the version of the coupon.
+Responses
+200
+A coupon plus HATEOAS fields.
+400
+An error response.
+404
+An error response.
+409
+An error response.
+500
+An error response.
+put
+/coupon/{id}
+The staging/production server
+/v0/promotions
+/coupon/{id}
+Request samples
+Payload
+Content type
+application/json
+Example
+Update CartLevelPercentage Coupon Without Timezone
+Update CartLevelPercentage Coupon With Timezone
+Update CartLevelFixed Coupon Without Timezone
+Update CartLevelFixed Coupon With Timezone
+Update ProductLevelPercentage Coupon Without Timezone
+Update ProductLevelPercentage Coupon With Timezone
+Update ProductLevelFixed Coupon Without Timezone
+Update ProductLevelFixed Coupon With Timezone
+Update BogoPercentage Coupon Without Timezone
+Update BogoPercentage Coupon With Timezone
+Update BogoFixed Coupon Without Timezone
+Update BogoFixed Coupon With Timezone
+Update FreeShippingPercentage Coupon Without Timezone
+Update FreeShippingPercentage Coupon With Timezone
+Update CartLevelPercentage Coupon Without Timezone
+Copy
+Expand all
+Collapse all
+{
+"name"
+:
+"Black Friday Coupon"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"localizedTimezone"
+:
+true
+,
+"version"
+:
+"a43a5a2d-1424-4c80-a252-992d489062eb"
+,
+"singleUse"
+:
+false
+,
+"consumers"
+:
+[
+"2dbb6700-d847-11ed-afa1-0242ac120002"
+,
+"3c8eb0de-d847-11ed-afa1-0242ac120002"
+]
+,
+"exclusive"
+:
+true
+,
+"segment"
+:
+{
+"key"
+:
+"type"
+,
+"value"
+:
+"gold member"
+,
+"schema"
+:
+1
+}
+}
+Response samples
+200
+400
+404
+409
+500
+Content type
+application/json
+Example
+Response CartLevelPercentage coupon Without Timezone
+Response CartLevelPercentage coupon With Timezone
+Response CartLevelFixed coupon Without Timezone
+Response CartLevelFixed coupon With Timezone
+Response ProductLevelPercentage coupon Without Timezone
+Response ProductLevelPercentage coupon With Timezone
+Response ProductLevelFixed coupon Without Timezone
+Response ProductLevelFixed coupon With Timezone
+Response BogoPercentage coupon Without Timezone
+Response BogoPercentage coupon With Timezone
+Response BogoFixed coupon Without Timezone
+Response BogoFixed coupon With Timezone
+Response FreeShippingPercentage coupon Without Timezone
+Response FreeShippingPercentage coupon With Timezone
+Response CartLevelPercentage coupon Without Timezone
+Copy
+Expand all
+Collapse all
+{
+"links"
+:
+{
+"self"
+:
+"/coupon/64357c41-cad8-4000-8000-d998be563098"
+}
+,
+"coupon"
+:
+{
+"id"
+:
+"64357c41-cad8-4000-8000-d998be563098"
+,
+"name"
+:
+"Black Friday Coupon"
+,
+"description"
+:
+"Black Friday Coupon"
+,
+"validFrom"
+:
+"2023-11-01T00:00:00"
+,
+"validTo"
+:
+"2023-12-01T00:00:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"active"
+:
+true
+,
+"createdAt"
+:
+"2023-04-11T00:00:00"
+,
+"createdBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"updatedAt"
+:
+"2023-04-11T00:00:00"
+,
+"updatedBy"
+:
+"25dd570161b05f0cae353a56757f8495"
+,
+"tenant"
+:
+"dodici"
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+50
+}
+]
+,
+"stores"
+:
+[
+"f9c7b6ec-b296-4eba-b083-c8b53d14407d"
+]
+,
+"localizedTimezone"
+:
+true
+,
+"version"
+:
+"a43a5a2d-1424-4c80-a252-992d489062eb"
+,
+"codes"
+:
+[ ]
+,
+"singleUse"
+:
+true
+,
+"consumers"
+:
+[
+"2dbb6700-d847-11ed-afa1-0242ac120002"
+,
+"3c8eb0de-d847-11ed-afa1-0242ac120002"
+]
+,
+"exclusive"
+:
+true
+}
+}
+Create coupon codes
+Use this method to create coupon codes associated to a coupon definition. To retrieve the coupon ID, use the
+List coupons
+method.
+You don't need the
+Label
+property in the request payload while creating coupons.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The ID of the coupon.
+Request Body schema:
+application/json
+Create coupon code request.
+codes
+required
+Array of
+strings
+A list of new coupon codes.
+Responses
+201
+A coupon codes list plus HATEOAS fields
+400
+An error response.
+404
+An error response.
+409
+An error response.
+500
+An error response.
+post
+/coupon/{id}/code
+The staging/production server
+/v0/promotions
+/coupon/{id}/code
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"codes"
+:
+[
+"CODE1"
+,
+"CODE2"
+]
+}
+Response samples
+201
+400
+404
+409
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"links"
+:
+[
+{
+"self"
+:
+"/coupon/62839b62-80ff-4000-8000-01b47275b241/code/629868d2-58ac-4000-8000-3766e65e2e3d"
+}
+,
+{
+"self"
+:
+"/coupon/62839b62-80ff-4000-8000-01b47275b241/code/62986960-0b13-4000-8000-1a636b395759"
+}
+]
+,
+"codes"
+:
+[
+{
+"id"
+:
+"629868d2-58ac-4000-8000-3766e65e2e3d"
+,
+"name"
+:
+"CODE1"
+,
+"redemptions"
+:
+0
+,
+"active"
+:
+true
+}
+,
+{
+"id"
+:
+"629868d2-58ac-4000-8000-3766e65e2e3d"
+,
+"name"
+:
+"CODE2"
+,
+"redemptions"
+:
+0
+,
+"active"
+:
+true
+}
+]
+}
+Get Coupon Codes
+Use this method to retrieve coupon codes.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The ID of the coupon.
+query
+Parameters
+count
+required
+integer
+<= 150
+The number of coupons to get at once.
+page
+required
+integer
+>= 1
+The page number.
+Responses
+200
+A page of coupon codes, the links for the previous and next pages and pagination information.
+400
+An error response.
+500
+An error response.
+get
+/coupon/{id}/code
+The staging/production server
+/v0/promotions
+/coupon/{id}/code
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"links"
+:
+{
+"self"
+:
+"/coupon/62839b62-80ff-4000-8000-01b47275b241/code/629868d2-58ac-4000-8000-3766e65e2e3d"
+}
+,
+"codes"
+:
+{
+"id"
+:
+"629868d2-58ac-4000-8000-3766e65e2e3d"
+,
+"name"
+:
+"CODE1"
+,
+"redemptions"
+:
+0
+,
+"active"
+:
+true
+}
+}
+,
+{
+"links"
+:
+{
+"self"
+:
+"/coupon/62839b62-80ff-4000-8000-01b47275b241/code/62986960-0b13-4000-8000-1a636b395759"
+}
+,
+"codes"
+:
+{
+"id"
+:
+"62986960-0b13-4000-8000-1a636b395759"
+,
+"name"
+:
+"CODE2"
+,
+"redemptions"
+:
+0
+,
+"active"
+:
+true
+}
+}
+]
+,
+"links"
+:
+{
+"next"
+:
+"/coupon/62839b62-80ff-4000-8000-01b47275b241/code?count=2&page=2"
+,
+"previous"
+:
+"null"
+}
+,
+"pagination"
+:
+{
+"count"
+:
+2
+,
+"page"
+:
+1
+,
+"total"
+:
+15
+}
+}
+Update Coupon Codes
+Use this method to update the specified coupon code, you can switch a coupon code to an
+active
+state or not.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The ID of the coupon.
+code_id
+required
+string
+The ID of the coupon code.
+Request Body schema:
+application/json
+id
+string
+name
+string
+[a-zA-Z0-9-%_@&!]
+redemptions
+number
+active
+boolean
+Responses
+200
+Coupon code updated successfully.
+400
+An error response.
+patch
+/coupon/{id}/code/{code_id}
+The staging/production server
+/v0/promotions
+/coupon/{id}/code/{code_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"id"
+:
+"629868d2-58ac-4000-8000-3766e65e2e3d"
+,
+"name"
+:
+"CODE1"
+,
+"redemptions"
+:
+0
+,
+"active"
+:
+true
+}
+Response samples
+400
+Content type
+application/json
+Example
+Example 1
+Example 2
+Example 1
+Copy
+{
+"message"
+:
+"not found"
+,
+"status"
+:
+404
+}
+Create Coupon Codes Import
+Use this method to create coupon codes by importing a CSV file.
+Important:
+if you want to import large quantities of codes, please do not provide one single big file, but split them into multiple files with 50-100k codes, in order not to overload the system.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The ID of the coupon.
+Request Body schema:
+multipart/form-data
+Create coupon codes import request by importing a CSV file containing coupon codes.
+import
+required
+string
+<
+binary
+>
+[a-zA-Z0-9-%_@&!]
+CSV file.
+Responses
+202
+A create coupon codes import response.It indicates the status of the request and the number of processed, created, and erroneous coupon code of the imported CSV file.
+400
+An error response.
+500
+An error response.
+post
+/coupon/{id}/code/import
+The staging/production server
+/v0/promotions
+/coupon/{id}/code/import
+Response samples
+202
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"codesImport"
+:
+{
+"id"
+:
+"646b39ac-14e7-4000-8000-8fb14bc22cec"
+,
+"status"
+:
+"CREATED"
+,
+"processed"
+:
+1000
+,
+"created"
+:
+700
+,
+"errors"
+:
+300
+,
+"updatedAt"
+:
+"2023-05-22 11:27:53.639 +0000 UTC"
+}
+}
+List Coupon Codes Import
+Use this method to retrieve a list of coupon codes imports.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The ID of the coupon.
+query
+Parameters
+count
+required
+integer
+<= 150
+The number of coupons to get at once.
+page
+required
+integer
+>= 1
+The page number.
+Responses
+200
+A page of coupon codes imports response, the links for the previous and next pages and pagination information. The response indicates the status of the import and the number of processed, created, erroneous coupon codes per import request.
+400
+An error response.
+500
+An error response.
+get
+/coupon/{id}/code/import
+The staging/production server
+/v0/promotions
+/coupon/{id}/code/import
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"links"
+:
+{
+"self"
+:
+"/coupon/646b3cb3-14e7-4000-8000-8fb14bc22d03/code/import/646b51b9-14e7-4000-8000-8fb14bc22d15"
+}
+,
+"codesImport"
+:
+{
+"id"
+:
+"646b51b9-14e7-4000-8000-8fb14bc22d15"
+,
+"status"
+:
+"CREATED"
+,
+"processed"
+:
+1000
+,
+"created"
+:
+700
+,
+"errors"
+:
+300
+,
+"updatedAt"
+:
+"2023-05-22 11:27:53.639 +0000 UTC"
+}
+}
+,
+{
+"links"
+:
+{
+"self"
+:
+"/coupon/646b3cb3-14e7-4000-8000-8fb14bc22d03/code/import/646b46b1-14e7-4000-8000-8fb14bc22d0b"
+}
+,
+"codesImport"
+:
+{
+"id"
+:
+"646b46b1-14e7-4000-8000-8fb14bc22d0b"
+,
+"status"
+:
+"CREATED"
+,
+"processed"
+:
+700
+,
+"created"
+:
+300
+,
+"errors"
+:
+400
+,
+"updatedAt"
+:
+"2023-05-23 10:27:53.639 +0000 UTC"
+}
+}
+]
+,
+"links"
+:
+{
+"next"
+:
+"/coupon/64677e31-14e7-4000-8000-8fb14bc22ce6/code/import?count=2&page=1"
+,
+"previous"
+:
+"null"
+}
+,
+"pagination"
+:
+{
+"count"
+:
+2
+,
+"page"
+:
+1
+,
+"total"
+:
+220
+}
+}
+Get Coupon Codes Import
+Use this method to retrieve a specified coupon codes import.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The ID of the coupon.
+import_id
+required
+string
+The ID of the imported coupon code.
+Responses
+200
+A coupon codes import response plus HATEOAS fields. The response indicates the status of the import and the number of processed, created, erroneous coupon codes in the specified coupon codes import.
+400
+An error response.
+404
+An error response.
+500
+An error response.
+get
+/coupon/{id}/code/import/{import_id}
+The staging/production server
+/v0/promotions
+/coupon/{id}/code/import/{import_id}
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"links"
+:
+{
+"self"
+:
+"/coupon/646b3cb3-14e7-4000-8000-8fb14bc22d03/code/import/646b51b9-14e7-4000-8000-8fb14bc22d15"
+}
+,
+"codesImport"
+:
+{
+"id"
+:
+"646b39ac-14e7-4000-8000-8fb14bc22cec"
+,
+"status"
+:
+"CREATED"
+,
+"processed"
+:
+1000
+,
+"created"
+:
+700
+,
+"errors"
+:
+300
+,
+"updatedAt"
+:
+"2023-05-22 11:27:53.639 +0000 UTC"
+}
+}
+Previous
+Promotions Configuration
+Next
+Integration Configurations
+Copyright © 2025 NewStore, Inc.

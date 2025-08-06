@@ -1,0 +1,180 @@
+openapi: 3.0.3
+info:
+  title: Permalink Service
+  version: '1.0'
+  description: >-
+    An HTTP API for creating public references to file objects in the shared AWS
+    S3 bucket. The bucket is only accessible from the shared VPCs.
+  contact:
+    name: Team Web Platform
+    email: team-web-platform@newstore.com
+    url: https://backstage.p.newstore.io/catalog/default/group/team-web-platform
+  x-audience: internal-company
+  x-api-id: a42788ea-d193-4eb7-bf2a-ba2c649b3f2e
+  x-domain-gateway-integration:
+    serviceName: E-mail Service
+servers:
+  - description: staging
+    url: http://permalink.web-platform.c.s.newstore.net
+  - description: production
+    url: http://permalink.web-platform.c.p.newstore.net
+tags:
+  - name: create-link
+    description: Resource to create public links to documents.
+  - name: show-document
+    description: Retrieves the link document
+paths:
+  /documents:
+    post:
+      summary: Creates a link to allow access to a document stored in S3
+      description: >
+        Use this method to create a permalink that will redirect the user to a
+        document stored in S3 using a presigned S3 URL. This permalink can then
+        be shared publicly.
+      operationId: createLink
+      tags:
+        - create-link
+      parameters:
+        - in: header
+          name: Tenant
+          required: true
+          schema:
+            title: Tenant
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/create-permalink-request'
+      responses:
+        '200':
+          description: |
+            The reference was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/create-permalink-response'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/create-permalink-malformed'
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseString'
+  /documents/{uuid}:
+    get:
+      summary: Retrieves information about a reference
+      description: >
+        Use this method to retrieve information about the specified UUID via the
+        permalink service, with all information about the reference.
+      operationId: showDocument
+      tags:
+        - show-document
+      parameters:
+        - in: path
+          name: uuid
+          required: true
+          schema:
+            title: uuid identifying the document
+            type: string
+            format: uuid
+        - in: header
+          name: Tenant
+          required: true
+          schema:
+            title: Tenant
+            type: string
+      responses:
+        '200':
+          description: |
+            The document exists and has information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get-document-response'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseString'
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseString'
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseString'
+components:
+  schemas:
+    responseString:
+      type: string
+    create-permalink-request:
+      title: createLinkRequest
+      type: object
+      required:
+        - service
+        - entity
+        - filename
+      properties:
+        service:
+          type: string
+          description: The name of the calling service, e.g. `templates` or `delivery`
+        entity:
+          type: string
+          description: >-
+            The entity of the documents, e.g. `templates_documents` or
+            `shipment_label`
+        filename:
+          type: string
+          description: The filename of the document, e.g. `invoice_{uuid}.pdf`
+        subentity:
+          type: string
+          description: The subentity of the document, e.g. `invoice` or `label_url`
+    create-permalink-response:
+      title: createLinkResponse
+      type: object
+      properties:
+        permalink:
+          type: string
+          description: >-
+            A link that can be used to open the document. The link will generate
+            a pre-signed url in AWS S3 and redirect the client. It will not
+            expire and can be used multiple times.
+    create-permalink-malformed:
+      title: createLinkMalformedResponse
+      type: object
+      properties:
+        errors:
+          type: array
+          description: List of errors
+          items:
+            type: string
+    get-document-response:
+      title: getDocumentResponse
+      type: object
+      properties:
+        service:
+          type: string
+          description: The name of the calling service, e.g. `templates` or `delivery`
+        entity:
+          type: string
+          description: >-
+            The entity of the documents, e.g. `templates_documents` or
+            `shipment_label`
+        filename:
+          type: string
+          description: The filename of the document, e.g. `invoice_{uuid}.pdf`

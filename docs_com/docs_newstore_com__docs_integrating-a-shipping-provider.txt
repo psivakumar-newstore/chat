@@ -1,0 +1,234 @@
+Integrating a shipping provider
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Integrating a shipping provider
+Updated on
+Dec 17, 2024
+Published on Oct 1, 2024
+6 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+To integrate a
+shipping provider
+, develop an
+adapter
+that uses the NewStore shipping provider Webhooks.
+An adapter serves as an intermediary between NewStore Omnichannel Cloud and a specific shipping provider's interface to request shipping time slots, book a slot, track a package, etc. Develop an adapter for each provider and tell NewStore about the shipping providers you want to integrate with. NewStore supports integrations with all shipping providers.
+If you work with multiple providers, NewStore Omnichannel Cloud offers integration capabilities with the
+EasyPost
+adapter. For help with this configuration, contact the
+support team
+.
+Defining your shipping strategy
+To offer shipping options to your customer, create a shipping strategy and select the shipping providers you want to integrate with and the different service levels they offer. For more information, see
+Shipping
+. To set up your shipping and fulfillment strategy, see
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+.
+Ensure that you communicate your shipping strategy to NewStore before you integrate a shipping provider as it requires some configuration in NewStore Omnichannel Cloud.
+Note
+You can ship orders using a shipping provider and integrate a different provider to manage returns. Develop a different adapter for each provider. Inform NewStore of your strategy so that the settings required to support this are configured in NewStore Omnichannel Cloud.
+Developing the adapter
+To allow NewStore Omnichannel Cloud to communicate with your shipping provider, implement the
+Shipping Provider webhooks
+.
+Prerequisites
+Before you start the integration, ensure your infrastructure offers an HTTPS web URL where the requests from NewStore Omnichannel Cloud can be posted.
+Important
+Ensure that you understand the data that the shipping provider requires about the customer as soon as possible. This will help you determine the right solution architecture. You might have to customize NewStore Associate App or E-commerce system integration to retrieve this information.
+For example, some shipping providers require the customer's email address (traditional carriers), while some others might need the customer's phone number (couriers).
+Retrieving shipping offers
+Shipping offers represent the shipping options presented to the customer during checkout. This is the time duration within which the shipping provider estimates delivery for the package.
+NewStore Omnichannel Cloud calls your adapter's
+Request shipping offers webhook
+to retrieve this information.
+Important
+Ensure that you handle the error paths as they can help NOM users understand what went wrong with an order that is on-Hold. See
+Possible errors when retrieving or booking shipments
+.
+The
+ready_by
+value in the request that NewStore Omnichannel Cloud sends serves as the cut-off time that ensures that the shipping options that can be offered to the customer are correct and can be met during fulfillment. NewStore Omnichannel Cloud calculates
+ready_by
+using a combination of values: the store's
+business_hours
+, the
+earliest_pickup_time
+and
+latest_pickup_time
+. Additionally, if a packing time duration is set for the retailer in NewStore Omnichannel Cloud, this is also used.
+Return the shipping options from the provider to NewStore Omnichannel Cloud.
+Your provider might send you more information about the delivery time slots than NewStore Omnichannel Cloud needs. You might need some of this data to book a time slot for
+shipment
+in a later step, so ensure you store the data that you need. See the request and response samples for the
+Request shipping offers webhook
+in our API docs.
+Note
+You can choose to store this data anyway you like, but if you do not have a database, you can use
+JWT
+.
+Create a JWT containing all the information you want to retain.
+Insert it in the
+offer
+property of the response you send to NewStore Omnichannel Cloud. The
+offer
+property being the unique identifier of the shipping option, NewStore Omnichannel Cloud will send it back to you when the shipment is booked.
+Booking a shipment
+During fulfillment, after the order is packed NewStore Omnichannel Cloud calls your adapter's
+Book shipment webhook
+to book a specific delivery time slot.
+Important
+Ensure that you handle the error paths as they can help NOM users understand what went wrong with an order that is on-Hold. See
+Possible errors when retrieving or booking shipments
+.
+The request describes the addresses used for this shipment, the time slot required and possibly a description of the package (weight, dimensions, etc.) and its content.
+Note
+Usually, NewStore Omnichannel Cloud provides package information. If none is provided, get in touch with your contact point at NewStore.
+In the following example, notice the
+booking_method
+property. It allows you to notify the shipping provider about what is expected from it: the shipment of the package, the return of the package, or both. Depending on the value of this field, send a request to retrieve:
+a shipping label (
+booking_method="only_shipping"
+)
+a return label (
+booking_method="only_return"
+)
+both labels (
+booking_method="shipping_and_return"
+)
+Important
+If your strategy involves shipping with the adapter you are developing but manages returns via another shipping provider, ensure that this second adapter is able to process
+only_return
+requests.
+Once the shipping provider has processed the booking request, share some of the shipping information with NewStore. Usually, the provider returns at least a shipping/return label and a tracking code. The tracking code is what is used to identify the package between NewStore and the adapter.
+If your strategy involves shipping with the adapter you are developing but manages returns via another shipping provider, the other adapter returns a similar response to NewStore.
+See the
+Book shipment webhook
+for the request and response examples.
+Possible errors when retrieving or booking shipments
+Each error type represents a different error scenario and, therefore, also requires a different error handling scenario. When setting up a shipping adapter, ensure that you map the potential error cases to the following types of errors:
+Error
+Description
+carrier_unavailable
+Map to this error when the carrier is currently unavailable to process the request.
+customs_error
+Map to this error if there is an issue with customs information with international shipping.
+delivery_validation_error
+Map to this error when the shipping adapter provides an invalid response on the expected formats (date, time, currency).
+invalid_delivery_window
+Map to this error when the initial shipping offer retrieved from the shipping options call is expired or no longer being accepted to book a shipment.
+sender_address_error
+Map to this error when there is an issue with the ship-from-address.
+shipping_address_error
+Map to this error when there is an issue with the ship-to information (for example destination address or customer information).
+shipping_address_not_serviced
+Map to this error when the carrier rejects delivery to the ship-to-location.
+sender_address_not_serviced
+Map to this error when the carrier rejects shipment from the ship-from-location.
+timeout
+Map to this error when the request to book a shipment takes too long and the carrier connection times out.
+unexpected_error
+Map to this error if an issue like a server error or unexpected response from the carrier occurs.
+carrier_account_configuration_error
+Map to this error when the carrier configuration is missing required information or is wrongly configured.
+(Optional)
+Booking an international shipment
+NewStore supports booking international shipments from stores in your business, using the
+EasyPost
+adapter. Learn how to
+enable booking international shipments with EasyPost
+.
+Canceling a shipment
+The customer can cancel a shipment until the package is actually in transit. When a cancel request happens, the NewStore Omnichannel Cloud calls your adapter's
+Cancel shipment webhook
+.
+The request has no body and you should use only the appropriate response code to notify NewStore Omnichannel Cloud of the cancellation success or failure. Refer to the method description for the request schema.
+You might also have to cancel the return booking, in case of separate shipping and return bookings.
+Updating the shipment status
+Once the shipping has been booked, keep track of the shipment's status and notify NewStore Omnichannel Cloud of any changes. Get in touch with your shipping provider to find the best way to do this.
+To send the package status to NewStore Omnichannel Cloud, call the
+Set shipment status method
+in the Integration API.
+Tracking driver location
+Depending on the shipping provider you are integrating with, you might be able to track the driver's location. For shipment status updates, get in touch with your shipping provider to find the best way to retrieve the tracking information.
+To send tracking information to NewStore Omnichannel Cloud call the
+Update shipment details method
+in the Integration API.
+Ensure that you don't exceed the rate limit of the shipping provider and of NewStore Omnichannel Cloud when retrieving and sending tracking updates.
+Was this article helpful?
+Yes
+No
+Tags
+api
+delivery
+Easypost
+fulfillment configuration
+integration
+international shipping
+newstore platform
+platform
+routing
+shipping
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

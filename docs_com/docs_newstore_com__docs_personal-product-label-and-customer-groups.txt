@@ -1,0 +1,242 @@
+Personal product labels and customer groups: Implementation guide
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Personal product labels and customer groups: Implementation guide
+Published on Mar 7, 2025
+4 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+To personalize the NewStore Shopping App, such as displaying discounted prices for specific customers, you need to identify customer groups and understand how the brand manages products, discounts, and other content of the Shopping App.
+By default, NewStore Shopping App differentiates between logged-in customers and guests. To enhance personalization based on customer groups, follow this guide to integrate NewStore Shopping App with your chosen e-commerce platform.
+Implementation with Salesforce Commerce Cloud (SFCC)
+SFCC provides customer groups. Using this functionality, you can create different customer groups or user segments, such as employees, logged-in users, guests, and others.
+Step 1: Exposing customer group data in API
+To enable NewStore Shopping App to access customer group data, merchants must modify the
+GET /customers/{customer_id}
+API response
+.
+The SFCC Shop APIs do not directly expose customer group information. To make this information accessible, brands can add a custom attribute to the customer resource in SFCC.
+The custom attribute should be named
+c_newstoreCustomerGroupIds
+.
+The value should be an array containing the IDs of the customer groups (both static and dynamic) that the customer belongs to.
+An example response for
+GET /customers/{customer_id}
+:
+{
+  "addresses": [
+    {
+      "address1": "",
+      "address2": "",
+       ...
+    }
+  ],
+  "creation_date": "",
+  "customer_id": "",
+  "customer_no": "",
+  "email": "",
+  "first_name": "",
+  "gender": "1",
+  "hashed_login": "",
+  "job_title": "",
+  "last_login_time": "",
+  "last_modified": "",
+  "last_name": "",
+  "last_visit_time": "",
+  "login": "",
+  "note": "",
+  "c_newstoreCustomerGroupIds": ["employee", "DE_employee"]
+ ...
+}
+Step 2: Using customer groups data
+Below are some use cases to personalize Shopping App content using the above API data.
+Product labels for customer groups
+We need to indicate a product has a promotion for a certain group of customers (for example, an employee discount). Use the product labels that are shown on the product images in the app.
+Note
+Brands have to coordinate with the Expert Services team to introduce labels in the app since the position and styling information differs for each brand.
+Personal Product Labels preview and difference with Promotional Labels in the Cart
+Product labels for products are created in SFCC. NewStore Shopping App supports brands on SFCC to have a list of product labels. Each label can include a list of customer groups, specifying which customers should see the label.
+By default, the OCAPI does not provide support for product labels. Brands can share a custom attribute on the product resource to add one or more labels.
+The name of the attribute must be
+c_newstoreProductLabels
+and this is not configurable. The values must be an array of the label objects with the following fields:
+id
+: A static predefined string that applies to all labels of the same type. The label ID should be coordinated with Expert Services team.
+display_text
+: The localized text to be displayed to the customer.
+text_color
+: An RGBA object to describe the text color of the label.
+background_color
+: An RGBA object to describe the background color of the label.
+user_segments
+: A list of customer group IDs for whom the label should be displayed.
+When NewStore App interacts with OCAPI product endpoints the example responses for the following endpoints will vary based on
+different scenarios, as detailed below:
+GET /products/{id}
+(
+docs
+)
+GET /products/({id}, {id}...)
+(
+docs
+)
+Scenario 1:
+For staff discount labels
+{
+  "_v": "18.8",
+  "_type": "product",
+  "c_newstoreProductLabels": [
+    {
+      "id": "label_pdp_cart_segment-employee", // Predefined id
+      "display_text": "20 % Mitarbeiterrabatt", // "20% Staff discount"  for a de_XX locale
+      "text_color": {
+        "red": 255,
+        "green": 255,
+        "blue": 255,
+        "alpha": 1
+      },
+      "background_color": {
+        "red": 0,
+        "green": 0,
+        "blue": 0,
+        "alpha": 1
+      },
+      "user_segments": ["Employees"] 
+    }
+  ]
+}
+Scenario 2:
+For member discount labels
+{
+	"_v": "18.8",
+	"_type": "product",
+	"c_newstoreProductLabels": [{
+		"id": "label_pdp_cart_segment-employee",
+		"display_text": "15% Rabatt",
+		"text_color": {
+			"red": 200,
+			"green": 110,
+			"blue": 190,
+			"alpha": 0
+		},
+		"background_color": {
+			"red": 175,
+			"green": 150,
+			"blue": 150,
+			"alpha": 1
+		},
+	
+	"user_segments": ["Employees"]
+	},
+	{
+		"id": "label_plp_pdp_cart_segment-members",
+		"display_text": "10% Rabatt",
+		"text_color": {
+			"red": 200,
+			"green": 110,
+			"blue": 190,
+			"alpha": 0
+		},
+		"background_color": {
+			"red": 175,
+			"green": 150,
+			"blue": 150,
+			"alpha": 1
+		},
+		"user_segments": ["Member"]
+	},
+	{
+		"id": "label_plp_pdp_cart_segment-members",
+		"display_text": "20% Rabatt",
+		"text_color": {
+			"red": 200,
+			"green": 110,
+			"blue": 190,
+			"alpha": 0
+		},
+		"background_color": {
+			"red": 175,
+			"green": 150,
+			"blue": 150,
+			"alpha": 1
+		},
+		"user_segments": ["Member_VIP"]
+	}
+  ]
+}
+Note
+The requests mentioned above are made without a session token, in line with NewStore caching strategy. NewStore expects all labels for every user segments to be included in the product's custom attributes. By using both product and customer data—which includes information about the customer's group— the app can determine whether a product label should be displayed to a customer.
+B. Customer or member discounts
+NewStore Shopping App relies on standard SFCC functionality for discounts, including discounts from promotions that are limited to certain customer groups. For promotions that affect line items, a label can be shown in the cart, based on the promotion’s name.
+This use case can be addressed with promotions targeting customer groups. For example, a 10% discount for customers belonging to the customer group
+Employees
+.
+A promotion defines which products/basket totals trigger the reward and what the reward is. A promotion must be assigned to a campaign to be activated. A campaign can be restricted to one or more customer groups. For more information, see
+creating campaigns and promotions
+.
+Was this article helpful?
+Yes
+No
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

@@ -1,0 +1,423 @@
+Migrating from the legacy fulfillment configuration to the new fulfillment configuration
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Migrating from the legacy fulfillment configuration to the new fulfillment configuration
+Updated on
+Jan 8, 2025
+Published on Sep 27, 2024
+8 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+This guide aims to help you use the
+Routing ruleset
+and
+Service levels
+APIs to update your fulfillment configuration to the latest version, and move away from using the
+legacy fulfillment configuration API
+.
+Note
+After migration, the
+legacy fulfillment configuration API
+is only required to set up provider rates and their priority.
+Benefits of migrating from the legacy fulfillment configuration to the new fulfillment configuration
+The new fulfillment configuration setup process allows you to:
+Manage various routing settings via a real-time UI in Omnichannel Manager, see
+Managing fulfillment location groups
+Reduce the time and effort required to update your fulfillment and routing configuration
+Make quick updates to your fulfillment configuration and without having to use the whole payload of the
+legacy fulfillment configuration API
+NewStore will also make continuous improvements to the new fulfillment configuration process, so migrating to the new process ensures your business benefits from these improvements.
+The steps to migrate have been listed below:
+Redesign your fulfillment strategy to include location groups and zip codes into your routing strategy. See
+Redesigning your fulfillment strategy
+.
+Prioritize provider rates for your fulfillment configuration. See
+Prioritizing provider rates
+.
+Use the
+Routing ruleset
+API to start the migration.
+Update the store capacity via the
+API
+.
+If you are unsure about the current capacity of stores where the new routing strategy applies, set the
+policy
+property to null temporarily, using the following payload:
+{
+    "policy": {}
+   }
+Ask for access to the Omnichannel Manager UI to manage your routing strategy and fulfillment location groups. See
+Using Omnichannel Manager to manage location groups
+.
+Redesigning your fulfillment strategy
+If you have been using an existing fulfillment configuration set up using the
+legacy fulfillment configuration API
+, you must redesign your fulfillment strategy to focus on
+location groups
+and
+zip code regions
+instead of individual fulfillment locations (or
+fulfillment node ID
+) and zip codes.
+Important
+Ensure that as the first step, you
+prioritize provider rates
+and then use the
+Routing ruleset
+API to add the routing rules when migrating to the new fulfillment and routing process.
+Prioritizing provider rates
+Important
+This step is
+mandatory
+to ensure that deliveries or booking shipments work as intended for your business as part of the new fulfillment process.
+If
+provider_rates_priority
+is not specified in the new configuration process, the APIs calls will be successful, but NewStore will not be able to book shipments for your orders.
+Ensure that you have set up
+provider rates
+using the
+legacy fulfillment configuration API
+and their priority using the
+provider_rates_priority
+in the request payload.
+However, to ensure that the
+provider_rates_priority
+property is used to prioritize provider rates, enable the feature via the
+Set priority of provider rates
+method as specified in
+this guide
+.
+Setting up location groups
+In the new fulfillment configuration process, instead of specifying each fulfillment location or
+fulfillment_node_id
+, you must specify a
+location group
+that contains a logical grouping of all these fulfillment locations. These location groups provide flexibility in working with the routing and fulfillment strategy for your business, and reduces the complexity of the configuration. This is one of the key benefits of migrating to the new fulfillment configuration process.
+To set up location groups and use them to fulfill orders:
+Create the location groups you need with a prioritized list of locations within each group.
+To compose the location groups, you can decide on a logical grouping that accurately serves the fulfillment and routing needs of your business. Some retailers may want to group fulfillment locations by geographic regions, while others may want to set up groups based on volume of fulfillment requests.
+Example A
+: A location group
+France
+containing 3 stores, 1 each located in
+Paris
+,
+Marseille
+, and
+Nice
+. The priority of locations is set to
+Paris > Nice > Marseille
+, based on volume of fulfillment requests in each store.
+Example B
+: A location group
+Boston Ground
+containing 3 stores and 2 warehouses, where the warehouses are prioritized above stores based on the volume of fulfillment requests.
+Ensure that you spend some time setting up location groups to optimize routing and fulfillment of orders in your business. This will let them maximize efficiency with the new fulfillment configuration.
+List these location groups in prioritized order within the fulfillment configuration. When NewStore receives a fulfillment request, the best location group is selected to route the fulfillment request to after checking each location within the prioritized group.
+For more information on this specific process, see
+this guide
+.
+After you have set up the location groups,
+set up zip code regions
+for your business, and then follow through on the rest of the
+tutorial
+to set up and activate the new fulfillment configuration.
+Note
+After you have set them up, these location groups will also be available to manage via Omnichannel Manager. Ask your point of contact at NewStore for access to the Omnichannel Manager UI.
+See the guide on managing location groups in Omnichannel Manager via the Routing UI
+here
+.
+Verifying that the migration was successful
+After you have migrated, there are 2 ways to check if your migration to the new fulfillment configuration was successful:
+Use the
+Create routing options
+method to test if the new routing configuration can book shipments successfully.
+Check details of the location group(s) using the Routing UI in the Omnichannel Manager, see
+Managing fulfillment location groups
+.
+If either of the above do not work as expected, check the troubleshooting tips
+here
+before you contact NewStore for support.
+Payload examples before and after migration
+You can view payload examples for a sample fulfillment configuration before and after migrating to the new routing and fulfillment process.
+After the migration, you have the option of defining route entries with a single destination region country code or multiple country codes. See the third tab in the example below.
+Before migration (uses legacy config API)
+After migration (uses Routing Ruleset API)
+After migration (uses Routing Ruleset API v1)
+The following payload example uses the
+legacy fulfillment configuration API
+method.
+{
+  "routes": [
+    {
+      "fulfilled_by": {
+        "2_DAY": [
+          {
+            "fulfillment_node_id": "DC01",
+            "provider_rate": "Fedex_2DAY"
+          },
+          {
+            "fulfillment_node_id": "US15",
+            "provider_rate": "Fedex_2DAY"
+          },
+          {
+            "fulfillment_node_id": "US16",
+            "provider_rate": "Fedex_2DAY"
+          }
+        ],
+        "GROUND": [
+          {
+            "fulfillment_node_id": "US01",
+            "provider_rate": "Fedex_Ground"
+          },
+          {
+            "fulfillment_node_id": "US02",
+            "provider_rate": "Fedex_Ground"
+          },
+          {
+            "fulfillment_node_id": "US03",
+            "provider_rate": "Fedex_Ground"
+          }
+        ]
+      },
+      "destination_region": {
+        "countries": [
+          "US"
+        ],
+        "zip_codes": [
+          "*"
+        ]
+      }
+    }
+  ],
+  "sl_levels_priority": [
+    "GROUND",
+    "2_DAY"
+  ]
+}
+The following payload example uses the
+Update routing rules
+method.
+{
+  "routes": [
+    {
+      "fulfilled_by": {
+        "2_DAY": [
+          "2_DAY::WEST"
+        ],
+        "GROUND": [
+          "GROUND::WEST"
+        ]
+      },
+      "destination_region": {
+        "country": "US",
+        "zip_code_region": "WEST"
+      }
+    }
+  ],
+  "sl_levels_priority": [
+    "GROUND",
+    "2_DAY"
+  ],
+  "location_groups": {
+    "2_DAY::WEST": [
+      "DC01",
+      "US15",
+      "US16"
+    ],
+    "GROUND::WEST": [
+      "US01",
+      "US02",
+      "US03"
+    ]
+  },
+  "zip_code_regions": {
+    "WEST": [
+      "*"
+    ]
+  }
+}
+The following payload example uses the API v1 version
+Update routing rules
+method.
+{
+  "routes": [
+    {
+      "fulfilled_by": {
+        "2_DAY": [
+          "2_DAY::WEST"
+        ],
+        "GROUND": [
+          "GROUND::WEST"
+        ]
+      },
+      "destination_region": {
+        "countries": ["US"],
+        "zip_code_region": "WEST"
+      }
+    }
+  ],
+  "sl_levels_priority": [
+    "GROUND",
+    "2_DAY"
+  ],
+  "location_groups": {
+    "2_DAY::WEST": [
+      "DC01",
+      "US15",
+      "US16"
+    ],
+    "GROUND::WEST": [
+      "US01",
+      "US02",
+      "US03"
+    ]
+  },
+  "zip_code_regions": {
+    "WEST": [
+      "*"
+    ]
+  }
+}
+Using Omnichannel Manager to manage location groups
+After you have successfully migrated to the new fulfillment configuration process and are using the new
+Routing ruleset
+and
+Service levels
+APIs to set up your fulfillment configuration, you can also start using Omnichannel Manager to manage location groups and the priority of locations within these groups in real-time.
+Note
+Ask your point of contact at NewStore for access to the UI in Omnichannel Manager.
+Using Omnichannel Manager is faster and easier than using APIs to manage your location groups or routes. You can use the new Routing UI to:
+Re-prioritize locations via a simple
+Drag and Drop
+action
+Add or remove locations from each group
+Manage routing capacity limits for stores
+Enable or disable individual stores for fulfillment
+For more information, see
+this guide
+.
+Switching versions
+When you have migrated to the new fulfillment configuration process, you can switch to an older or newer version of the fulfillment configuration using the
+Fulfillment config history API
+.
+For more information, see
+Switching to another version of the fulfillment configuration
+.
+Troubleshooting
+My migration has failed. What can I do to recover my old fulfillment configuration?
+Use the
+Fulfillment config history API
+to switch to the older version of the configuration.
+Note
+You will have to set up fulfillment locations and zip codes from scratch when moving back from the new process to the legacy version of the fulfillment configuration.
+My API returns a
+200
+response but booking shipments is failing. What should I do?
+Check if the prioritization of provider rates has been set up using the
+provider_rates_priority
+property. See
+Prioritizing provider rates
+.
+My configuration is set up properly, but I cannot get routing options. What should I do?
+Ensure you have enabled the use of prioritization of provider rates by setting up this configuration as specified
+here
+.
+I do not see the Routing UI in Omnichannel Manager. What should I do?
+Ensure that you have requested, and been granted, access to the Routing UI. Talk to your point of contact at NewStore for more information.
+Related topics
+Tutorial: Setting up a fulfillment configuration
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+Tutorial: Setting up a fulfillment configuration
+Legacy fulfillment configuration
+API
+Routing ruleset
+API
+Service levels
+API
+Fulfillment config history API
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+delivery
+fulfillment
+fulfillment configuration
+integration
+international shipping
+location groups
+migration
+onboarding
+order fulfillment
+platform
+preorder
+routing
+routing rules
+shipping
+soft routing
+zip code regions
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

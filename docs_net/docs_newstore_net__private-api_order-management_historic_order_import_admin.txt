@@ -1,0 +1,648 @@
+Sales order historic import API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Capture Order
+External Order API
+Sales order historic import API
+Order Injection configuration
+Order line internal APIs
+Service Level API
+Customer Care Order Support API
+Fulfillment App API
+NewStore Checkout API
+Order status notifications API
+Support API
+Sales Order Support API
+External OMS Config API
+API to manage sales order configurations
+Shopping API
+Swap products in order
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+post
+Use this API to import historical order into NewStore and create a sales_order object.
+API docs by Redocly
+Sales order historic import API
+(
+0.1.0
+)
+Download OpenAPI specification
+:
+Download
+team-order-management
+:
+team-order-management@newstore.com
+Use this API to import historic order into NewStore and create a sales_order object out of it. This is an internal
+API and should not be used outside of OM.
+Use this API to import historical order into NewStore and create a sales_order object.
+Import historic orders into NewStore and creates a sales_order object out of it. Other services are notified
+of this imported order by emitting a event.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+order
+required
+object
+An order placed in an external system, identified by its
+external_id
+in NewStore. An order contains a list of shipments and the products in each shipment.
+external_id
+required
+string
+[ 1 .. 64 ] characters
+placed_at
+required
+string
+<
+date-time
+>
+Date representation of when the order was placed, containing date, time and timezone as defined by
+https://tools.ietf.org/html/rfc3339
+(ISO 8601).
+store_id
+string
+<= 256 characters
+ID of the store where this order was placed.
+channel_type
+required
+string
+Enum
+:
+"web"
+"mobile"
+"store"
+channel_name
+required
+string
+[ 1 .. 64 ] characters
+A string used to distinguish between various sources of orders.
+currency
+required
+string
+Enum
+:
+"AED"
+"AFN"
+"ALL"
+"AMD"
+"ANG"
+"AOA"
+"ARS"
+"AUD"
+"AWG"
+"AZN"
+"BAM"
+"BBD"
+"BDT"
+"BGN"
+"BHD"
+"BIF"
+"BMD"
+"BND"
+"BOB"
+"BOV"
+"BRL"
+"BSD"
+"BTN"
+"BWP"
+"BYN"
+"BZD"
+"CAD"
+"CDF"
+"CHE"
+"CHF"
+"CHW"
+"CLF"
+"CLP"
+"CNY"
+"COP"
+"COU"
+"CRC"
+"CUC"
+"CUP"
+"CVE"
+"CZK"
+"DJF"
+"DKK"
+"DOP"
+"DZD"
+"EGP"
+"ERN"
+"ETB"
+"EUR"
+"FJD"
+"FKP"
+"GBP"
+"GEL"
+"GHS"
+"GIP"
+"GMD"
+"GNF"
+"GTQ"
+"GYD"
+"HKD"
+"HNL"
+"HRK"
+"HTG"
+"HUF"
+"IDR"
+"ILS"
+"INR"
+"IQD"
+"IRR"
+"ISK"
+"JMD"
+"JOD"
+"JPY"
+"KES"
+"KGS"
+"KHR"
+"KMF"
+"KPW"
+"KRW"
+"KWD"
+"KYD"
+"KZT"
+"LAK"
+"LBP"
+"LKR"
+"LRD"
+"LSL"
+"LYD"
+"MAD"
+"MDL"
+"MGA"
+"MKD"
+"MMK"
+"MNT"
+"MOP"
+"MRU"
+"MUR"
+"MVR"
+"MWK"
+"MXN"
+"MXV"
+"MYR"
+"MZN"
+"NAD"
+"NGN"
+"NIO"
+"NOK"
+"NPR"
+"NZD"
+"OMR"
+"PAB"
+"PEN"
+"PGK"
+"PHP"
+"PKR"
+"PLN"
+"PYG"
+"QAR"
+"RON"
+"RSD"
+"RUB"
+"RWF"
+"SAR"
+"SBD"
+"SCR"
+"SDG"
+"SEK"
+"SGD"
+"SHP"
+"SLL"
+"SOS"
+"SRD"
+"SSP"
+"STN"
+"SVC"
+"SYP"
+"SZL"
+"THB"
+"TJS"
+"TMT"
+"TND"
+"TOP"
+"TRY"
+"TTD"
+"TWD"
+"TZS"
+"UAH"
+"UGX"
+"USD"
+"USN"
+"UYI"
+"UYU"
+"UYW"
+"UZS"
+"VES"
+"VND"
+"VUV"
+"WST"
+"XAF"
+"XAG"
+"XAU"
+"XBA"
+"XBB"
+"XBC"
+"XBD"
+"XCD"
+"XDR"
+"XOF"
+"XPD"
+"XPF"
+"XPT"
+"XSU"
+"XTS"
+"XUA"
+"XXX"
+"YER"
+"ZAR"
+"ZMW"
+"ZWL"
+The currency for all the prices contained within this payload.
+customer_email
+required
+string
+<
+email
+>
+[ 1 .. 64 ] characters
+consumer_uuid
+required
+string
+[ 36 .. 72 ] characters
+ID of the consumer who placed this SalesOrder
+external_consumer_id
+required
+string
+<= 256 characters
+Identifier used in external system to identify a consumer.
+shop_locale
+required
+string
+[ 1 .. 128 ] characters
+The locale of the customer used for the shop, in RFC 5646.
+shop
+required
+string
+[ 1 .. 128 ] characters
+The shop containing the items of the order.
+shipping_address
+required
+object
+billing_address
+required
+object
+price_method
+required
+string
+Enum
+:
+"tax_included"
+"tax_excluded"
+Specifies if all items and shipping prices include tax or not.
+shipments
+required
+Array of
+objects
+extended_attributes
+Array of
+objects
+<= 100 items
+[ items
+<= 2 properties
+]
+Responses
+200
+Order successfully import.
+400
+Bad Request Error.
+500
+Internal Server Error.
+default
+Unexpected Error
+post
+/orders/import/historic
+/v0
+/orders/import/historic
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"order"
+:
+[
+{
+"external_id"
+:
+"HISTORIC_ORDER_123"
+,
+"placed_at"
+:
+"2018-10-08T07:06:08.067Z"
+,
+"channel_type"
+:
+"mobile"
+,
+"channel_name"
+:
+"android app"
+,
+"currency"
+:
+"USD"
+,
+"customer_email"
+:
+"jw@example.com"
+,
+"consumer_uuid"
+:
+"63036ceb-a18c-4b7b-b507-7cdb43d4f547"
+,
+"external_consumer_id"
+:
+"WX78LZ"
+,
+"shop_locale"
+:
+"en-US"
+,
+"shop"
+:
+"storefront-catalog-en"
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"Jay"
+,
+"last_name"
+:
+"Doubleyou"
+,
+"country"
+:
+"US"
+,
+"zip_code"
+:
+"02111"
+,
+"city"
+:
+"Boston"
+,
+"state"
+:
+"Massachusetts"
+,
+"address_line_1"
+:
+"601 South Street"
+,
+"address_line_2"
+:
+""
+,
+"phone"
+:
+"202-555-0140"
+}
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"Jay"
+,
+"last_name"
+:
+"Doubleyou"
+,
+"country"
+:
+"US"
+,
+"zip_code"
+:
+"02111"
+,
+"city"
+:
+"Boston"
+,
+"state"
+:
+"Massachusetts"
+,
+"address_line_1"
+:
+"601 South Street"
+,
+"phone"
+:
+"202-555-0140"
+}
+,
+"shipments"
+:
+[
+{
+"items"
+:
+[
+{
+"product_id"
+:
+"1000011"
+,
+"product_name"
+:
+"Short sleeve T-Shirt blue"
+,
+"status"
+:
+"complete"
+,
+"external_item_id"
+:
+"GD-10000001"
+,
+"price"
+:
+{
+"item_price"
+:
+100.21
+,
+"item_list_price"
+:
+100.21
+,
+"item_tax_lines"
+:
+[
+{
+"amount"
+:
+68.78
+,
+"rate"
+:
+0.0758
+,
+"name"
+:
+"Custom Tax"
+,
+"country_code"
+:
+"DE"
+}
+]
+}
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"key_a"
+,
+"value"
+:
+"value_a"
+}
+,
+{
+"name"
+:
+"key_b"
+,
+"value"
+:
+"value_b"
+}
+]
+}
+]
+,
+"shipping_option"
+:
+{
+"service_level_identifier"
+:
+"GROUND"
+,
+"shipping_type"
+:
+"traditional_carrier"
+,
+"fulfillment_node_id"
+:
+"DC01"
+,
+"shipping_carrier"
+:
+"FedEx"
+,
+"display_name"
+:
+"In store handover"
+,
+"price"
+:
+19
+,
+"tax"
+:
+6.78
+,
+"zip_code"
+:
+"81379"
+,
+"country_code"
+:
+"DE"
+}
+}
+]
+,
+"price_method"
+:
+"tax_excluded"
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"key_a"
+,
+"value"
+:
+"value_a"
+}
+,
+{
+"name"
+:
+"key_b"
+,
+"value"
+:
+"value_b"
+}
+]
+}
+]
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+{
+"sales_order_uuid"
+:
+"a1e3d1f0-65f2-4c52-a752-27bea25279dc"
+}
+Previous
+External Order API
+Next
+Order Injection configuration
+Copyright © 2025 NewStore, Inc.

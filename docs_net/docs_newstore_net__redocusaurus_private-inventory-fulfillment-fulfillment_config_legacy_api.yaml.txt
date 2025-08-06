@@ -1,0 +1,1424 @@
+openapi: 3.0.1
+info:
+  title: Fulfillment Configuration API
+  version: '0.1'
+  contact:
+    name: Team Routing
+    email: team-routing@newstore.com
+  description: >
+    Represents a shipping strategy. A fulfillment configuration contains
+    shipping and routing details such as
+
+    provider rates, service levels, service-level priorities, fulfillment
+    locations and routes, to configure
+
+    order routing.
+
+
+    Use this resource to create, update, and retrieve fulfillment
+    configurations.
+
+
+    For more information about routing and the terminology, see:
+
+    - [About order routing](https://docs.newstore.com/docs/about-order-routing)
+
+    - [Tutorial: Setting up a fulfillment
+    configuration](https://docs.newstore.com/docs/tutorial-setting-up-a-fulfillment-configuration)
+
+    - [Glossary](https://docs.newstore.com/docs/glossary)
+servers:
+  - url: https://dodici.x.newstore.net/_/v0/dontuse
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /fulfillment_config:
+    post:
+      responses:
+        '200':
+          description: >
+            The `fulfillment_config` was updated successfully. The response body
+            contains the
+
+            revision of the new `fulfillment_config` and the
+            `fulfillment_config` itself.
+          content:
+            application/json:
+              example:
+                fulfillment_config:
+                  provider_rates:
+                    ACME_2_DAY_EXPRESS:
+                      return_provider_rate: ''
+                      service_level: 2_DAY
+                      shipping_carrier_name: ACME
+                      shipping_type: same_day_delivery
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: ACME_2_DAY_EXPRESS
+                    FEDEX_2_DAY_DELIVERY:
+                      return_provider_rate: ''
+                      service_level: 2_DAY
+                      shipping_carrier_name: FedEx
+                      shipping_type: same_day_delivery
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: FEDEX_2_DAY
+                    ACME_5_DAY_NO_HURRY:
+                      return_provider_rate: ''
+                      service_level: GROUND
+                      shipping_carrier_name: ACME
+                      shipping_type: same_day_delivery
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: ACME_5_DAY_NO_HURRY
+                    FEDEX_GROUND_DELIVERY:
+                      return_provider_rate: ''
+                      service_level: GROUND
+                      shipping_carrier_name: FedEx
+                      shipping_type: same_day_delivery
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: FEDEX_GROUND
+                    ACME_ON_DEMAND_2_HOURS:
+                      return_provider_rate: ''
+                      service_level: SAME_DAY_DELIVERY
+                      shipping_carrier_name: ACME_SAME_DAY
+                      shipping_type: same_day_delivery
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: ACME_ON_DEMAND_2_HOURS
+                    CITY_SAME_DAY:
+                      return_provider_rate: ''
+                      service_level: SAME_DAY_DELIVERY
+                      shipping_carrier_name: Deliv
+                      shipping_type: same_day_delivery
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: Scheduled
+                    IN_STORE_PICKUP_US01:
+                      return_provider_rate: ''
+                      service_level: IN_STORE_PICKUP_US01
+                      shipping_carrier_name: IN_STORE_PICKUP
+                      shipping_type: in_store_pick_up
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: IN_STORE_PICKUP
+                  routes:
+                    - destination_region:
+                        countries:
+                          - US
+                        zip_codes:
+                          - '10123'
+                          - '10124'
+                          - '10125'
+                          - '10126'
+                          - '10128'
+                          - '10130'
+                          - '10131'
+                          - '10138'
+                          - '10152'
+                          - '10154'
+                          - '10155'
+                          - '10157'
+                      fulfilled_by:
+                        IN_STORE_PICKUP_US01:
+                          - fulfillment_node_id: US01
+                            provider_rate: IN_STORE_PICKUP_US01
+                    - destination_region:
+                        countries:
+                          - US
+                        zip_codes:
+                          - '*'
+                      fulfilled_by:
+                        2_DAY:
+                          - fulfillment_node_id: US01
+                            provider_rate: ACME_2_DAY_EXPRESS
+                          - fulfillment_node_id: US02
+                            provider_rate: ACME_2_DAY_EXPRESS
+                        GROUND:
+                          - fulfillment_node_id: US01
+                            provider_rate: ACME_5_DAY_NO_HURRY
+                          - fulfillment_node_id: US02
+                            provider_rate: ACME_5_DAY_NO_HURRY
+                        SAME_DAY_DELIVERY:
+                          - fulfillment_node_id: US01
+                            provider_rate: ACME_ON_DEMAND_2_HOURS
+                          - fulfillment_node_id: US02
+                            provider_rate: ACME_ON_DEMAND_2_HOURS
+                  service_levels:
+                    2_DAY:
+                      currency_code: USD
+                      delivery_time: 2-3 business days
+                      delivery_time_after_cutoff_hour: ''
+                      display_name: Standard
+                      price: 0
+                      remorse_period: 0
+                      tax_code: ''
+                    GROUND:
+                      currency_code: USD
+                      delivery_time: 3-7 business days
+                      delivery_time_after_cutoff_hour: ''
+                      display_name: Ground
+                      price: 0
+                      remorse_period: 0
+                      tax_code: ''
+                    IN_STORE_PICKUP_US01:
+                      currency_code: USD
+                      delivery_time: >-
+                        Collect your item at our store on 611 5th Avenue, New
+                        York
+                      delivery_time_after_cutoff_hour: Collect your item at our store
+                      display_name: Collect in Store
+                      price: 0
+                      remorse_period: 0
+                      tax_code: FR
+                    SAME_DAY_DELIVERY:
+                      currency_code: USD
+                      delivery_time: Place order by 2pm
+                      delivery_time_after_cutoff_hour: Place order by 2pm
+                      display_name: Same Day
+                      price: 15
+                      remorse_period: 0
+                      tax_code: ''
+                  sl_levels_priority:
+                    - IN_STORE_PICKUP_US01
+                    - 2_DAY
+                    - GROUND
+                    - SAME_DAY_DELIVERY
+                  provider_rates_priority:
+                    '*':
+                      '*':
+                        SAME_DAY_DELIVERY:
+                          - ACME_ON_DEMAND_2_HOURS
+                        GROUND:
+                          - ACME_5_DAY_NO_HURRY
+                        2_DAY:
+                          - ACME_2_DAY_EXPRESS
+                    US:
+                      '*':
+                        SAME_DAY_DELIVERY:
+                          - ACME_ON_DEMAND_2_HOURS
+                          - CITY_SAME_DAY
+                        GROUND:
+                          - ACME_5_DAY_NO_HURRY
+                          - FEDEX_GROUND_DELIVERY
+                        2_DAY:
+                          - ACME_2_DAY_EXPRESS
+                          - FEDEX_2_DAY_DELIVERY
+                      US01:
+                        SAME_DAY_DELIVERY:
+                          - CITY_SAME_DAY
+                          - ACME_ON_DEMAND_2_HOURS
+                        GROUND:
+                          - FEDEX_GROUND_DELIVERY
+                          - ACME_5_DAY_NO_HURRY
+                        2_DAY:
+                          - FEDEX_2_DAY_DELIVERY
+                          - ACME_2_DAY_EXPRESS
+                revision: 3
+                updated_at: '2018-07-16T09:05:42.138869546Z'
+                updated_by: 22IB3UROr1S3Je9hDaRh7f
+              schema:
+                title: Post fulfillment config response.
+                description: Schema for post fulfillment config response
+                required:
+                  - revision
+                  - fulfillment_config
+                  - updated_by
+                  - updated_at
+                properties:
+                  revision:
+                    type: integer
+                    description: Defines the revision of the uploaded config.
+                  fulfillment_config:
+                    title: Post fulfillment config.
+                    description: >-
+                      Schema for adding or updating fulfillment_config which is
+                      used for zip code based hard and soft routing.
+                    type: object
+                    required:
+                      - provider_rates
+                    properties:
+                      provider_rates:
+                        description: >-
+                          The list of supported provider rates. A provider rate
+                          identifies an integrated shipping provider and the
+                          rate it offers. The key represents the unique
+                          identifier of the provider rate and the value contains
+                          the specific provider rate definition.
+                        type: object
+                        additionalProperties:
+                          type: object
+                          required:
+                            - shipping_carrier_name
+                            - service_level
+                            - shipping_type
+                            - use_as_customer_facing_cost
+                          properties:
+                            shipping_carrier_name:
+                              type: string
+                              description: >-
+                                The name of shipping provider associated with
+                                this provider rate. Example: FEDEX/UPS/USPS.
+                            service_level:
+                              type: string
+                              description: >-
+                                The unique identifier for the service level
+                                offered by the provider, for which this provider
+                                rate should be valid. Define a service level in
+                                the service_levels field.
+                            shipping_type:
+                              description: >-
+                                Required for backward compatibility purposes.
+                                The value can be traditional_carrier,
+                                same_day_delivery or in_store_pick_up.
+                              type: string
+                            use_as_customer_facing_cost:
+                              type: boolean
+                              description: >-
+                                Flag to indicate if the shipping provider cost
+                                is used instead of the service level cost
+                                defined in the fulfillment configuration. If set
+                                to true, the shipping provider cost is also
+                                displayed to the customer
+                            return_provider_rate:
+                              type: string
+                              description: >-
+                                The identifier for the provider rate used for
+                                the return shipment.
+                            carrier_defined_service_level:
+                              type: string
+                              description: >-
+                                Carrier specific name that defines the service
+                                level. When defining provider rates with the
+                                same shipping provider, the value you specify
+                                here must be unique and should always match the
+                                name defined by the shipping provider API. For
+                                example, 'NextDayAirSaver' for UPS and
+                                'GROUND_HOME_DELIVERY' for FedEx. If no value is
+                                provided, NewStore uses the unique identifier of
+                                the provider rate as the default value.
+                      service_levels:
+                        description: >-
+                          Contains a dictionary of rate information to display
+                          to the customer. The key represents the identifier of
+                          the service level in NewStore and the value contains
+                          the specific service level definition.
+                        type: object
+                        additionalProperties:
+                          type: object
+                          required:
+                            - display_name
+                            - delivery_time
+                            - delivery_time_after_cutoff_hour
+                            - price
+                            - currency_code
+                            - tax_code
+                          properties:
+                            display_name:
+                              description: >-
+                                The service level name as displayed to
+                                customers. The service level is referred to as a
+                                `shipping option` across NewStore applications.
+                              type: string
+                            delivery_time:
+                              description: >-
+                                The amount of time needed for delivery, when
+                                this service level is chosen.
+                              type: string
+                            delivery_time_after_cutoff_hour:
+                              description: >-
+                                The amount of time needed for delivery after the
+                                cut-off time, when this service level is chosen.
+                                NewStore calculates the cut-off time using the
+                                'earliest_pickup_time' and the
+                                'latest_pickup_time' values set for the store.
+                                See
+                                https://docs.newstore.net/newstore-cloud/store_operations/store.html#operation/updateStore.
+                                The 'packing_time_duration', if configured for
+                                your business, is also used.
+                              type: string
+                            price:
+                              description: The amount charged to the customer for delivery.
+                              type: number
+                              minimum: 0
+                            currency_code:
+                              description: >-
+                                The currency used by the shipping provider, as 3
+                                character ISO-4217 code. Example USD, EUR.
+                              type: string
+                            tax_code:
+                              description: The identifier for the tax applied.
+                              type: string
+                            remorse_period:
+                              description: >-
+                                The number of seconds that the order will be in
+                                on-hold state or in the grace period before it
+                                is routed or processed further. The value set
+                                here overrides the grace period configured for
+                                the business as a whole. The order or the item
+                                being shipped with this service level can be
+                                canceled in this period.
+                              type: number
+                      routes:
+                        description: >-
+                          An array of routes. Each element in this array defines
+                          a configuration for a 'route'. A route specifies how
+                          order items can be fulfilled from fulfillment nodes to
+                          their destinations.
+                        type: array
+                        minItems: 1
+                        items:
+                          type: object
+                          required:
+                            - destination_region
+                            - fulfilled_by
+                          properties:
+                            destination_region:
+                              type: object
+                              description: >-
+                                The geographic region in which to deliver
+                                orders. This region is defined with a
+                                combination of country codes and zip codes.
+                              properties:
+                                countries:
+                                  description: >-
+                                    The list of destination country codes (2
+                                    letter ISO-3166) supported by the route.
+                                  type: array
+                                  minItems: 1
+                                  items:
+                                    type: string
+                                    minLength: 2
+                                    maxLength: 2
+                                    description: >-
+                                      The supported country code (2 letter
+                                      ISO-3166) for this route.
+                                zip_codes:
+                                  type: array
+                                  description: >-
+                                    The list of supported zip codes for a route.
+                                    To include all zip codes with a specific zip
+                                    code prefix, provide the prefix of the zip
+                                    code, suffixed with a '*'. For example '11*'
+                                    will include  '1100', '115ACE', etc. To
+                                    include all zip codes for the countries in
+                                    the parent object, provide only a '*'.
+                                  minItems: 1
+                                  items:
+                                    type: string
+                                    minLength: 1
+                                    description: Zip code or zip code prefix.
+                            fulfilled_by:
+                              description: >-
+                                The list of prioritized fulfillment locations
+                                that can deliver order items to a corresponding
+                                destination region (in the route entry) at a
+                                certain service level. This information is
+                                specified as a map object. The key of this
+                                object is the name of the service level and the
+                                value is a list of fulfillment locations that
+                                support this service level.
+                              type: object
+                              additionalProperties:
+                                description: >-
+                                  The list of supported fulfillment locations
+                                  for the defined service level.
+                                type: array
+                                minItems: 1
+                                items:
+                                  type: object
+                                  anyOf:
+                                    - required:
+                                        - fulfillment_node_id
+                                      properties:
+                                        fulfillment_node_id:
+                                          type: string
+                                          minLength: 1
+                                        provider_rate:
+                                          type: string
+                                    - required:
+                                        - fulfillment_node_id
+                                        - provider_rate
+                                      properties:
+                                        fulfillment_node_id:
+                                          type: string
+                                          minLength: 1
+                                          description: >-
+                                            The identifier of the fulfillment
+                                            location that is able to ship with the
+                                            defined service level. The arrangement
+                                            of the fulfillment node IDs in this
+                                            array also defines their priority. The
+                                            lower the index, the higher the
+                                            priority. Fulfillment node ids are
+                                            defined during the first stock import.
+                                            See the Import API for more information.
+                                        provider_rate:
+                                          type: string
+                                          minLength: 1
+                                          description: >-
+                                            The provider rate applicable for this
+                                            route. The value you set for this
+                                            property must appear in the
+                                            'provider_rates' keys defined in the
+                                            'fulfillment_config' property.
+                      sl_levels_priority:
+                        type: array
+                        minItems: 1
+                        description: >-
+                          Defines the order in which service levels should be
+                          selected if fulfillment is not possible for the
+                          service level defined in the order. The lower the
+                          index, the higher the priority. The list is read from
+                          the lowest index to the highest. Reading starts from
+                          current service level. For example, if this list is
+                          ['same-day', '2-day', '4-day'], and the requested
+                          service level is '2-day', but no fulfillment node can
+                          satisfy this service level during routing, NewStore
+                          looks for fulfillment locations that can satisfy the
+                          '4-day' service level.
+                        items:
+                          description: The identifier for the service level.
+                          type: string
+                      provider_rates_priority:
+                        description: >-
+                          Priority of provider rates to be applied when routing
+                          an order based on the fulfillment node and service
+                          level. Key represents either the country where the
+                          fulfillment node is situated or the default
+                          configuration for all countries included in the
+                          configuration.
+                        type: object
+                        required:
+                          - '*'
+                        additionalProperties:
+                          description: >-
+                            Priority of provider rates to be applied when
+                            routing an order based on the fulfillment node and
+                            service level. Key represents either the country
+                            where the fulfillment node is situated or the
+                            default configuration for all other fulfilment nodes
+                            within the country.
+                          type: object
+                          required:
+                            - '*'
+                          additionalProperties:
+                            description: >-
+                              Priority of provider rates to be applied when
+                              routing an order based on the fulfillment node and
+                              service level. Key represents the internal service
+                              level being used in the NewStore platform.
+                            type: object
+                            additionalProperties:
+                              description: >-
+                                Defines the order in which provider rates should
+                                be selected for the given fulfilment node and
+                                service level. The lower the index, the higher
+                                the priority. The list is read from the lowest
+                                index to the highest.
+                              type: array
+                              minItems: 1
+                              items:
+                                type: string
+                                minLength: 1
+                                description: >-
+                                  The internal fulfillment node ID in the
+                                  NewStore platform.
+                  updated_by:
+                    type: string
+                    description: >-
+                      Contains id of the user who performed the last update of
+                      the fulfillment_config.
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: >-
+                      Timestamp when last update of fulfillment_config was
+                      performed.
+        '400':
+          description: >
+            - An invalid config was uploaded. Check the response body for the
+            error message describing the validation error.
+
+            - Price is specified with invalid number of decimal places according
+            to the specified currency.
+              For example, if the currency is specified as ``USD`` and the product price has more
+              than 2 decimal places, it is considered as invalid by the platform.
+              For more information, see
+              [pricing dependencies on currency](https://docs.newstore.com/v1/docs/set-up-payments#managing-product-pricing-dependencies-on-currency).
+          content:
+            application/json:
+              example:
+                error_code: invalid_fulfillment_config
+                error_description: >-
+                  ValidationManagerResult from validator
+                  'sl_in_fulfilled_by_validator': SL SAME_DAY_DELIVERY from
+                  'fulfilled_by' is not defined in 'service_levels'.
+                  ValidationManagerResult from validator
+                  'sl_priority_list_validator': SL SAME_DAY_DELIVERY from
+                  'sl_priority_list' is not defined in 'service_levels'.
+              schema:
+                title: Post fulfillment config response.
+                description: Schema for post fulfillment config response
+                required:
+                  - error_code
+                properties:
+                  error_code:
+                    type: string
+                    enum:
+                      - invalid_fulfillment_config
+                    description: A unique identifier for the error code.
+                  error_description:
+                    type: string
+                    description: A human readable description of the error code.
+      description: >
+        Adds or updates the `fulfillment_config`, or fulfillment configuration,
+        used for order routing.
+
+
+        Notice the `fulfillment_node_id` property in the schema. This property
+        value is set during the first
+
+        [stock import](/newstore-cloud/catalog/import-api.html#operation/stock).
+        For a complete example, see
+
+        [Tutorial: Setting up a fulfillment
+        configuration](https://docs.newstore.com/docs/tutorial-setting-up-a-fulfillment-configuration).
+
+
+        **Important:** If you have migrated to the new fulfillment configuration
+        through the 
+
+        [Routing Ruleset
+        API](https://docs.newstore.net/api/integration/delivery/routing_ruleset_api/)
+        and
+
+        [Service Levels
+        API](https://docs.newstore.net/api/integration/delivery/service_levels_api/),
+        this endpoint
+
+        can only be used to define the provider_rates and
+        provider_rates_priority. Any additional fields (routes,
+
+        sl_levels_priority, provider_rates_priority) in the fulfillment
+        configuration payload will be ignored.
+
+
+        **Note:** Ensure that you specify the correct number of decimal places
+        for monetary values of prices,
+
+        according to the specified currency. For example, if the currency is
+        specified as ``USD``
+
+        and the price has more than 2 decimal places, it is considered as
+
+        invalid by the platform. For more information, see
+
+        [pricing dependencies on
+        currency](https://docs.newstore.com/v1/docs/set-up-payments#managing-product-pricing-dependencies-on-currency).
+
+
+        Use the `routes` property to create [shipping
+        zones](https://docs.newstore.com/docs/glossary#shipping-zone)
+
+        and specify fulfillment locations that can fulfill orders for your
+        business in these zones.
+
+        The first shipping zone in the list has the highest priority, and the
+        last one in the list
+
+        has the lowest priority.
+
+
+        **Important:** Ensure that shipping zones with specific zip codes have
+        higher priority than
+
+        shipping zones with a wide range of zip codes. For example, if you are
+        fulfilling orders
+
+        in USA, a shipping zone that fulfills orders to zip codes starting with
+        `10` (`10*`) must
+
+        be higher in the list of `routes` than a shipping zone that fulfills
+        orders to all zip codes in the US (`*`).
+
+
+        Use the `provider_rates_priority` property to specify the priority in
+        which the provider rates are used to
+
+        route orders in your business.
+
+
+        To set up and enable stores for in-store pickup orders, see
+
+        [In-store pickup
+        configuration](/newstore-cloud/store_operations/in_store_pickup.html).
+      summary: Add or update fulfillment configuration
+      operationId: add-or-update-fulfillment-configuration
+      requestBody:
+        content:
+          application/json:
+            examples:
+              ff_config_example:
+                summary: Fulfillment configuration example
+                description: >
+                  In this example, the priority of the provider rates to route
+                  same day delivery
+
+                  orders in your business has been defined in the following way:
+                   - In the US, for all fulfillment locations except `DC01`, the provider rate ``FEDEX_SAME_DAY_RATE``
+                     has higher priority over ``UPS_SAME_DAY_RATE``.
+                   - For the warehouse `DC01` in the US, the provider rate ``UPS_SAME_DAY_RATE`` has higher priority
+                     over ``FEDEX_SAME_DAY_RATE``.
+                   - In all other countries, for all fulfillment locations, ``UPS_SAME_DAY_RATE`` has higher
+                     priority over ``FEDEX_SAME_DAY_RATE``.
+
+                  The priority of the provider rates to route traditional orders
+                  in your business has been defined
+
+                  in the following way:
+                   - In the US, for all fulfillment locations except `DC01`, the priority of provider
+                     rates is as follows:
+                     ``FEDEX_TRADITIONAL_RATE`` > ``UPS_TRADITIONAL_RATE`` > ``USPS_TRADITIONAL_RATE``.
+                   - For the warehouse `DC01` in the US, the priority of provider rates is as follows:
+                     ``USPS_TRADITIONAL_RATE`` > ``UPS_TRADITIONAL_RATE`` > ``FEDEX_TRADITIONAL_RATE``.
+                   - In all other countries, for all fulfillment locations, the priority of provider rates
+                     is as follows:
+                     ``UPS_TRADITIONAL_RATE`` > ``FEDEX_TRADITIONAL_RATE`` > ``UPS_TRADITIONAL_RATE``.
+                value:
+                  fulfillment_config:
+                    routes:
+                      - fulfilled_by:
+                          SAME_DAY_DELIVERY:
+                            - provider_rate: UPS_SAME_DAY_RATE
+                              fulfillment_node_id: store1_NYC
+                        destination_region:
+                          countries:
+                            - US
+                          zip_codes:
+                            - 10*
+                      - fulfilled_by:
+                          TRADITIONAL:
+                            - provider_rate: UPS_TRADITIONAL_RATE
+                              fulfillment_node_id: DC01
+                        destination_region:
+                          countries:
+                            - US
+                          zip_codes:
+                            - '*'
+                    provider_rates:
+                      UPS_SAME_DAY_RATE:
+                        service_level: SAME_DAY_DELIVERY
+                        shipping_type: same_day_delivery
+                        return_provider_rate: ''
+                        shipping_carrier_name: UPS
+                        use_as_customer_facing_cost: false
+                        carrier_defined_service_level: ExpressPlus
+                      FEDEX_SAME_DAY_RATE:
+                        service_level: SAME_DAY_DELIVERY
+                        shipping_type: same_day_delivery
+                        return_provider_rate: ''
+                        shipping_carrier_name: FedEx
+                        use_as_customer_facing_cost: false
+                        carrier_defined_service_level: PriorityService
+                      UPS_TRADITIONAL_RATE:
+                        service_level: TRADITIONAL
+                        shipping_type: same_day_delivery
+                        return_provider_rate: ''
+                        shipping_carrier_name: UPS
+                        use_as_customer_facing_cost: false
+                        carrier_defined_service_level: Ground
+                      FEDEX_TRADITIONAL_RATE:
+                        service_level: TRADITIONAL
+                        shipping_type: same_day_delivery
+                        return_provider_rate: ''
+                        shipping_carrier_name: FEDEX
+                        use_as_customer_facing_cost: false
+                        carrier_defined_service_level: FEDEX_GROUND
+                      USPS_TRADITIONAL_RATE:
+                        service_level: TRADITIONAL
+                        shipping_type: same_day_delivery
+                        return_provider_rate: ''
+                        shipping_carrier_name: USPS
+                        use_as_customer_facing_cost: false
+                        carrier_defined_service_level: First
+                    service_levels:
+                      SAME_DAY_DELIVERY:
+                        price: 15
+                        tax_code: ''
+                        display_name: Same day delivery
+                        currency_code: USD
+                        delivery_time: Today, if order is placed by 2 pm.
+                        remorse_period: 120
+                        delivery_time_after_cutoff_hour: Tomorrow
+                      TRADITIONAL:
+                        price: 0
+                        tax_code: ''
+                        display_name: Traditional delivery
+                        currency_code: USD
+                        delivery_time: 3-7 business days
+                        delivery_time_after_cutoff_hour: 4-8 business days
+                    sl_levels_priority:
+                      - SAME_DAY_DELIVERY
+                      - TRADITIONAL
+                    provider_rates_priority:
+                      '*':
+                        '*':
+                          SAME_DAY_DELIVERY:
+                            - UPS_SAME_DAY_RATE
+                            - FEDEX_SAME_DAY_RATE
+                          TRADITIONAL:
+                            - UPS_TRADITIONAL_RATE
+                            - FEDEX_TRADITIONAL_RATE
+                            - USPS_TRADITIONAL_RATE
+                      US:
+                        '*':
+                          SAME_DAY_DELIVERY:
+                            - FEDEX_SAME_DAY_RATE
+                            - UPS_SAME_DAY_RATE
+                          TRADITIONAL:
+                            - FEDEX_TRADITIONAL_RATE
+                            - UPS_TRADITIONAL_RATE
+                            - USPS_TRADITIONAL_RATE
+                        DC01:
+                          SAME_DAY_DELIVERY:
+                            - UPS_SAME_DAY_RATE
+                            - FEDEX_SAME_DAY_RATE
+                          TRADITIONAL:
+                            - USPS_TRADITIONAL_RATE
+                            - UPS_TRADITIONAL_RATE
+                            - FEDEX_TRADITIONAL_RATE
+            schema:
+              title: Post fulfillment config.
+              description: >-
+                Schema for adding or updating fulfillment_config which is used
+                for zip code based hard and soft routing.
+              type: object
+              required:
+                - fulfillment_config
+              properties:
+                fulfillment_config:
+                  title: Post fulfillment config.
+                  description: >-
+                    Schema for adding or updating fulfillment_config which is
+                    used for zip code based hard and soft routing.
+                  type: object
+                  required:
+                    - provider_rates
+                  properties:
+                    provider_rates:
+                      description: >-
+                        The list of supported provider rates. A provider rate
+                        identifies an integrated shipping provider and the rate
+                        it offers. The key represents the unique identifier of
+                        the provider rate and the value contains the specific
+                        provider rate definition.
+                      type: object
+                      additionalProperties:
+                        type: object
+                        required:
+                          - shipping_carrier_name
+                          - service_level
+                          - shipping_type
+                          - use_as_customer_facing_cost
+                        properties:
+                          shipping_carrier_name:
+                            type: string
+                            description: >-
+                              The name of shipping provider associated with this
+                              provider rate. Example: FEDEX/UPS/USPS.
+                          service_level:
+                            type: string
+                            description: >-
+                              The unique identifier for the service level
+                              offered by the provider, for which this provider
+                              rate should be valid. Define a service level in
+                              the service_levels field.
+                          shipping_type:
+                            description: >-
+                              Required for backward compatibility purposes. The
+                              value can be traditional_carrier,
+                              same_day_delivery or in_store_pick_up.
+                            type: string
+                          use_as_customer_facing_cost:
+                            type: boolean
+                            description: >-
+                              Flag to indicate if the shipping provider cost is
+                              used instead of the service level cost defined in
+                              the fulfillment configuration. If set to true, the
+                              shipping provider cost is also displayed to the
+                              customer
+                          return_provider_rate:
+                            type: string
+                            description: >-
+                              The identifier for the provider rate used for the
+                              return shipment.
+                          carrier_defined_service_level:
+                            type: string
+                            description: >-
+                              Carrier specific name that defines the service
+                              level. When defining provider rates with the same
+                              shipping provider, the value you specify here must
+                              be unique and should always match the name defined
+                              by the shipping provider API. For example,
+                              'NextDayAirSaver' for UPS and
+                              'GROUND_HOME_DELIVERY' for FedEx. If no value is
+                              provided, NewStore uses the unique identifier of
+                              the provider rate as the default value.
+                    service_levels:
+                      description: >-
+                        Contains a dictionary of rate information to display to
+                        the customer. The key represents the identifier of the
+                        service level in NewStore and the value contains the
+                        specific service level definition.
+                      type: object
+                      additionalProperties:
+                        type: object
+                        required:
+                          - display_name
+                          - delivery_time
+                          - delivery_time_after_cutoff_hour
+                          - price
+                          - currency_code
+                          - tax_code
+                        properties:
+                          display_name:
+                            description: >-
+                              The service level name as displayed to customers.
+                              The service level is referred to as a `shipping
+                              option` across NewStore applications.
+                            type: string
+                          delivery_time:
+                            description: >-
+                              The amount of time needed for delivery, when this
+                              service level is chosen.
+                            type: string
+                          delivery_time_after_cutoff_hour:
+                            description: >-
+                              The amount of time needed for delivery after the
+                              cut-off time, when this service level is chosen.
+                              NewStore calculates the cut-off time using the
+                              'earliest_pickup_time' and the
+                              'latest_pickup_time' values set for the store. See
+                              https://docs.newstore.net/newstore-cloud/store_operations/store.html#operation/updateStore.
+                              The 'packing_time_duration', if configured for
+                              your business, is also used.
+                            type: string
+                          price:
+                            description: The amount charged to the customer for delivery.
+                            type: number
+                            minimum: 0
+                          currency_code:
+                            description: >-
+                              The currency used by the shipping provider, as 3
+                              character ISO-4217 code. Example USD, EUR.
+                            type: string
+                          tax_code:
+                            description: The identifier for the tax applied.
+                            type: string
+                          remorse_period:
+                            description: >-
+                              The number of seconds that the order will be in
+                              on-hold state or in the grace period before it is
+                              routed or processed further. The value set here
+                              overrides the grace period configured for the
+                              business as a whole. The order or the item being
+                              shipped with this service level can be canceled in
+                              this period.
+                            type: number
+                    routes:
+                      description: >-
+                        An array of routes. Each element in this array defines a
+                        configuration for a 'route'. A route specifies how order
+                        items can be fulfilled from fulfillment nodes to their
+                        destinations.
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        required:
+                          - destination_region
+                          - fulfilled_by
+                        properties:
+                          destination_region:
+                            type: object
+                            description: >-
+                              The geographic region in which to deliver orders.
+                              This region is defined with a combination of
+                              country codes and zip codes.
+                            properties:
+                              countries:
+                                description: >-
+                                  The list of destination country codes (2
+                                  letter ISO-3166) supported by the route.
+                                type: array
+                                minItems: 1
+                                items:
+                                  type: string
+                                  minLength: 2
+                                  maxLength: 2
+                                  description: >-
+                                    The supported country code (2 letter
+                                    ISO-3166) for this route.
+                              zip_codes:
+                                type: array
+                                description: >-
+                                  The list of supported zip codes for a route.
+                                  To include all zip codes with a specific zip
+                                  code prefix, provide the prefix of the zip
+                                  code, suffixed with a '*'. For example '11*'
+                                  will include  '1100', '115ACE', etc. To
+                                  include all zip codes for the countries in the
+                                  parent object, provide only a '*'.
+                                minItems: 1
+                                items:
+                                  type: string
+                                  minLength: 1
+                                  description: Zip code or zip code prefix.
+                          fulfilled_by:
+                            description: >-
+                              The list of prioritized fulfillment locations that
+                              can deliver order items to a corresponding
+                              destination region (in the route entry) at a
+                              certain service level. This information is
+                              specified as a map object. The key of this object
+                              is the name of the service level and the value is
+                              a list of fulfillment locations that support this
+                              service level.
+                            type: object
+                            additionalProperties:
+                              description: >-
+                                The list of supported fulfillment locations for
+                                the defined service level.
+                              type: array
+                              minItems: 1
+                              items:
+                                type: object
+                                anyOf:
+                                  - required:
+                                      - fulfillment_node_id
+                                    properties:
+                                      fulfillment_node_id:
+                                        type: string
+                                        minLength: 1
+                                      provider_rate:
+                                        type: string
+                                  - required:
+                                      - fulfillment_node_id
+                                      - provider_rate
+                                    properties:
+                                      fulfillment_node_id:
+                                        type: string
+                                        minLength: 1
+                                        description: >-
+                                          The identifier of the fulfillment
+                                          location that is able to ship with the
+                                          defined service level. The arrangement
+                                          of the fulfillment node IDs in this
+                                          array also defines their priority. The
+                                          lower the index, the higher the
+                                          priority. Fulfillment node ids are
+                                          defined during the first stock import.
+                                          See the Import API for more information.
+                                      provider_rate:
+                                        type: string
+                                        minLength: 1
+                                        description: >-
+                                          The provider rate applicable for this
+                                          route. The value you set for this
+                                          property must appear in the
+                                          'provider_rates' keys defined in the
+                                          'fulfillment_config' property.
+                    sl_levels_priority:
+                      type: array
+                      minItems: 1
+                      description: >-
+                        Defines the order in which service levels should be
+                        selected if fulfillment is not possible for the service
+                        level defined in the order. The lower the index, the
+                        higher the priority. The list is read from the lowest
+                        index to the highest. Reading starts from current
+                        service level. For example, if this list is ['same-day',
+                        '2-day', '4-day'], and the requested service level is
+                        '2-day', but no fulfillment node can satisfy this
+                        service level during routing, NewStore looks for
+                        fulfillment locations that can satisfy the '4-day'
+                        service level.
+                      items:
+                        description: The identifier for the service level.
+                        type: string
+                    provider_rates_priority:
+                      description: >-
+                        Priority of provider rates to be applied when routing an
+                        order based on the fulfillment node and service level.
+                        Key represents either the country where the fulfillment
+                        node is situated or the default configuration for all
+                        countries included in the configuration.
+                      type: object
+                      required:
+                        - '*'
+                      additionalProperties:
+                        description: >-
+                          Priority of provider rates to be applied when routing
+                          an order based on the fulfillment node and service
+                          level. Key represents either the country where the
+                          fulfillment node is situated or the default
+                          configuration for all other fulfilment nodes within
+                          the country.
+                        type: object
+                        required:
+                          - '*'
+                        additionalProperties:
+                          description: >-
+                            Priority of provider rates to be applied when
+                            routing an order based on the fulfillment node and
+                            service level. Key represents the internal service
+                            level being used in the NewStore platform.
+                          type: object
+                          additionalProperties:
+                            description: >-
+                              Defines the order in which provider rates should
+                              be selected for the given fulfilment node and
+                              service level. The lower the index, the higher the
+                              priority. The list is read from the lowest index
+                              to the highest.
+                            type: array
+                            minItems: 1
+                            items:
+                              type: string
+                              minLength: 1
+                              description: >-
+                                The internal fulfillment node ID in the NewStore
+                                platform.
+        required: true
+    get:
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Get fulfillment config response.
+                description: Schema for get fulfillment config response
+                required:
+                  - revision
+                  - fulfillment_config
+                  - updated_by
+                  - updated_at
+                properties:
+                  revision:
+                    type: integer
+                    description: Defines the revision of the uploaded config.
+                  fulfillment_config:
+                    title: Post fulfillment config.
+                    description: >-
+                      Schema for adding or updating fulfillment_config which is
+                      used for zip code based hard and soft routing.
+                    type: object
+                    required:
+                      - provider_rates
+                    properties:
+                      provider_rates:
+                        description: >-
+                          The list of supported provider rates. A provider rate
+                          identifies an integrated shipping provider and the
+                          rate it offers. The key represents the unique
+                          identifier of the provider rate and the value contains
+                          the specific provider rate definition.
+                        type: object
+                        additionalProperties:
+                          type: object
+                          required:
+                            - shipping_carrier_name
+                            - service_level
+                            - shipping_type
+                            - use_as_customer_facing_cost
+                          properties:
+                            shipping_carrier_name:
+                              type: string
+                              description: >-
+                                The name of shipping provider associated with
+                                this provider rate. Example: FEDEX/UPS/USPS.
+                            service_level:
+                              type: string
+                              description: >-
+                                The unique identifier for the service level
+                                offered by the provider, for which this provider
+                                rate should be valid. Define a service level in
+                                the service_levels field.
+                            shipping_type:
+                              description: >-
+                                Required for backward compatibility purposes.
+                                The value can be traditional_carrier,
+                                same_day_delivery or in_store_pick_up.
+                              type: string
+                            use_as_customer_facing_cost:
+                              type: boolean
+                              description: >-
+                                Flag to indicate if the shipping provider cost
+                                is used instead of the service level cost
+                                defined in the fulfillment configuration. If set
+                                to true, the shipping provider cost is also
+                                displayed to the customer
+                            return_provider_rate:
+                              type: string
+                              description: >-
+                                The identifier for the provider rate used for
+                                the return shipment.
+                            carrier_defined_service_level:
+                              type: string
+                              description: >-
+                                Carrier specific name that defines the service
+                                level. When defining provider rates with the
+                                same shipping provider, the value you specify
+                                here must be unique and should always match the
+                                name defined by the shipping provider API. For
+                                example, 'NextDayAirSaver' for UPS and
+                                'GROUND_HOME_DELIVERY' for FedEx. If no value is
+                                provided, NewStore uses the unique identifier of
+                                the provider rate as the default value.
+                      service_levels:
+                        description: >-
+                          Contains a dictionary of rate information to display
+                          to the customer. The key represents the identifier of
+                          the service level in NewStore and the value contains
+                          the specific service level definition.
+                        type: object
+                        additionalProperties:
+                          type: object
+                          required:
+                            - display_name
+                            - delivery_time
+                            - delivery_time_after_cutoff_hour
+                            - price
+                            - currency_code
+                            - tax_code
+                          properties:
+                            display_name:
+                              description: >-
+                                The service level name as displayed to
+                                customers. The service level is referred to as a
+                                `shipping option` across NewStore applications.
+                              type: string
+                            delivery_time:
+                              description: >-
+                                The amount of time needed for delivery, when
+                                this service level is chosen.
+                              type: string
+                            delivery_time_after_cutoff_hour:
+                              description: >-
+                                The amount of time needed for delivery after the
+                                cut-off time, when this service level is chosen.
+                                NewStore calculates the cut-off time using the
+                                'earliest_pickup_time' and the
+                                'latest_pickup_time' values set for the store.
+                                See
+                                https://docs.newstore.net/newstore-cloud/store_operations/store.html#operation/updateStore.
+                                The 'packing_time_duration', if configured for
+                                your business, is also used.
+                              type: string
+                            price:
+                              description: The amount charged to the customer for delivery.
+                              type: number
+                              minimum: 0
+                            currency_code:
+                              description: >-
+                                The currency used by the shipping provider, as 3
+                                character ISO-4217 code. Example USD, EUR.
+                              type: string
+                            tax_code:
+                              description: The identifier for the tax applied.
+                              type: string
+                            remorse_period:
+                              description: >-
+                                The number of seconds that the order will be in
+                                on-hold state or in the grace period before it
+                                is routed or processed further. The value set
+                                here overrides the grace period configured for
+                                the business as a whole. The order or the item
+                                being shipped with this service level can be
+                                canceled in this period.
+                              type: number
+                      routes:
+                        description: >-
+                          An array of routes. Each element in this array defines
+                          a configuration for a 'route'. A route specifies how
+                          order items can be fulfilled from fulfillment nodes to
+                          their destinations.
+                        type: array
+                        minItems: 1
+                        items:
+                          type: object
+                          required:
+                            - destination_region
+                            - fulfilled_by
+                          properties:
+                            destination_region:
+                              type: object
+                              description: >-
+                                The geographic region in which to deliver
+                                orders. This region is defined with a
+                                combination of country codes and zip codes.
+                              properties:
+                                countries:
+                                  description: >-
+                                    The list of destination country codes (2
+                                    letter ISO-3166) supported by the route.
+                                  type: array
+                                  minItems: 1
+                                  items:
+                                    type: string
+                                    minLength: 2
+                                    maxLength: 2
+                                    description: >-
+                                      The supported country code (2 letter
+                                      ISO-3166) for this route.
+                                zip_codes:
+                                  type: array
+                                  description: >-
+                                    The list of supported zip codes for a route.
+                                    To include all zip codes with a specific zip
+                                    code prefix, provide the prefix of the zip
+                                    code, suffixed with a '*'. For example '11*'
+                                    will include  '1100', '115ACE', etc. To
+                                    include all zip codes for the countries in
+                                    the parent object, provide only a '*'.
+                                  minItems: 1
+                                  items:
+                                    type: string
+                                    minLength: 1
+                                    description: Zip code or zip code prefix.
+                            fulfilled_by:
+                              description: >-
+                                The list of prioritized fulfillment locations
+                                that can deliver order items to a corresponding
+                                destination region (in the route entry) at a
+                                certain service level. This information is
+                                specified as a map object. The key of this
+                                object is the name of the service level and the
+                                value is a list of fulfillment locations that
+                                support this service level.
+                              type: object
+                              additionalProperties:
+                                description: >-
+                                  The list of supported fulfillment locations
+                                  for the defined service level.
+                                type: array
+                                minItems: 1
+                                items:
+                                  type: object
+                                  anyOf:
+                                    - required:
+                                        - fulfillment_node_id
+                                      properties:
+                                        fulfillment_node_id:
+                                          type: string
+                                          minLength: 1
+                                        provider_rate:
+                                          type: string
+                                    - required:
+                                        - fulfillment_node_id
+                                        - provider_rate
+                                      properties:
+                                        fulfillment_node_id:
+                                          type: string
+                                          minLength: 1
+                                          description: >-
+                                            The identifier of the fulfillment
+                                            location that is able to ship with the
+                                            defined service level. The arrangement
+                                            of the fulfillment node IDs in this
+                                            array also defines their priority. The
+                                            lower the index, the higher the
+                                            priority. Fulfillment node ids are
+                                            defined during the first stock import.
+                                            See the Import API for more information.
+                                        provider_rate:
+                                          type: string
+                                          minLength: 1
+                                          description: >-
+                                            The provider rate applicable for this
+                                            route. The value you set for this
+                                            property must appear in the
+                                            'provider_rates' keys defined in the
+                                            'fulfillment_config' property.
+                      sl_levels_priority:
+                        type: array
+                        minItems: 1
+                        description: >-
+                          Defines the order in which service levels should be
+                          selected if fulfillment is not possible for the
+                          service level defined in the order. The lower the
+                          index, the higher the priority. The list is read from
+                          the lowest index to the highest. Reading starts from
+                          current service level. For example, if this list is
+                          ['same-day', '2-day', '4-day'], and the requested
+                          service level is '2-day', but no fulfillment node can
+                          satisfy this service level during routing, NewStore
+                          looks for fulfillment locations that can satisfy the
+                          '4-day' service level.
+                        items:
+                          description: The identifier for the service level.
+                          type: string
+                      provider_rates_priority:
+                        description: >-
+                          Priority of provider rates to be applied when routing
+                          an order based on the fulfillment node and service
+                          level. Key represents either the country where the
+                          fulfillment node is situated or the default
+                          configuration for all countries included in the
+                          configuration.
+                        type: object
+                        required:
+                          - '*'
+                        additionalProperties:
+                          description: >-
+                            Priority of provider rates to be applied when
+                            routing an order based on the fulfillment node and
+                            service level. Key represents either the country
+                            where the fulfillment node is situated or the
+                            default configuration for all other fulfilment nodes
+                            within the country.
+                          type: object
+                          required:
+                            - '*'
+                          additionalProperties:
+                            description: >-
+                              Priority of provider rates to be applied when
+                              routing an order based on the fulfillment node and
+                              service level. Key represents the internal service
+                              level being used in the NewStore platform.
+                            type: object
+                            additionalProperties:
+                              description: >-
+                                Defines the order in which provider rates should
+                                be selected for the given fulfilment node and
+                                service level. The lower the index, the higher
+                                the priority. The list is read from the lowest
+                                index to the highest.
+                              type: array
+                              minItems: 1
+                              items:
+                                type: string
+                                minLength: 1
+                                description: >-
+                                  The internal fulfillment node ID in the
+                                  NewStore platform.
+                  updated_by:
+                    type: string
+                    description: >-
+                      Contains id of the user who performed the last update of
+                      the fulfillment_config.
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: >-
+                      Timestamp when last update of fulfillment_config was
+                      performed.
+        '404':
+          description: Config is not set.
+      description: >
+        Retrieves the latest version of the fulfillment configuration set up for
+        your business.
+      summary: Get fulfillment config
+      operationId: get-fulfillment-config

@@ -1,0 +1,211 @@
+Setting up a loyalty rewards system with NewStore
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Setting up a loyalty rewards system with NewStore
+Updated on
+Nov 13, 2024
+Published on Oct 1, 2024
+7 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Important
+Integrate a third-party provider to set up a loyalty rewards or membership program for your customers.
+If your business already offers a loyalty membership program for your customers, you can integrate it with NewStore to allow associates to work with it using Associate App.
+Use cases
+Loyalty integration allows you to run a loyalty program in your stores where associates will be able to:
+Onboard your customers to your loyalty program
+Look up your loyalty customers
+Earn loyalty points for purchase transactions
+Redeem loyalty rewards in the form of discounts
+Reconcile loyalty points and rewards in cases of returns or exchanges
+Pre-requisites
+To set up a loyalty rewards system with NewStore, the following pre-requisites apply:
+You have a third-party loyalty service provider set up to integrate with NewStore.
+Associate App is enabled to work with and offer loyalty rewards to your customers. See the
+configuration guide.
+Loyalty provider offers a synchronous API to enable the use cases described below.
+Additionally, for the loyalty rewards integration approach to fetch loyalty data from a third party provider, ensure that you are aware that:
+The loyalty program is the source of truth for all loyalty related data.
+All business logic around loyalty status level, points, and rewards are managed by the loyalty program and your business.
+The loyalty program issues a unique loyalty ID for each customer onboarded onto the loyalty program. This ID is then used within the platform to identify the customer for loyalty rewards purposes.
+Loyalty rewards cannot be redeemed in NewStore as a payment option.
+Loyalty information for orders or customers cannot be displayed on receipts.
+Setting up a loyalty program integration with NewStore
+Currently, NewStore recommends that the general loyalty program integration framework for businesses is driven by store associates via Associate App. The associate can use Associate App to find the customer they want to onboard to the loyalty program. The actual loyalty enrollment, viewing the status of the customer, and available points and balances, as well as loyalty redemption, are all performed by the third-party loyalty provider managed by your business.
+However, some of these actions need to be performed in the WebView container within Associate App, such as viewing the status or reward points for the customer. Here, Associate App acts as the UI interface for the third-party loyalty provider you have integrated with.
+The current high-level architectural overview for setting up a loyalty program with NewStore looks like this:
+The workflow for associates to leverage a sample loyalty rewards system integration with NewStore has been described here:
+When a store associate looks up a loyalty customer (already enrolled in the loyalty program and a loyalty ID has been assigned to the customer profile) in Associate App, loyalty data is retrieved via an external deeplink to the Loyalty WebView container. The deeplink leads to the WebView container that has the external app with the loyalty system data.
+Note
+The loyalty ID is an
+extended attribute
+for the customer profile. For more information on adding extended attributes, see
+Configuring extended attributes in NewStore Associate App
+.
+The WebView container displays the following data to the associate, retrieving it from the service layer or loyalty adapter:
+Loyalty details in real time from the third-party loyalty rewards system
+Selection of loyalty rewards available from the third-party rewards system
+Redemption of available points to convert to loyalty rewards
+To understand how to set up a WebView customization for a loyalty program for your business, see
+this guide.
+Important
+NewStore does not set up the WebView application. This must be set up by your business.
+The service layer or loyalty adapter creates a loyalty coupon via an
+API call
+in the NewStore platform, and retrieves the coupon code for the loyalty coupon.
+The coupon code is passed via the deeplink to Associate App, which the associate can use to apply to the order.
+After the order is placed in the app, the platform emits an
+order.opened
+event. This event confirms that an order has been placed in the platform for the loyalty customer, as it contains the
+reward ID
+as an extended attribute.
+The WebView container also passes the coupons via a deeplink to Associate App, which then applies the coupon to calculate the final discounted price for the order.
+Note
+The WebView container with the coupons displayed is opened outside of Associate App, in the cart menu which displays a dedicated reward option for loyalty customers.
+To set up the loyalty program to work with Associate App, see
+this guide.
+Once the order is placed, the service layer or loyalty adapter consumes this
+order.opened
+event, it deactivates the loyalty reward that has been redeemed in the loyalty rewards system.
+Example workflows for a sample loyalty rewards system integration with NewStore
+The workflow for onboarding customers to a loyalty program, redeeming loyalty rewards, and reconciling all of the loyalty reward related transactions with the third-party system can vary based on the kind of loyalty rewards system integration that you have set up with NewStore.
+To help you set up expectations, see the following example workflows for interacting with the loyalty rewards system.
+Onboarding customers to the loyalty program
+When you set up a loyalty rewards system integration with NewStore, you can use Associate App to onboard customers to the loyalty program. However, the specific onboarding process for a customer happens in the third-party loyalty system.
+Set up the WebView container as outlined in
+Setting up a loyalty program integration with NewStore
+.
+Ensure that the WebView container in the app allows you to onboard the customer to the loyalty program.
+Ideally, after onboarding, a loyalty ID must be added to the customer profile in NewStore.
+Redeeming loyalty rewards via Associate App
+An example workflow for adding applicable loyalty reward coupons for the customer is described here:
+Ensure that you have assigned the customer to the cart.
+Tap
+More
+and select
+Redeem Loyalty Rewards
+.
+Depending on how you have set up your loyalty rewards system, select the type of loyalty rewards to redeem them for the order. This can include:
+Selecting from available rewards, or
+Selecting and purchasing a reward from a set of predefined rewards using loyalty points, or
+Redeeming points or rewards dynamically that are customized for the cart and the data is sent to NewStore via the deeplink.
+Note
+Based on how rewards are configured for your business, manual discounts or automatic promotions already applied to the order may also appear in this list as pre-selected options.
+Tap
+Apply Loyalty Reward Coupon(s)
+.
+You are directed back into the Associate app cart screen, where you can verify that the selected loyalty rewards have reduced the cart total.
+For more information, see
+Enabling Associate App to offer loyalty rewards
+.
+Collecting loyalty points for purchases
+You may want customers to collect loyalty rewards or points when they buy items online or from a store in your business.
+To do this, ensure that the third-party provider integration listens to the
+order.completed
+event emitted by the NewStore
+Event Stream
+. This event is emitted for every purchase transaction completed within the NewStore platform.
+Once this event is emitted, the third-party integration can listen to this event and loyalty points or rewards applicable to be collected for the completed order can be added to the customer's loyalty account.
+To see how events are emitted and consumed by an integration later, see the
+Event Stream entity model.
+Note
+The expiration date for loyalty rewards or loyalty points needs to be set up in third-party provider.
+Reconciling loyalty points and rewards for returns or exchanges
+To reconcile and manage loyalty points and rewards for items that are returned or exchanged by the customer, ensure that the third-party provider integration listens to the
+return.processed
+event emitted by the NewStore
+Event Stream
+.
+Once this event is emitted, the third-party integration can listen to this event and loyalty points or rewards redeemed for the returned order are restored in the customer’s loyalty account.
+To see how events are emitted and consumed by an integration later, see the
+Event Stream entity model.
+Note
+The expiration date for loyalty rewards or loyalty points needs to be set up in third-party provider.
+Troubleshooting
+When integrating a third-party loyalty provider with NewStore, you may encounter errors in different parts of the loyalty flow. These areas include errors within the NewStore platform, within the integration itself, or with the third party loyalty engine.
+NewStore can only act on the errors within the NewStore platform. This relates to loyalty coupons, and how these coupons are created and applied to a cart within Newstore.
+Errors related to the pre-conditions that control if a coupon is actually created are related to the loyalty integration and the third-party loyalty engine. NewStore
+does not
+handle loyalty points or rewards. In such cases, we recommend that you reach out to your implementation partner, integrator, or the loyalty rewards provider to resolve these errors.
+Related topics
+About running loyalty programs with NewStore
+Configuring loyalty rewards on Associate App
+Using NewStore Associate App
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+Associate App configuration
+configuration
+customer
+external app
+integration
+loyalty rewards
+omnichannel manager
+platform
+webview
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

@@ -1,0 +1,396 @@
+openapi: 3.0.0
+tags:
+  - name: Rates
+    description: shipping rates
+info:
+  title: Shipping Options Webhooks
+  version: v0
+  contact:
+    name: team delivery
+  description: >
+    Represents the checkout step during which shipping options are required.
+
+
+    This resource contains the provider rate of an order.
+
+    A provider rate is how NewStore identifies a shipping provider and the rates
+    they offer.
+
+    For example, *FedEx Overnight*, *UPS Next Day*, *DHL On-demand delivery*.
+
+
+    **Note:** If you’re looking to [integrate a shipping
+    provider](/developers/guides/order-management-routing/shipment)
+
+    for booking, updating, and canceling deliveries, see
+
+    [Shipping Provider Webhooks](/api/webhooks/delivery_hook).
+
+
+    A typical use case for the shipping options webhook is to define the
+    supported shipping providers and rates for a
+
+    specific list of products being purchased. If an ordered product is too
+    heavy or too large, for example, these
+
+    webhooks allow you to offer a customer
+
+    [customized shipping
+    prices](/developers/guides/order-management-routing/shippingoptions/#custom-shipping-price)
+
+    that can cater to this non-standard package.
+
+
+    To develop an adapter, see [shipping
+    options](/developers/guides/order-management-routing/shippingoptions).
+servers:
+  - url: https://example.com/newstore_api/v0
+paths:
+  /provider_rates:
+    post:
+      tags:
+        - Rates
+      description: >
+        Requests provider rates configuration, including service level, provider
+        name, and shipping offer price.
+
+
+        **Any provider rate response here OVERRIDES any other provider rate
+        configuration made in NewStore.**
+
+        This means you fully control which values are in use. If something is
+        not available, consider it empty.
+
+        For example, `return_provider_rate` is not supported through custom
+        provider rates.
+
+
+        **The order of the returned rates is important**: it will override any
+        priority or existing order that you can
+
+        have in your [fulfillment
+        configuration](https://docs.newstore.net/developers/tutorials/fulfillment-config-new).
+
+
+        **Important:** See [Retrieving custom shipping
+        prices](/developers/guides/order-management-routing/shippingoptions/#custom-shipping-price)
+
+        to understand how to use the ``use_as_customer_facing_cost`` flag in the
+
+        fulfillment configuration and the price `source` in your adapter.
+      summary: Get customized provider rates for an order
+      operationId: get_customized_provider_rates_for_an_order
+      requestBody:
+        content:
+          application/json:
+            example:
+              request_id: '1111.111'
+              bag:
+                products:
+                  - quantity: 1
+                    product_id: Product01
+                    price:
+                      amount: 1.2
+                      currency: USD
+                    weight:
+                      value: 1
+                      unit: lb
+                    dimensions:
+                      length: 5
+                      width: 5
+                      height: 5
+                      unit: in
+              shipping_address:
+                address_line_1: 999 Yawkey Way
+                address_line_2: 999nd floor
+                city: Boston
+                country_code: US
+                zip_code: '20038'
+            schema:
+              title: Get provider rates for bag
+              description: Call schema for fetching provider rates.
+              type: object
+              required:
+                - request_id
+                - bag
+              additionalProperties: false
+              properties:
+                request_id:
+                  type: string
+                  description: Request identifier, needs to be returned in the response.
+                bag:
+                  type: object
+                  required:
+                    - products
+                  properties:
+                    products:
+                      type: array
+                      description: List of products being purchased.
+                      items:
+                        type: object
+                        required:
+                          - product_id
+                          - quantity
+                          - dimensions
+                          - weight
+                          - price
+                        description: Product properties.
+                        properties:
+                          product_id:
+                            type: string
+                            minLength: 1
+                            description: The product ID as given by Catalog.
+                          quantity:
+                            type: integer
+                            minimum: 1
+                            description: The number of items for this product.
+                          dimensions:
+                            type: object
+                            description: Product dimension information.
+                            required:
+                              - length
+                              - width
+                              - height
+                              - unit
+                            properties:
+                              length:
+                                type: number
+                                description: Product's length. Integer or float.
+                              width:
+                                type: number
+                                description: Product's width. Integer or float.
+                              height:
+                                type: number
+                                description: Product's height. Integer or float.
+                              unit:
+                                type: string
+                                description: >-
+                                  Product dimension unit. It is your
+                                  responsibility to convert values if necessary:
+                                  if a carrier only uses centimeters, then you
+                                  must convert values from this unit.
+                                enum:
+                                  - mm
+                                  - cm
+                                  - m
+                                  - in
+                                  - ft
+                          weight:
+                            type: object
+                            description: Product weight information.
+                            required:
+                              - value
+                              - unit
+                            properties:
+                              value:
+                                type: number
+                                description: Product weight value. Integer or float.
+                              unit:
+                                type: string
+                                description: >-
+                                  Product weight unit. It is your responsibility
+                                  to convert values if necessary: if a carrier
+                                  only uses kilograms, then you must convert
+                                  values from this unit.
+                                enum:
+                                  - lb
+                                  - oz
+                                  - kg
+                                  - g
+                          price:
+                            type: object
+                            description: >-
+                              The total net price of the product for the
+                              specified quantity.
+                            required:
+                              - amount
+                              - currency
+                            properties:
+                              amount:
+                                type: number
+                                description: Product price value. Integer or float.
+                              currency:
+                                type: string
+                                description: Currency of product price.
+                                minLength: 3
+                                maxLength: 3
+                shipping_address:
+                  type: object
+                  required:
+                    - country_code
+                  properties:
+                    country_code:
+                      type: string
+                      description: Destination country code for the shipment.
+                    zip_code:
+                      type: string
+                      description: Destination zip code for the shipment.
+                    city:
+                      type: string
+                      maxLength: 256
+                    state:
+                      type: string
+                    address_line_1:
+                      type: string
+                      maxLength: 256
+                    address_line_2:
+                      type: string
+                      maxLength: 256
+                    phone:
+                      type: string
+                      maxLength: 256
+                store_id:
+                  description: demand location (NOT the actual fulfillment location)
+                  type: string
+                  maxLength: 256
+                channel_type:
+                  type: string
+                  maxLength: 256
+        required: true
+      responses:
+        '200':
+          description: Provider rates were successfully returned.
+          content:
+            application/json:
+              example:
+                request_id: '1111.111'
+                provider_rates:
+                  - id: FEDEX_2_DAY
+                    service_level_identifier: FEDEX_2_DAY
+                    provider: FEDEX
+                    supported_routes:
+                      - '*'
+                    price:
+                      source: customization_provider
+                      amount: 3.5
+                      currency: USD
+              schema:
+                title: List of available provider rates for bag
+                description: Response schema for provider rates request.
+                type: object
+                required:
+                  - provider_rates
+                additionalProperties: false
+                properties:
+                  request_id:
+                    type: string
+                    description: >-
+                      Identifier received in request payload ('request_id'
+                      property).
+                    minLength: 1
+                  provider_rates:
+                    type: array
+                    description: List of supported provider rates.
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - service_level_identifier
+                        - provider
+                        - supported_routes
+                      description: Provider rate information.
+                      properties:
+                        id:
+                          description: Identifier of the provider rate.
+                          type: string
+                          minLength: 1
+                        carrier_defined_service_level:
+                          description: >-
+                            Carrier specific name that defines the service
+                            level. When defining provider rates with the same
+                            shipping provider, the value you specify here must
+                            be unique and should always match the name defined
+                            by the shipping provider API. If no value is
+                            provided, NewStore uses the id of the provider rate
+                            as the default value.
+                          type: string
+                          minLength: 1
+                        service_level_identifier:
+                          description: Identifier of the service level.
+                          type: string
+                          minLength: 1
+                        provider:
+                          description: Carrier name.
+                          type: string
+                          minLength: 1
+                        supported_routes:
+                          description: >-
+                            List of route identifiers that can be used with this
+                            provider rate.
+                          type: array
+                          minItems: 1
+                          items:
+                            description: >-
+                              A shipping route identifier or '*' if all routes
+                              are supported.
+                            type: string
+                        price:
+                          type: object
+                          required:
+                            - source
+                          properties:
+                            source:
+                              type: string
+                              description: >-
+                                Defines the price for the shipping offer. Use
+                                'customization_provider' to use the price
+                                defined in this object. Use 'shipping_provider'
+                                to use a dynamic shipping offer price returned
+                                from the shipping provider configured for your
+                                business, such as EasyPost adapter. Use
+                                'service_level' to use the shipping offer price
+                                configured for the service level in your
+                                fulfillment configuration.
+                              enum:
+                                - customization_provider
+                                - shipping_provider
+                                - service_level
+                            amount:
+                              type: number
+                              description: >-
+                                The price of the shipping offer. Integer or
+                                float. NewStore uses this value only when
+                                'customization_provider' is used as the price
+                                source.
+                            currency:
+                              type: string
+                              description: >-
+                                Defines the currency for the shipping offer.
+                                NewStore uses this value only when
+                                'customization_provider' is used as the price
+                                source.
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              example:
+                request_id: '1111.111'
+                error_code: customization_provider_error
+                messages:
+                  - Failed to get provider rates
+              schema:
+                title: Error from provider rates request
+                description: Information related to the error.
+                type: object
+                required:
+                  - request_id
+                  - error_code
+                  - messages
+                additionalProperties: false
+                properties:
+                  request_id:
+                    type: string
+                    description: >-
+                      Identifier received in request payload ('request_id'
+                      property).
+                    minLength: 1
+                  error_code:
+                    description: Identifier of the error type.
+                    type: string
+                  messages:
+                    type: array
+                    description: List of messages describing the error.
+                    items:
+                      type: string
+                      description: Error description.
+components: {}

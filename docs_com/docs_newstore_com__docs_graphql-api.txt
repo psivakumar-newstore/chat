@@ -1,0 +1,353 @@
+GraphQL API
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+GraphQL API
+Updated on
+Feb 28, 2025
+Published on Oct 1, 2024
+8 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+The NewStore GraphQL API provides a way to retrieve information about business entities like orders or returns. The GraphQL API enables you to
+pull entity information
+from the platform, while the event stream enables
+pushing data as real-time stream to registered webhooks
+.
+Unlike typical REST APIs, GraphQL allows for selective querying: the query defines which entities and properties to return, similar to an SQL query.
+For example, an integration can listen to
+return.processed
+events and use the GraphQL API to get additional information about the order associated with the return, such as addresses.
+Important
+Be aware that there can be a delay in returning requested data via GraphQL integrations, when compared to the
+Event stream API
+.
+Difference from the Event Stream
+While the event stream notifies about changes over time in a callback fashion, you can proactively send requests to the GraphQL API in order to get a snapshot of the current data state:
+GraphQL query API
+Event stream API
+Synchronous queries
+Asynchronous callback
+Selective data query
+Event schema defines returned information
+Coherent, present-moment state
+Change events with updated changes
+No historical data
+Full history, event sourcing style
+Important
+You may not find every entity and property in GraphQL that you can obtain via the event stream. You can also use
+GraphiQL
+to explore available entities.
+Datetime format
+Values of datetime fields returned by the GraphQL API are formatted in ISO 8601 format
+without time offset
+. For example the
+createdAt
+date for an order could be
+2024-01-02T13:45:29.678
+. The time zone for any datetime value returned by the GraphQL API is
+implicitly
+UTC
+. Since this is inconsistent with how datetime values are returned with event stream events, you can enforce the UTC time zone indicator (the trailing
+Z
+) for datetime fields by setting a custom request header
+Force-Render-Timezone
+.
+Example Request:
+curl 'https://<tenant-name>.p.newstore.net/api/v1/org/data/query' \
+    -H 'Authorization: Bearer <access-token>' \
+    -H 'Content-Type: application/json' \
+    -H 'Accept: application/json' \
+    -H 'Force-Render-Timezone: true' \
+      --data-raw '{"query":"query DatetimeFormat {\norders(first:1) {\nnodes {\nid\ncreatedAt\n}\n}\n}\n"}'
+Example Response:
+{
+  "data": {
+    "orders": {
+      "nodes": [
+        {
+          "id": "0000112e-12f6-460c-9b3d-3ef3fa77772b",
+          "createdAt": "2024-01-02T13:45:29.678Z"
+        }
+      ]
+    }
+  }
+}
+Performing queries
+baseUri
+:
+https://<tentant>.x.newstore.net/api/v1/org/data/query
+All queries are performed by issuing an HTTP
+POST
+request to the appropriate URL. The Content-Type for GraphQL queries is application/json. The response returns the query results.
+To explore the data offered by NewStore Omnichannel Cloud and to generate queries, use GraphiQL:
+At the top, enter a tenant name and pick a stage.
+Provide an access token as described in
+Authentication
+.
+Click
+Fetch schema
+.
+The
+Explorer
+panel on the left is populated with a list of entities. You can test and create queries by select entities and filters on the left, and click the
+Play
+button to see the result of your queries. To search for keywords in the platform, expand the
+Docs
+panel on the right side.
+Data availability in GraphQL
+Data availability in GraphQL may be delayed. Because the data, that is already shown in NewStore Omnichannel Manager as well as the data, that is received via an event stream event, cannot be retrieved via GraphQL API yet.
+For example, you might receive a
+fulfillment_request.assigned
+event with an event-stream webhook and when you try to request the same fulfillment request from GraphQL, you may not receive any results.
+This GraphQL behavior is expected as a result of how we process and store data to make it available in GraphQL. We observed a delay of less than 10 seconds in more than 99% of the cases. However, in some rare situations it might happen that the delay is greater than 1 minute.
+Also expect information to arrive in GraphQL in a different order than the logical order of events. For example, you might receive a
+fulfillment_request.assigned
+event, however the corresponding order data may not be available yet (although the fulfillment request is created after the order).
+We recommend you to retry requests to GraphQL API with an
+exponential backoff
+in case they don't return the desired data.
+Scenario:
+You receive a
+fulfillment_request.items_completed
+event via an event stream webhook and want to get additional details about the fulfillment request and the corresponding order from GraphQL. The first response from GraphQL may not return all expected items and also the order may not be available. In this case, you should retry the request after 2, 4, 8, 16,..., 512 seconds before considering it as failed at last.
+Important
+Orders created for blind returns are not available via the GraphQL API. These orders are only internal entities to transport order information but not actual orders. This is why they are excluded from GraphQL and the Event Stream. However, a
+return.processed
+event will be published for the blind return. In case it was an exchange, it is also possible to display the corresponding return information in GraphQL.
+In this example,
+12345678-111c-4d82-8876-123207380000
+is the ID of the blind return order:
+query MyQuery {
+  returns(filter: {exchangeDetails: {originalOrderId: {equalTo: "12345678-111c-4d82-8876-123207380000"}}}, first: 10) {
+    nodes {
+      id
+    }
+  }
+}
+You can also use the
+Order information retrieval API
+to check the status of the order.
+Limitations
+There are two non-standard limitations to the GraphQL query API at NewStore:
+No GraphQL subscriptions. Use the event stream instead.
+Queries should not be too complex.
+To restrict
+complexity
+, NewStore imposes the following technical limitations:
+The number of returned results is limited to 100 items and the
+first
+or
+last
+parameter has to be used, See
+Pagination
+.
+The query depth is limited to prevent deeply-nested queries.
+As a result, we recommend you to:
+Only query the data you need.
+Avoid extensive use of
+filter
+expressions.
+Pagination
+In order to perform queries with more results than the
+limit mentioned
+, use the arguments
+first
+and
+after
+on the top-level entity of the query, for example:
+query Query {
+    orders(first: 100, after: "OPAQUE_CURSOR") {
+        edges {
+            cursor
+            node {
+                id
+            }
+        }
+    }
+}
+Note
+The example query returns the first 100 results after the result with the
+OPAQUE_CURSOR
+opaque cursor. For the first page, there is no cursor, in which case the
+after
+argument can also be left out.
+The edge or node pattern we use for pagination is called
+Relay Style
+. It is the most commonly used GraphQL approach to handle pagination. It allows you to request a cursor, and use the returned cursor in the request for the next page without tracking the position in the list itself.
+See
+Relay Connections
+. for more information on this style of pagination.
+Example Queries
+Query a single order by ID
+query OrderByID {
+    order(id: "d9debd4a-bbb5-437c-a521-04b7d5f49d5f", tenant: "my-tenant") {
+        id
+        associateEmail
+      ...taxTotal
+        items {
+            edges {
+                node {
+                    id
+                    itemDiscounts
+                  ...tax
+                }
+            }
+        }
+    }
+}
+Pagination
+query OrdersSortedPaginated {
+    orders(orderBy: CREATED_AT_DESC, first: 10, after: "WyJjcmVhdGVkX2F0X2Rlc2MTliMjQiLCJkb2RpY2kiXV0=") {
+        edges {
+            cursor
+            node {
+                createdAt
+                id
+            }
+        }
+    }
+}
+Pagination starts at the provided opaque cursor. To get the next page, a new query is sent with the last query’s result’s cursor provided as the
+after
+parameter. You can read more about this style at
+Relay Connections
+..
+Filter orders by item status
+query OrdersFilteredByItemStatus {
+    orders(filter: { items: { some: { status: { equalTo: "cancelled" } } }, createdAt: {lessThan: "2024-01-03T00:00:00.000Z", greaterThanOrEqualTo: "2024-01-02T00:00:00.000Z"} }, orderBy: CREATED_AT_DESC, first: 10) {
+        edges {
+            node {
+                id
+                createdAt
+                items {
+                    edges {
+                        node {
+                            id
+                            productId
+                            status
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+Lists all orders where at least one item has its status set to
+cancelled
+.
+Filter orders having exchanges
+query OrdersHavingExchange {
+  orders(filter: {exchangesExist: true, createdAt: {lessThan: "2024-01-03T00:00:00.000Z", greaterThanOrEqualTo: "2024-01-02T00:00:00.000Z"}}, first: 10) {
+    edges {
+      node {
+        id
+        createdAt
+        exchanges {
+          edges {
+            node {
+              exchangeOrderId
+              returnId
+            }
+          }
+        }
+      }
+    }
+  }
+}
+query OrdersHavingExchange {
+  orders(filter: {exchangesExist: true}) {
+    edges {
+      node {
+        id
+        createdAt
+      ...
+        exchanges {
+          edges {
+            node {
+              exchangeOrderId
+              returnId
+            }
+          }
+        }
+      }
+    }
+  }
+}
+Lists all orders with at least one exchange.
+Related links
+GraphQL reference documentation (GraphiQL)
+GraphQL official documentation
+Was this article helpful?
+Yes
+No
+Tags
+api
+developer
+event stream
+events
+graphql
+newstore platform
+platform
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

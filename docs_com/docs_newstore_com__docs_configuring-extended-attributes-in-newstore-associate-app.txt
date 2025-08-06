@@ -1,0 +1,295 @@
+Configuring extended attributes in NewStore Associate App
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Configuring extended attributes in NewStore Associate App
+Updated on
+Nov 12, 2024
+Published on Oct 1, 2024
+4 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+You can enable associates to add information to orders and order items in NewStore Associate App in the form of extended attributes. For example, you can enable associates to enter a gift message for an order or specify a custom engraving on a piece of jewelry, and more.
+For each individual attribute, you can configure:
+A unique name
+(Optional)
+A regular expression against which the input can be validated
+A label and prompt message for the attribute, with translated versions for certain locales.
+The
+label
+and
+prompt
+properties must have an
+en
+translation. Other optional locales that NewStore supports are:
+de
+es
+fr
+it
+ja
+ko
+zh
+A custom keyboard
+Possible values for
+keyboard_type
+are:
+default
+email-address
+phone-pad
+decimal-pad
+ascii-capable
+url
+twitter
+(Optional)
+A sibling property for order items
+The
+sibling
+property acts as a pair to the extended attribute field you want to enable as an editable property in NewStore Associate App. See the
+example
+on how this works.
+Important
+Do not
+confuse this feature with
+adding extended product attributes
+via a product import.
+To retrieve the extended attributes added to an order or item via the app, use the
+List extended order attributes
+method. Currently, extended attributes added via the app to orders or order items are not displayed on the
+Orders
+page in NewStore Omnichannel Manager.
+Note
+Extended attributes added to products by retailers before or during an import are displayed in NewStore Omnichannel Manager.
+Do not
+confuse these for the extended attributes added by associates using NewStore Associate App.
+Values for extended attributes for orders or items can also be validated by the app, if this configuration has been set up via the API. See
+this example
+.
+Configuring extended attributes for orders
+Editable extended attributes for orders are disabled by default. To allow store associates to edit an extended attribute for an order:
+Use the
+Update app configuration
+method.
+In
+customizations
+>
+editable_extended_attributes
+>
+order
+, specify an array of extended attribute configurations.
+Example configuration for order attributes
+See this example of an extended attribute configuration for orders in your business:
+{
+  "label": {
+     "en": "Gift message",
+     "de": "Geschenk Nachricht",
+     "fr": "Message de cadeau"
+   },
+  "prompt": {
+     "en": "Write your gift message here",
+     "de": "Schreiben Sie hier Ihre Geschenknachricht",
+     "fr": "Écrivez votre message cadeau ici"
+   },
+   "attribute_name": "gift_message",
+   "keyboard_type": "default"
+}
+Once enabled, associates can add a gift message in NewStore Associate App:
+In the app, add items to a cart.
+Tap
+More
+>
+Gift message
+and enter the gift message in the dialog box that appears.
+Tap
+OK
+.
+Configuring extended attributes for items
+Editable extended attributes for items are disabled by default. To allow store associates to edit an extended attribute for an item:
+Use the
+Update app configuration
+method.
+In
+customizations
+>
+editable_extended_attributes
+>
+item
+, specify an array of extended attribute configurations.
+Example configuration for item attributes
+See this example of an extended attribute configuration for items in your business:
+{
+  "label": {
+     "en": "Add engraving",
+     "de": "Gravur hinzufügen",
+   },
+  "prompt": {
+     "en": "Enter text to be engraved on jewelry",
+     "de": "Geben Sie den Text ein, der auf Schmuck graviert werden soll",
+   },
+   "attribute_name": "engraving",
+   "keyboard_type": "default"
+}
+Once enabled, associates can add an engraving to an item in NewStore Associate App:
+In the app, add items to a cart.
+Tap on an item in the cart
+Tap on
+Add engraving
+and enter the custom message in the dialog box that appears.
+Tap
+OK
+.
+Example configuration for validated attributes
+See this example of an extended attribute configuration for items, where the app validates the entered configuration values:
+{
+  "label": {
+     "en": "Add engraving",
+     "de": "Gravur hinzufügen",
+   },
+  "prompt": {
+     "en": "Enter text to be engraved on jewelry",
+     "de": "Geben Sie den Text ein, der auf Schmuck graviert werden soll",
+   },
+   "validation_regex": "^\\w{1,3}$",
+   "attribute_name": "engraving",
+   "keyboard_type": "default"
+}
+Once enabled, this configuration enables associates to add an engraving of 1 to 3 alphabetic characters to an item in NewStore Associate App:
+In the app, add items to a cart.
+Tap on an item in the cart
+Tap on
+Add engraving
+and enter a custom message in the dialog box that appears.
+If you enter a message that is different than 1 to 3 alphabetic characters in length or format, the app rejects the value and returns an error.
+Example configuration for using the sibling attribute
+The
+sibling
+property is available only for extended attributes for order items. Use this property to verify that associates can only add the configured extended attribute to products containing the referenced
+sibling
+attribute.
+For example, if you have:
+Specified that
+engravable
+is an extended attribute (specified in the
+extended_attributes
+property) for your products that allow engraving on them during the product import, and
+Specified
+sibling
+as
+engravable
+in the
+Update app configuration
+payload, in
+customizations
+>
+editable_extended_attributes
+>
+item
+Then the
+engraving
+attribute field is displayed in NewStore Associate App. This field will also appear if no
+sibling
+property has been specified. If the value of the
+sibling
+property does not match the attribute specified for the item during a product import, the editable field is not displayed in NewStore Associate App.
+See this example of an extended attribute configuration for items with a
+sibling
+property:
+{
+  "label": {
+     "en": "Add engraving",
+     "de": "Gravur hinzufügen",
+   },
+  "prompt": {
+     "en": "Enter text to be engraved on jewelry",
+     "de": "Geben Sie den Text ein, der auf Schmuck graviert werden soll",
+   },
+   "validation_regex": "^\\w{1,3}$",
+   "attribute_name": "engraving",
+   "keyboard_type": "default"
+   "sibling": "engravable"
+}
+In the above example, the option
+Add engraving
+will only be shown for items that have the extended attribute
+engravable
+added to them during upload.
+Related topics
+Using NewStore Associate App
+Displaying extended product attributes in NewStore Associate App
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+Associate App configuration
+catalog
+config api
+configuration
+extended attributes
+order
+product import
+sales
+store associate
+tutorial
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

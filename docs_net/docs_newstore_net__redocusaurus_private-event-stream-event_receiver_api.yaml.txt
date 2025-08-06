@@ -1,0 +1,151 @@
+openapi: 3.0.0
+info:
+  title: Event Gateway API
+  description: >
+    The Event Gateway API can be used by NewStore engineering teams to publish
+    their domain events
+
+    via Event Stream. The API is internal and can only used by services running
+    in the shared Kubernetes cluster.
+  version: '1.0'
+servers:
+  - url: http://event-receiver.team-data-provisioning.svc.cluster.local:8080
+paths:
+  /events/{event_name}:
+    post:
+      summary: Publish a domain event.
+      description: >
+        Publish a domain event via event stream. Once submitted, the event can
+        immediately be received by Event Stream
+
+        consumers.
+      parameters:
+        - name: team
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Name of the team who publishes the event.
+          example: team-inventory
+        - name: service
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Name of the service which calls this API.
+          example: inventory-manager
+        - name: entity-id
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Identifier of the event's main entity (for example an order ID).
+          example: 000816c3-e9b2-440b-8d27-dfaa4cae00ef
+        - name: tenant
+          in: header
+          required: true
+          schema:
+            type: string
+          description: The tenant name.
+          example: dodici
+        - name: idempotency-key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: The idempotency key for the event.
+          example: 123816c3-e9b2-440b-8d27-dfaa4cae0bbc
+        - name: correlation-ids
+          in: header
+          required: true
+          schema:
+            type: string
+          description: >
+            The correlation-ids relevant for this event. This should be the id
+            of the main aggregate the event belongs 
+
+            to. If unsure, it is probably an order. Currently two correlation-id
+            types are supported:
+              - order_id
+              - customer_id
+
+            You may define as many correlation-ids as make sense to your context
+            and event. Correlation-ids are mainly
+
+            used for debugging and observability purposes, to be able to list
+            all events belonging to a certain 
+
+            aggregate and to eg trace all events of an order.
+
+
+            The correlation ids need to be passed in form of a json string of
+            type 
+
+            '{"<idtype>": "<value>", ...}', see the example below.
+
+
+            Moving forward the header is required. For a grace period the
+            endpoint defaults to '{}' if the header is not 
+
+            specified to maintain backward compatibility.
+          example: |
+            '{
+                "order_id": "000816c3-e9b2-440b-8d27-dfaa4cae00ef", 
+                "customer_id": "000816c3-e9b2-440b-8d27-dfaa4cae00ef"
+            }'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Event payload
+              type: object
+              description: The event payload.
+      responses:
+        '201':
+          description: The event was published to EventStream correctly.
+        '400':
+          description: >-
+            The request was not correct, eg missing some required headers or a
+            payload.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  details:
+                    type: array
+                    description: >-
+                      Only returned for missing http-headers, as a list of the
+                      headers missing from the request.
+        '403':
+          description: The request was not allowed to be run by the caller.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: >-
+            An internal problem occurred, for example if the event was not
+            persisted to kafka
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  details:
+                    type: string
+                    description: The internal error message
+components: {}

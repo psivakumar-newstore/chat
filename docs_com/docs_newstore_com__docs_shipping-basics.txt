@@ -1,0 +1,361 @@
+Shipping basics
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Shipping basics
+Updated on
+Dec 17, 2024
+Published on Oct 1, 2024
+8 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Shipping can be understood as a two-step process that consists of:
+Offering shipping options: During
+checkout
+, shipping options are calculated and offered to the customer, to allow them to choose how and when they want their order delivered.
+Booking a delivery: During
+fulfillment
+, a specific delivery time-slot is booked based on an estimate from the shipping provider confirming when the shipment can be delivered. At this point, the associate fulfilling the order can specify the shipping dimensions of the shipment and can confirm the final delivery slot. For more information on how to use the API to implement this, see
+Booking a shipment
+.
+Note
+NewStore sends an email confirmation to the customer when
+all
+the items in a fulfillment request have been shipped.
+How shipping options are calculated
+When a customer enters their shipping address, NewStore sends fulfillment locations where
+ATP
+exists for the products, to your shipping provider. The shipping provider creates shipping offers based on the information sent and returns shipping options for the order.
+This is the workflow for calculating shipping options:
+Note
+The shipping providers you integrate must be added as carriers in NewStore. If you work with multiple providers, NewStore Omnichannel Cloud offers integration capabilities via
+EasyPost
+. For help with this configuration, contact the
+support team
+. Also see
+Integrating a shipping provider
+.
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+For information on how to add shipping providers for a retailer, see
+Configuring shipping settings
+.
+Shipping options are calculated based on a number of settings in NewStore Omnichannel Cloud.
+Fulfillment configuration
+Shipping options are determined by the properties defined in the
+fulfillment configuration
+:
+Provider rates
+: This is how NewStore identifies your integrated shipping providers and the rates they offer. For example,
+FedEx Overnight
+,
+UPS Next Day
+,
+DHL On-demand delivery
+.
+Note
+You can configure NewStore to either use this provider rate or the quote from the shipping provider. For more information, see
+Provider rates
+.
+Service levels
+: This is how provider rates are displayed (as part of the shipping option) to the customer. However, the focus, here, is on the level of service offered, and
+not
+on the shipping provider offering the service. For example, if two of your integrated shipping providers offer
+same day delivery
+, and the provider rates are
+FedEx Same Day
+and
+DHL Same Day
+, the service level that you want displayed to your customers can be defined as
+Same day delivery
+.
+For each service-level:
+You can define a
+delivery time
+to indicate the estimated time of the delivery. For example, 2-3 days.
+You can configure a
+grace period
+. For example,
+Same day delivery
+can have a shorter grace period, where as
+Traditional
+can be set to a longer period. The grace period set for the service level overrides the one set at the order level.
+Note
+Use the same service levels that you define here to
+ship transfer orders
+.
+Service-level priorities
+: This is the order in which you want NewStore to select service levels during order routing.
+Routes
+that you define include:
+ZIP codes
+to which you want to deliver.
+Destination regions
+or countries that are mapped to a combination of
+fulfillment locations
+and
+provider rates
+.
+For example, a route can be defined for
+US
+with
+zip_codes
+10001 to 10300 assigned to location
+FF1
+with provider rates
+FedEx Overnight
+and
+FedEx Next day
+. In this example, the shipping options
+Overnight
+and
+Next day
+can be offered to a customer with a destination address in ZIP code 10001. However, these shipping options may be narrowed down further based on the store's business hours.
+For information about how to create a fulfillment configuration, see
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+.
+Store configuration
+When NewStore Omnichannel Cloud requests shipping options from the shipping provider, the time when an item can be ready for pickup is also sent to the provider.
+To ensure that shipping options and delivery times promised during checkout can be met, NewStore Omnichannel Cloud calculates the cut-off time using the
+earliest pickup time
+and the
+latest pickup time
+set for the store. If
+packing time duration
+is defined for the business, this is also used.
+For example, if a store closes at 20:00, the latest pickup time for the store is 18:00, and the cut-off is calculated as 17:00, only orders placed before the cut-off might be offered
+Overnight delivery
+as an option. Orders placed after 17:00 might only be offered
+Next day delivery
+.
+If orders are routed to a store that has closed for the business day, these orders are fulfilled the next business day and not re-routed to another store that might still be open.
+Note
+For shipping options to be displayed correctly during checkout, ensure that the store has a valid physical and shipping address.
+For more information on how to create your stores, see
+Tutorial: Setting up a store
+.
+Shipping returns
+Your shipping configuration can include different shipping providers to handle delivery and returns. For example, shipping providers may offer expensive return shipping solutions, or may not offer return shipping at all.
+For help with this configuration, contact the
+support team
+.
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+To configure a different shipping provider for returns, See
+Configuring shipping settings
+.
+If printing return labels is enabled for your business, NewStore books a return shipment by default when booking the delivery for an order. For help with this configuration, contact the
+support team
+.
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+To enable or disable return labels to be printed for the tenant,  see
+Configuring documents for print in a store or warehouse
+.
+Automatic shipping cost refunds
+When all items of an order are returned, the shipping cost for the order is automatically refunded to the customer. The refund is processed when the last item from the order is returned. Shipping options are not considered when calculating the shipping cost refunds for an order.
+Note
+The shipping costs are refunded only when all items are returned. The refund is not processed if some items in the order are returned and the rest are canceled.
+Important
+When shipping costs are refunded, they are indicated in the NewStore platform as returned
+line items
+with the type specified as
+shipping
+. These
+line items
+cannot be mapped to the actual product items that were returned as part of the order.
+Before enabling automatic shipping cost refunds, ensure that your current integration can manage such refunds when enabled. Check your integration in a test environment after enabling the feature, before going live. For more information, see the
+BPM documentation
+.
+If enabled, this feature applies globally for a retailer, and cannot be configured for a specific country or region.
+You can configure templates in your business to display the shipping cost refunds in the return receipts and refund notes for the order. To verify if your template contains shipping cost refunds, see the
+integration guide
+.
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+For information about configuring shipping cost refunds for a retailer, see
+Configuring automatic shipping cost refunds
+.
+Shipping transfer orders
+If inventory transfers are enabled for your business, you can configure shipping options to transfer inventory from your store to other locations. See
+Shipping transfer orders
+.
+Customizable provider rates
+Sometimes, for business reasons, the provider rates returned by the shipping provider for an order may have to be customized. For example, the shipping options and
+prices
+you want to offer a customer buying a bicycle might be different from what you offer a customer ordering socks. At NewStore, to customize the supported provider rates for an order, create a customization adapter hook. For more information, see
+Retrieving custom shipping options
+. Also contact the
+support team
+, to ensure that the NewStore settings required to support this are configured.
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+For more information, see
+Configuring shipping settings
+.
+Shipping split orders
+Orders are split only when a single fulfillment location cannot ship all the items in the order. When shipping for an order is split, items are shipped from multiple locations as multiple shipments. Each shipment in the order might be associated with a different shipping option and a different shipping price.
+You can also use NewStore Omnichannel Manager to limit the number of shipments that can be used to ship certain orders. See
+Managing shipment limits
+.
+By default, the customer pays the complete shipping price for an order on the first shipment.
+Note
+If some items in a split order do not have enough
+ATP
+, NewStore fulfills the items that have ATP, and puts the remaining items on hold or cancels them, based on how orders with insufficient inventory are managed in your business.
+If a manual intervention is required to fix an on-hold order due to stock unavailability at a specific location, such as swapping an order item, the order remains as a split order, overriding the shipment configuration limit.
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+For more information about this configuration, See
+Configuring order cancelation and On Hold settings
+.
+Customizing the shipping price for split orders
+You can configure NewStore Omnichannel Cloud to charge your customer only the shipping price for the most expensive shipment in the order. For help with this configuration, contact the
+support team
+. See the following examples:
+Example A
+: An order is split into 2 shipments, one offered with
+Standard
+shipping for 15 USD and the other offered with
+Next Day
+shipping for 25 USD.
+Shipment 1
+Standard
+Shipment 2
+Next Day
+Default shipping price
+Customized shipping price
+==============
+============
+======================
+=========================
+15 USD
+25 USD
+40 USD
+25 USD
+Example B
+: An order is split into 2 shipments, one offered with
+Overnight
+shipping for 25 USD and the other offered with
+Next Day
+shipping for 20 USD.
+Shipment 1
+Overnight
+Shipment 2
+Next Day
+Default shipping price
+Customized shipping price
+==============
+============
+======================
+=========================
+25 USD
+20 USD
+45 USD
+25 USD
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+To enable this configuration, see
+Configuring customized shipping price for split orders
+.
+In-store pickup orders
+For
+in-store pickup
+orders, no shipping labels are generated in NewStore. Retailers can print in-store pickup labels and other invoice documents for the customer when they are in the store to pick up their orders.
+To set up in-store pickup options for your business programmatically via an API, see
+the configuration guide
+or the
+tutorial
+.
+Related topics
+Integrating a shipping provider
+Retrieving custom shipping options
+About order routing
+Integrating a fulfillment provider
+Shipping transfer orders
+Was this article helpful?
+Yes
+No
+Tags
+configuration
+DC fulfillment
+delivery
+Easypost
+fulfillment
+fulfillment configuration
+international shipping
+inventory
+newstore platform
+order fulfillment
+refund
+return
+routing
+routing rules
+SFCC
+shipping
+split order
+store
+store fulfillment
+transfer
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

@@ -1,0 +1,399 @@
+Fulfillment Request API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Availabilities Export API
+Customer Profile Updates API
+Fulfillment Provider API
+Fulfillment Request API
+Historical order import API
+Item Return API
+Item Return API
+Location API
+Manager approval
+Fulfillment Configuration API
+Manager Approval Rules API
+Order API
+Order Injection API
+Order Notes API
+Order information retrieval API
+Safety Stock API
+Availabilities API
+Stock insights API
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+Get fulfillment requests for an order
+post
+Update the status of order items in a fulfillment request
+API docs by Redocly
+Fulfillment Request API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Team Routing
+:
+team-routing@newstore.com
+The API provides access to the fulfillment request. This API allows you to get information
+about fulfillment requests and perform operations on them.
+Note:
+Fulfillment requests are immutable. It means that rerouting will create a new
+fulfillment request even if all items in the fulfillment request stay the same.
+Get fulfillment requests for an order
+Returns all fulfillment requests created for an order, sorted by creation date in the
+ascending order (earliest first).
+If order wasn't found, then the empty list of fulfillment requests will be returned.
+If order wasn't routed yet, then the empty list of fulfillment requests will be returned.
+Important:
+As for now this API will return fulfillment requests even for orders without
+routing (like in_store_purchase) but this behavior will change soon. And this API will only
+work for orders where routing is needed. So, build your integrations accordingly.
+Important:
+Maximum number of fulfillment requests this API will return is
+2000
+. If
+there are more than
+2000
+fulfillment requests for the order, then the response will have
+400 status code (although it is actually not a bad request) and
+2000
+latest (according
+to the creaiton date) fulfillment requests.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_uuid
+required
+string
+<
+uuid
+>
+Sales order UUID.
+Responses
+200
+Successful response
+400
+Order has too many fulfillment requests
+500
+An internal error occurred.
+get
+/fulfillment_requests/{order_uuid}
+/v0
+/fulfillment_requests/{order_uuid}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"fulfillment_requests"
+:
+[
+{
+"fulfillment_request_id"
+:
+"c3b7bea3-997c-40f2-858a-f402491aa1de"
+,
+"created_at"
+:
+"2021-11-22T12:51:39.30Z"
+,
+"status"
+:
+"completed"
+,
+"service_level"
+:
+"GROUND"
+,
+"fulfillment_node_id"
+:
+"US01"
+,
+"items"
+:
+[
+{
+"item_id"
+:
+"2770fd96-a43f-46ab-b66e-e088067d7825"
+,
+"product_id"
+:
+"PID1"
+,
+"tracking_code"
+:
+"12345678"
+,
+"carrier"
+:
+"USPS"
+,
+"status"
+:
+"shipped"
+}
+,
+{
+"item_id"
+:
+"4e0b82b8-ef7d-4f63-8974-17ac22fbf122"
+,
+"product_id"
+:
+"PID2"
+,
+"tracking_code"
+:
+null
+,
+"carrier"
+:
+null
+,
+"status"
+:
+"rejected"
+}
+]
+}
+,
+{
+"fulfillment_request_id"
+:
+"f5bd0c3d-77c6-48df-ab10-0fd6124692e8"
+,
+"created_at"
+:
+"2021-11-24T14:11:10.22Z"
+,
+"status"
+:
+"completed"
+,
+"service_level"
+:
+"GROUND"
+,
+"fulfillment_node_id"
+:
+"DC01"
+,
+"items"
+:
+[
+{
+"item_id"
+:
+"4e0b82b8-ef7d-4f63-8974-17ac22fbf122"
+,
+"product_id"
+:
+"PID2"
+,
+"tracking_code"
+:
+987654321
+,
+"carrier"
+:
+"fedex"
+,
+"status"
+:
+"shipped"
+}
+]
+}
+]
+}
+Update the status of order items in a fulfillment request
+Update the shipment status for items in the specified fulfillment request.
+Important:
+Do not confuse this API with
+Fulfillment Provider API
+. For 
+DC orders please use the Fulfillment Provider API.
+Items in a fulfillment request can be marked as shipped or rejected. When you use this API you can't mix
+shipment and rejection actions on the same call.
+Important:
+If you are doing a partial rejection of items in a fulfillment request, the reroute
+attempt will not happen until all items in the fulfillment request are in a terminal state.
+For fulfillment requests which are routed to store fulfillment nodes, the item state update
+will only be accepted if the request has not been picked by a store associate. The change in
+status is only valid for items that are not in a final state (the fulfillment process for the
+item is considered as complete). The remaining items are not
+affected by this change.
+Important
+: When you reject items that are currently fulfilled in DC we don't notify DC about items rejection. 
+You are responsible for communicating with DC API to ensure these items will not be shipped.
+Rejection reason
+:
+To reject a fulfillment request you must provide the rejection reason "rescinded". This will initiate
+a re-routing attempt without any changes to inventory levels.
+Edge Cases:
+If your organization's settings allows rerouting by setting
+reroute_to_rejected_fulfillment_nodes
+(
+described in this
+API
+)
+to
+true
+, rejected fulfillment nodes will be downgraded in priority during the routing process. If all possible
+nodes for a given
+location_group
+in
+routing configuration
+are exhausted, it will take the first available fulfillment node as part of the mechanism, resulting in a
+potential route to the same location on further attempts.
+Setting
+reroute_to_rejected_fulfillment_nodes
+to
+false
+, fulfillment nodes will be ignored during future
+routing attempts. If all fulfillment nodes are rejected and you don't want to reroute to these nodes, the
+rejected items will be put on hold.
+Important
+: The platform emits a separate event for each line item that is marked as
+shipped, and not a single event for all items. This should be considered when reconciling these
+events in the ERP you are using to manage such events.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+ffr_uuid
+required
+string
+<
+uuid
+>
+Fulfillment request UUID
+Request Body schema:
+application/json
+line_items
+required
+Array of
+objects
+List of fulfillment request items with target state that a user wants to change.
+tracking_code
+string
+non-empty
+Tracking code applied to items, which state is being changed to
+shipped
+.
+carrier
+string
+non-empty
+Carrier used to ship items, which state is being changed to
+shipped
+.
+associate_id
+required
+string
+non-empty
+Identifier of the associate who is changing the items's states.
+reason
+required
+any or string
+Responses
+204
+Operation succeeded
+400
+Bad Request Error.
+404
+Not found Error.
+500
+Internal Server Error.
+post
+/fulfillment_request/{ffr_uuid}/set_items_states
+/v0
+/fulfillment_request/{ffr_uuid}/set_items_states
+Request samples
+Payload
+Content type
+application/json
+Example
+Payload for marking an item as rejected
+Payload for marking an item as shipped
+Payload for marking an item as rejected
+Copy
+Expand all
+Collapse all
+{
+"line_items"
+:
+[
+{
+"item_id"
+:
+"af7dd63d-198d-40e9-abbb-e4d723881072"
+,
+"state"
+:
+"rejected"
+}
+]
+,
+"associate_id"
+:
+"77d6b285-4c2e-4e7f-b6b4-3e6c153e9934"
+,
+"reason"
+:
+"rescinded"
+}
+Response samples
+400
+404
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"bad_request"
+,
+"message"
+:
+"Incorrect target state for fulfillment request's items: 'some_weird_state'."
+,
+"request_id"
+:
+"ec2f3c9bb016ba971bf6074098363"
+}
+Previous
+Fulfillment Provider API
+Next
+Historical order import API
+Copyright © 2025 NewStore, Inc.

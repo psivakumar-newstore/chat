@@ -1,0 +1,2109 @@
+Import Data API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Catalog Reporting API
+DC Fulfillment Node Config API
+Import Data API
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+post
+Create an import job to import data into NewStore
+get
+List import jobs
+get
+Get the status of an import job
+put
+Update an import job
+post
+Queue the import job for processing
+get
+List errors for import job
+post
+Persist import errors
+get
+Get chunk information for import job
+post
+Set an import job to failed
+post
+Availability JSON schema
+post
+Category JSON schema
+post
+Pricebook JSON schema
+post
+Product JSON schema
+API docs by Redocly
+Import Data API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Use import jobs to import products, categories, price books, and stock on hand, into NewStore.
+For more information on how to prepare your data and import it, see
+Importing data
+in our documentation.
+Products
+The only way you can create or update products, is by importing them into NewStore.
+A product in NewStore refers to a stock-keeping unit (SKU). For example,
+Toby Sweater, Black, Size 6
+, and
+Toby Sweater
+Beige, Size 6
+, are
+variants
+and have different
+SKUs
+. They are created as two separate products, and in this example, they belong to the same variant group.
+Products are imported into a shop for a specific locale. A
+shop
+represents the hierarchical entity into which you import products and categories. It is not a physical store.
+The product details that you provide during import determine the product attributes that are displayed in NewStore applications and the information that is included in reports.
+To understand the JSON schema for importing
+products
+, see
+JSON schema for products
+.
+Do not
+use this method to import products. This is only documentation of the schema.
+To import products, use the import process described in
+Importing data
+.
+Categories
+The only way you can create or update product categories, is by importing them into NewStore.
+A category refers to the hierarchy applied to your products, in order to organize them. Product categories may differ across different sales channels. For example, the category for Toby Sweater Black Size 6, could be
+Shop > Clothing
+or
+Featured > Winter
+.
+Categories are imported into a
+shop
+, and for a specific
+locale
+.
+To understand the JSON schema for importing
+categories
+, see
+JSON schema for categories
+.
+Do not
+use this method to import categories.  This is only the documentation of the schema.
+To import categories, use the import process described in
+Importing data
+.
+Price books
+The only way you can create or update price books, is by importing them into NewStore.
+A price book is a collection of prices for products, in a specific currency. You can import multiple price books. For example, each sales channel can have a different price book.
+To understand the the JSON schema for importing
+price books
+, see
+JSON schema for price books
+.
+Do not
+use this method to import price books. This is only documentation of the schema.
+To import your price books, use the import process described in
+Importing data
+.
+Stock on hand
+The only way you can create or update stock on hand, is by importing it into NewStore.
+Stock on hand refers to the total inventory, at a particular time. Unlike products, you import stock on hand into a fulfillment location (distribution center), and not into a
+shop
+.
+To understand the JSON schema for importing
+stock on hand
+, see
+JSON schema for stock on hand
+.
+Do not
+use this method to import stock on hand.  This is only the documentation of the schema.
+To import stock on hand, use the import process described in
+Importing data
+.
+Distribution Centers
+There is no explicit way to create distribution centers (DCs) on your own. When you import stock on hand, the location of the stock is automatically created as a
+fulfillment_node_id
+in NewStore.
+To indicate that the fulfillment location in
+fulfillment_node_id
+is a distribution center, ensure that the
+store_id
+is
+null
+. See
+JSON schema for stock on hand
+.
+Do not
+use this method to import stock on hand.  This is only the documentation of the schema.
+NewStore can create DCs for your business. For more information, contact
+NewStore Support
+.
+Create an import job to import data into NewStore
+Creates an import job to import data into NewStore. The job will not be processed automatically.
+To process it, call the
+Start import job method
+.
+Important
+: The import job's
+source_uri
+property must point to a ZIP file for each entity. The
+uncompressed file size must be lower than 240 MB for products. For other import entities, the file size
+must be lower than 80 MB.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+provider
+required
+string
+The name of the provider of the data, for example, Salesforce Commerce Cloud.
+source_uri
+required
+string
+<
+uri
+>
+File location of the original file from the provider (only for information). The uncompressed file size per entity must be lower than 80 MB.
+name
+string
+The name of the job.
+revision
+integer
+DEPRECATED: The revision will be automatically generated as a Unix timestamp.
+type
+string
+DEPRECATED: The type of the job. Use the 'entities' property instead.
+entities
+required
+Array of
+strings
+unique
+Items
+Enum
+:
+"products"
+"categories"
+"availabilities"
+"prices"
+"dwre_orders"
+The type of data provided in this request. The possible values of this fields also determine the naming convention of the JSON files you might import in a ZIP file via the 'POST /import/{import_id}/start' method.
+full
+boolean
+Default:
+false
+Determines if the job is a full or a partial import. A full import deletes the existing data and imports the new data. A partial import adds data on top of existing data.
+Responses
+201
+The import request has been submitted successfully. The job's state is
+received
+.
+To process it, call the
+Start import job method
+.
+Use the
+Get import job method
+with returned
+import_id
+to check the import job's status.
+422
+This error can occur when you try to create an import job with an erroneous
+type
+property.
+To fix this issue, use the 'entities' property instead.
+429
+This error occurs if imports are disabled and:
+You reach the configured rate limit for import jobs with one or more of the imported entities.
+You create too many import jobs in a short timeframe, for example more than 60 imports in less than 15 minutes.
+The import job is rejected. Enable imports and then restart the specified import job.
+To restart the import job, contact the support team.
+500
+Internal server error.
+post
+/import
+/v0/d
+/import
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"provider"
+:
+"<provider>"
+,
+"name"
+:
+"product_import_20170306"
+,
+"source_uri"
+:
+"
+https://some-uri-location/my_data.zip
+"
+,
+"entities"
+:
+[
+"products"
+,
+"categories"
+,
+"prices"
+]
+,
+"full"
+:
+true
+}
+Response samples
+201
+Content type
+application/json
+Copy
+{
+"id"
+:
+"string"
+}
+List import jobs
+Returns a list of import jobs.
+Note:
+Import jobs are deleted after 30 days and not returned by this method anymore.**
+Authorizations:
+newStoreAccessToken
+Responses
+200
+The list of import jobs.
+400
+The requested count and offset resulted in a list fragment greater than the maximum count
+of the import job list. Change your pagination parameters.
+500
+An error occurred while trying to retrieve the list of import jobs.
+get
+/import
+/v0/d
+/import
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"pagination_info"
+:
+{
+"count"
+:
+0
+,
+"total"
+:
+0
+,
+"offset"
+:
+0
+,
+"prev_url"
+:
+"
+http://example.com
+"
+,
+"next_url"
+:
+"
+http://example.com
+"
+}
+,
+"items"
+:
+[
+{
+"import_id"
+:
+"string"
+,
+"entities"
+:
+[
+"products"
+]
+,
+"received_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"completed_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"name"
+:
+"string"
+,
+"state"
+:
+"received"
+,
+"full"
+:
+false
+}
+]
+}
+Get the status of an import job
+Retrieves the status information of the specified import job. See the
+list of statuses
+for more information.
+Important:
+The
+finished
+status does not mean there were no errors.
+Related methods:
+Get import chunk
+List import errors
+Start import job
+Note:
+Import jobs are deleted after 30 days and not returned by this method anymore.**
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+import_id
+required
+string
+Identifier received in the response of
+Create import job method
+Responses
+200
+The current status of the import job.
+404
+No job with the given import_id exists.
+500
+An error occurred while trying to retrieve the import job status.
+get
+/import/{import_id}
+/v0/d
+/import/{import_id}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"import_id"
+:
+"39029b6c-7eb9-4eb3-8823-7f4f8f6e4252"
+,
+"entities"
+:
+[
+"prices"
+]
+,
+"source"
+:
+""
+,
+"provider"
+:
+"<provider>"
+,
+"source_uri"
+:
+"
+https://some-uri-location/my_data.zip
+"
+,
+"transformed_uri"
+:
+"
+https://some-uri-location/my_data.zip
+"
+,
+"revision"
+:
+1510828770
+,
+"name"
+:
+"product_import_20170306"
+,
+"received_at"
+:
+"2017-11-16T10:39:30.888848149Z"
+,
+"completed_at"
+:
+"2017-11-16T10:39:33.03405691Z"
+,
+"state"
+:
+"finished"
+,
+"reason"
+:
+""
+,
+"full"
+:
+true
+}
+Update an import job
+Deprecated
+Updates the import job.
+For example, this method can
+be used to start a job (created using
+Create import job
+) by
+setting
+transformed_uri
+and
+state
+to
+processing
+.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+import_id
+required
+string
+Identifier received in the response of
+Create import job method
+Request Body schema:
+application/json
+transformed_uri
+string
+<
+uri
+>
+File location of the transformed file, this field cannot be set to a different value after it's set the first time.
+state
+string
+Value
+:
+"processing"
+The new state of the import job.
+Responses
+200
+The import request has been submitted successfully and will be processed.
+Use the
+Get import job method
+to check the import job's status.
+400
+The body contains wrong data.
+404
+The import job ID could not be found.
+500
+An error occurred while trying to update the import job.
+put
+/import/{import_id}
+/v0/d
+/import/{import_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"transformed_uri"
+:
+"
+http://example.com
+"
+,
+"state"
+:
+"processing"
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"import_id"
+:
+"string"
+,
+"source"
+:
+"string"
+,
+"provider"
+:
+"string"
+,
+"entities"
+:
+[
+"products"
+]
+,
+"source_uri"
+:
+"string"
+,
+"transformed_uri"
+:
+"string"
+,
+"revision"
+:
+0
+,
+"name"
+:
+"string"
+,
+"received_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"completed_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"state"
+:
+"received"
+,
+"reason"
+:
+"string"
+,
+"full"
+:
+false
+}
+Queue the import job for processing
+Adds the import job to the processing queue. It is automatically processed when it reaches the 1st position of the queue.
+After you call this method, the following updates happen:
+1- The state of the job is automatically updated:
+While the job is waiting to be processed,
+state
+is set to
+waiting
+, and the job starts when previous waiting jobs have been processed.
+When the job is being processed, the
+state
+is set to
+processing
+.
+2- The import job
+transformed_uri
+property is set. This field must point to a ZIP file containing all the JSON files to import.
+This field cannot point to a JSON file.
+Each JSON file must:
+Contain only one type of entity, formatted as described in the
+/products
+,
+/availability
+,
+/categories
+and
+/prices
+methods.
+Have the entity type it describes ("products", "categories", "availabilities", "prices")
+in its path/filename.
+For example, if you have a file containing the prices of your products, you can name it
+prices_1.json
+.
+Related methods:
+Get import job
+Get import chunk
+List import errors
+Note:
+Import jobs are deleted after 30 days and not handled by this method anymore.**
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+import_id
+required
+string
+Identifier received in the response of
+Create import job method
+Request Body schema:
+application/json
+transformed_uri
+required
+string
+<
+uri
+>
+non-empty
+URI to the ZIP file containing the source files in the required NewStore JSON format. This field cannot be set to a different value once it's been set the first time. Each JSON file in the ZIP file must contain the entity type it represents in its filename. For example, if you have a file for prices, it must contain 'prices' in its filename. The list of entity names can be found in the 'Create import job' method documentation. This URI must be either an HTTPS URIs or an Amazon S3 bucket URI, and NewStore must have acces to it.
+Responses
+200
+The import request has been submitted successfully.
+Use the
+Get import job method
+to check the import job's status.
+400
+The body contains wrong data.
+404
+The import job ID could not be found.
+500
+An error occurred while trying to start the import job.
+post
+/import/{import_id}/start
+/v0/d
+/import/{import_id}/start
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"transformed_uri"
+:
+"
+https://assets.mycompany.com/integrations/newstore/products-transformed-1536677418000.zip
+"
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"cleaned_entities"
+:
+null
+,
+"completed_at"
+:
+null
+,
+"created_by"
+:
+"22IB3UROr1S3Je9hDaRh7f"
+,
+"entities"
+:
+[
+"products"
+]
+,
+"import_id"
+:
+"90955bbb-74a6-490b-80d0-fb20e459118c"
+,
+"name"
+:
+"Scheduled Products Import Job"
+,
+"provider"
+:
+"Salesforce Commerce Cloud"
+,
+"reason"
+:
+""
+,
+"received_at"
+:
+"2018-09-11T14:50:19.272756Z"
+,
+"revision"
+:
+1536677419000
+,
+"source"
+:
+""
+,
+"source_uri"
+:
+"s3://aws.amazon.com/mycompany/erp/export/products/products-export-1536677417000.xml"
+,
+"state"
+:
+"waiting"
+,
+"transformed_uri"
+:
+"
+https://assets.mycompany.com/integrations/newstore/products-transformed-1536677418000.zip
+"
+,
+"version"
+:
+0
+}
+List errors for import job
+Retrieves a list of errors for the specified import job.
+Note:
+Import jobs are deleted after 30 days and not returned by this method anymore.**
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+import_id
+required
+string
+Identifier received in the response of
+Create import job method
+Responses
+200
+Current errors of the import job.
+404
+The import job ID could not be found.
+500
+An error occurred while trying to retrieve the import job errors.
+get
+/import/{import_id}/errors
+/v0/d
+/import/{import_id}/errors
+Response samples
+200
+Content type
+application/json
+Example
+all_good
+image_not_found
+zip_file_invalid
+wrong_definitions
+path_required
+import_chunk_error
+all_good
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[ ]
+}
+Persist import errors
+Saves import errors to the database. Use it to report errors occurring during an import.
+For example, transformation services, integration scripts such as lambda functions can call this method to report errors.
+Note:
+Import jobs are deleted after 30 days and not handled by this method anymore.**
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+import_id
+required
+string
+Identifier received in the response of
+Create import job method
+Request Body schema:
+application/json
+Array
+error_id
+required
+string
+<
+uuid
+>
+A random uuid that identify this error
+entity_type
+required
+string
+Enum
+:
+"products"
+"categories"
+"availabilities"
+"prices"
+The import entity for which this error occurred.
+entity_id
+required
+string
+The ID of the import item which failed to be imported.
+reason
+required
+string
+The error message or reason why an item failed to be imported.
+Responses
+200
+The errors have been saved.
+400
+The body contains wrong data.
+404
+The import job ID could not be found.
+500
+An error occurred while trying to save the import job errors.
+post
+/import/{import_id}/errors
+/v0/d
+/import/{import_id}/errors
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"error_id"
+:
+"1653c9db-454b-4222-8265-4c7ca209f630"
+,
+"entity_type"
+:
+"products"
+,
+"entity_id"
+:
+"string"
+,
+"reason"
+:
+"string"
+}
+]
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"acknowledged"
+:
+true
+}
+]
+Get chunk information for import job
+Retrieves chunk information for the specified import job.
+A import job is split into chunks of items. Use this method to get information about each of these chunks.
+Chunks are only created once the import job has reached the
+processing
+status.
+Related methods:
+Get import job
+Note:
+Chunks are deleted after 30 days and not returned by this method anymore.**
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+import_id
+required
+string
+Identifier received in the response of
+Create import job method
+Responses
+200
+Current chunks of the specified import job.
+404
+The import job ID could not be found.
+500
+An error occurred while trying to retrieve the chunks of the import job.
+get
+/import/{import_id}/chunks
+/v0/d
+/import/{import_id}/chunks
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"chunk_id"
+:
+"6424454cf0aae3e1ef4362f308d880f4714908dd"
+,
+"created_at"
+:
+"2017-11-16T10:39:31.42703Z"
+,
+"completed_at"
+:
+"2017-11-16T10:39:31.457705Z"
+,
+"size"
+:
+1
+,
+"failed"
+:
+false
+,
+"failure_message"
+:
+""
+}
+,
+{
+"chunk_id"
+:
+"d21d20cfc5450e9b3412ff584fff1902c4300424"
+,
+"created_at"
+:
+"2017-11-16T10:39:31.451872Z"
+,
+"completed_at"
+:
+"2017-11-16T10:39:31.730535Z"
+,
+"size"
+:
+50
+,
+"failed"
+:
+false
+,
+"failure_message"
+:
+""
+}
+]
+}
+Set an import job to failed
+Sets the specified import job's status to
+failed
+for the provided reason.
+Related methods:
+Get import job
+List import errors
+Note:
+Import jobs are deleted after 30 days and not handled by this method anymore.**
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+import_id
+required
+string
+Identifier received in the response of
+Create import job method
+Request Body schema:
+application/json
+reason
+required
+string
+non-empty
+The reason why the import job failed.
+Responses
+200
+The import job's status has been set to
+failed
+for the provided reason.
+404
+The import job ID could not be found.
+500
+An error occurred while trying to retrieve update the import job.
+post
+/import/{import_id}/set_fail
+/v0/d
+/import/{import_id}/set_fail
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"reason"
+:
+"incorrect data"
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"import_id"
+:
+"string"
+,
+"source"
+:
+"string"
+,
+"provider"
+:
+"string"
+,
+"entities"
+:
+[
+"products"
+]
+,
+"source_uri"
+:
+"string"
+,
+"transformed_uri"
+:
+"string"
+,
+"revision"
+:
+0
+,
+"name"
+:
+"string"
+,
+"received_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"completed_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"state"
+:
+"received"
+,
+"reason"
+:
+"string"
+,
+"full"
+:
+false
+}
+Availability JSON schema
+Deprecated
+This JSON schema represents the expected structure of the availability data for a successful
+import.
+Do not use this method for integration tasks.
+This schema is presented here as reference documentation only.
+See the
+import data tutorial
+to learn how to import data.
+To import your data, use the
+Create import job method
+, and the
+Start import job method
+.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+full
+boolean
+Determines if the job is a full or partial import. Defaults to false.
+Request Body schema:
+application/json
+head
+required
+object
+items
+required
+Array of
+Availability (object) or Availability (object) or Availability (object)
+(
+Availability
+)
+non-empty
+Responses
+200
+The import request has been submitted successfully and will be processed.
+Use the
+Get import job method
+with returned
+import_id
+to check the import job's status or
+open the returned
+status_url
+.
+500
+A server error occurred. Try again later.
+post
+/import/availability
+/v0/d
+/import/availability
+Request samples
+Payload
+Content type
+application/json
+Example
+import_products_with_timestamps
+import_products_with_future_inventory
+import_products_with_future_and_regular_inventory
+import_products_with_timestamps
+Copy
+Expand all
+Collapse all
+{
+"head"
+:
+{
+"store_mapping"
+:
+[
+{
+"store_id"
+:
+"b99c8c93-b4ea-4eb1-a037-f7e79b71700e"
+,
+"fulfillment_node_id"
+:
+"US01"
+}
+]
+,
+"mode"
+:
+"atp"
+}
+,
+"items"
+:
+[
+{
+"product_id"
+:
+"1000101"
+,
+"quantity"
+:
+100
+,
+"fulfillment_node_id"
+:
+"US01"
+,
+"revision"
+:
+1531156343845
+}
+,
+{
+"product_id"
+:
+"1000102"
+,
+"quantity"
+:
+100
+,
+"fulfillment_node_id"
+:
+"US01"
+,
+"revision"
+:
+1531156343845
+}
+]
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"cleaned_entities"
+:
+null
+,
+"completed_at"
+:
+null
+,
+"created_by"
+:
+"c77ae36c-42e9-4eb1-ae65-8b7b3047012a"
+,
+"entities"
+:
+[
+"availabilities"
+]
+,
+"import_id"
+:
+"5779319e-facd-46e9-b03c-cd521f10235e"
+,
+"name"
+:
+"availabilities_import"
+,
+"provider"
+:
+""
+,
+"reason"
+:
+""
+,
+"received_at"
+:
+"2018-07-09T19:49:43.604058278Z"
+,
+"revision"
+:
+1531165783604
+,
+"source"
+:
+""
+,
+"source_uri"
+:
+""
+,
+"state"
+:
+"processing"
+,
+"transformed_uri"
+:
+""
+,
+"version"
+:
+0
+}
+Category JSON schema
+Deprecated
+This JSON schema represents the expected structure of the category data for a successful
+import.
+Do not use this method for integration tasks.
+This schema is presented here as reference documentation only.
+See the
+import data tutorial
+to learn how to import data.
+To import your data, use the
+Create import job method
+, and the
+Start import job method
+.
+Deprecated:
+Use the
+Create import job method
+instead.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+full
+boolean
+Determines if the job is a full or partial import. Defaults to false.
+Request Body schema:
+application/json
+head
+required
+object or object
+items
+required
+Array of
+objects
+(
+Category
+)
+non-empty
+Responses
+200
+The import request has been submitted successfully and will be processed.
+Use the
+Get import job method
+with returned
+import_id
+to check the import job's status or
+open the returned
+status_url
+.
+500
+A server error occurred. Try again later.
+post
+/import/categories
+/v0/d
+/import/categories
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"head"
+:
+{
+"shop"
+:
+"string"
+,
+"locale"
+:
+"string"
+,
+"is_master"
+:
+true
+}
+,
+"items"
+:
+[
+{
+"path"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"images"
+:
+[
+{
+"url"
+:
+"
+http://example.com
+"
+,
+"title"
+:
+"string"
+,
+"identifier"
+:
+"string"
+,
+"is_main"
+:
+true
+,
+"alt_text"
+:
+"string"
+,
+"tags"
+:
+[
+"string"
+]
+}
+]
+,
+"keywords"
+:
+[
+"string"
+]
+,
+"position"
+:
+0
+,
+"google_category"
+:
+"clothing"
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+}
+]
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"import_id"
+:
+"string"
+,
+"source"
+:
+"string"
+,
+"provider"
+:
+"string"
+,
+"entities"
+:
+[
+"products"
+]
+,
+"source_uri"
+:
+"string"
+,
+"transformed_uri"
+:
+"string"
+,
+"revision"
+:
+0
+,
+"name"
+:
+"string"
+,
+"received_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"completed_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"state"
+:
+"received"
+,
+"reason"
+:
+"string"
+,
+"full"
+:
+false
+}
+Pricebook JSON schema
+Deprecated
+This JSON schema represents the expected structure of the price data for a successful
+import.
+Do not use this method for integration tasks.
+This schema is presented here as reference documentation only.
+See the
+import data tutorial
+to learn how to import data.
+To import your data, use the
+Create import job method
+, and the
+Start import job method
+.
+Important:
+If you want to import several price books in one job, set the import type to
+true
+and create a zip file that contains separate price book files.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+full
+boolean
+Determines if the job is a full or partial import. A full import deletes the existing data and imports
+the new data. A partial import adds data on top of existing data.
+Request Body schema:
+application/json
+head
+required
+object or object
+items
+required
+Array of
+objects
+(
+Price
+)
+non-empty
+Responses
+200
+The import request has been submitted successfully and will be processed.
+Use the
+Get import job method
+with returned
+import_id
+to check the import job's status or
+open the returned
+status_url
+.
+500
+A server error occurred. Try again later.
+post
+/import/prices
+/v0/d
+/import/prices
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"head"
+:
+{
+"pricebook"
+:
+"string"
+,
+"catalog"
+:
+"string"
+,
+"currency"
+:
+"string"
+,
+"traits"
+:
+[
+"string"
+]
+}
+,
+"items"
+:
+[
+{
+"product_id"
+:
+"string"
+,
+"value"
+:
+0
+}
+]
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"import_id"
+:
+"string"
+,
+"source"
+:
+"string"
+,
+"provider"
+:
+"string"
+,
+"entities"
+:
+[
+"products"
+]
+,
+"source_uri"
+:
+"string"
+,
+"transformed_uri"
+:
+"string"
+,
+"revision"
+:
+0
+,
+"name"
+:
+"string"
+,
+"received_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"completed_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"state"
+:
+"received"
+,
+"reason"
+:
+"string"
+,
+"full"
+:
+false
+}
+Product JSON schema
+Deprecated
+This JSON schema represents the expected structure of the product data for a successful
+import.
+Do not use this method for integration tasks.
+This schema is presented here as reference documentation only.
+Importing products is complex, you must read the
+import data tutorial
+to learn how to import data, ensure your products can be listed and that their variations are grouped properly in Associate App.
+To import your data, use the
+Create import job method
+,
+and the
+Start import job method
+.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+full
+boolean
+Determines if the job is a full or partial import. A full import deletes the existing data and imports
+the new data. A partial import adds data on top of existing data.
+Request Body schema:
+application/json
+head
+required
+object or object
+items
+required
+Array of
+objects
+(
+Product
+)
+non-empty
+Responses
+200
+The import request has been submitted successfully and will be processed.
+Use the
+Get import job method
+with returned
+import_id
+to check the import job's status or
+open the returned
+status_url
+.
+500
+A server error occurred. Try again later.
+post
+/import/products
+/v0/d
+/import/products
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"head"
+:
+{
+"shop"
+:
+"storefront-catalog-en"
+,
+"locale"
+:
+"en-US"
+,
+"is_master"
+:
+true
+,
+"filterable_attributes"
+:
+[
+{
+"name"
+:
+"material"
+,
+"path"
+:
+"$.material"
+}
+,
+{
+"name"
+:
+"fit"
+,
+"path"
+:
+"$.extended_attributes[?(@.name == 'fit')].value"
+}
+]
+,
+"searchable_attributes"
+:
+[
+{
+"name"
+:
+"product_id"
+,
+"path"
+:
+"$.product_id"
+,
+"weight"
+:
+10
+}
+,
+{
+"name"
+:
+"ean13"
+,
+"path"
+:
+"$.external_identifiers[?(@.type == 'ean13')].value"
+,
+"weight"
+:
+5
+}
+]
+}
+,
+"items"
+:
+[
+{
+"product_id"
+:
+"1000101"
+,
+"variant_group_id"
+:
+"variant_group_10001"
+,
+"title"
+:
+"Bohemian Print Cutout Chiffon Maxi Dress"
+,
+"caption"
+:
+"Our summer-ready chiffon dress features a bohemian print and beaded cut-outs for a textural twist to maxi styles. Full of creativity on every level, it offers delicate transparencies with a pleated hem for extra swish as you move through the summer heat."
+,
+"description"
+:
+"Bohemian Print Chiffon Gathered Waist Silk Dress"
+,
+"show_in_listing"
+:
+true
+,
+"online_to"
+:
+"2030-04-01T07:00:00Z"
+,
+"images"
+:
+[
+{
+"url"
+:
+"
+https://mycompany/hoster/images/default/products/SU16/10001_014_Multi_OFR-1.jpg
+"
+,
+"internal_dimension_height"
+:
+2000
+,
+"internal_dimension_width"
+:
+1414
+,
+"internal_dominant_color"
+:
+"#F4F2F4"
+,
+"is_main"
+:
+true
+}
+,
+{
+"url"
+:
+"
+https://mycompany/hoster/images/default/products/SU16/10001_014_Multi_OSP-2.jpg
+"
+,
+"internal_dimension_height"
+:
+2000
+,
+"internal_dimension_width"
+:
+1414
+,
+"internal_dominant_color"
+:
+"#F4F2F4"
+}
+]
+,
+"tax_class_id"
+:
+"standard"
+,
+"categories"
+:
+[
+{
+"path"
+:
+"Promotion Eligible"
+}
+,
+{
+"path"
+:
+"Releases > SUMMER 1"
+}
+,
+{
+"path"
+:
+"Shop > Dresses"
+,
+"position"
+:
+10
+,
+"is_main"
+:
+true
+}
+]
+,
+"material"
+:
+"LADIES' 100% SILK WOVEN DRESS"
+,
+"country_of_origin"
+:
+"CN"
+,
+"product_hts_number"
+:
+"6204.49.1000"
+,
+"shipping_weight_value"
+:
+1
+,
+"shipping_weight_unit"
+:
+"lb"
+,
+"shipping_dimension_length"
+:
+5
+,
+"shipping_dimension_width"
+:
+5
+,
+"shipping_dimension_height"
+:
+5
+,
+"shipping_dimension_unit"
+:
+"in"
+,
+"variation_color_value"
+:
+"Grace Sweater Beige"
+,
+"variation_size_value"
+:
+"4"
+,
+"variation_size_gender"
+:
+"unisex"
+,
+"google_category"
+:
+"none"
+,
+"variation_size_type"
+:
+"regular"
+,
+"variation_size_system"
+:
+"US"
+,
+"external_identifiers"
+:
+[
+{
+"type"
+:
+"sku"
+,
+"value"
+:
+"3825952358"
+}
+,
+{
+"type"
+:
+"ean13"
+,
+"value"
+:
+"1000101000007"
+}
+]
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"care"
+,
+"value"
+:
+"1000101 This product doesn't need special caring instructions. Handwash at 50°F is sufficent enough."
+}
+,
+{
+"name"
+:
+"fit"
+,
+"value"
+:
+"1000101 Tight"
+}
+]
+}
+]
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"import_id"
+:
+"string"
+,
+"source"
+:
+"string"
+,
+"provider"
+:
+"string"
+,
+"entities"
+:
+[
+"products"
+]
+,
+"source_uri"
+:
+"string"
+,
+"transformed_uri"
+:
+"string"
+,
+"revision"
+:
+0
+,
+"name"
+:
+"string"
+,
+"received_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"completed_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"state"
+:
+"received"
+,
+"reason"
+:
+"string"
+,
+"full"
+:
+false
+}
+Previous
+DC Fulfillment Node Config API
+Next
+Backend API
+Copyright © 2025 NewStore, Inc.

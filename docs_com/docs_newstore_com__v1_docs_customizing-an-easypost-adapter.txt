@@ -1,0 +1,245 @@
+Customizing an EasyPost adapter
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Customizing an EasyPost adapter
+Updated on
+Dec 17, 2024
+Published on Oct 1, 2024
+3 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+If you work with multiple providers, NewStore Omnichannel Cloud offers integration capabilities with the
+EasyPost
+adapter.
+If EasyPost is set up with an adapter that uses the NewStore
+shipping provider webhooks
+to provide shipping options for orders in your business, you can extend the adapter to customize shipment creation requests. This guide walks you through the ways to customize shipments via the EasyPost adapter.
+For more information on the EasyPost adapter itself, or how to set up a shipping adapter, see
+Integrating a shipping provider
+.
+EasyPost currently provides 2 options to customize a shipment request:
+Additional static shipment options
+Shipment customization provider
+Additional static shipment options
+EasyPost shipments contain an
+options
+property that you can use to define various parameters within the shipment object. For more information, see the
+EasyPost specification for options
+.
+You can also define static options for each shipping provider using the
+shipment_creation_options
+property in the
+Create or update EasyPost shipping configuration
+method. When NewStore creates the shipment request, it is sent to EasyPost with the
+schema
+for the shipping carrier configuration.
+The EasyPost adapter overwrites the following properties in the configuration when receiving the shipping request from NewStore, during both the shipping estimation and booking phases:
+print_custom_1
+: Used to specify the ID of an external order.
+print_customer_1_code
+: Used to define the value in
+print_custom_1
+property, which is a static value
+PO
+, which means
+Purchase Order
+.
+Shipment customization provider
+To customize and manage default shipping estimation and booking workflows, you can create an HTTP shipment customization provider (SCP) service.
+This adds a customization layer between the EasyPost adapter and EasyPost itself, and the following data is sent to the customization endpoint:
+request_type
+: Can be one of
+shipping_offers
+or
+shipment
+. This property specifies if the request is to estimate shipping offers or to book a shipment via EasyPost.
+request
+: Original data received by the EasyPost adapter.
+shipment_payload
+: JSON payload prepared to create a shipment in EasyPost
+The
+customized_payload
+expected as the response payload from the customization endpoint must match the format specified by the EasyPost API. For more information, see the
+EasyPost documentation
+. To avoid creating a shipment for a specific request, the response payload must contain an empty
+customized_payload
+object.
+Creating a shipment customization provider
+To create a shipment customization provider (SCP) HTTP service, implement the following methods:
+Create shipping option
+: Used to provide shipping estimates and offers
+Book shipment
+: Used to book the shipment
+In the
+EasyPost adapter configuration
+API schema, the following properties impact the SCP web service:
+base_customization_url
+- The URL to call the SCP web service, which can be either:
+{base_customization_url}/shipping_options
+{base_customization_url}/shipment
+ignore_customization_failure_on_booking
+- Defines how the EasyPost adapter behaves if
+/shipment
+API call fails.
+If set to
+True
+, when the call fails, the adapter considers that there is no customization adapter set up (with a shipment request created by the adapter itself).
+If set to
+False
+, the adapter fails the entire delivery booking request with a
+customization_error
+error code.
+When estimating shipping offers, the
+shipping_options
+call failure is always ignored.
+Payloads
+The following request payload format is expected by both methods:
+{
+  "request":{},
+  "shipment_payload": {}
+}
+In this payload, the
+shipment_payload
+property is the shipment creation JSON object. See the
+EasyPost API docs
+. However, for the
+request
+property, the value changes based on the
+base_customization_url
+.
+base_customization_url}/shipping_options
+: The
+request
+property is the original
+shipping options
+request received by the EasyPost adapter (see the
+Create shipping option
+schema).
+base_customization_url}/shipment
+: The
+request
+property is the original shipment booking request received by the EasyPost adapter (see the
+API schema
+).
+Both methods should return the following payload via a 2xx response:
+{
+ "customized_payload": {}
+}
+In this payload, the
+customized_payload
+property is the EasyPost shipment creation object, see the
+EasyPost API docs
+.
+Example
+See this example of a customization adapter for EasyPost.
+import logging
+
+from flask import Flask, request
+
+app = Flask(__name__)
+
+logger = logging.getLogger(__name__)
+
+
+@app.route('/shipping_options', methods=['POST'])
+def customize_shipping_options_call():
+    original_request = request.json['request']
+    payload = request.json['shipment_payload']
+    customized_payload = payload.copy()
+    price = sum(item['item']['price']['amount'] * item['quantity']
+                for item in original_request['deliverables'])
+    if price >= 100:
+        customized_payload.setdefault('options', {})
+        customized_payload['options']['delivery_confirmation'] = 'SIGNATURE'
+    return {'customized_payload': customized_payload}, 200
+
+
+@app.route('/shipment', methods=['POST'])
+def customize_shipment_call():
+    original_request = request.json['request']
+    payload = request.json['shipment_payload']
+    customized_payload = payload.copy()
+    price = sum(item['price']['amount'] for item in original_request['items'])
+    if price >= 100:
+        customized_payload.setdefault('options', {})
+        customized_payload['options']['delivery_confirmation'] = 'SIGNATURE'
+    return {'customized_payload': customized_payload}, 200
+Was this article helpful?
+Yes
+No
+Tags
+api
+delivery
+Easypost
+fulfillment configuration
+integration
+international shipping
+NewStore OMS
+newstore platform
+order fulfillment
+platform
+routing
+shipping
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

@@ -1,0 +1,221 @@
+Shipment notification configuration API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Configuration APIs
+Inventory and fulfillment
+Fulfillment requests
+Order management
+Availability Config API
+Capacity-based Routing
+API to get, create and update NOM configurations
+Order Injection configuration
+Order status notifications API
+Configuration API for the refund request service
+API to manage sales order configurations
+Shipment notification configuration API
+Checkout
+Payment
+NOM and app
+Fiscalization and taxes
+Promotions
+Webhooks
+New Generation APIs
+get
+Get shipment notification options
+post
+Set shipment notification options
+API docs by Redocly
+Shipment notification configuration API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Use these APIs to manage notification options for your shipment related events.
+Note
+: NewStore sends a confirmation to the customer when
+all
+the items in a
+fulfillment request have been processed for shipment. For example, a confirmation is sent to
+the customer only when all items in the fulfillment request have been dispatched for delivery,
+or when all items have been delivered.
+Possible notifications are:
+shipment_dispatched
+: Sent when a shipment left the fulfillment location and is on its way to the customer.
+shipment_delayed
+: Sent when a shipment is delayed because the fulfillment takes longer than expected.
+shipment_cancelled
+: Sent when a shipment is canceled.
+shipment_delivered
+: Sent when a shipment is delivered to the customer.
+shipping_option.estimate_changed
+: Sent when the estimated time of delivery has changed.
+package.status_updated
+: Sent when the status of a delivery has changed.
+in_store.ready_for_pick_up
+: Sent when an
+in-store pickup
+order is ready to be picked up.
+Get shipment notification options
+Retrieves the current configuration for the retailer, which contains the notification options
+specified for shipments in their business.
+See the
+parent resource
+for possible options.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Successfully retrieved the config value
+404
+Config key doesn't exist (it is not a case when key exists but just not set).
+500
+Internal server error.
+get
+/config/shipment_notification/notification_options
+/v0
+/config/shipment_notification/notification_options
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"value"
+:
+{
+"options"
+:
+{
+"shipment_dispatched"
+:
+[
+"email"
+]
+,
+"shipment_delivered"
+:
+[
+"email"
+]
+}
+,
+"timezone"
+:
+"UTC"
+}
+,
+"updated_at"
+:
+"2021-07-13T20:18:25Z"
+}
+Set shipment notification options
+Sets the configuration for the retailer that contains notification options
+specified for shipments in their business.
+Important
+: Ensure that you provide all the options in the request, as this method does
+not allow you to make partial updates to shipment notifications.
+See the
+parent resource
+for possible options.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+value
+required
+object
+options
+required
+object
+A map of possible notifications that can be sent to the customer.
+push_notification_channel_type
+string
+Enum
+:
+"customer_uuid"
+"email"
+Push notification need a channel (type of addressing) for where to send notifications. That can be the internal customer identifier or their email.
+timezone
+string
+Defines the timezone times are rendered in for the 'shipping_option.estimate_changed' notification. The string should conform to the IANA Time Zone database, like: 'America/New_York'.
+Responses
+200
+Successfully saved config value
+400
+Incorrect payload for config (validation failed).
+409
+Cannot update the configuration due to a race condition.
+500
+Internal server error.
+post
+/config/shipment_notification/notification_options
+/v0
+/config/shipment_notification/notification_options
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"value"
+:
+{
+"options"
+:
+{
+"shipment_dispatched"
+:
+[
+"email"
+]
+,
+"shipment_delivered"
+:
+[
+"email"
+]
+}
+,
+"timezone"
+:
+"UTC"
+}
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+}
+Previous
+API to manage sales order configurations
+Next
+Checkout configuration
+Copyright © 2025 NewStore, Inc.

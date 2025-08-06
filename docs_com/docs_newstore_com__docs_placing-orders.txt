@@ -1,0 +1,271 @@
+Placing orders
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Placing orders
+Updated on
+Dec 18, 2024
+Published on Oct 1, 2024
+4 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+You can use the
+Shopping API
+and the Associate App
+API
+to create and manage carts in order to place orders in the NewStore platform and manage item exchanges.
+See the
+External orders API
+docs for more information on importing external orders into the platform.
+Important
+Talk to your integrator or contact the
+support team
+before you start working with the
+API
+.
+A cart goes through different states:
+draft
+: The cart has been created and can be modified but lacks the required information to be checked out.
+ready
+: The cart can be modified and has all the information needed to be checked out. The required information depends on the situation but it typically is: items, potential shipping information or potential payment information...
+placed
+: The cart has been placed and cannot be modified anymore. The payment and shipping information is being processed.
+accepted
+: The cart's life cycle is over, the payment operations have been successfully performed and an order has been created from the cart. You cannot set the state of the cart to this state.
+failed
+: The payment operations have failed. The cart's payment information must be fixed before being placed again. You cannot set the state of the cart to this state.
+Placing an order
+Creating a cart
+To create a cart:
+Call the
+Create cart
+method. The cart's state is
+draft
+.
+Add items to the cart using the
+Update cart
+method.
+Adding a shipping option
+Add a shipping option if you are dealing with an endless-aisle order:
+Request a shipping solution using the
+Get shipping
+method.
+Add the shipping solution to the cart in the
+shipping_solution_id
+using the
+Update cart
+method.
+Adding payments
+Call the
+Update cart
+method to:
+Add payment information to the cart in the
+payments
+property
+Important
+The sum of all the payment amounts should be equal to the order total.
+Change the cart's
+state
+property to
+ready
+. The response will contain a different state if the cart cannot be set to
+ready
+in case of a payment amount issue or shipping address issue.
+Placing the order
+Place the order by changing the
+state
+property to
+placed
+using the
+Update cart
+method.
+The payment information and shipping information is processed by external parties.
+Check the status of the payments by calling the
+Update cart
+method with an empty body.
+If the processing of the cart data is successful, you can get the sales receipt by calling the
+Get document
+method.
+Exchanging items
+Use the Shopping API to exchange items. The exchange process consists of returning one or more items and adding one or more items in exchange for the items returned.
+When you exchange an item for another one, the total price of the new cart changes depending on which items are involved in the exchange.
+The exchange can be of the following types:
+Negative
+: the new total amount is less than the returned item(s) so a refund will happen.
+Positive
+: the new total amount is greater than the value of the returned item(s) so another payment must be added.
+Even
+: the new total is equal to the value of the returned item(s), so no payment must be added and no refund will happen.
+In order to save the amount that has to be either payed or refunded during an exchange, a
+store credit
+is created in the response of the
+Update cart
+method that corresponds to the total value of the returns.
+Initiating an exchange
+To initiate an exchange, create a new cart and add return information using the
+returns
+property using the
+Update cart
+method.
+"returns": [{
+  "order_id": "f31b1c90-c4a6-4015-af2b-fe07dcfefb6f",
+  "item_id": "b46b4343-2752-4c36-a057-12abae09c927",
+  "return_reason": "Too Large",
+  "return_code": 1
+}]
+The response contains 2 important elements:
+An unchangeable
+potential_store_credit
+property in the
+payment
+property.
+"payments": {
+  "potential_store_credit": {
+    "amount": 230.82,
+    "metadata": null,
+    "method": "store_credit",
+    "processed_at": null,
+    "processor": "store_credit",
+    "type": "captured",
+    "wallet": ""
+  }
+}
+This payment reflects the potential refund amount to be considered during the exchange. This amount does not change when adding new products to the cart, since this is a fixed amount corresponding to the return. This property remains in the cart as long as the cart is in the
+draft
+or
+ready
+state.
+The
+amount
+in the
+exchange
+property:
+It always contains the amount refunded/charged or zero, depending on the type:
+Negative
+: the amount is negative.
+Positive
+: the amount is positive.
+Even
+: the amount is zero.
+"exchange": {
+  "amount": -100.68,
+  "type": "negative"
+}
+Processing an exchange
+To process an exchange:
+Create a new cart.
+Check that the total of the payments matches the total of the cart.
+Set the cart's state to
+placed
+.
+Check the response of your request for the following changes:
+The
+potential_store_credit
+property is replaced by a payment listed in the
+payments
+property.
+This payment represents the amount which was actually issued as store credit.
+If the exchange is a negative exchange, a refund amount is added to the
+refund
+object in every
+return
+property.
+A return is initiated. The status of this is reflected in the
+return_status
+property.
+If the return fails, the cart is back to the
+draft
+state.
+If the return is successful, the checkout proceeds and all payments are processed, including the store credit payment.
+Note
+For positive exchanges, non-store-credit payments can fail. When this happens, the store credit is automatically refunded and the exchange is aborted but
+the items are returned
+. In this case, the same exchange can not happen again as the item have already been returned.
+Sequence diagrams
+In-store purchase
+Endless aisle
+Exchange
+Related topics
+Getting started with NewStore APIs
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+cart
+exchange
+external OMS
+integration
+NewStore OMS
+newstore platform
+order
+order management
+payment
+platform
+refund
+return
+selling experience
+shipping
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

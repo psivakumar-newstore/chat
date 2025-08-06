@@ -1,0 +1,126 @@
+openapi: 3.0.0
+info:
+  title: Support API
+  version: 1.0.0
+  x-audience: internal-team
+  x-api-id: support-062023
+  description: >
+    This is an internal API for our customer support team, to update the
+    placement location of orders in the NewStore platform.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/_/v0/support
+security:
+  - newStoreAccessToken: []
+paths:
+  /orders/{order_id}/amendment:
+    post:
+      summary: Update order details
+      operationId: createOrderDetails
+      requestBody:
+        content:
+          application/json:
+            examples:
+              Update placement location:
+                value:
+                  placement_location:
+                    id: '0004'
+              Use created_at as placed_at:
+                value:
+                  use_created_at_as_placed_at: true
+              Update placement_location and created_at as placed_at:
+                value:
+                  use_created_at_as_placed_at: true
+                  placement_location:
+                    id: '0004'
+            schema:
+              description: >-
+                Updates the details of an order, such as the location where the
+                order was placed.
+              type: object
+              properties:
+                placement_location:
+                  type: object
+                  description: The store where the order was placed.
+                  required:
+                    - id
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the store in the NewStore platform.
+                use_created_at_as_placed_at:
+                  type: boolean
+                  description: >-
+                    Use the created_at timestamp instead of the placed_at
+                    timestamp for the order view generation
+        required: true
+      responses:
+        '204':
+          description: The update was successful.
+        '400':
+          description: The request body is invalid.
+          content:
+            application/problem+json:
+              schema:
+                description: >-
+                  Updates the details of an order, such as the location where
+                  the order was placed.
+                type: object
+                properties:
+                  error_code:
+                    type: string
+                    description: The error code.
+                  message:
+                    type: string
+                    description: A human readable message.
+                  request_id:
+                    type: string
+                    description: The request id.
+        '404':
+          description: Order doesn't exist.
+        '500':
+          description: An internal server error occurred.
+          content:
+            application/problem+json:
+              schema:
+                description: >-
+                  Updates the details of an order, such as the location where
+                  the order was placed.
+                type: object
+                properties:
+                  error_code:
+                    type: string
+                    description: The error code.
+                  message:
+                    type: string
+                    description: A human readable message.
+                  request_id:
+                    type: string
+                    description: The request id.
+        default:
+          description: Unexpected Error
+      description: >
+        Updates the details of an order. Use this method to update order
+        details, such as the store location
+
+        (``store_id``) where an order was originally placed, to a different
+        location.
+
+
+        The details of the order are also updated in NewStore Omnichannel
+        Manager.
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique ID of the sales order.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

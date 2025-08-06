@@ -1,0 +1,1448 @@
+openapi: 3.0.0
+info:
+  title: Customer API (experimental)
+  version: v1
+  description: >
+**Warning:**
+This API version is in an **experimental** state and
+    **should not be used** for production.
+We recommend that all integrations use [Customer API
+    v0](/api/integration/catalog-sfcc/consumer-api_api).
+servers:
+  - url: https://dodici.x.newstore.net/api/v1/shops
+paths:
+  /{shop_id}/categories:
+    get:
+      tags:
+        - Categories
+      responses:
+        '200':
+          description: Array of top-level categories, including their subcategories.
+          content:
+            application/json:
+              example:
+                elements:
+                  - name: Shoes
+                    path: Shoes
+                    path_separator: ' > '
+                    images:
+                      - url: >-
+                          https://example.com/tenant/102291/categories/01-shoes_1.jpg
+                        title: Variety of shoes and foot wear
+                        dominant_color: '#CCFFF3'
+                        width: 1024
+                        height: 768
+                        aspect_ratio: 1.33
+                        tags:
+                          - shoes
+                          - footwear
+                          - mixed
+                          - newstore:main
+                    position: 1
+                    description: Our finest footwear for any situation.
+                    sub_categories:
+                      - path: Shoes > Woman
+                        has_sub_categories: true
+                      - path: Shoes > Men
+                        has_sub_categories: true
+                      - path: Shoes > Kids
+                        has_sub_categories: true
+                  - name: Clothes
+                    path: Clothes
+                    path_separator: ' > '
+                    images:
+                      - url: >-
+                          https://example.com/tenant/102291/categories/02-clothes_1.jpg
+                        title: Variety of different clothes
+                        dominant_color: '#CCFFF3'
+                        width: 1024
+                        height: 768
+                        aspect_ratio: 1.33
+                        tags:
+                          - clothes
+                          - pants
+                          - dresses
+                          - shirts
+                          - newstore:main
+                    position: 2
+                    description: Our range of clothes are as unique as you.
+                    sub_categories:
+                      - path: Clothes > Woman
+                        has_sub_categories: true
+                      - path: Clothes > Men
+                        has_sub_categories: true
+                      - path: Clothes > Kids
+                        has_sub_categories: true
+              schema:
+                $ref: '#/components/schemas/categories_get_list_response'
+        '206':
+          description: >-
+            Same as 200 but indicating that the result set is not complete. This
+            happens if there were more than 2000 categories found. To receive
+            the missing categories you have to refine your query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/categories_get_list_response'
+        '400':
+          description: >
+            Bad request.
+
+            Possible error_codes are:
+
+            * `parameter_mismatch`: The given request contains the same
+            parameter multiple times.
+
+            * `parameter_required`: A required parameter is missing in the given
+            request.
+          content:
+            application/json:
+              examples:
+                parameter_mismatch:
+                  value:
+                    error_code: parameter_mismatch
+                    message: Parameter 'pricebook_id' should only appear once.
+                    request_id: '123.4567'
+                parameter_required:
+                  value:
+                    error_code: parameter_required
+                    message: Parameter 'pricebook_id' is required
+                    request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '404':
+          description: |
+            Not found.
+            Possible error_codes are:
+            * `shop_not_found`: The given shop could not be found.
+          content:
+            application/json:
+              examples:
+                shop_not_found:
+                  value:
+                    error_code: shop_not_found
+                    message: The shop with ID 'default' was not found.
+                    request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: Internal server error.
+                request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+      description: >
+        Retrieves all top-level categories.
+
+
+        **Important:** This method will only return results if you performed a
+
+        [category import](/newstore-cloud/catalog/import-api.html). Categories
+        contained in a product
+
+        import will not be returned by this method.
+      operationId: listCategories
+      summary: List categories
+    parameters:
+      - name: shop_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the shop.
+      - name: locale
+        in: query
+        description: >-
+          The locale for the products catalog. It should be in format en-US or
+          only en.
+        required: true
+        schema:
+          type: string
+          pattern: (^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$)
+  /{shop_id}/categories/{parent}:
+    get:
+      tags:
+        - Categories
+      responses:
+        '200':
+          description: >-
+            OK. Array of categories belonging to the given parent category,
+            including their subcategories.
+          content:
+            application/json:
+              example:
+                elements:
+                  - name: Winter
+                    path: Shoes > Woman > Winter
+                    path_separator: ' > '
+                    images:
+                      - url: >-
+                          https://example.com/tenant/102291/categories/019281-shoes-woman-winter_1.jpg
+                        title: Snowy winter boots
+                        dominant_color: '#CCFFF3'
+                        width: 1024
+                        height: 768
+                        aspect_ratio: 1.33
+                        tags:
+                          - vibrant
+                          - snow
+                          - boots
+                          - newstore:main
+                      - url: >-
+                          https://example.com/tenant/102291/categories/019281-shoes-woman-winter_2.jpg
+                        title: Light and warm leather shoes
+                        dominant_color: '#FF12B1'
+                        width: 1024
+                        height: 768
+                        aspect_ratio: 1.33
+                        tags:
+                          - leather
+                          - warm
+                    position: 1
+                    description: These shoes will keep you warm when it is cold outside.
+                    extended_attributes:
+                      - name: sale-promotion-enabled
+                        value: 'true'
+                    parent_category: Shoes > Woman
+                    sub_categories: []
+              schema:
+                $ref: '#/components/schemas/categories_get_list_response'
+        '206':
+          description: >-
+            Same as 200 but indicating that the result set is not complete. This
+            happens if there were more than 2000 categories found at this level.
+            To receive the missing categories you have to refine your query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/categories_get_list_response'
+        '400':
+          description: >
+            Bad request.
+
+            Possible error_codes are:
+
+            * `parameter_mismatch`: The given request contains the same
+            parameter multiple times.
+
+            * `parameter_required`: A required parameter is missing in the given
+            request.
+          content:
+            application/json:
+              examples:
+                parameter_mismatch:
+                  value:
+                    error_code: parameter_mismatch
+                    message: Parameter 'pricebook_id' should only appear once.
+                    request_id: '123.4567'
+                parameter_required:
+                  value:
+                    error_code: parameter_required
+                    message: Parameter 'pricebook_id' is required
+                    request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '404':
+          description: |
+            Not found.
+            Possible error_codes are:
+            * `shop_not_found`: The given shop could not be found.
+          content:
+            application/json:
+              examples:
+                shop_not_found:
+                  value:
+                    error_code: shop_not_found
+                    message: The shop with ID 'default' was not found.
+                    request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: Internal server error.
+                request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+      description: |
+        Retrieves all subcategories with the given parent category.
+      operationId: listSubcategories
+      summary: List subcategories
+    parameters:
+      - name: parent
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >-
+          The path of the parent category, connected by the defined path
+          separator for which the list of subcategories should be requested. You
+          can get the path separator with the 'List categories' method, in the
+          'path_separator' field.
+      - name: shop_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the shop.
+      - name: locale
+        in: query
+        description: >-
+          The locale for the products catalog. It should be in format en-US or
+          only en.
+        required: true
+        schema:
+          type: string
+          pattern: (^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$)
+  /{shop_id}/prices:
+    get:
+      tags:
+        - Prices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                pricebook_id: default
+                currency: USD
+                traits:
+                  - display_only
+                elements:
+                  - product_id: '1000101'
+                    amount: 1500
+                  - product_id: '1000102'
+                    amount: 1000
+                  - product_id: '1000103'
+                    amount: 300
+              schema:
+                $ref: '#/components/schemas/prices_get_list_response'
+        '400':
+          description: >
+            Bad request.
+
+            Possible error_codes are:
+
+            * `invalid_data`: The given request is invalid due to missing or
+            malformed parameters.
+
+            * `parameter_mismatch`: The given request contains the same
+            parameter multiple times.
+
+            * `parameter_required`: A required parameter is missing in the given
+            request.
+          content:
+            application/json:
+              examples:
+                invalid_data:
+                  value:
+                    error_code: invalid_data
+                    message: Invalid Data.
+                    request_id: '123.4567'
+                parameter_mismatch:
+                  value:
+                    error_code: parameter_mismatch
+                    message: Parameter 'pricebook_id' should only appear once.
+                    request_id: '123.4567'
+                parameter_required:
+                  value:
+                    error_code: parameter_required
+                    message: Parameter 'pricebook_id' is required
+                    request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '404':
+          description: |
+            Not found.
+            Possible error_codes are:
+            * `shop_not_found`: The given shop could not be found.
+            * `not_found`: The given request returned an empty result.
+          content:
+            application/json:
+              examples:
+                shop_not_found:
+                  value:
+                    error_code: shop_not_found
+                    message: The shop with ID 'default' was not found.
+                    request_id: '123.4567'
+                not_found:
+                  value:
+                    error_code: not_found
+                    message: No results found for the given request.
+                    request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: Internal server error.
+                request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+      description: |
+        Retrieves the price information of a list of products.
+      operationId: getPrices
+      summary: Get prices
+      parameters:
+        - name: product_id
+          in: query
+          required: true
+          description: >
+            The identifier of the product defined during the [master data import
+            phase](/newstore-cloud/catalog/import-api.html).
+          schema:
+            type: array
+            items:
+              type: string
+        - name: pricebook_id
+          in: query
+          required: true
+          description: The identifier of the price book.
+          schema:
+            type: string
+        - name: shop_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The identifier of the shop.
+  /{shop_id}/products:
+    get:
+      tags:
+        - Products
+      responses:
+        '200':
+          description: OK. Array of products.
+          content:
+            application/json:
+              example:
+                pagination:
+                  count: 10
+                  offset: 0
+                  total: 1000
+                elements:
+                  - product_id: '1200001'
+                    title: Black Sweater
+                    short_description: Perfect for the winter.
+                    description: >-
+                      Perfect for the winter. Very cozy and comfortable. A
+                      must-have for cold days!
+                    is_available: true
+                    serialized_inventory: false
+                    variable_pricing: false
+                    inventory_tracked: true
+                    online_from: '2018-05-17T07:00:00Z'
+                    online_to: '2020-12-31T13:32:16Z'
+                    effective_price:
+                      amount: 89
+                      currency: EUR
+                    images:
+                      - url: https://example.com/images/blacksweater.jpg
+                        title: Black Sweater Front
+                        dominant_color: '#000000'
+                        width: 1242
+                        height: 2208
+                        aspect_ratio: 0.5625
+                        tags:
+                          - newstore:main
+                      - url: https://example.com/images/black_swatch.jpg
+                        title: Color Swatch
+                        dominant_color: '#000000'
+                        width: 25
+                        height: 25
+                        aspect_ratio: 1
+                        tags:
+                          - newstore:swatch
+                    extended_attributes:
+                      - key: exclusive
+                        value: 'true'
+                      - key: designer
+                        value: Donatella Dodici
+                    variations:
+                      - product_id: '1200002'
+                        is_available: true
+                        variation_color:
+                          value: Black
+                          swatch:
+                            url: https://example.com/images/black_swatch.jpg
+                            title: Color Swatch
+                            dominant_color: '#000000'
+                            width: 25
+                            height: 25
+                            aspect_ratio: 1
+                            tags:
+                              - newstore:swatch
+                        variation_size:
+                          value: M
+                          gender: unisex
+                          type: regular
+                          system: ''
+                        effective_price:
+                          amount: 89
+                          currency: EUR
+                      - product_id: '1200003'
+                        is_available: true
+                        variation_color:
+                          value: Black
+                          swatch:
+                            url: https://example.com/images/black_swatch.jpg
+                            title: Color Swatch
+                            dominant_color: '#000000'
+                            width: 25
+                            height: 25
+                            aspect_ratio: 1
+                            tags:
+                              - newstore:swatch
+                        variation_size:
+                          value: XL
+                          gender: unisex
+                          type: regular
+                          system: ''
+                        effective_price:
+                          amount: 89
+                          currency: EUR
+                  - product_id: '1300001'
+                    title: Leather Boots
+                    short_description: Perfect for the winter.
+                    description: >-
+                      Perfect for the winter. Very cozy and comfortable. A
+                      must-have for cold days!
+                    is_available: true
+                    serialized_inventory: false
+                    variable_pricing: false
+                    inventory_tracked: true
+                    online_from: '2018-08-01T07:00:00Z'
+                    online_to: '2020-12-31T13:32:16Z'
+                    effective_price:
+                      amount: 100
+                      currency: EUR
+                    images:
+                      - url: https://example.com/images/boots.jpg
+                        title: Leather Boots Front
+                        dominant_color: '#000000'
+                        width: 1242
+                        height: 2208
+                        aspect_ratio: 0.5625
+                        tags:
+                          - newstore:main
+                      - url: https://example.com/images/leather_swatch.jpg
+                        title: Color Swatch
+                        dominant_color: '#000000'
+                        width: 25
+                        height: 25
+                        aspect_ratio: 1
+                        tags:
+                          - newstore:swatch
+                    extended_attributes:
+                      - key: exclusive
+                        value: 'true'
+                      - key: designer
+                        value: Donatella Dodici
+                    variations:
+                      - product_id: '1300001'
+                        is_available: true
+                        variation_color:
+                          value: Brown
+                          swatch:
+                            url: https://example.com/images/leather_swatch.jpg
+                            title: Color Swatch
+                            dominant_color: '#614126'
+                            width: 25
+                            height: 25
+                            aspect_ratio: 1
+                            tags:
+                              - newstore:swatch
+                        variation_size:
+                          value: '10.5'
+                          gender: unisex
+                          type: regular
+                          system: ''
+                        effective_price:
+                          amount: 100
+                          currency: EUR
+                      - product_id: '1300002'
+                        is_available: true
+                        variation_color:
+                          value: Dark Grey
+                          swatch:
+                            url: https://example.com/images/leather_grey_swatch.jpg
+                            title: Color Swatch
+                            dominant_color: '#565656'
+                            width: 25
+                            height: 25
+                            aspect_ratio: 1
+                            tags:
+                              - newstore:swatch
+                        variation_size:
+                          value: '10.5'
+                          gender: unisex
+                          type: regular
+                          system: ''
+                        effective_price:
+                          amount: 100
+                          currency: EUR
+                facets:
+                  - field: variation_color_value
+                    enum: enum
+                    values:
+                      - value: Black
+                        count: 1
+                      - value: Brown
+                        count: 1
+                      - value: Dark Grey
+                        count: 1
+                  - field: variation_size_value
+                    enum: enum
+                    values:
+                      - value: M
+                        count: 1
+                      - value: XL
+                        count: 1
+                      - value: '10.5'
+                        count: 1
+              schema:
+                $ref: '#/components/schemas/products_get_list_response'
+        '400':
+          description: >
+            Bad request.
+
+            Possible error_codes are:
+
+            * `invalid_data`: The given request is invalid due to missing or
+            malformed parameters.
+
+            * `invalid_count`: The given count is out of bounds.
+
+            * `invalid_offset`: The given offset is out of bounds or is greater
+            than the total count of elements.
+          content:
+            application/json:
+              examples:
+                invalid_data:
+                  value:
+                    error_code: invalid_data
+                    message: Invalid Data.
+                    request_id: '123.4567'
+                invalid_count:
+                  value:
+                    error_code: invalid_count
+                    message: count maximum is 500.
+                    request_id: '123.4567'
+                invalid_offset:
+                  value:
+                    error_code: invalid_offset
+                    message: offset maximum is 1999.
+                    request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '404':
+          description: |
+            Not found.
+            Possible error_codes are:
+            * `locale_not_found`: The given locale could not be found.
+            * `shop_not_found`: The given shop could not be found.
+          content:
+            application/json:
+              examples:
+                locale_not_found:
+                  value:
+                    error_code: locale_not_found
+                    message: Locale not found.
+                    request_id: '123.4567'
+                shop_not_found:
+                  value:
+                    error_code: shop_not_found
+                    message: The shop with ID 'default' was not found.
+                    request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: Internal server error.
+                request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+      description: |
+        Retrieves a list of products for the given locale.
+      operationId: listProducts
+      summary: List products
+      parameters:
+        - name: locale
+          in: query
+          description: >-
+            The locale for the products catalog. It should be in format en-US or
+            only en.
+          required: true
+          schema:
+            type: string
+            pattern: (^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$)
+        - name: q
+          in: query
+          description: >
+            A search term to restrict products. The search considers the
+            following product properties:
+
+            `title`, `short_description`, `description`, `color` and `size`.
+
+
+            **Note:** You can configure attributes to be searchable during the
+            product import.
+
+            See the
+            [documentation](/docs/development/api/guides/importdata.html) and
+            the
+
+            [tutorial](/docs/development/tutorials/import-data.html) for more
+            details.
+          schema:
+            minLength: 1
+            maxLength: 100
+            type: string
+        - name: include_variations
+          in: query
+          description: Flag to return the siblings of a product.
+          schema:
+            default: false
+            type: boolean
+        - name: filter[
+]
+          in: query
+          description: >
+            A `field=value` pair defining the filter applied to the response.
+            The field names you can use in the
+
+            filter are available in the facets property in the response of this
+            method. Boolean filters like `is_preorder`
+
+            are not part of the facet properties in the response of this method.
+
+
+            **Note:** Using this parameter several times on one field in one
+            query creates an `OR` operation.
+
+            The `AND` operation on the same field is not possible in one query.
+          schema:
+            type: array
+            items:
+              type: string
+        - name: shop_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The identifier of the shop.
+  /{shop_id}/products/{type}{id}:
+    get:
+      tags:
+        - Products
+      responses:
+        '200':
+          description: The product detail information if the provided ID exists.
+          content:
+            application/json:
+              example:
+                product_id: '1200001'
+                title: Black Sweater
+                short_description: Perfect for the winter.
+                description: >-
+                  Perfect for the winter. Very cozy and comfortable. A must-have
+                  for cold days!
+                is_available: true
+                serialized_inventory: false
+                variable_pricing: false
+                inventory_tracked: true
+                online_from: '2018-05-17T07:00:00Z'
+                online_to: '2020-12-31T13:32:16Z'
+                effective_price:
+                  amount: 89
+                  currency: EUR
+                images:
+                  - url: https://example.com/images/blacksweater.jpg
+                    title: Black Sweater Front
+                    dominant_color: '#000000'
+                    width: 1242
+                    height: 2208
+                    aspect_ratio: 0.5625
+                    tags:
+                      - newstore:main
+                  - url: https://example.com/images/black_swatch.jpg
+                    title: Color Swatch
+                    dominant_color: '#000000'
+                    width: 25
+                    height: 25
+                    aspect_ratio: 1
+                    tags:
+                      - newstore:swatch
+                extended_attributes:
+                  - key: exclusive
+                    value: 'true'
+                  - key: designer
+                    value: Donatella Dodici
+                variations:
+                  - product_id: '1200002'
+                    is_available: true
+                    variation_color:
+                      value: Black
+                      swatch:
+                        url: https://example.com/images/black_swatch.jpg
+                        title: Color Swatch
+                        dominant_color: '#000000'
+                        width: 25
+                        height: 25
+                        aspect_ratio: 1
+                        tags:
+                          - newstore:swatch
+                    variation_size:
+                      value: M
+                      gender: unisex
+                      type: regular
+                      system: ''
+                    effective_price:
+                      amount: 89
+                      currency: EUR
+                  - product_id: '1200003'
+                    is_available: true
+                    variation_color:
+                      value: Black
+                      swatch:
+                        url: https://example.com/images/black_swatch.jpg
+                        title: Color Swatch
+                        dominant_color: '#000000'
+                        width: 25
+                        height: 25
+                        aspect_ratio: 1
+                        tags:
+                          - newstore:swatch
+                    variation_size:
+                      value: XL
+                      gender: unisex
+                      type: regular
+                      system: ''
+                    effective_price:
+                      amount: 89
+                      currency: EUR
+              schema:
+                $ref: '#/components/schemas/product'
+        '404':
+          description: |
+            Not found.
+            Possible error_codes are:
+            * `locale_not_found`: The given locale could not be found.
+            * `shop_not_found`: The given shop could not be found.
+            * `not_found`: The given request returned an empty result.
+          content:
+            application/json:
+              examples:
+                locale_not_found:
+                  value:
+                    error_code: locale_not_found
+                    message: Locale not found.
+                    request_id: '123.4567'
+                shop_not_found:
+                  value:
+                    error_code: shop_not_found
+                    message: The shop with ID 'default' was not found.
+                    request_id: '123.4567'
+                not_found:
+                  value:
+                    error_code: not_found
+                    message: No results found for the given request.
+                    request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: Internal server error.
+                request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error_response'
+      description: >
+        Returns product detail information including product variant specific
+        information such as
+
+        prices and quantities.
+      operationId: getProductDetails
+      summary: Get product details
+    parameters:
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The type of the external ID. It is the identification system used in
+          your setup.
+
+          Typical systems are EAN, SKU, GTIN, etc.
+
+
+          **Note:** To use the NewStore ID of the product (`product_id`) instead
+          of its external
+
+          identifier, omit this parameter and only use the `id` parameter.
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The product identifier, either the internal product id (`product_id`),
+          or an external id such as an SKU number. Both identifiers are provided
+          during the [master data import
+          phase](/newstore-cloud/catalog/import-api.html):
+
+          - To use an external product ID such as an SKU number, provide the
+          `type` parameter.
+
+          - To use the internal product ID (`product_id`), omit the `type`
+          parameter.
+
+
+          **Important**: When retrieving a product whose id contains special
+          characters (reserved, unreserved, and escaped
+
+          characters based on the [RFC
+          guidelines](https://datatracker.ietf.org/doc/html/rfc3986), the value
+          of the product ID must be encoded.
+
+          For more information, see Section 2.1 in the RFC guidelines.
+      - name: shop_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the shop.
+      - name: locale
+        in: query
+        description: >-
+          The locale for the products catalog. It should be in format en-US or
+          only en.
+        required: true
+        schema:
+          type: string
+          pattern: (^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$)
+      - name: include_variations
+        in: query
+        description: >-
+          Whether to include/populate the product's variations field or not.
+          Variations are included by default.
+        schema:
+          type: boolean
+components:
+  schemas:
+    image:
+      type: object
+      title: Image
+      description: Information about an image.
+      properties:
+        url:
+          description: The image url.
+          type: string
+          format: uri
+        title:
+          description: The image title.
+          type: string
+        dominant_color:
+          type: string
+          description: >-
+            The dominant color which represents the image as color hex. Used for
+            example as a placeholder until the image is loaded.
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+        width:
+          type: number
+          multipleOf: 1
+          description: The width of the image in pixel.
+        height:
+          type: number
+          multipleOf: 1
+          description: The height of the image in pixel.
+        aspect_ratio:
+          type: number
+          multipleOf: 0.0001
+          description: The aspect ratio between height and width of the image.
+        tags:
+          description: >-
+            Image tags that are specific to your business, defined inside the
+            import and used for display purposes (for example 'background',
+            ...). NewStore tags the image with 'newstore:main'.
+          type: array
+          items:
+            type: string
+    category:
+      type: object
+      properties:
+        name:
+          description: Category name.
+          type: string
+        path:
+          description: >-
+            Unique category path beginning from the root category and separated
+            by 'path_separator'. For example 'Shoes > Women > Winter'.
+          type: string
+        path_separator:
+          description: >-
+            The used separator string to assemble the category path. Can be used
+            to split the category path into their segments for display purposes.
+            Defaults to ' > '.
+          type: string
+        images:
+          description: Images of this category.
+          type: array
+          items:
+            $ref: '#/components/schemas/image'
+        position:
+          description: >-
+            Sorting position of this category in relation to categories of this
+            level of the category tree. Can be used to display the category at a
+            certain position in the category list.
+          type: integer
+        description:
+          description: Description of this category, for example for meta tags.
+          type: string
+        extended_attributes:
+          description: >-
+            A collection of key/values for custom diversification of the
+            category. For example a category could be marked for a special
+            promotion by adding a extended attribute '{"name": "promotion_type",
+            "value": "summer_sale"}'. The list items are sorted by the key field
+            'name'.
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - value
+            properties:
+              name:
+                type: string
+                description: >-
+                  Key field identifying the content/purpose of the data inside
+                  the value field.
+              value:
+                type: string
+                description: Value containing the corresponding data for the named field.
+        parent_category:
+          description: Immediate parent category path.
+          type: string
+        sub_categories:
+          description: List of subcategory information.
+          type: array
+          items:
+            type: object
+            description: Subcategory path and descendant information.
+            properties:
+              path:
+                type: string
+                description: Subcategory's path.
+              has_sub_categories:
+                type: boolean
+                description: Flag indicating if the subcategory has further descendants.
+    categories_get_list_response:
+      type: object
+      title: Categories Response
+      description: Get a list of top-level categories.
+      properties:
+        elements:
+          type: array
+          description: >-
+            The response container for the returned categories. Categories
+            inside the list are sorted by its 'position' property
+          items:
+            $ref: '#/components/schemas/category'
+    error_response:
+      type: object
+      title: Error Response
+      description: >-
+        Error response send if a request to an customer endpoint failed due to
+        an external or internal error.
+      required:
+        - message
+      properties:
+        error_code:
+          type: string
+          description: Custom error code which provides more details about the error.
+        message:
+          type: string
+          description: Contains the reason of the error.
+        request_id:
+          type: string
+          description: >-
+            Unique request identifier which caused the error. Can be used to
+            further debug the root causes of this error.
+    prices_get_list_response:
+      title: Product price information
+      description: List of product price information
+      properties:
+        pricebook_id:
+          type: string
+          description: The identifier of the price book.
+        currency:
+          type: string
+          description: >-
+            The currency as 3 character ISO-4217 code, for example 'EUR' or
+            'USD'.
+        traits:
+          type: array
+          items:
+            type: string
+            description: >-
+              A distinguishing quality or characteristic, for example
+              'display_only' or 'eligible_for_proration'.
+        elements:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+              amount:
+                type: number
+                description: >-
+                  The amount of the price. All amounts are in the same currency
+                  of the pricebook.
+    variations:
+      type: object
+      title: Product Variations
+      description: >-
+        Product attributes (of other variants) that are needed to display
+        variations correctly.
+      properties:
+        product_id:
+          type: string
+          description: >-
+            Product identifier to get the reference to the corresponding
+            product.
+        is_available:
+          type: boolean
+          description: Indicates if a product is purchasable.
+        variation_color:
+          type: object
+          properties:
+            value:
+              type: string
+              description: The product color display name.
+            swatch:
+              $ref: '#/components/schemas/image'
+        variation_size:
+          type: object
+          properties:
+            value:
+              type: string
+              description: The product size display name.
+            gender:
+              description: The gender for which the size will apply.
+              type: string
+              enum:
+                - male
+                - female
+                - unisex
+                - ''
+            type:
+              description: The cut of the product.
+              type: string
+            system:
+              description: The size system code (non ISO country code).
+              type: string
+        effective_price:
+          type: object
+          properties:
+            amount:
+              type: number
+              description: >-
+                The product price shown to the customer (can be incl. or excl.
+                tax).
+              multipleOf: 0.01
+            currency:
+              type: string
+              description: >-
+                The currency of this price as a 3 character ISO-4217 code.
+                Example USD, EUR.
+    product_list_item:
+      description: Data for item in product Listing (product with less information).
+      type: object
+      properties:
+        product_id:
+          type: string
+          description: The product identifier.
+        title:
+          description: The product title/name.
+          type: string
+        short_description:
+          description: A short version of the product description.
+          type: string
+        description:
+          description: A longer version of the product description.
+          type: string
+        is_available:
+          type: boolean
+          description: Flag if a product is purchasable.
+        preorder_start:
+          description: >-
+            Determines the date-time (inclusive) when the product is available
+            for pre-order.
+          type: string
+          format: date-time
+          example: '2020-03-16T05:00:14Z'
+        online_from:
+          description: >-
+            Determines the date-time (inclusive) when the product is available
+            for sale.
+          type: string
+          format: date-time
+          example: '2021-01-01T17:00:00Z'
+        online_to:
+          description: >-
+            Determines the date-time (inclusive) when the product is not
+            available for sale anymore.
+          type: string
+          format: date-time
+          example: '2021-12-01T10:01:00Z'
+        effective_price:
+          type: object
+          properties:
+            amount:
+              type: number
+              description: Product price shown to the customer (can be incl. or excl. tax).
+              multipleOf: 0.01
+            currency:
+              type: string
+              description: >-
+                The currency of this price as 3 character ISO-4217 code. Example
+                USD, EUR.
+        images:
+          description: Product images.
+          type: array
+          items:
+            $ref: '#/components/schemas/image'
+        extended_attributes:
+          description: >-
+            A collection of key/values for custom diversification of the
+            product. For example a product could be further described by adding
+            a extended attribute '{"key": "fit", "value": "slim"}'. The list
+            items are sorted by the field 'key'.
+          type: array
+          items:
+            type: object
+            required:
+              - key
+              - value
+            properties:
+              key:
+                type: string
+                description: >-
+                  Key field identifying the content/purpose of the data inside
+                  the value field.
+              value:
+                type: string
+                description: Value containing the corresponding data for the named field.
+        variations:
+          description: >-
+            Product variant specific information. Fields that are equal in all
+            variants are omitted and must be obtained from the main product.
+          type: array
+          items:
+            $ref: '#/components/schemas/variations'
+        is_preorder:
+          type: boolean
+          description: >-
+            Set to true if product can be pre-ordered. This means that the
+            product is in stock and a preorder_start date is set between the
+            current date and the online_from date.
+        serialized_inventory:
+          description: >-
+            Set to true if the product is tracked in the platform using serial
+            numbers.
+          type: boolean
+        variable_pricing:
+          description: Indicates that the price of this product is entered during checkout.
+          type: boolean
+        inventory_tracked:
+          description: >-
+            Indicates that the availability of this product is being tracked on
+            the platform.
+          type: boolean
+    paged_response:
+      type: object
+      description: Contains default fields for paginatable APIs.
+      properties:
+        pagination:
+          type: object
+          required:
+            - count
+            - total
+            - offset
+          properties:
+            count:
+              description: >-
+                The number of items returned in the list. If count returned is
+                less than requested, there is no further page. If count returned
+                equals the count requested, add it to the offset to retrieve the
+                next page of the list.
+              type: integer
+            total:
+              description: Contains the total count of items.
+              type: integer
+            offset:
+              description: >-
+                The offset of the first element of items returned in the overall
+                list.
+              type: integer
+    products_get_list_response:
+      type: object
+      description: Contains a list of products.
+      allOf:
+        - type: object
+          properties:
+            elements:
+              type: array
+              items:
+                $ref: '#/components/schemas/product_list_item'
+            facets:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                    description: Item name to filter by.
+                  type:
+                    type: string
+                    enum:
+                      - enum
+                    description: >-
+                      Type of the facet result. It indicates that the facet
+                      elements are simply enumerated and available as a list, as
+                      in a Color facet would have a list such as Blue, Green,
+                      Red etc.
+                  values:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                          description: Value of the field in the items.
+                        count:
+                          type: integer
+                          description: >-
+                            The count values currently represent the count of
+                            the variants and not the groups. So it might be
+                            better to just use this value to check for a count
+                            of 0. A facet value with count 0, might needs to be
+                            disabled for selection as filter option in the UI
+                            for example.
+        - $ref: '#/components/schemas/paged_response'
+    product:
+      type: object
+      allOf:
+        - type: object
+          properties:
+            categories:
+              type: array
+              items:
+                type: object
+                properties:
+                  path:
+                    description: >-
+                      The unique category path beginning from the root category
+                      and separated by 'path_separator'. For example 'Shoes >
+                      Women > Winter'.
+                    type: string
+                  path_separator:
+                    description: >-
+                      The separator string used to assemble the category path.
+                      Can be used to split the category path into their segments
+                      for display purposes. Defaults to ' > '.
+                    type: string
+                  position:
+                    description: >-
+                      The sorting position of this category in relation to
+                      categories of this level of the category tree. Can be used
+                      to display the category at a certain position in the
+                      category list.
+                    type: integer
+                  is_main:
+                    description: Indicates if it is the main category or not.
+                    type: boolean
+            external_identifiers:
+              description: >-
+                The external identifiers for the product, based on inventory
+                identification standards.
+              type: array
+              items:
+                type: object
+                required:
+                  - type
+                  - value
+                properties:
+                  type:
+                    type: string
+                    description: >-
+                      Type field identifying the external identifier inside the
+                      value field.
+                  value:
+                    type: string
+                    description: >-
+                      Value containing the corresponding data for the external
+                      identifier.
+            brand:
+              description: The product brand name.
+              type: string
+            caption:
+              description: A short version of the product description.
+              type: string
+            keywords:
+              description: A list of product keywords.
+              type: array
+              items:
+                type: string
+            shipping_weight:
+              description: The weight of the shipment.
+              type: object
+              properties:
+                value:
+                  description: The numeric value of the shipment.
+                  type: number
+                unit:
+                  description: The chosen weight unit of the shipment.
+                  type: string
+                  enum:
+                    - g
+                    - kg
+                    - lb
+        - $ref: '#/components/schemas/product_list_item'
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}
+x-annotation-crossOriginAllowed: true
+x-annotation-cached: true
+x-annotation-cacheExpiration: 30
+x-annotation-experimental:
+  changes:
+    - 06/2018 - Initial release
+    - >-
+      07/2018 - add get product by product id or external id endpoint
+      /products/{type}{id}

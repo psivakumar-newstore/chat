@@ -1,0 +1,344 @@
+Config API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Configuration APIs
+Inventory and fulfillment
+Fulfillment requests
+Order management
+Checkout
+Payment
+NOM and app
+Address search operations
+Associate App Configuration API
+Associate App Customization Configuration API
+Config API
+Printers API
+Fiscalization and taxes
+Promotions
+Webhooks
+New Generation APIs
+email
+get
+Retrieve configuration options for the email service.
+put
+Change configuration for the email service.
+nom
+get
+Retrieve configuration options for NOM.
+put
+Change configuration options for NOM.
+API docs by Redocly
+Config API
+(
+1.0
+)
+Download OpenAPI specification
+:
+Download
+URL:
+https://docs.newstore.net/
+The API to request, add and change configurations of Team Web Platform's services.
+email
+Endpoints for managing email configuration.
+Retrieve configuration options for the email service.
+The values
+smtp_pass
+and
+smtp_user
+are considered as secrets and will always be returned as
+***********
+.
+Responses
+200
+Successful response.
+404
+One or more configuration options are not set for this tenant.
+Set the values for configuration options before retrieving them.
+500
+Could not retrieve email service configuration due to a server error.
+get
+/email
+/api/v1/org/config
+/email
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"configuration_options"
+:
+[
+{
+"name"
+:
+"string"
+,
+"value"
+:
+null
+}
+]
+}
+Change configuration for the email service.
+Email configuration can be created or updated. It is possible to just set a subset of the configuration values.
+Request Body schema:
+application/json
+feature_toggle
+string
+Enum
+:
+"enabled"
+"disabled"
+Toggle to turn email sending on or off, if missing it is turned on by default.
+smtp_port
+string
+non-empty
+The SMTP port used to send email.
+from_address
+string
+non-empty
+The address of the sender that appears in the sent messages.
+from_name
+string
+non-empty
+The name of the sender that appears in the sent messages.
+smtp_user
+string
+The username required to access the SMTP server.
+smtp_host
+string
+non-empty
+The host of the SMTP server.
+smtp_pass
+string
+The password for 'smtp_user' (the user to access the server).
+Responses
+200
+Configuration options updated/created.
+400
+The configuration change request is malformed.
+500
+Could not update email service configuration due to a server error.
+put
+/email
+/api/v1/org/config
+/email
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"feature_toggle"
+:
+"enabled"
+,
+"smtp_port"
+:
+"string"
+,
+"from_address"
+:
+"string"
+,
+"from_name"
+:
+"string"
+,
+"smtp_user"
+:
+"string"
+,
+"smtp_host"
+:
+"string"
+,
+"smtp_pass"
+:
+"string"
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+{
+"message"
+:
+"string"
+}
+nom
+Endpoints for managing NOM configuration.
+Retrieve configuration options for NOM.
+There are many configurations for managing NOM. This is a list of all NOM configurations that currently
+have not been assigned to a particular domain. This is not an exceptional list, other NOM configurations
+can be found in coresponding domains (order management, checkout, etc.)
+Responses
+200
+Successful response.
+404
+One or more configuration options are not set for this tenant.
+Set the values for configuration options before retrieving them.
+500
+Could not retrieve NOM configuration due to a server error.
+get
+/nom
+/api/v1/org/config
+/nom
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"configuration_options"
+:
+[
+{
+"name"
+:
+"string"
+,
+"value"
+:
+null
+}
+]
+}
+Change configuration options for NOM.
+When you send a request to change configuration for a specific key, it replaces the previous value, not patches it.
+ So you cannot set individual keys inside top-level options since it will delete the other keys inside this option,
+ you need to provide the whole value of the top-level option to change an individual key inside it.
+The exception is "releaseToggles": you can set individual options inside "releaseToggles" without replacing values
+ for other options inside.
+Request Body schema:
+application/json
+userLocalTimezone
+boolean
+Default:
+false
+Defines if date/time values are displayed in NOM according to the user's local timezone (true), or the tenant's configured timezone (false). Defaults to false.
+timezone
+string
+Default:
+"America/New_York"
+The timezone used for NOM, defaults to 'America/New_York'.
+currency
+string
+<= 3 characters
+Default:
+"USD"
+Currency code shown and used in NOM, defaults to 'USD'.
+cognitoFormsURL
+string
+CognitoForms URL of support case submission form.
+cognitoFormsID
+string
+CognitoForms ID of support case submission form.
+releaseToggles
+object
+Defines if certain features of NOM should be activated for a tenant or not.
+idleTimeout
+integer
+Default:
+1800
+Defines the amount of seconds of idle time before users are automatically logged out of NOM.
+Responses
+200
+Configuration options updated/created.
+400
+The configuration change request is malformed.
+500
+Could not update NOM configuration due to a server error.
+put
+/nom
+/api/v1/org/config
+/nom
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"userLocalTimezone"
+:
+false
+,
+"timezone"
+:
+"America/New_York"
+,
+"currency"
+:
+"USD"
+,
+"cognitoFormsURL"
+:
+"string"
+,
+"cognitoFormsID"
+:
+"string"
+,
+"releaseToggles"
+:
+{
+"canSubmitSupportCases"
+:
+false
+,
+"enableLocalizableReasonCodes"
+:
+false
+,
+"useRoleBasedFilters"
+:
+false
+,
+"viewSystemSettings"
+:
+false
+}
+,
+"idleTimeout"
+:
+1800
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+{
+"message"
+:
+"string"
+}
+Previous
+Associate App Customization Configuration API
+Next
+Printers API
+Copyright © 2025 NewStore, Inc.

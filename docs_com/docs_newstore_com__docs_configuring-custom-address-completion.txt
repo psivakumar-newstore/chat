@@ -1,0 +1,150 @@
+Configuring custom address completion
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Configuring custom address completion
+Updated on
+Jan 28, 2025
+Published on Oct 1, 2024
+1 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Associate App uses
+Apple MapKit
+by default to complete addresses when creating or updating customer profiles or during shipment for endless aisle orders.
+However, in certain countries,
+Apple MapKit
+does not provide accurate addresses for certain countries. For such situations, you can use a custom solution to control how to process addresses in the correct format. Using this custom solution allows you to use the address provider of your choice, such as
+AWS locations
+,
+Google Maps
+, and others.
+Setting up custom address completion
+To display custom address completion information in Associate App, set up a lambda function for NewStore to fetch the correct addresses.
+Configure the lambda function to support the
+GET
+method, enabling Associate App to send requests with specific query parameters. The lambda function requires the following parameters to process requests from Associate App:
+query: string
+The address search query. For example, street name and house number
+context: string
+Additional details of the address. For example, postal code and city
+lang: string
+The client locale and language
+Here is an example of what the
+GET
+request should look like:
+<lambda URL>?query=745%20Atlantic%20Ave&context=Boston%2C%20MA%2C%20United%20States&lang=en-us
+The response of the lambda must match the format of the payload described here:
+interface FullAddress {
+  name: string // Displayed as Address1 field in the address form in the app
+  zip: string
+  city: string
+  cityDistrict: string
+  country: string
+  countryCode: string
+  administrativeArea: string // Displayed as State field in the address form in the app
+  streetName: string
+  houseNumber: string
+}
+For an example of the lambda function payload to integrate custom address providers with Associate App, see the
+integration guide
+.
+Enabling custom address completion
+To enable associates to view address completion in the app from address providers of your choice, enable this feature:
+Use the
+Update app configuration
+method.
+In
+customizations
+>
+address_completion
+, specify the lambda URL you have configured in the previous section or the one provided by NewStore (
+https://{tenant}.p.newstore.net/retail-org/address-completions/addresses
+).
+Note
+Apple Mapkit
+for address completion is enabled by default. You only need to enable this feature to ensure addresses are retrieved from your preferred address provider other than
+Apple Mapkit
+.
+Apple Mapkit
+uses the search service provided by Apple. The custom implementation provided by NewStore uses AWS location service with
+HERE Technologies
+as a provider.
+Related topics
+Custom address completion using AWS lambda functions
+Using NewStore Associate App
+Was this article helpful?
+Yes
+No
+Tags
+address completion
+app customization
+Associate App
+Associate App configuration
+configuration
+customer
+customize associate app
+sdk
+selling experience
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

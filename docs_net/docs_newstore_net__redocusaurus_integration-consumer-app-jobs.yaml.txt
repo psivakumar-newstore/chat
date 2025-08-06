@@ -1,0 +1,634 @@
+consumes:
+  - application/json
+produces:
+  - application/json
+schemes:
+  - https
+swagger: '2.0'
+info:
+  description: |
+    Describes API endpoints that schedule background jobs for various use cases.
+  title: Jobs API
+  version: '4.5'
+paths:
+  /jobs/reindex-categories:
+    post:
+      security:
+        - basic_auth: []
+      description: |
+        Schedules a job that refreshes the order of products within categories.
+
+        Note that this job only refreshes the **order** of products. The product
+        data itself (such as pricing) is not refreshed.
+      tags:
+        - Jobs
+      summary: Reindex categories
+      parameters:
+        - $ref: '#/parameters/basic_auth'
+        - description: Request body to schedule a job to reindex categories
+          name: ReindexCategoriesRequestBody
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ReindexCategoriesRequest'
+      responses:
+        '202':
+          description: Accepted
+          schema:
+            $ref: '#/definitions/ScheduledCategoriesReindexJob'
+          examples:
+            application/json:
+              job_id: d02b7e035bd31021168e7557
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/InvalidReindexCategoriesRequest'
+          examples:
+            application/json:
+              code: unknown_country
+              message: No Highstreet environment found for 'NL'
+        '401':
+          $ref: '#/responses/unauthorized'
+        '500':
+          $ref: '#/responses/server_error'
+  /jobs/stock_notifications:
+    post:
+      security:
+        - basic_auth: []
+      description: |
+        Schedules a job to send back in stock notifications to customers that
+        registered to receive one.
+
+        This endpoint can be called any time the stock of a product changes from
+        0 (out of stock) to greater than 0 (back in stock).
+
+        This endpoint should only be called with product IDs of fully configured
+        products. The following products types are supported:
+
+        | Platform                  | Product types         |
+        |---------------------------|-----------------------|
+        | Magento 1 & Magento 2     | `simple`              |
+        | Salesforce Commerce Cloud | `item` and `variant`  |
+        | Self-implemented          | `fixed` and `variant` |
+
+        Partially configured products are not supported.
+
+        After receiving a back in stock notification the user will not receive
+        a second notification for the same product (unless they explicitly
+        register again).
+      tags:
+        - Jobs
+      summary: Stock Notifications
+      operationId: ScheduleStockNotifications
+      parameters:
+        - $ref: '#/parameters/basic_auth'
+        - description: Request body for scheduling back in stock notifications
+          name: StockNotificationsRequestBody
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/StockNotificationRequest'
+      responses:
+        '202':
+          description: Accepted
+          schema:
+            $ref: '#/definitions/ScheduledStockNotification'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/InvalidStockNotificationsRequest'
+        '401':
+          $ref: '#/responses/unauthorized'
+        '500':
+          $ref: '#/responses/server_error'
+definitions:
+  Address:
+    allOf:
+      - $ref: '#/definitions/AddressFields'
+      - type: object
+        required:
+          - street
+          - house_number
+          - first_name
+          - last_name
+          - postal_code
+          - city
+          - country_id
+    example:
+      city: Utrecht
+      country_id: NL
+      first_name: App
+      house_number: '154'
+      last_name: Tester
+      postal_code: 3514 AZ
+      street: Hooghiemstraplein
+      telephone: 030-2769165
+  AddressFields:
+    description: An address
+    properties:
+      addition:
+        description: Addition
+        type: string
+        minLength: 1
+      city:
+        description: The city name
+        type: string
+        minLength: 1
+      company:
+        description: The company name of the recipient
+        type: string
+        minLength: 1
+      country_id:
+        $ref: '#/definitions/CountryCode'
+      first_name:
+        description: The recipient's first name
+        type: string
+        minLength: 1
+      house_number:
+        description: House number
+        type: string
+        minLength: 1
+      last_name:
+        description: The recipient's last name
+        type: string
+        minLength: 1
+      postal_code:
+        description: Postal or ZIP code
+        type: string
+        minLength: 1
+      state:
+        description: The state code.
+        type: string
+        minLength: 1
+      street:
+        description: Street name
+        type: string
+        minLength: 1
+      telephone:
+        description: The phone number of the recipient
+        type: string
+        minLength: 1
+  AuthError:
+    allOf:
+      - $ref: '#/definitions/Err'
+      - description: Authorization Error
+        required:
+          - code
+        properties:
+          code:
+            description: Error code
+            type: string
+            enum:
+              - unauthorized
+  Barcode:
+    description: Description of a barcode.
+    type: object
+    required:
+      - type
+      - value
+    properties:
+      type:
+        description: The barcode type.
+        type: string
+        enum:
+          - code128
+          - qr
+      value:
+        description: The value to encode as a barcode.
+        type: string
+        minLength: 1
+    example:
+      type: code128
+      value: '100302107016259158'
+  Coordinates:
+    description: GPS coordinates
+    type: object
+    required:
+      - latitude
+      - longitude
+    properties:
+      latitude:
+        description: Latitude
+        type: number
+        maximum: 90
+        minimum: -90
+      longitude:
+        description: Longitude
+        type: number
+        maximum: 180
+        minimum: -180
+    example:
+      latitude: 52.0986345
+      longitude: 5.1251368
+  CountryCode:
+    description: >-
+      A two character [ISO 3166-1
+      Alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.
+    type: string
+    maxLength: 2
+    minLength: 2
+  Email:
+    description: E-mail address of the customer
+    type: string
+    format: email
+    minLength: 1
+  Err:
+    description: Highstreet Error
+    type: object
+    properties:
+      debug:
+        description: |
+          Debugging data. Can be anything. Only exposed in staging environments.
+      message:
+        description: Developer friendly error message.
+        type: string
+  InvalidReindexCategoriesRequest:
+    allOf:
+      - $ref: '#/definitions/Err'
+      - description: UnknownCountry
+        type: object
+        required:
+          - code
+        properties:
+          code:
+            description: An error code
+            type: string
+            enum:
+              - invalid
+              - unknown_country
+    example:
+      code: unknown_country
+      message: There is no environment configured for the country "NL"
+  InvalidStockNotificationsRequest:
+    allOf:
+      - $ref: '#/definitions/Err'
+      - description: UnknownCountry
+        type: object
+        required:
+          - code
+        properties:
+          code:
+            description: An error code
+            type: string
+            enum:
+              - invalid
+              - unknown_country
+              - missing_translation
+    example:
+      code: unknown_country
+      message: There is no environment configured for the country "NL"
+  OptionalAddress:
+    allOf:
+      - $ref: '#/definitions/AddressFields'
+      - type:
+          - object
+          - 'null'
+    x-nullable: true
+  OptionalEmail:
+    description: E-mail address of the customer
+    type:
+      - string
+      - 'null'
+    format: email
+    minLength: 1
+  PartialAddress:
+    allOf:
+      - $ref: '#/definitions/AddressFields'
+      - type: object
+  RGBA:
+    description: |
+      A 4-element array describing a RGBA color value. The first three values
+      (red, green, blue) range from `0` to `255`. The last number (opacity) from
+      `0` to `1`.
+    type: array
+    maxItems: 4
+    minItems: 4
+    items:
+      description: a color value.
+      type: number
+      maximum: 255
+      minimum: 0
+  ReindexCategoriesRequest:
+    description: Request to schedule a job to reindex categories
+    type: object
+    required:
+      - countries
+    properties:
+      countries:
+        description: List of country codes
+        type: array
+        items:
+          $ref: '#/definitions/CountryCode'
+    example:
+      countries:
+        - NL
+        - BE
+  ScheduledCategoriesReindexJob:
+    description: Describes the job that has been scheduled
+    type: object
+    required:
+      - job_ids
+    properties:
+      job_ids:
+        description: Identifiers of the jobs. Useful to log for debugging.
+        type: array
+        items:
+          type: string
+  ScheduledStockNotification:
+    description: A scheduled back in stock notification job
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        description: Identifier of the stock notification job
+        type: string
+    example:
+      id: 03b6c7d6bfa2
+  ServerError:
+    allOf:
+      - $ref: '#/definitions/Err'
+      - description: An internal server error
+        type: object
+        required:
+          - code
+        properties:
+          code:
+            description: An error code
+            type: string
+            enum:
+              - config_error
+              - convert_error
+              - fetch_error
+    example:
+      code: convert_error
+      message: can't convert Basket to cart
+  StockNotificationRequest:
+    type: object
+    required:
+      - product_id
+      - countries
+      - title_translations
+      - message_translations
+    properties:
+      countries:
+        description: |
+          One or more countries that the product has come back in stock in. If
+          a product has come back in stock in The Netherlands (`NL`) but not in
+          the United States (`US`) then `US` should not be included in the list.
+        type: array
+        items:
+          description: A two character country code
+          type: string
+          maxLength: 2
+          minLength: 2
+      delivery_time:
+        description: |
+          The date and time the notification should be delivered to the customer
+          in ISO 8601 standard format. Notifications will be sent as soon as
+          possible by default.
+        type: string
+      max_recipients:
+        description: |
+          The maximum number of customers that will receive a notification. If
+          the number of customers that want to receive a notification is higher
+          than the maximum number of recipients the users that registered first
+          are prioritised. Notifications are sent to all interested customers by
+          default.
+        type: number
+        minimum: 1
+      message_translations:
+        description: |
+          Translations for the body of the notification. All languages for the
+          given `countries` should be included.
+        type: array
+        items:
+          $ref: '#/definitions/Translation'
+      product_id:
+        description: The ID of the product that has come back in stock.
+        type: string
+      title_translations:
+        description: |
+          Translations for the title of the notification. All languages for the
+          given `countries` should be included.
+        type: array
+        items:
+          $ref: '#/definitions/Translation'
+    example:
+      countries:
+        - NL
+      delivery_time: '2019-11-04T13:25:34+00:00'
+      max_receivers: 24
+      message_translations:
+        - language: en
+          text: The Skim - Washed Up is back in stock. Be quick!
+        - language: nl
+          text: De Skim - Washed Up is terug. Wees er snel bij!
+      product_id: 1234_AB-S
+      title_translations:
+        - language: en
+          text: Guess What?
+        - language: nl
+          text: Goed nieuws
+  Translation:
+    type: object
+    required:
+      - language
+      - text
+    properties:
+      language:
+        description: Two characters language code
+        type: string
+      text:
+        description: The translated text
+        type: string
+  UpstreamError:
+    allOf:
+      - $ref: '#/definitions/Err'
+      - description: An error related to connecting with an upstream service
+        type: object
+        required:
+          - code
+        properties:
+          code:
+            description: An error code
+            type: string
+            enum:
+              - fetch_error
+    example:
+      code: fetch_error
+      message: e-commerce platform temporarily unavailable
+  currency_code:
+    description: >-
+      A three character [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)
+      currency code.
+    type: string
+    maxLength: 3
+    minLength: 3
+    example: EUR
+parameters:
+  access_token:
+    type: string
+    description: Access token
+    name: Authorization
+    in: header
+    required: true
+  basic_auth:
+    type: string
+    description: |
+      Authorization header. This endpoint expects Basic Authentication
+    name: Authorization
+    in: header
+    required: true
+  latitude:
+    type: number
+    description: The latitude in which to search (overrides address)
+    name: latitude
+    in: query
+  longitude:
+    type: number
+    description: The longitude in which to search (overrides address)
+    name: longitude
+    in: query
+  optional_access_token:
+    type: string
+    description: Access token
+    name: Authorization
+    in: header
+  optional_storefront:
+    type: string
+    description: Identifier of the selected storefront
+    name: X-Selected-Storefront
+    in: header
+  storefront:
+    type: string
+    description: Identifier of the selected storefront
+    name: X-Selected-Storefront
+    in: header
+    required: true
+responses:
+  invalid_token:
+    description: Access token is missing, invalid or expired.
+    headers:
+      WWW-Authenticate:
+        type: string
+        description: Reason for failure.
+    examples:
+      application/json:
+        code: invalid
+        message: invalid or expired token
+  not_implemented:
+    description: Endpoint is not implemented for current merchant.
+    schema:
+      allOf:
+        - $ref: '#/definitions/Err'
+        - type: object
+          properties:
+            code:
+              description: An error code
+              type: string
+              enum:
+                - unimplemented
+    examples:
+      application/json:
+        code: unimplemented
+        message: endpoint is not implemented for current merchant
+  server_error:
+    description: An internal server error occured
+    schema:
+      $ref: '#/definitions/ServerError'
+    headers:
+      Retry-After:
+        type: string
+        description: |
+          A suggested back off period in seconds (if the error is temporary).
+  unauthorized:
+    description: Unauthorized
+    schema:
+      $ref: '#/definitions/AuthError'
+    headers:
+      WWW-Authenticate:
+        type: string
+    examples:
+      application/json:
+        code: unauthorized
+        message: Basic Authentication are missing or invalid
+  unknown_resource:
+    description: Not Found
+    schema:
+      allOf:
+        - $ref: '#/definitions/Err'
+        - properties:
+            code:
+              enum:
+                - unknown_resource
+      example:
+        code: unknown_resource
+        message: can't find it
+  unknown_storefront:
+    description: Storefront does not exist
+    schema:
+      allOf:
+        - $ref: '#/definitions/Err'
+        - description: An error during storefront selection
+          type: object
+          required:
+            - error
+          properties:
+            error:
+              description: A debug message
+              type: string
+    examples:
+      application/json:
+        error: no such storefront
+  upstream_error:
+    description: An error occured when connecting to an upstream service
+    schema:
+      $ref: '#/definitions/UpstreamError'
+    headers:
+      Retry-After:
+        type: string
+        description: |
+          A suggested back off period in seconds (if the error is temporary).
+    examples:
+      application/json:
+        code: fetch_error
+        message: 'loyalty platform temporarily unavailable: 15 consecutive errors'
+securityDefinitions:
+  AccessToken:
+    type: oauth2
+    flow: password
+    tokenUrl: http://merchant.api.highstreetapp.com/token
+    scopes:
+      full: There are no scopes, really
+  basic_auth:
+    type: basic
+security:
+  - AccessToken:
+      - full
+tags:
+  - description: >
+      Endpoints to schedule jobs.
+
+
+      These endpoints are available on the following domain:
+
+
+      `MERCHANTID`-`MERCHANT_ENV`.api.highstreetapp.com
+
+
+      `MERCHANTID` = the configured merchant id in the app.
+
+      `MERCHANT_ENV` = the applicable environment of the Merchant's backend. eg
+      `staging`.
+
+      Note that when the `-MERCHANT_ENV` is omitted then the production
+      environment is assumed.
+
+      Also note the `-` that should be present between `MERCHANTID` and
+      `MERCHANT_ENV`. When
+
+      `MERCHANT_ENV` is omitted then the `-` should also be omitted.
+    name: Jobs
+x-logo:
+  url: https://rebilly.github.io/ReDoc/petstore-logo.png

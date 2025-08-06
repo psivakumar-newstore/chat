@@ -1,0 +1,494 @@
+Templates API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Audit Log API
+Email Service
+NOM API
+Permalink Service
+Templates Admin API
+Templates API
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+get
+List_templates
+get
+Get_sample_data
+get
+Get_sample_data_documentation
+post
+Preview_document
+get
+Get_template
+put
+Update_template
+get
+List_styles
+get
+Get_style
+put
+Update_style
+API docs by Redocly
+Templates API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+List_templates
+Returns a list of IDs of the available templates.
+Related methods:
+Get template
+Preview document
+List styles
+Responses
+200
+The templates IDs are returned.
+get
+/templates/templates
+/v0/d
+/templates/templates
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"data"
+:
+[
+{
+"id"
+:
+"in_store_pickup_ready_email_subject"
+}
+,
+{
+"id"
+:
+"in_store_pickup_ready_email"
+}
+,
+{
+"id"
+:
+"sales_receipt"
+}
+,
+{
+"id"
+:
+"invoice"
+}
+,
+{
+"id"
+:
+"shipment_label"
+}
+]
+}
+Get_sample_data
+Returns the sample data matching the template's data definition.
+path
+Parameters
+template
+required
+string
+The ID of the template. To retrieve the ID, use the
+List templates method
+.
+Responses
+200
+Contains a JSON snippet that can be used to feed the template.
+get
+/templates/templates/{template}/sample_data
+/v0/d
+/templates/templates/{template}/sample_data
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"locale"
+:
+"en_US"
+,
+"store_address"
+:
+{
+"name"
+:
+"Mystore"
+,
+"country_name"
+:
+"United States"
+,
+"country_code"
+:
+"US"
+,
+"city"
+:
+"Boston"
+,
+"zip_code"
+:
+"W1F 9RF"
+,
+"state"
+:
+""
+,
+"address"
+:
+"36 Beak St"
+}
+,
+"store_phone_number"
+:
+"+1 123 456 7890"
+,
+"order_number"
+:
+"GA0000000001"
+,
+"external_id"
+:
+"GA-000-00000001"
+,
+"currency_code"
+:
+"US"
+,
+"payment_method_label"
+:
+"Credit Card"
+,
+"amounts"
+:
+{
+"shipping_and_handling"
+:
+10
+,
+"taxes"
+:
+10
+,
+"grand_total"
+:
+90
+,
+"sub_total"
+:
+70
+}
+,
+"billing_address"
+:
+{
+"name"
+:
+"Dr Mr John Christopher Doe Jr"
+,
+"country_name"
+:
+"Great Britain"
+,
+"country_code"
+:
+"GB"
+,
+"city"
+:
+"London"
+,
+"zip_code"
+:
+"FFF AAA"
+,
+"address"
+:
+"745 Atlantic Ave"
+,
+"state"
+:
+""
+,
+"email"
+:
+"jdoe@example.com"
+}
+,
+"instruments"
+:
+[
+{
+"instrument_id"
+:
+"2efc6043-89fb-45bd-2e19-7ee558b5d316"
+,
+"payment_provider"
+:
+"stripe"
+,
+"payment_method"
+:
+"credit_card"
+,
+"currency_code"
+:
+"USD"
+,
+"metadata"
+:
+{
+"instrument_details"
+:
+{
+"brand"
+:
+"MasterCard"
+}
+}
+,
+"amount"
+:
+60
+}
+]
+}
+Get_sample_data_documentation
+Returns the template's data definition as an HTML table. The HTML table contains
+3 columns: the name of the field, its description, and its type.
+Related methods:
+Preview document
+Get template
+path
+Parameters
+template
+required
+string
+The ID of the template. To retrieve the ID, use the
+List templates method
+.
+Responses
+200
+The documentation as an HTML table.
+500
+The requested template could not be found.
+get
+/templates/templates/{template}/documentation
+/v0/d
+/templates/templates/{template}/documentation
+Preview_document
+Renders the template with the provided data and style and returns the output. Use it to test your
+template during development.
+path
+Parameters
+template
+required
+string
+The ID of the template. To retrieve the ID, use the
+List templates method
+.
+Request Body schema:
+application/json
+template
+required
+string
+non-empty
+The template document.
+data
+required
+object
+The data to feed to the template.
+style
+string
+An optional stylesheet to render the template with. This overrides the stylesheet specified in the template.
+locale
+string
+The locale used to select the template according to language and region. Example: en_DE, de_DE, english, EN etc.
+content_type
+string
+Default:
+"text"
+Enum
+:
+"html"
+"text"
+"pdf"
+The format of the generated content.
+Responses
+200
+Contains the rendered template.
+400
+Unknown content type.
+post
+/templates/templates/{template}/preview
+/v0/d
+/templates/templates/{template}/preview
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"template"
+:
+"<html><body><p>Name:{{name_var}}, Phone:{{phonenum_var}}</p></body></html>"
+,
+"data"
+:
+{
+"name_var"
+:
+"John Doe"
+,
+"phonenum_var"
+:
+"202-555-0109"
+}
+,
+"locale"
+:
+"en_US"
+,
+"content_type"
+:
+"html"
+}
+Get_template
+Returns the template. The format of the response depends on the template you used.
+Document and email templates return text/html content. Push notification template return JSON content.
+path
+Parameters
+locale
+required
+string
+The accepted language|locale.
+template
+required
+string
+The ID of the template. To retrieve the ID, use the
+List templates method
+.
+Responses
+200
+Contains the template body.
+500
+No template found with the name
+get
+/templates/templates/{template}/localization/{locale}
+/v0/d
+/templates/templates/{template}/localization/{locale}
+Update_template
+Updates the template.
+path
+Parameters
+locale
+required
+string
+The accepted language|locale.
+template
+required
+string
+The ID of the template. To retrieve the ID, use the
+List templates method
+.
+Responses
+default
+put
+/templates/templates/{template}/localization/{locale}
+/v0/d
+/templates/templates/{template}/localization/{locale}
+List_styles
+Gets the list of available styles.
+Responses
+200
+Contains the available styles.
+get
+/templates/styles
+/v0/d
+/templates/styles
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"data"
+:
+[
+{
+"id"
+:
+"string"
+}
+]
+}
+Get_style
+Returns the CSS code of the style.
+path
+Parameters
+style
+required
+string
+The name of a style representing a CSS file.
+Responses
+200
+Contains the stylesheet body.
+404
+The provided style name could not be found.
+get
+/templates/styles/{style}
+/v0/d
+/templates/styles/{style}
+Update_style
+Updates the style.
+path
+Parameters
+style
+required
+string
+The name of a style representing a CSS file.
+Responses
+default
+put
+/templates/styles/{style}
+/v0/d
+/templates/styles/{style}
+Previous
+Templates Admin API
+Next
+Capture Order
+Copyright © 2025 NewStore, Inc.

@@ -1,0 +1,2116 @@
+Order information retrieval API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Availabilities Export API
+Customer Profile Updates API
+Fulfillment Provider API
+Fulfillment Request API
+Historical order import API
+Item Return API
+Item Return API
+Location API
+Manager approval
+Fulfillment Configuration API
+Manager Approval Rules API
+Order API
+Order Injection API
+Order Notes API
+Order information retrieval API
+Safety Stock API
+Availabilities API
+Stock insights API
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+Orders by ID and type
+get
+Get order by ID and ID type
+Order history for customers
+get
+Retrieve order history for customers
+Manage orders
+post
+List product or shipping prices
+post
+Cancel order
+post
+Update grace period
+patch
+Add serial numbers to order items
+get
+Get Cancellation Status
+Cancel line items
+post
+Cancel line items
+API docs by Redocly
+Order information retrieval API
+(
+0.1.0
+)
+Download OpenAPI specification
+:
+Download
+team-order-management
+:
+team-order-management@newstore.com
+Use this API to retrieve information related to orders being processed in the NewStore platform
+or via an external order management system.
+Orders by ID and type
+Use this resource to retrieve orders using the order ID and type of ID.
+Use type
+internal
+to retrieve orders by the system-generated UUID (by NewStore), and use type
+external
+to retrieve orders by the human-readable identifier.
+Note:
+To receive the
+placed_at
+timestamp in UTC+0 in the format
+YYYY-MM-DDThh:mm:ss.sZ
+, please provide the
+Accept
+header
+application/x.newstore.orders+json;version=2
+.
+Get order by ID and ID type
+Retrieves the specified order by order ID and ID type for the order.
+This method allows you to retrieve information about orders that were placed in the platform,
+as well as outside of the NewStore platform.
+Note
+: In case of
+internal
+id type the API will only return orders that exists in the NewStore database and will
+NOT
+call the external OMS webhook. Furthermore, the
+payment_history
+field will be empty in this case.
+In case of
+external
+id type this API will check if the external OMS webhook is configured. In this case the API will fetch the order data from the configured webhook. If no external OMS is configured then the order will be fetched from the NewStore database.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+ID of the order.
+query
+Parameters
+id_type
+required
+string
+ID type on which order should be fetched. Example "external" in case of human-readable identifier of the order, else "internal" in case of system-generated UUID (by NewStore).
+header
+Parameters
+Accept
+string
+Accepted values are
+application/json
+and
+application/x.newstore.orders+json;version=2
+. When
+application/x.newstore.orders+json;version=2
+is provided, the
+placed_at
+timestamp is returned with UTC+0.
+Responses
+200
+Successfully fetch order by ID and ID type
+400
+Validation for the request failed
+404
+Order with provided ID and ID type was not found
+409
+External webhook payload validation failed.
+412
+Webhook configuration error.
+500
+Internal Server Error.
+503
+External Server Error.
+default
+Unexpected Error
+get
+/orders/{id}
+/v0
+/orders/{id}
+Response samples
+200
+400
+409
+412
+500
+503
+Content type
+application/json
+application/x.newstore.orders+json;version=2
+application/json
+Example
+Sales Order By ID (origin NewStore)
+Sales Order By ID (origin external OMS)
+Sales Order By ID with tokenized PII
+Sales Order By ID (origin NewStore)
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"GD000001234"
+,
+"origin"
+:
+"newstore"
+,
+"origin_id"
+:
+"c2569449-1d0d-4ca5-8d00-d80c38d5efcb"
+,
+"channel_type"
+:
+"store"
+,
+"placed_at"
+:
+"2021-11-22T12:51:39.30"
+,
+"status"
+:
+"closed"
+,
+"currency"
+:
+"USD"
+,
+"fulfillment_type"
+:
+"in_store_purchase"
+,
+"store_id"
+:
+"NY5AVE"
+,
+"associate_id"
+:
+"b9a144c2-3bd2-4066-983e-b2f2aa0c21e3"
+,
+"is_offline"
+:
+false
+,
+"customer"
+:
+{
+"id"
+:
+"b65ad81a-5225-43de-9c45-cc41cddc3479"
+,
+"name"
+:
+"John Doe"
+,
+"email"
+:
+"john.doe@gmail.com"
+,
+"language"
+:
+"en"
+}
+,
+"shipping_address"
+:
+{
+"title"
+:
+"Dr."
+,
+"suffix"
+:
+"Sr."
+,
+"salutation"
+:
+"Mr."
+,
+"first_name"
+:
+"Jay"
+,
+"second_name"
+:
+"Joy"
+,
+"last_name"
+:
+"Doubleyou"
+,
+"phone"
+:
+"202-555-0140"
+,
+"address_line_1"
+:
+"601 South Street"
+,
+"address_line_2"
+:
+""
+,
+"zip_code"
+:
+"02111"
+,
+"city"
+:
+"Boston"
+,
+"province"
+:
+""
+,
+"state"
+:
+"Massachusetts"
+,
+"country_code"
+:
+"US"
+,
+"note"
+:
+"some note"
+}
+,
+"billing_address"
+:
+{
+"title"
+:
+"Dr."
+,
+"suffix"
+:
+"Sr."
+,
+"salutation"
+:
+"Mr."
+,
+"first_name"
+:
+"Jay"
+,
+"second_name"
+:
+"Joy"
+,
+"last_name"
+:
+"Doubleyou"
+,
+"phone"
+:
+"202-555-0140"
+,
+"address_line_1"
+:
+"601 South Street"
+,
+"address_line_2"
+:
+""
+,
+"zip_code"
+:
+"02111"
+,
+"city"
+:
+"Boston"
+,
+"province"
+:
+""
+,
+"state"
+:
+"Massachusetts"
+,
+"country_code"
+:
+"US"
+,
+"note"
+:
+"some note"
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"b9a144c2-3bd2-4066-983e-b2f2aa0c23ee"
+,
+"origin_id"
+:
+"b9a144c2-3bd2-4066-983e-b2f2aa0c23ee"
+,
+"status"
+:
+"complete"
+,
+"fulfillment_group_type"
+:
+"IN_STORE_HANDOVER"
+,
+"shipping_method"
+:
+"in_store_handover"
+,
+"price_catalog"
+:
+72
+,
+"price"
+:
+{
+"net"
+:
+72
+,
+"tax"
+:
+7.2
+,
+"gross"
+:
+79.2
+,
+"discount"
+:
+8
+}
+,
+"tax_lines"
+:
+[
+{
+"amount"
+:
+6
+,
+"rate"
+:
+8.33
+,
+"name"
+:
+"MA State Tax"
+,
+"country_code"
+:
+"US"
+}
+,
+{
+"amount"
+:
+1.2
+,
+"rate"
+:
+1.67
+,
+"name"
+:
+"Boston City Tax"
+,
+"country_code"
+:
+"US"
+}
+]
+,
+"product_attributes"
+:
+{
+"name"
+:
+"Kate Dress"
+,
+"size"
+:
+"M"
+,
+"color"
+:
+"red"
+,
+"image_url"
+:
+"
+https://image.com/dress.jpeg
+"
+,
+"additional_variant_1"
+:
+"Regular fit"
+,
+"additional_variant_2"
+:
+"Red with highlights"
+}
+,
+"external_identifier"
+:
+{
+"sku"
+:
+"1000012"
+,
+"serial_number"
+:
+"1234"
+,
+"epc"
+:
+"4567"
+}
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"colour"
+,
+"value"
+:
+"blue"
+}
+]
+,
+"discounts"
+:
+[
+{
+"level"
+:
+"item"
+,
+"value"
+:
+10
+,
+"price_adjustment"
+:
+8
+,
+"type"
+:
+"percentage"
+,
+"reason"
+:
+"some reason"
+,
+"coupon_code"
+:
+"COUPON_CODE"
+,
+"promotion_uuid"
+:
+"d9465c0d-f4c4-4770-b9c3-1ece85d3ad77"
+}
+]
+}
+]
+,
+"gift_wrapping"
+:
+{
+"message"
+:
+"Congratulations!\nJohn Doe"
+,
+"price"
+:
+{
+"net"
+:
+4.5
+,
+"gross"
+:
+5
+,
+"tax"
+:
+0.5
+,
+"tax_code"
+:
+"CRM_114"
+}
+,
+"tax_lines"
+:
+[
+{
+"amount"
+:
+0.5
+,
+"rate"
+:
+0.1
+,
+"name"
+:
+"MA State Tax"
+,
+"country_code"
+:
+"US"
+}
+]
+}
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"colour"
+,
+"value"
+:
+"blue"
+}
+]
+,
+"shipments"
+:
+[
+{
+"id"
+:
+"5bda7ef9-ea58-4f74-ba9f-b9a7ce5a924b"
+,
+"tax_lines"
+:
+[
+{
+"amount"
+:
+2.75
+}
+,
+{
+"rate"
+:
+0.183
+}
+,
+{
+"name"
+:
+"shipping taxes"
+}
+,
+{
+"country_code"
+:
+"DE"
+}
+]
+,
+"price"
+:
+{
+"gross"
+:
+15
+,
+"net"
+:
+12.25
+,
+"tax"
+:
+2.75
+}
+}
+,
+{
+"id"
+:
+"123875b8-73d9-404f-84a8-c82772a9ae1a"
+,
+"price"
+:
+{
+"gross"
+:
+10
+,
+"net"
+:
+8.5
+,
+"tax"
+:
+1.5
+}
+}
+]
+,
+"totals"
+:
+{
+"net"
+:
+72
+,
+"tax"
+:
+7.2
+,
+"gross"
+:
+79.2
+,
+"total"
+:
+109.2
+,
+"shipping"
+:
+25
+,
+"gift_wrapping"
+:
+5
+,
+"discount"
+:
+8
+}
+,
+"tax_method"
+:
+"vat_included"
+,
+"tax_exempt"
+:
+false
+,
+"shop_locale"
+:
+"en-us"
+}
+Order history for customers
+Retrieve the order history for the customer identified by their ID (customer_id).
+If the tenant is configured to use Personally Identifiable Information (PII) in a data privacy compliant way,
+use the PII token for the customer ID. Otherwise, use the platform's internal identifier.
+The order list is sorted by the date the order was placed (placed_at), with the newest order appearing first.
+By default, the API responds with the
+application/json
+content type and only supports tenants that are integrated with an external Order Management System (OMS).
+To retrieve the order history regardless of whether the tenant is integrated with the NewStore OMS or an external OMS,
+include the Accept header
+application/x.newstore.orders+json;version=2
+in your request.
+In this case, the server will respond with the
+application/x.newstore.orders+json;version=2
+content type and an updated API schema.
+Retrieve order history for customers
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+customer_id
+required
+string
+NewStore's unique UUID or PII token identifier for the customer
+offset
+integer
+<
+int32
+>
+>= 0
+Default:
+0
+The offset to be used for the resulting order list. Will only be accepted when using the
+Accept
+header with
+application/x.newstore.orders+json;version=2
+.
+count
+integer
+<
+int32
+>
+[ 1 .. 50 ]
+Default:
+10
+The number of requested orders. Will only be accepted when using the
+Accept
+header with
+application/x.newstore.orders+json;version=2
+.
+Responses
+200
+Returns the list of orders. If the
+Accept
+headers with
+application/x.newstore.orders+json;version=2
+is used,
+it returns a paginated list as specified by the
+offset
+and
+count
+parameters.
+400
+Bad Request Error.
+404
+Customer not found. Only applicable when
+Accept
+header is
+application/json
+.
+409
+External webhook payload validation failed. Only applicable when
+Accept
+header is
+application/json
+.
+412
+Webhook configuration error. Only applicable when
+Accept
+header is
+application/json
+.
+500
+Internal Server Error.
+503
+External Server Error.
+default
+Unexpected Error
+get
+/orders
+/v0
+/orders
+Response samples
+200
+400
+404
+409
+412
+500
+503
+Content type
+application/x.newstore.orders+json;version=2
+application/json
+application/x.newstore.orders+json;version=2
+Example
+Order history for tenants using NewStore OMS
+Order history for tenants using an external OMS
+Order history for tenants using NewStore OMS
+Copy
+Expand all
+Collapse all
+{
+"pagination_info"
+:
+{
+"count"
+:
+2
+,
+"offset"
+:
+0
+,
+"total"
+:
+110336
+}
+,
+"orders"
+:
+[
+{
+"id"
+:
+"OM-0000463985"
+,
+"origin"
+:
+"newstore"
+,
+"origin_id"
+:
+"5f0d92e4-2c55-59ad-890f-0d01afb20165"
+,
+"channel"
+:
+{
+"id"
+:
+"shopify"
+,
+"type"
+:
+"web"
+}
+,
+"placed_at"
+:
+"2024-03-28T12:43:36.288000Z"
+,
+"status"
+:
+"closed"
+,
+"currency"
+:
+"USD"
+,
+"fulfillment_type"
+:
+"traditional"
+,
+"items"
+:
+[
+{
+"id"
+:
+"c192d902-1e40-47f3-87d7-10b862c2d79b"
+,
+"status"
+:
+"complete"
+,
+"price"
+:
+{
+"gross"
+:
+9.13
+,
+"net"
+:
+7
+,
+"tax"
+:
+2.13
+,
+"discount"
+:
+3
+}
+,
+"product_attributes"
+:
+{
+"name"
+:
+"Basic T-Shirt"
+,
+"size"
+:
+"S"
+,
+"color"
+:
+"grey"
+,
+"image_url"
+:
+"
+https://res.cloudinary.com/newstore-staging/image/upload/v1630681649/s/team-order-management-load-test/95c51d61d939c8a00b567923801aa6b9.jpg
+"
+}
+,
+"external_identifier"
+:
+{
+"sku"
+:
+"10000100"
+,
+"upc"
+:
+"00000051"
+}
+,
+"product_id"
+:
+"10000100"
+}
+,
+{
+"id"
+:
+"c81f8274-5654-41b2-9ab0-52ed0046a876"
+,
+"status"
+:
+"complete"
+,
+"price"
+:
+{
+"gross"
+:
+21.45
+,
+"net"
+:
+20
+,
+"tax"
+:
+1.45
+,
+"discount"
+:
+0
+}
+,
+"product_attributes"
+:
+{
+"name"
+:
+"Basic T-Shirt"
+,
+"size"
+:
+"M"
+,
+"color"
+:
+"grey"
+,
+"image_url"
+:
+"
+https://res.cloudinary.com/newstore-staging/image/upload/v1630681649/s/team-order-management-load-test/95c51d61d939c8a00b567923801aa6b9.jpg
+"
+}
+,
+"external_identifier"
+:
+{
+"sku"
+:
+"10000101"
+,
+"upc"
+:
+"00000052"
+}
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"final_sale"
+,
+"value"
+:
+"true"
+}
+]
+,
+"product_id"
+:
+"10000101"
+}
+]
+,
+"tax_information"
+:
+{
+"method"
+:
+"vat_excluded"
+,
+"is_exempt"
+:
+false
+}
+,
+"customer"
+:
+{
+"id"
+:
+"2f980ec3-55d1-4b42-ba62-aa4af0231728"
+,
+"email"
+:
+"jane.doe@newstore.com"
+}
+,
+"totals"
+:
+{
+"gross"
+:
+30.58
+,
+"net"
+:
+27
+,
+"tax"
+:
+3.58
+,
+"total"
+:
+52.75
+,
+"discount"
+:
+3
+,
+"shipping"
+:
+20
+,
+"gift_wrapping"
+:
+2.17
+}
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"shopify_id"
+,
+"value"
+:
+"1234567"
+}
+]
+,
+"shipping_address"
+:
+{
+"title"
+:
+null
+,
+"suffix"
+:
+null
+,
+"salutation"
+:
+null
+,
+"first_name"
+:
+"Jane"
+,
+"second_name"
+:
+null
+,
+"last_name"
+:
+"Doe"
+,
+"phone"
+:
+"202-555-0140"
+,
+"address_line_1"
+:
+"601 South Street"
+,
+"address_line_2"
+:
+""
+,
+"zip_code"
+:
+2111
+,
+"city"
+:
+"Boston"
+,
+"province"
+:
+null
+,
+"state"
+:
+"Massachusetts"
+,
+"country_code"
+:
+"US"
+}
+,
+"shop"
+:
+{
+"id"
+:
+"storefront-catalog-en"
+,
+"locale"
+:
+"en-US"
+}
+,
+"is_offline"
+:
+false
+,
+"is_historical"
+:
+false
+}
+,
+{
+"id"
+:
+"OM-0000463982"
+,
+"origin"
+:
+"newstore"
+,
+"origin_id"
+:
+"9aee16f8-278a-4921-9efe-386de3e699c3"
+,
+"channel"
+:
+{
+"id"
+:
+"US01"
+,
+"type"
+:
+"store"
+}
+,
+"placed_at"
+:
+"2024-03-27T21:14:33.644424Z"
+,
+"status"
+:
+"closed"
+,
+"currency"
+:
+"USD"
+,
+"fulfillment_type"
+:
+"in_store_purchase"
+,
+"items"
+:
+[
+{
+"id"
+:
+"8273700b-4cbc-4074-91ea-9ce2caa7ab7d"
+,
+"status"
+:
+"complete"
+,
+"price"
+:
+{
+"gross"
+:
+20
+,
+"net"
+:
+18.18
+,
+"tax"
+:
+1.82
+,
+"discount"
+:
+0
+}
+,
+"product_attributes"
+:
+{
+"name"
+:
+"Basic T-Shirt"
+,
+"size"
+:
+"S"
+,
+"color"
+:
+"grey"
+,
+"image_url"
+:
+"
+https://res.cloudinary.com/newstore-staging/image/upload/v1630681649/s/team-order-management-load-test/95c51d61d939c8a00b567923801aa6b9.jpg
+"
+,
+"additional_variant_1"
+:
+"slim fit"
+,
+"additional_variant_2"
+:
+"crew neck"
+}
+,
+"external_identifier"
+:
+{
+"sku"
+:
+"10000100"
+,
+"upc"
+:
+"00000051"
+}
+,
+"product_id"
+:
+"10000100"
+}
+,
+{
+"id"
+:
+"c8acf7a7-f9aa-4892-8d63-d4a479c5ac72"
+,
+"status"
+:
+"complete"
+,
+"price"
+:
+{
+"gross"
+:
+20
+,
+"net"
+:
+18.18
+,
+"tax"
+:
+1.82
+,
+"discount"
+:
+0
+}
+,
+"product_attributes"
+:
+{
+"name"
+:
+"Basic T-Shirt"
+,
+"size"
+:
+"S"
+,
+"color"
+:
+"grey"
+,
+"image_url"
+:
+"
+https://res.cloudinary.com/newstore-staging/image/upload/v1630681649/s/team-order-management-load-test/95c51d61d939c8a00b567923801aa6b9.jpg
+"
+}
+,
+"external_identifier"
+:
+{
+"sku"
+:
+"10000100"
+,
+"upc"
+:
+"00000051"
+}
+,
+"product_id"
+:
+"10000100"
+}
+]
+,
+"tax_information"
+:
+{
+"method"
+:
+"vat_included"
+,
+"is_exempt"
+:
+false
+}
+,
+"customer"
+:
+{
+"id"
+:
+"6f94425d-ac7f-4bf6-a181-abd03922d0a5"
+,
+"email"
+:
+"john.doe@newstore.com"
+}
+,
+"totals"
+:
+{
+"gross"
+:
+40
+,
+"net"
+:
+36.36
+,
+"tax"
+:
+3.64
+,
+"total"
+:
+40
+,
+"discount"
+:
+0
+,
+"shipping"
+:
+0
+,
+"gift_wrapping"
+:
+0
+}
+,
+"shipping_address"
+:
+{
+"title"
+:
+null
+,
+"suffix"
+:
+null
+,
+"salutation"
+:
+null
+,
+"first_name"
+:
+"John"
+,
+"second_name"
+:
+null
+,
+"last_name"
+:
+"Doe"
+,
+"phone"
+:
+"202-555-0140"
+,
+"address_line_1"
+:
+"601 South Street"
+,
+"address_line_2"
+:
+""
+,
+"zip_code"
+:
+2111
+,
+"city"
+:
+"Boston"
+,
+"province"
+:
+null
+,
+"state"
+:
+"Massachusetts"
+,
+"country_code"
+:
+"US"
+}
+,
+"shop"
+:
+{
+"id"
+:
+"storefront-catalog-en"
+,
+"locale"
+:
+"en-US"
+}
+,
+"is_offline"
+:
+false
+,
+"is_historical"
+:
+false
+}
+]
+}
+Manage orders
+Use this resource to manage orders being processed in the NewStore platform or via an external
+order management system, and update related information for these orders.
+You can use this resource to list product or shipping prices, cancel an order or extend its
+grace period
+, and add serial numbers or items in the order.
+List product or shipping prices
+Use this method to retrieve price information for products or shipping options, defined
+in
+items
+in the request payload. The price information includes the gross price of the item,
+the net price, and the tax levied on the item.
+If the prices you requested are for products, the response payload also contains the status
+of the product. For example,
+cancelled
+or
+pending
+, or
+in_fulfillment
+, and so on.
+Important
+: You can only request for the pricing information of a maximum of
+500
+items, exceeding which the method returns a
+400
+error.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The identifier of the order.
+Request Body schema:
+application/json
+items
+required
+Array of
+objects or objects
+non-empty
+Array
+(non-empty)
+One of
+object
+object
+type
+required
+string
+Value
+:
+"product"
+id
+required
+string
+= 36 characters
+The identifier of the item.
+Responses
+200
+Price information for the provided items.
+400
+Bad Request Error.
+404
+Not found Error.
+500
+Internal Server Error.
+default
+Unexpected Error
+post
+/orders/{id}/prices
+/v0
+/orders/{id}/prices
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"type"
+:
+"product"
+,
+"id"
+:
+"927c702a-3cb1-48c1-9189-554bf9d0fde7"
+}
+,
+{
+"type"
+:
+"shipping"
+}
+,
+{
+"type"
+:
+"gift-wrapping"
+}
+]
+}
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"currency"
+:
+"USD"
+,
+"items"
+:
+[
+{
+"type"
+:
+"product"
+,
+"id"
+:
+"927c702a-3cb1-48c1-9189-554bf9d0fde7"
+,
+"price"
+:
+{
+"gross"
+:
+231.6
+,
+"net"
+:
+211.5
+,
+"tax"
+:
+20.1
+}
+,
+"status"
+:
+"in_fulfillment"
+}
+,
+{
+"type"
+:
+"shipping"
+,
+"id"
+:
+"7b1d4a63-c97f-4ca9-8771-9464c1d86fea"
+,
+"price"
+:
+{
+"gross"
+:
+23.65
+,
+"net"
+:
+22
+,
+"tax"
+:
+1.65
+}
+}
+,
+{
+"type"
+:
+"gift-wrapping"
+,
+"id"
+:
+"0612b770-8721-4c6c-bd68-ebded9bea3d7"
+,
+"price"
+:
+{
+"gross"
+:
+12.5
+,
+"net"
+:
+10
+,
+"tax"
+:
+2.65
+}
+}
+]
+}
+Cancel order
+Initiates the cancellation of the specified order.
+When using this method to cancel an order, you must specify a reason for cancellation,
+such as
+Item was damaged during shipping
+. You can also include a note to provide a
+longer explanation for the cancellation of the order.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+ID of the order.
+query
+Parameters
+id_type
+required
+string
+Type of order id which should be used for cancellation. Example "external".
+Request Body schema:
+application/json
+reason
+required
+string
+non-empty
+The reason why the order was cancelled.
+note
+string or null
+An optional note.
+Responses
+200
+Successfully cancelled order by ID and ID type
+400
+Bad request
+404
+Order with provided ID and ID type was not found.
+500
+Internal Server Error.
+default
+Unexpected Error
+post
+/orders/{id}/cancel
+/v0
+/orders/{id}/cancel
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"reason"
+:
+"Customer remorse"
+,
+"note"
+:
+"Example note"
+}
+Response samples
+400
+500
+Content type
+application/problem+json
+Example
+Validation failed
+Order is no longer cancelable.
+The Order is already marked as closed.
+The Order can't be canceled.
+Validation failed
+Bad request because the request is not valid.
+Copy
+{
+"error_code"
+:
+"bad_request"
+,
+"message"
+:
+"Validation of cancel order request failed with error: 'reason' is a required property."
+,
+"request_id"
+:
+"ec2f3c9bb016ba971bf6074098363"
+}
+Update grace period
+Use this method to extend the
+grace period
+timer
+for the specified order by
+15 minutes
+, if the grace period of the order has not yet expired.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+ID of the order.
+query
+Parameters
+id_type
+required
+string
+Type of the order id which should be used to extend the order grace period. Example "external" for human-readable identifiers, and "internal" for system-generated UUIDs (by NewStore).
+Responses
+200
+The grace period got extended by 15 minutes.
+404
+Order with id and id type not found.
+409
+A concurrent request extended the grace period already.
+412
+The order is not in the grace period.
+500
+Internal Server Error.
+default
+Unexpected Error
+post
+/orders/{id}/_extend_grace_period
+/v0
+/orders/{id}/_extend_grace_period
+Response samples
+200
+404
+409
+500
+Content type
+application/json
+Copy
+{
+"due_at"
+:
+"2019-08-24T14:15:22Z"
+}
+Add serial numbers to order items
+Use this method to add serial numbers to specified items of the order. Serial numbers will be overwritten in case
+some or all of the items have already serial numbers attached.
+The maximum number of items in this request cannot exceed
+500
+, otherwise this method will return a
+400
+error.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+uuid
+required
+string
+The internal identifier of the order, for example,
+b604ffda-7e31-4338-beab-7f939a8c2322
+.
+Request Body schema:
+application/json
+items
+required
+Array of
+objects
+[ 1 .. 500 ] items
+Array
+([ 1 .. 500 ] items)
+id
+required
+string
+= 36 characters
+The identifier of the order line item.
+serial_number
+required
+string
+The serial number which should be assigned to the specified order line item.
+epc
+object
+The epc which should be assigned to the specified order line item.
+Responses
+204
+Serial numbers added.
+400
+Bad request Error.
+404
+Not found Error.
+500
+Internal Server Error.
+default
+Unexpected Error
+patch
+/orders/{uuid}/serial_numbers
+/v0
+/orders/{uuid}/serial_numbers
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"id"
+:
+"25802b6c-a66f-4f76-b6bc-f1305468fc12"
+,
+"serial_number"
+:
+"SRQFAU79"
+}
+,
+{
+"id"
+:
+"5e3b112d-9cc8-4e5a-ac08-f45f0b8fa67f"
+,
+"serial_number"
+:
+"LJTMF3FJ"
+}
+]
+}
+Response samples
+400
+404
+500
+Content type
+application/problem+json
+Example
+JSON schema error
+Sales Order item not found error
+Sales Order UUID not valid
+JSON schema error
+Copy
+{
+"error_code"
+:
+"bad_request"
+,
+"message"
+:
+"The number of products can't exceed 500."
+,
+"request_id"
+:
+"ec2f3c9bb016ba971bf6074098363"
+}
+Get Cancellation Status
+API to get cancellation status by order ID
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+ID of the order.
+query
+Parameters
+id_type
+required
+string
+ID type on which order should be fetched. Example "external".
+Responses
+200
+Successfully fetched cancellation status for the order.
+400
+Bad request
+404
+Order with given order ID does not exist
+500
+Internal server error
+default
+Unexpected Error
+get
+/orders/{id}/cancel
+/v0
+/orders/{id}/cancel
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+{
+"cancelable"
+:
+true
+,
+"canceled"
+:
+false
+,
+"is_safe"
+:
+true
+}
+Cancel line items
+Cancel line items
+Use this resource to cancel line items.
+Note:
+This API currently only supports pre-ordered line items and will throw an error for other line items.
+The line item can only be cancelled for non-terminal item statuses.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_uuid
+required
+string
+UUID of the order.
+item_uuid
+required
+string
+UUID of the order item.
+query
+Parameters
+id_type
+required
+string
+Type of order id which should be used for cancellation of line items. Example "external" for human-readable identifiers, and "internal" for system-generated UUIDs (by NewStore).
+Responses
+200
+Successfully cancelled order item by UUID.
+400
+Bad request
+404
+Order item with provided UUID was not found.
+500
+Internal Server Error.
+default
+Unexpected Error
+post
+/orders/{order_uuid}/items/{item_uuid}/cancel
+/v0
+/orders/{order_uuid}/items/{item_uuid}/cancel
+Response samples
+400
+500
+Content type
+application/problem+json
+Example
+Validation failed
+Order item is no longer cancelable.
+The Order item can't be canceled.
+Validation failed
+Bad request because the request is not valid.
+Copy
+{
+"error_code"
+:
+"bad_request"
+,
+"message"
+:
+"Validation of cancel order request failed with error: 'reason' is a required property."
+,
+"request_id"
+:
+"ec2f3c9bb016ba971bf6074098363"
+}
+Previous
+Order Notes API
+Next
+Safety Stock API
+Copyright © 2025 NewStore, Inc.

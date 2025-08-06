@@ -1,0 +1,272 @@
+Organizing products
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Organizing products
+Updated on
+Nov 12, 2024
+Published on Oct 1, 2024
+5 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+A product is imported into a
+shop
+and for a specific
+locale
+. In NewStore Omnichannel Cloud, a
+shop
+is a hierarchical entity that can contain products, categories, and prices. It is not a physical store. The product details that you provide during import determine the product attributes that are displayed in NewStore applications.
+To define a user-friendly name for your
+shop
+, use the
+shop_display_name
+or the
+head
+element of the product import, such as
+Catalog Europe
+. The value you specify here is visible to users as the identifier for the combination of a
+shop
+and the related
+locale
+in your business, where products will be imported into during the import process.
+In the
+head
+section of the product import payload, use
+shop_display_name
+to specify a user-friendly name for a
+shop
+in your business, such as
+Catalog Europe
+or
+Catalog North America
+. The value you specify here is visible to users as the identifier for the combination of a
+shop
+and the related
+locale
+in your business, where products will be imported into during the import process.
+The value specified for
+shop_display_name
+is also displayed in NewStore Omnichannel Manager in the catalog drop-down list in the
+Catalog
+tab in NewStore Omnichannel Manager, see
+Searching for and filtering products
+.
+The
+shop_display_name
+is also displayed when you select products or catalogs to apply
+automatic promotions
+in NewStore Omnichannel Manager.
+Tutorial to define a user-friendly name for
+shop
+Follow the
+product import tutorial
+, but use this payload as
+products.json
+instead.
+{
+    "head": {
+        "shop": "storefront-catalog-en",
+        "locale": "en-US",
+        "is_master": true,
+        "shop_display_name": "American Catalog"
+    },
+    "items": [
+        {
+            "product_id": "1000101",
+            "variant_group_id": "variant_group_10001",
+            "title": "Bohemian Print Cutout Chiffon Maxi Dress",
+            "caption": "Our summer-ready chiffon dress features a bohemian print and beaded cut-outs for a textural twist to maxi styles. Full of creativity on every level, it offers delicate transparencies with a pleated hem for extra swish as you move through the summer heat.",
+            "description": "Bohemian Print Chiffon Gathered Waist Silk Dress",
+            "show_in_listing": true,
+            "images": [
+                {
+                    "url": "https://mycompany/hoster/images/default/products/SU16/10001_014_Multi_OFR-1.jpg",
+                    "is_main": true
+                }
+            ],
+            "categories": [
+                {
+                    "path": "Shop > Dresses",
+                    "position": 10,
+                    "is_main": true
+                }
+            ],
+            "material": "LADIES' 100% SILK WOVEN DRESS",
+            "variation_color_value": "Grace Sweater Beige",
+            "variation_size_value": "4",
+            "variation_size_gender": "unisex",
+            "variation_size_type": "regular",
+            "variation_size_system": "US",
+        }
+    ]
+}
+Follow the rest of the tutorial as described.
+Grouping products
+A product with variants can be grouped with others through
+Variant Groups
+. When a group of products shares the same
+variant_group_id
+attribute, they will be displayed as a group, grouping all the possible variations. This is also valid for the product listing API resources, through the attribute
+variations
+.
+For example, Grace Sweater Beige Size 4 and Grace Sweater Beige Size 6 are both variants of the same product and should be grouped with a
+variant_group_id
+. Ensure that the same product is not assigned to multiple variant groups in a shop. Even if a product has only one variant, create a variant group to contain the single variant of the product.
+To enable variants for color and size, use the attributes
+variation_color_value
+and
+variation_size_value
+respectively. This way a selection of possible variants in NewStore Associate App is possible.
+Categories
+Categories define a hierarchical grouping of products. They are shown when browsing for the product, to make finding the product easier for the associate or customer. Categories can also used to
+create an automatic promotion
+that apply to all
+Tops
+in your business, or to all
+T-shirts
+in your business.
+Categories
+are imported with the product import into a
+shop
+and for a specific
+locale
+. Product categories may vary across different
+sales channels
+.
+If you are importing more than one category, use the
+categories
+>
+is_main
+property to specify the main category for the product. This category is displayed against relevant products in the
+Catalog
+tab in NewStore Omnichannel Manager, see
+Searching for and filtering products
+.
+You can specify multiple categories for a product, using the
+categories
+property of the product import schema.
+To specify the main category for the product, set
+is_main
+to
+true
+. This category is displayed against relevant products in the
+Catalog
+tab in NewStore Omnichannel Manager, see
+Searching for and filtering products
+.
+Important
+You cannot specify more than one category as the main category. Also, if no main category is specified, the products are imported but you will not be able to find these products when you filter them by one of these categories.
+Importing categories
+Categories can also be explicitly imported through the import mechanism. As categories are already imported with the product import, importing categories separately is only required if:
+The categories need to be visible in the Associate App, in
+Catalog > Browse > Categories
+.
+The categories need to be accessible via the
+List categories
+method.
+Pictures and a description for each category must be added and sorting sub-categories has to be enabled.
+Products need to be fetched via the
+List products method
+.
+File format to import categories
+The
+path
+property identifies the category. The path is a resolved display name, which means that each locale that you define will have a different set of paths.
+When importing categories separately, the parent category is displayed in Omnichannel Manager against the relevant products. For example, for a product that is imported with the category
+All > Bags > Accessories > Wallets
+, the main category displayed in NewStore Omnichannel Manager is
+Bags
+.
+When importing a whole tree of categories, ensure that you include all individual levels in your imports. Otherwise, not all the different levels will be accessible when
+listing categories
+.
+For example, when importing a category like
+Womens > Footwear > Sandals
+, you must include
+Womens
+and
+Womens > Footwear
+to be able to browse these categories.
+Related topics
+Managing products
+Tutorial: Importing products
+Running the import
+Import jobs API
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+catalog
+category
+data import
+integration
+newstore platform
+platform
+product
+product import
+SFCC
+store
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

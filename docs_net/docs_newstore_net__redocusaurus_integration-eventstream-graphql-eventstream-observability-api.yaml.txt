@@ -1,0 +1,243 @@
+openapi: 3.0.0
+info:
+  title: Event Stream Observability API
+  description: >
+    The Event Stream Observability API can be used to monitor existing event
+    stream webhooks and S3 integrations.
+
+    Use the [Event stream configuration
+    API](/api/integration/eventstream-graphql/stream_webhook_sink_api) to setup 
+
+    and manage your event stream integrations.
+  version: '1.0'
+servers:
+  - url: https://dodici.x.newstore.net/api/v1/org/integrations
+paths:
+  /published-events:
+    get:
+      summary: Get information about published events.
+      description: >
+        Get information about published events or events that failed to be
+        published to a tenant's event stream integrations.
+      parameters:
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: >-
+            Only return events which were attempted to be published after this
+            date.
+          example: '2022-12-31T23:59:59Z'
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: >-
+            Only return events which were attempted to be published before this
+            date.
+          example: '2023-02-01T09:12:23Z'
+        - name: event_name
+          in: query
+          required: false
+          schema:
+            type: string
+          description: The name of an event stream event.
+          example: order.created
+        - name: integration_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: The ID of event stream integration.
+          example: my-integration-12345
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            The status of the publishing attempt (either 'success' or
+            'failure').
+          example: success
+        - name: domain_entity_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: The ID of a domain entity, for example an order ID.
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        - name: domain_entity_type
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            The name of a domain entity, for example 'order' or
+            'payment_account'.
+          example: order
+      responses:
+        '200':
+          description: A list of events published to a tenant's event stream integration.
+          content:
+            application/json:
+              example:
+                - integration_id: example-integration-123
+                  integration_type: permanent
+                  target: webhook
+                  status: SUCCESS
+                  attempted_at: '2023-01-13T00:59:59.718Z'
+                  retries_remaining: 10
+                  entity_id: c01234c4-6543-4ea0-8900-63e26b4faf12
+                  domain_entity_id: e01234c4-6543-4ea0-0001-63e26b4faf45
+                  domain_entity_type: order
+                  event_name: fulfillment_request.assigned
+                  url: https://example.com/eventstream
+                  response_time_ms: 123
+                - integration_id: example-integration-123
+                  integration_type: permanent
+                  target: webhook
+                  status: FAILURE
+                  attempted_at: '2023-01-15T01:59:59.756Z'
+                  retries_remaining: 9
+                  entity_id: e01234c4-6543-4ea0-0001-63e26b4faf45
+                  domain_entity_id: e01234c4-6543-4ea0-0001-63e26b4faf45
+                  domain_entity_type: order
+                  event_name: order.created
+                  url: https://example.com/eventstream
+                  response:
+                    body: Temporary unavailable due to maintenance.
+                    code: 503
+                  response_time_ms: 123
+                - integration_id: s3-export-001
+                  integration_type: permanent
+                  target: s3
+                  status: FAILURE
+                  attempted_at: '2023-01-15T01:59:59.618Z'
+                  retries_remaining: 0
+                  entity_id: d21234c4-6543-4ea0-1234-63e26b4faf13
+                  domain_entity_id: e01234c4-6543-4ea0-0001-63e26b4faf45
+                  domain_entity_type: order
+                  event_name: invoice.created
+                  filename: >-
+                    /tmp/dodici-demo_s3-export-0015033518640050790148/1773479406750-data-1234a.export
+                  response:
+                    body: Invalid access credentials.
+                    code: 403
+                - integration_id: s3-export-002-temp
+                  integration_type: temporary
+                  target: s3
+                  status: SUCCESS
+                  attempted_at: '2023-02-07T10:19:53.214Z'
+                  retries_remaining: 10
+                  entity_id: b01234c4-6543-4ea0-5678-63e26b4faf14
+                  domain_entity_id: b01234c4-6543-4ea0-5678-63e26b4faf14
+                  domain_entity_type: order
+                  event_name: payment_account.amount_captured
+                  filename: >-
+                    /tmp/dodici-demo_s3-export-002-temp7033518640050790148/1773479406751-data-4567b.export
+                - integration_id: example-integration-234
+                  integration_type: permanent
+                  target: webhook
+                  status: SUCCESS
+                  attempted_at: '2023-08-16T00:59:59.718Z'
+                  retries_remaining: 10
+                  entity_id: d01234e4-6543-4ea0-1234-63e26b4faf88
+                  domain_entity_id: d01234e4-6543-4ea0-1234-63e26b4faf88
+                  domain_entity_type: customer
+                  event_name: customer.created
+                  url: https://example.com/eventstream
+                  response_time_ms: 99
+              schema:
+                type: array
+                description: List of events.
+                items:
+                  type: object
+                  required:
+                    - integration_id
+                    - integration_type
+                    - target
+                    - status
+                    - response
+                    - attempted_at
+                    - retries_remaining
+                    - event_name
+                  properties:
+                    integration_id:
+                      type: string
+                      description: Identifier for the event stream integration.
+                    integration_type:
+                      type: string
+                      description: >-
+                        Type of the event stream integration (temporary or
+                        permanent)
+                    target:
+                      type: string
+                      description: Target sink name (webhook or S3).
+                    status:
+                      type: string
+                      description: Whether the event was published successfully or not.
+                    response:
+                      type: object
+                      description: >-
+                        Response information received from the target endpoint
+                        (only provided in case the event failed to be
+                        published).
+                      required:
+                        - code
+                        - body
+                      properties:
+                        code:
+                          type: integer
+                          description: >-
+                            The response status code received from the
+                            integration.
+                        body:
+                          type: string
+                          description: The response body received from the integration.
+                    attempted_at:
+                      type: string
+                      format: date-time
+                      description: >-
+                        UTC Date when the event was attempted to be published to
+                        the integration.
+                    retries_remaining:
+                      type: integer
+                      maximum: 10
+                      minimum: 0
+                      description: Number of remaining retries for this event.
+                    entity_id:
+                      type: string
+                      description: >-
+                        Identifier of the event's entity (for example an order
+                        ID).
+                    domain_entity_id:
+                      type: string
+                      description: >-
+                        The ID of the domain entity. The corresponding entity
+                        name is defined in the 'domain_entity_type' field.
+                    domain_entity_type:
+                      type: string
+                      description: >-
+                        Name of the domain entity, for example 'order' or
+                        'customer'.
+                    event_name:
+                      type: string
+                      description: Name of the event.
+                    url:
+                      type: string
+                      description: Target URL (webhook integrations only).
+                    filename:
+                      type: string
+                      description: >-
+                        Name of the uploaded file including path (s3
+                        integrations only).
+                    response_time_ms:
+                      type: integer
+                      description: >-
+                        Time it took to resolve a request in milliseconds
+                        (webhook integrations only).
+components: {}

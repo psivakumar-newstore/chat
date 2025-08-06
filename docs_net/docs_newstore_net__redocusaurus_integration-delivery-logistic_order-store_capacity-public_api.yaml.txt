@@ -1,0 +1,983 @@
+openapi: 3.1.0
+info:
+  title: Capacity-based Routing
+  version: v0
+  description: >
+    Use these APIs to control the amount of routing based on the capacity of
+    each distribution center. They are configuration sets
+
+    to limit items to be picked, redirecting them to be shipped from another
+    warehouse.
+servers:
+  - url: https://dodici.x.newstore.net/v0
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    '200':
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Store capacity configuration response.
+      description: >-
+        Represents an object of configuration about store capacity. It will
+        serve to limit the amount of orders that will be processed for shipment.
+      type: object
+      required: &ref_15
+        - config
+      properties: &ref_16
+        error:
+          description: >-
+            An error when something occur. It will be null in case of status
+            code 200
+          type: 'null'
+        config:
+          type: object
+          $schema: http://json-schema.org/draft-04/schema#
+          description: >-
+            It contains the store capacity configuration. It describes the time
+            range the store will be able to process the shipments in order to
+            comply with order processing and promised shipment time to a given
+            fulfillment node. eG: `{"DC1": {"monday": [10, 20], "tuesday": [9,
+            21]}}` means that routing will process orders during that period for
+            fulfillment node `DC1`. If the grace period finished out of that
+            range, routing process will hold the order until the defined time
+            range. `null` hour range means that there will not be any order
+            processed for routing at that given week day.
+          patternProperties: &ref_0
+            .*:
+              $ref: constraints.json
+        hash:
+          type: string
+          description: MD5 of the computed configuration hash of the latest version.
+    '400':
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Configuration not found
+      description: No configuration was found for store capacity.
+      type: object
+      required: &ref_25
+        - error
+        - hash
+        - config
+      properties: &ref_26
+        hash:
+          description: This field will be null for 40x status codes.
+          type: 'null'
+        error:
+          description: Error message, saying configuration was not found
+          type: string
+        config:
+          description: This field will be null for 40x status codes
+          type: 'null'
+    '404':
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Configuration not found
+      description: No configuration was found for store capacity.
+      type: object
+      required: &ref_17
+        - error
+      properties: &ref_18
+        error:
+          description: Error message, saying configuration was not found
+          type: string
+        config:
+          description: This field will be null for 404 status code
+          type: 'null'
+        hash:
+          type: 'null'
+          description: This field will be null for 404 status code
+    '412':
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Precondition Failed
+      description: >-
+        This status code is returned whenever the If-Match doesn't match the
+        correct version hash of the document. In order to retrieve that, you can
+        run GET /store_capacity
+      type: object
+      required: &ref_9
+        - error
+      properties: &ref_10
+        error:
+          description: >-
+            Error description for precondition to send the request. eG: wrong
+            If-Match header value
+          type: string
+        config:
+          description: This field will be null for 412 status code
+          type: 'null'
+    '422':
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Unprocessable entity response
+      description: >-
+        Store capacity option responsible for indicating that the entity could
+        be processed, but due to limitations, it was not possible. eG: Number of
+        operations exceeded.
+      type: object
+      required: &ref_11
+        - error
+      properties: &ref_12
+        error:
+          description: Error description for processing limitations
+          type: string
+        config:
+          description: This field will be null for 500 status code
+          type: 'null'
+    '500':
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Configuration not found
+      description: An error on server side has occurred.
+      type: object
+      required: &ref_19
+        - error
+      properties: &ref_20
+        error:
+          description: Error message, meaning an error on the server side
+          type: string
+        config:
+          description: This field will be null for 500 status code
+          type: 'null'
+        hash:
+          type: 'null'
+          description: This field will be null for 500 status code
+    config:
+      $schema: http://json-schema.org/draft-04/schema#
+      type: object
+      description: >-
+        It contains the store capacity configuration. It describes the time
+        range the store will be able to process the shipments in order to comply
+        with order processing and promised shipment time to a given fulfillment
+        node. eG: `{"DC1": {"monday": [10, 20], "tuesday": [9, 21]}}` means that
+        routing will process orders during that period for fulfillment node
+        `DC1`. If the grace period finished out of that range, routing process
+        will hold the order until the defined time range. `null` hour range
+        means that there will not be any order processed for routing at that
+        given week day.
+      patternProperties: *ref_0
+    post:
+      $schema: http://json-schema.org/draft-04/schema#
+      description: Request body for the store capacity POST endpoint
+      required: &ref_21
+        - policy
+      type: object
+      properties: &ref_22
+        policy:
+          description: >-
+            It contains the store capacity configuration. It describes the time
+            range the store will be able to process the shipments in order to
+            comply with order processing and promised shipment time to a given
+            fulfillment node. eG: `{"DC1": {"monday": [10, 20], "tuesday": [9,
+            21]}}` means that routing will process orders during that period for
+            fulfillment node `DC1`. If the grace period finished out of that
+            range, routing process will hold the order until the defined time
+            range. `null` hour range means that there will not be any order
+            processed for routing at that given week day.
+          $schema: http://json-schema.org/draft-04/schema#
+          type: object
+          patternProperties: *ref_0
+        hash:
+          description: >-
+            In case you want to override the/an old policy, add the hash
+            parameter
+          type: string
+    200-2:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Store capacity configuration response.
+      description: >-
+        Represents an object of configuration about store capacity. It will
+        serve to limit the amount of orders that will be processed for shipment.
+      type: object
+      required: &ref_23
+        - config
+        - hash
+        - error
+      properties: &ref_24
+        hash:
+          description: >-
+            A hashed representation of the store capacity object. Used for
+            upserts and patches.
+          type: string
+        error:
+          description: >-
+            An error when something occur. It will be null in case of status
+            code 200
+          type: 'null'
+        config:
+          type: object
+          $schema: http://json-schema.org/draft-04/schema#
+          description: >-
+            It contains the store capacity configuration. It describes the time
+            range the store will be able to process the shipments in order to
+            comply with order processing and promised shipment time to a given
+            fulfillment node. eG: `{"DC1": {"monday": [10, 20], "tuesday": [9,
+            21]}}` means that routing will process orders during that period for
+            fulfillment node `DC1`. If the grace period finished out of that
+            range, routing process will hold the order until the defined time
+            range. `null` hour range means that there will not be any order
+            processed for routing at that given week day.
+          patternProperties: *ref_0
+    404-2:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Configuration not found
+      description: No configuration was found for store capacity.
+      type: object
+      required: &ref_27
+        - error
+        - hash
+        - config
+      properties: &ref_28
+        hash:
+          description: This field will be null for 40x status codes.
+          type: 'null'
+        error:
+          description: Error message, saying configuration was not found
+          type: string
+        config:
+          description: This field will be null for 40x status codes
+          type: 'null'
+    500-2:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Configuration not found
+      description: No configuration was found for store capacity.
+      type: object
+      required: &ref_29
+        - error
+        - hash
+        - config
+      properties: &ref_30
+        hash:
+          description: This field will be null for 40x status codes.
+          type: 'null'
+        error:
+          description: Error message, saying configuration was not found
+          type: string
+        config:
+          description: This field will be null for 40x status codes
+          type: 'null'
+    operation:
+      $schema: http://json-schema.org/draft-04/schema#
+      type: object
+      required: &ref_1
+        - op
+        - path
+      properties: &ref_2
+        op:
+          type: string
+          description: >-
+            Operation to be applied. More details about operations are described
+            on https://jsonpatch.com/
+          enum:
+            - add
+            - remove
+            - replace
+            - copy
+            - move
+            - test
+        path:
+          description: Path on configuration to be applied
+          type: string
+        value:
+          description: >-
+            According to Json Patch documentation, value may be optional,
+            depending on the operation
+          type:
+            - string
+            - object
+            - array
+            - boolean
+            - integer
+            - number
+        from:
+          description: This property is required for `copy` and `move` operations
+          type: string
+    patch:
+      $schema: http://json-schema.org/draft-04/schema#
+      description: >-
+        Patch operations for store capacity configuration. You can inform an
+        array of operations to be applied. It follows specifications according
+        to https://jsonpatch.com/. Note: in order to keep performance quality,
+        we allow maximum 100 operations per request.
+      type: array
+      minItems: 1
+      maxItems: 100
+      items: &ref_4
+        description: Operations on locations will affect the usual store availability
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        required: *ref_1
+        properties: *ref_2
+    200-3:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Store capacity response.
+      description: >-
+        Represents an object of configuration about store capacity. It will
+        serve to limit the amount of orders that will be processed for shipment.
+      type: object
+      required: &ref_5
+        - config
+      properties: &ref_6
+        error:
+          description: >-
+            An error may occur when a business logic error may occur, as hours
+            constraints on store capacity configuration. eG: A negative hour
+          type:
+            - 'null'
+            - string
+        config:
+          type: object
+          $schema: http://json-schema.org/draft-04/schema#
+          description: >-
+            It contains the store capacity configuration. It describes the time
+            range the store will be able to process the shipments in order to
+            comply with order processing and promised shipment time to a given
+            fulfillment node. eG: `{"DC1": {"monday": [10, 20], "tuesday": [9,
+            21]}}` means that routing will process orders during that period for
+            fulfillment node `DC1`. If the grace period finished out of that
+            range, routing process will hold the order until the defined time
+            range. `null` hour range means that there will not be any order
+            processed for routing at that given week day.
+          patternProperties: *ref_0
+    400-2:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Bad format error response
+      description: >-
+        Store capacity options response for erroneous client requests. For
+        example missing required parameters, or sending the request params as a
+        json body etc.
+      type: object
+      required: &ref_7
+        - error
+      properties: &ref_8
+        error:
+          description: Error description for malformed request
+          type: string
+        config:
+          description: This field will be null for 400 status code
+          type: 'null'
+    500-3:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Unprocessable entity response
+      description: >-
+        Unexpected error(like DB connection issue) prevented us from handling
+        the request
+      type: object
+      required: &ref_13
+        - error
+      properties: &ref_14
+        error:
+          description: This error related to server issue
+          type: string
+        config:
+          description: This field will be null for 500 status code
+          type: 'null'
+    capacity:
+      $schema: http://json-schema.org/draft-04/schema#
+      type: object
+      description: It contains the available capacity for the stores that were requested
+      patternProperties: &ref_3
+        .*:
+          type: integer
+          minimum: -1
+    200-4:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Store capacity availability response.
+      description: >-
+        Represents an object of availability from store capacity. It will show
+        the remaining capacity left based on store capacity configuration.
+      type: object
+      required: &ref_31
+        - capacity
+      properties: &ref_32
+        error:
+          description: >-
+            An error when something occur. It will be null in case of status
+            code 200
+          type: 'null'
+        capacity:
+          type: object
+          $schema: http://json-schema.org/draft-04/schema#
+          description: >-
+            It contains the available capacity for the stores that were
+            requested
+          patternProperties: *ref_3
+    500-4:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Store capacity availability 500 response.
+      description: It occurs when there is an internal server error.
+      type: object
+      required: &ref_33
+        - error
+      properties: &ref_34
+        error:
+          description: >-
+            This error occurs when the store capacity availability is not
+            retrievable.
+          type: string
+        capacity:
+          type: 'null'
+security:
+  - newStoreAccessToken: []
+paths:
+  /store_capacity:
+    patch:
+      summary: Updates store capacity configuration using patch.
+      operationId: patch-store-capacity
+      parameters:
+        - name: If-Match
+          description: >
+            This value is an etag to the version it should update. The value of
+            the hash is returned as ETag header can be retrieved by running a
+            GET /store_capacity.
+          in: header
+          required: true
+          schema:
+            type: string
+      description: >
+        Patching store capacity configuration is based on [RFC 6902 - Json
+        Patch](https://www.rfc-editor.org/rfc/rfc6902) specification.
+
+        Hours will be the time range (UTC) it can be processed. `null` value
+        means that the day does not contain a time range at a given week day.
+
+        The configuration format is as follows:
+          ```json
+          {
+              "DC1": {
+                "limit": 10,
+                "hours": {
+                  "monday": [8, 18],
+                  "tuesday": [10, 13],
+                  "wednesday": [7, 14],
+                  "thursday": null,
+                  "friday": null,
+                  "saturday": null,
+                  "sunday": [12, 0]
+                }
+              },
+              "DC2": {
+                ...
+              }
+          }
+          ```
+        If you wan to add a patch operation to saturday, you can do it with the
+        following payload:
+          ```json
+          [
+            {
+              "op": "replace",
+              "path": "/DC1/hours/saturday",
+              "value": [10, 12]
+            },
+            {
+              "op": "replace",
+              "path": "/DC1/hours/sunday,
+              "value": [10, 20]
+            }
+          ]
+          ```
+      requestBody:
+        content:
+          application/json:
+            example:
+              - op: add
+                path: /DC1
+                value:
+                  limit: 40
+                  hours:
+                    monday:
+                      - 8
+                      - 22
+                    tuesday:
+                      - 8
+                      - 22
+                    wednesday:
+                      - 8
+                      - 22
+                    thursday:
+                      - 8
+                      - 22
+                    friday:
+                      - 8
+                      - 23
+                    saturday:
+                      - 8
+                      - 23
+                    sunday: null
+              - op: replace
+                path: /DC1/limit
+                value: 20
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              description: >-
+                Patch operations for store capacity configuration. You can
+                inform an array of operations to be applied. It follows
+                specifications according to https://jsonpatch.com/. Note: in
+                order to keep performance quality, we allow maximum 100
+                operations per request.
+              type: array
+              minItems: 1
+              maxItems: 100
+              items: *ref_4
+      responses:
+        '200':
+          description: Successfully returning store capacity configuration object.
+          headers:
+            ETag:
+              description: >-
+                This field is returned as a header as the current version of the
+                store capacity configuration
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                error: null
+                config:
+                  DC01:
+                    limit: 25
+                    hours:
+                      monday:
+                        - 8
+                        - 20
+                      tuesday:
+                        - 8
+                        - 20
+                      wednesday:
+                        - 8
+                        - 20
+                      thursday:
+                        - 8
+                        - 20
+                      friday:
+                        - 8
+                        - 20
+                      saturday: null
+                      sunday: null
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Store capacity response.
+                description: >-
+                  Represents an object of configuration about store capacity. It
+                  will serve to limit the amount of orders that will be
+                  processed for shipment.
+                type: object
+                required: *ref_5
+                properties: *ref_6
+        '400':
+          description: Malformed patch object
+          headers:
+            ETag:
+              description: This field will be empty for 400 status code
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                error: 'Bad format: missing field limit on /locations/DC1'
+                config: null
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Bad format error response
+                description: >-
+                  Store capacity options response for erroneous client requests.
+                  For example missing required parameters, or sending the
+                  request params as a json body etc.
+                type: object
+                required: *ref_7
+                properties: *ref_8
+        '412':
+          description: Precondition Failed
+          headers:
+            ETag:
+              description: This field will be empty for 412 status code
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                error: 'Could not find a store_capacity for tenant: dodici'
+                config: null
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Precondition Failed
+                description: >-
+                  This status code is returned whenever the If-Match doesn't
+                  match the correct version hash of the document. In order to
+                  retrieve that, you can run GET /store_capacity
+                type: object
+                required: *ref_9
+                properties: *ref_10
+        '422':
+          description: Unprocessable entity
+          headers:
+            ETag:
+              description: This field will be empty for 422 status code
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                error: >-
+                  Can't patch store capacity because the number of requests
+                  exceeded the limit; please try again later
+                config: null
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Unprocessable entity response
+                description: >-
+                  Store capacity option responsible for indicating that the
+                  entity could be processed, but due to limitations, it was not
+                  possible. eG: Number of operations exceeded.
+                type: object
+                required: *ref_11
+                properties: *ref_12
+        '500':
+          description: An internal error occurred.
+          headers:
+            ETag:
+              description: This field will be empty for 500 status code
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                error: >-
+                  Can't patch store capacity because of unexpected error; please
+                  try again later
+                config: null
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Unprocessable entity response
+                description: >-
+                  Unexpected error(like DB connection issue) prevented us from
+                  handling the request
+                type: object
+                required: *ref_13
+                properties: *ref_14
+    get:
+      summary: Gets the configuration for store capacity
+      description: Description
+      operationId: get-store-capacity-configuration
+      responses:
+        '200':
+          description: >-
+            The configuration was found and it will return the raw configuration
+            for store capacity
+          headers:
+            ETag:
+              description: >-
+                Hash from from the latest version of configuration. This will be
+                used to PATCH operation on `If-Match` header
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                config:
+                  store-1:
+                    limit: 10
+                    hours:
+                      monday:
+                        - 10
+                        - 12
+                      tuesday:
+                        - 10
+                      wednesday:
+                        - 12
+                        - 11
+                      thursday:
+                        - 8
+                        - 23
+                      friday: null
+                      saturday: null
+                      sunday: null
+                  store-2:
+                    limit: 50
+                    hours:
+                      monday:
+                        - 9
+                        - 21
+                      tuesday:
+                        - 10
+                      wednesday:
+                        - 12
+                        - 11
+                      thursday:
+                        - 8
+                        - 23
+                      friday:
+                        - 7
+                        - 18
+                      saturday:
+                        - 8
+                        - 20
+                      sunday:
+                        - 9
+                        - 19
+                error: null
+                hash: 202cb962ac59075b964b07152d234b70
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Store capacity configuration response.
+                description: >-
+                  Represents an object of configuration about store capacity. It
+                  will serve to limit the amount of orders that will be
+                  processed for shipment.
+                type: object
+                required: *ref_15
+                properties: *ref_16
+        '404':
+          description: The configuration was not found
+          headers:
+            ETag:
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                error: Configuration not found
+                config: null
+                hash: null
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Configuration not found
+                description: No configuration was found for store capacity.
+                type: object
+                required: *ref_17
+                properties: *ref_18
+        '500':
+          description: The configuration was not found
+          headers:
+            ETag:
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                error: Internal server error
+                config: null
+                hash: null
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Configuration not found
+                description: An error on server side has occurred.
+                type: object
+                required: *ref_19
+                properties: *ref_20
+    post:
+      summary: Upserts the store capacity configuration using POST.
+      operationId: post-store-capacity
+      parameters:
+        - name: If-Match
+          description: >
+            This value is an etag to the version it should update. The value of
+            the hash is returned as ETag header can be retrieved by running a
+            GET /store_capacity. In case you want to add a new policy leave this
+            empty.
+          in: header
+          required: false
+          schema:
+            type: string
+      description: |
+        The request for this endpoint looks as follows:
+          ```json
+          {
+            "policy": {
+              "some-node": {
+                "limit": 123,
+                "hours": {
+                  "monday": null
+                }
+              }
+            }
+          }
+          ```
+      requestBody:
+        content:
+          application/json:
+            example:
+              policy:
+                boston_1:
+                  limit: 1337
+                  hours:
+                    monday:
+                      - 1
+                      - 4
+                    tuesday:
+                      - 6
+                    wednesday:
+                      - 6
+                      - 2
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              description: Request body for the store capacity POST endpoint
+              required: *ref_21
+              type: object
+              properties: *ref_22
+      responses:
+        '200':
+          description: Successfully returning store capacity configuration object.
+          headers:
+            ETag:
+              description: >-
+                This field is returned as a header as the current version of the
+                store capacity configuration
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                error: null
+                config:
+                  DC01:
+                    limit: 25
+                    hours:
+                      monday:
+                        - 8
+                        - 20
+                      tuesday:
+                        - 8
+                        - 20
+                      wednesday:
+                        - 8
+                        - 20
+                      thursday:
+                        - 8
+                        - 20
+                      friday:
+                        - 8
+                        - 20
+                      saturday: null
+                      sunday: null
+                hash: 202cb962ac59075b964b07152d234b70
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Store capacity configuration response.
+                description: >-
+                  Represents an object of configuration about store capacity. It
+                  will serve to limit the amount of orders that will be
+                  processed for shipment.
+                type: object
+                required: *ref_23
+                properties: *ref_24
+        '400':
+          description: Malformed patch object
+          headers:
+            ETag:
+              description: This field will be empty for 400 status code
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                error: 'Bad format: policy field needs to be set'
+                config: null
+                hash: null
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Configuration not found
+                description: No configuration was found for store capacity.
+                type: object
+                required: *ref_25
+                properties: *ref_26
+        '404':
+          description: Precondition Failed
+          headers:
+            ETag:
+              description: This field will be empty for 404 status code
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                error: Could not find a store capacity for hash xyz
+                config: null
+                hash: null
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Configuration not found
+                description: No configuration was found for store capacity.
+                type: object
+                required: *ref_27
+                properties: *ref_28
+        '500':
+          description: An internal error occurred.
+          headers:
+            ETag:
+              description: This field will be empty for 500 status code
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                error: >-
+                  Can't patch store capacity because of unexpected error; please
+                  try again later
+                config: null
+                hash: null
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Configuration not found
+                description: No configuration was found for store capacity.
+                type: object
+                required: *ref_29
+                properties: *ref_30
+  /store_capacity/remaining:
+    get:
+      summary: >-
+        Gets the the store capacity availability based on the configuration and
+        the routed items in the last 48 hours.
+      description: >
+        The availability will be computed from the configuration and the routed
+        order items in the last 48 hours. It may receive a star (*)
+
+        wildcard as a query string in order to retrieve all the fulfillment
+        nodes.
+      operationId: get-remaining-capacity
+      parameters:
+        - in: query
+          name: locations
+          description: >
+            Locations may be the fulfillment node name like `ff-id-1` or using a
+            star to define everything starting with `ff` like `ff*`
+
+            or even `*ff` or `*ff*` or even `*`. The values are separated by
+            comma.
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: The store capacity availability was retrieved successfully
+          content:
+            application/json:
+              example:
+                capacity:
+                  DC1: 1
+                  DC2: 20
+                  DC3: 22
+                error: null
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Store capacity availability response.
+                description: >-
+                  Represents an object of availability from store capacity. It
+                  will show the remaining capacity left based on store capacity
+                  configuration.
+                type: object
+                required: *ref_31
+                properties: *ref_32
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                capacity: null
+                error: An unexpected error occurred. Please try again in some minutes
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Store capacity availability 500 response.
+                description: It occurs when there is an internal server error.
+                type: object
+                required: *ref_33
+                properties: *ref_34

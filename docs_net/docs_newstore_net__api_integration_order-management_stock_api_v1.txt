@@ -1,0 +1,242 @@
+Safety Stock API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Availabilities Export API
+Customer Profile Updates API
+Fulfillment Provider API
+Fulfillment Request API
+Historical order import API
+Item Return API
+Item Return API
+Location API
+Manager approval
+Fulfillment Configuration API
+Manager Approval Rules API
+Order API
+Order Injection API
+Order Notes API
+Order information retrieval API
+Safety Stock API
+Availabilities API
+Stock insights API
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+Get safety stock.
+patch
+Set safety stock.
+get
+Get last safety stock update status.
+API docs by Redocly
+Safety Stock API
+(
+1.0.0
+)
+Download OpenAPI specification
+:
+Download
+team-order-management
+:
+team-order-management@newstore.com
+Represents the store's stock.
+Get safety stock.
+Retrieves a CSV file with the safety stock for all products
+across all fulfillment location(s) in your business.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Successfully retrieved the safety stock.
+500
+An internal error occurred.
+default
+Unexpected Error
+get
+/stock/safety_stock
+/v1
+/stock/safety_stock
+Response samples
+200
+500
+Content type
+text/csv
+Example
+Product and location safety stock retrieved successfully
+Error while streaming safety stock
+Product and location safety stock retrieved successfully
+Product and location safety stock retrieved successfull.
+Copy
+Product ID
+,
+Location
+,
+Safety Stock
+,
+US01
+,
+200
+,
+US02
+,
+200
+10000101
+,
+US01
+,
+20
+10000101
+,
+US02
+,
+20
+"10000101,12"
+,
+US02
+,
+20
+Set safety stock.
+Sets the safety stock for all products in the specified fulfillment location(s).
+You can also use this method to set a safety stock for specific products in a fulfillment location.
+The provided CSV uses "," (comma) as a separater and must contain the following columns:
+"Product ID"
+"Location"
+"Safety Stock"
+Values for "Prduct ID" and "Location" should be quoted to allow leading zeros and special characters, e.g. "US-01" as location name.
+Please ensure that values are not double-quoted, e.g. ""Product ID"" is invalid.
+To set safety stock for all products in a fulfillment location, leave the "Product ID" value blank.
+See this
+example CSV
+for more information. You can upload a new or updated CSV file with a maximum size of 10 MB.
+Once you set the safety stock for products in a location, NewStore updates the ATP
+for these products and does not wait for the next stock import.
+Important
+:
+The time to update ATP depends on the size of the safety stock file, how many products are affected, and if data from other fulfillment locations or tenants are being processed in parallel. It can take up to multiple hours.
+To verify if the safety stock was set correctly, check the safety stock levels for the specified products
+in
+NewStore Omnichannel Manager
+.
+Notes
+:
+If the safety stock file contains information for a product for which we don't have ATP information,
+the safety stock data will only be applied once NewStore received stock import or cycle count.
+If the provided safety stock CSV file contains duplicate Location or Product safety stock entries, the last encountered value will be applied.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+text/csv
+string
+<
+binary
+>
+Responses
+204
+The product safety stock was successfully saved.
+400
+The content of the product safety stock file is invalid.
+409
+There can only be one safety stock update in progress.
+411
+The 'Content-Length' header field is required to process safety stock information.
+413
+The provided safety stock file is too big, the current limit is 10MB.
+415
+The API allows CSV files only.
+500
+An internal error occurred.
+default
+Unexpected Error
+patch
+/stock/safety_stock
+/v1
+/stock/safety_stock
+Response samples
+400
+413
+415
+500
+Content type
+application/problem+json
+Example
+A required column doesn't exists
+One of the fulfillment locations doesn't exist
+The Content-Length header is not a valid number.
+Invalid length of data row.
+The provided safety stock file is empty.
+Empty safety stock value throws validation error
+Detects unwanted symbols validation error
+Decimal numbers throws validation error
+Not-integer characters fot safety stock throws validation error
+A required column doesn't exists
+The provided product safety stock file is missing one of the following columns:
+"Product ID"
+"Location"
+"Safety Stock"
+Copy
+{
+"message"
+:
+"The column 'Product ID' is missing in the CSV file."
+,
+"request_id"
+:
+"1235a3d3-1884-4e95-9926-d7253edb4f7f"
+}
+Get last safety stock update status.
+Retrieves the status of the last
+safety stock
+update.
+To update or specify the safety stock for specific products in fulfillment locations across
+your business, use the
+Set safety stock
+method.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Successfully retrieved the last safety stock update status.
+500
+An internal error occurred.
+default
+Unexpected Error
+get
+/stock/safety_stock/status
+/v1
+/stock/safety_stock/status
+Response samples
+200
+500
+Content type
+application/json
+Copy
+{
+"status"
+:
+"in_progress"
+}
+Previous
+Order information retrieval API
+Next
+Availabilities API
+Copyright © 2025 NewStore, Inc.

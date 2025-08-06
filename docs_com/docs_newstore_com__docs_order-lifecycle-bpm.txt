@@ -1,0 +1,202 @@
+Order lifecycle BPM
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Order lifecycle BPM
+Updated on
+Dec 27, 2024
+Published on Oct 1, 2024
+2 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+The lifecycle of an order is at the core of every feature offered by NewStore. The lifecycle is represented by the diagram below using the
+BPMN notation
+and relies on other concepts such as
+order routing
+or
+order fulfillment
+. These concepts are described in the
+Business process
+section.
+This diagram refers to events that are emitted part of the event stream. See the
+entity model
+and the
+webhook
+for further details on those.
+Click here to download the BPMN image
+Important
+For a representation of the lifecycle of an order when an external order management system (OMS) is managing orders in your business, see the BPM diagrams in the
+external OMS integration guide
+.
+Order creation
+An order can originate from 2 sources:
+NewStore Associate App
+e-commerce platform
+Note
+When an order is placed via NewStore Associate App, NewStore manages the payment. See
+payment
+.
+Regardless of the origin, an order entity is created inside NewStore and the
+order.created
+event is emitted. The
+grace period
+begins.
+Once the grace period ends, the
+order.opened
+event is emitted.
+Order routing and fulfillment
+After the grace period, the order cannot be modified anymore and it is processed for routing. Routing consists in forwarding the order to a fulfillment location (a DC or store) via a
+fulfillment request
+. For more information, see
+About order routing
+.
+When this happens, the
+fulfillment_request.assigned
+event is emitted and the order moves to the fulfillment phase which can
+succeed
+or
+fail
+.
+Fulfillment (success)
+Once a fulfillment location receives a fulfillment request that it can process and completes the fulfillment, the
+fulfillment_request.items_completed
+event is emitted. An order can be fulfilled by several fulfillment locations when no location has all the items in stock, therefore this event can be emitted several times for one order.
+The
+invoice.created
+event is emitted when:
+During
+store fulfillment
+, items have been packed, and relevant documents and labels to be sent with the shipment are ready for printing.
+During
+DC fulfillment
+, when NewStore receives confirmation from the DC that the items have been shipped.
+Once all the items have been fulfilled, the
+order.completed
+event is emitted.
+The
+payment capture phase
+then starts.
+Fulfillment (failure)
+Routing can fail if no fulfillment location is able to process the whole order or one of the order items. In this case, the
+order.items_cancelled
+event is emitted for each item that cannot be fulfilled. An associate can fix the issue in
+different ways
+using NewStore Omnichannel Manager:
+If the associate chose to cancel the order, the
+order.cancelled
+event is emitted. The
+payment refund/revoke phase
+starts.
+If the associate chose to swap items to replace the unavailable items, the
+order.items_swapped
+event is emitted and the order is processed for fulfillment again.
+Payment workflow completion
+Once the order has been fulfilled or canceled, the payment workflow can be completed. For more information on the payment lifecycle, see
+Payment lifecycle BPM
+.
+Capturing the amount
+In the case one of the order items was fulfilled, a payment capture for the amount of the item is performed. When this happens, the
+payment_account.amount_captured
+is emitted. To learn more about payment integration, see
+Integrating a payment service provider
+.
+Refunding the amount
+In case one of the order items was canceled, or if the whole order was canceled, the
+payment_account.amount_refunded
+event is emitted.
+Order return workflow
+For more information on how the NewStore platform processes items from an order returned by a customer, see
+Return lifecycle BPM
+.
+Related topics
+DC fulfillment BPM
+Store fulfillment BPM
+Getting started with the NewStore platform
+Payment lifecycle BPM
+Return lifecycle BPM
+Receiving real-time data
+Event stream webhook
+Was this article helpful?
+Yes
+No
+Tags
+Associate App
+bpmn
+cancellation
+customer
+event stream
+events
+fulfillment
+omnichannel manager
+order
+order details
+payment
+platform
+refund
+routing
+shipping
+store fulfillment
+warehouse
+webhook
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

@@ -1,0 +1,189 @@
+openapi: 3.1.0
+info:
+  title: Associate App Configuration API
+  description: Use this API to retrieve and adjust the Associate App configuration.
+  version: v1
+servers:
+  - url: https://dodici.x.newstore.net/api/v1/associate-app
+paths:
+  /config:
+    get:
+      operationId: getConfig
+      description: Returns the Associate App configuration.
+      summary: Get Associate App configuration
+      responses:
+        '200':
+          description: Tenant-specific configuration for the Associate App.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/configSchema'
+        '422':
+          description: Configuration file is not readable.
+    put:
+      operationId: putConfig
+      description: >-
+        - Changes the Associate App configuration. Replaces complete
+        configuration. If configuration does not  exist for a tenant, it will be
+        created.
+      summary: Modify Associate App configuration
+      responses:
+        '200':
+          description: Returns the new value of the configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/configSchema'
+        '400':
+          description: Invalid JSON. Received configuration could not properly parsed.
+        '422':
+          description: >-
+            Invalid schema. Received configuration is not valid against the
+            configuration schema.
+components:
+  schemas:
+    configSchema:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        capabilities:
+          type: object
+          additionalProperties: false
+          properties:
+            mixed_cart:
+              type: boolean
+            cash_management:
+              type: boolean
+            offline_mode:
+              type: boolean
+            cash_for_endless_aisle_orders_enabled:
+              type: boolean
+        commerce_components:
+          type: object
+          additionalProperties: false
+          properties:
+            template_render_lambda_url:
+              type: string
+            gift_card_product_id:
+              type: string
+            gift_card_regexp:
+              type: string
+            barcode_types:
+              type: array
+              minItems: 1
+              uniqueItems: true
+              items:
+                - oneOf:
+                    - type: string
+                      enum:
+                        - CodeTypeAll
+                    - anyOf:
+                        - type: string
+                          enum:
+                            - QR
+                            - Databbar
+                            - DatabbarExtended
+                            - EAN8
+                            - EAN13
+                            - UPCA
+                            - UPCE
+                            - DataMatrix
+                            - Code39
+                            - Code93
+                            - Code128
+                            - PDF417
+                            - Interleaved2of5
+            document_printer_types:
+              type: object
+              additionalProperties: false
+              properties:
+                sales_receipt:
+                  type: string
+                  enum:
+                    - labelPrinter
+                    - documentPrinter
+                refund_note:
+                  type: string
+                  enum:
+                    - labelPrinter
+                    - documentPrinter
+                shipping_label:
+                  type: string
+                  enum:
+                    - labelPrinter
+                    - documentPrinter
+                packing_slip:
+                  type: string
+                  enum:
+                    - labelPrinter
+                    - documentPrinter
+                invoice:
+                  type: string
+                  enum:
+                    - labelPrinter
+                    - documentPrinter
+                exchange_receipt:
+                  type: string
+                  enum:
+                    - labelPrinter
+                    - documentPrinter
+                return_receipt:
+                  type: string
+                  enum:
+                    - labelPrinter
+                    - documentPrinter
+                default:
+                  type: string
+                  enum:
+                    - labelPrinter
+                    - documentPrinter
+        return_process_configuration:
+          type: object
+          additionalProperties: false
+          properties:
+            return_reasons:
+              type: array
+              items:
+                - type: object
+                  properties:
+                    code:
+                      type: number
+                    reason:
+                      type: string
+                    reasons:
+                      type: object
+                      additionalProperties: false
+                      patternProperties:
+                        ^[a-z]{2}$:
+                          type: string
+            quality_inspection_options:
+              type: array
+              items:
+                - type: object
+                  properties:
+                    code:
+                      type: number
+                    option:
+                      type: string
+            blind_return_enabled:
+              type: boolean
+        ui_configurations:
+          type: object
+          additionalProperties: false
+          properties:
+            display_product_identifier:
+              type: string
+              enum:
+                - product_id
+                - sku
+            show_preorders_filter:
+              type: boolean
+            suggested_email_domains:
+              type: array
+              items:
+                - type: string
+            tax_exemption_enabled:
+              type: boolean
+            seconds_until_logout_on_inactivity:
+              type: number

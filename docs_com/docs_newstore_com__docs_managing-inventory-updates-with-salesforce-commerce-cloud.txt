@@ -1,0 +1,346 @@
+Managing inventory updates with Salesforce Commerce Cloud
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Managing inventory updates with Salesforce Commerce Cloud
+Updated on
+Dec 20, 2024
+Published on Oct 1, 2024
+8 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+For information on how NewStore integrates with SFCC, see
+Integrating Salesforce Commerce Cloud
+.
+The recommended way to update inventory is to fetch updated information regularly from NewStore Omnichannel Cloud.
+You cannot create
+new
+inventory records from controller scripts nor can you call
+dw.system.Pipelet
+(
+link
+) from scheduled job steps. This is why the pipeline
+NewstoreImport
+is part of the
+int_newstore
+cartridge.
+For inventory updates from NewStore Omnichannel Cloud, the set of new inventory records is collected and written into a "Digital" system format XML inventory file. If this file is not empty, its contents are imported right after the updated records have been committed. Existing records are updated directly in the script, which makes the extra import step an exception from the regular runs.
+Import inventory updates from existing ERP systems of the retailer
+Pull inventory from NewStore Omnichannel Cloud using scheduled jobs (recommended)
+Push inventory to NewStore Omnichannel Cloud using a scheduled function.
+Note
+You don't need the
+app_newstore
+cartridge if you plan to use the pull mode to sync inventory with NewStore Omnichannel Cloud.
+Importing inventory into NewStore Omnichannel Cloud in SFCC format
+For retailers that do not use NewStore as their inventory master, they have to import inventory from existing ERP systems of the retailer into NewStore Omnichannel Cloud. These ERP systems already export inventory or availability information in the required SFCC format. However, the
+SFCC Connector cartridge
+provides a way to upload the same availability files into NewStore and speed up the integration.
+The inventory import process uses a
+sfcc-inventory-test.xml.zip
+file, with the following mapping configuration:
+{
+    "config": {
+        "test123": {
+            "head": {
+                "mode": "atp"
+            },
+            "items": {
+                "fulfillment_node_id": "fullfillment_node_id"
+            }
+        }
+    }
+}
+To set up an inventory import from the ERP system of the retailer:
+The inventory list ID in the
+header
+or
+inventory-list
+property must match a key in the mapping configuration. See
+inventory lists
+for more information on how inventory lists are mapped in NewStore.
+The
+head
+property in the mapping configuration is passed directly to the head of the
+inventory import schema
+and matches it.
+The
+items
+property contains mapping data which is applied to each item that is transformed. NewStore currently supports only fulfillment locations (
+fulfillment_node_id
+) that can be mapped to an inventory list.
+After inventory is imported into NewStore Omnichannel Cloud for the first time, the process only pulls the updated availability values from the ERP system in the subsequent imports.
+Pulling inventory updates from NewStore Omnichannel Cloud
+int_newstore/metadata/job-schedules.xml
+contains example definitions.
+Job
+Description
+NewStoreInventorySetup
+Creates the required folders in the ImpEx area. Used only once after deployment.
+NewStoreInventoryUpdate
+Pulls availability information from NewStore Omnichannel Cloud and updates inventory records from there. The default configuration targets the inventory list that is assigned to the current site. To update a different inventory list, specify its ID as the parameter
+ListID
+in the first step.
+Note
+Assign the
+inventory
+resource manually to the schedule, since resource assignments are not included in the job schedule export format.Your content goes here
+If the data contains inventory records that don't exist, the records are created using the native inventory import format. This is limited to records that actually list products available.
+NewStoreInventoryCleanup
+Cleans up old files from the archive area.
+MaxAgeSeconds
+defines the maximum age for files in the archive; Default is 86400 seconds (one day).
+When these jobs run, the following files are created in your ImpEx root folder.
+File
+Description
+src/download/inventory/1234567890abcdef.json
+Temporary file downloaded from NewStore Omnichannel Cloud. The base filename is generated from a fresh UUID and is read using a streaming parser that operates in limited memory. The whole file is processed in a single transaction.
+src/download/inventory/missing/1234567890abcdef.xml
+If the downloaded information contains non-zero inventory records that do not yet exist, this file is created for these records. limited memory. The platform does not allow creating inventory creating inventory records from the scripting API. Temporary file downloaded from NewStore Omnichannel Cloud. The base filename is generated from a fresh UUID and is read using a streaming parser that operates in limited memory. The whole file is processed in a single transaction.
+src/download/inventory/archive/1234567890abcdef.json
+src/download/inventory/archive/1234567890abcdef.xml
+The locations to which older files are moved when the process completes. If there is an error, the files are left where there are, to help diagnosis. single transaction.
+Importing availabilities from NewStore Omnichannel Cloud in SFCC format
+The
+SFCC Connector cartridge
+needs to import availabilities from NewStore, updating the corresponding inventory lists in SFCC. Inventory lists that can be for stores in SFCC are also updated.
+The SFCC Connector cartridge contains a job that starts an export process in NewStore, which:
+Starts the export via the
+Start ATP export for channel
+method. SFCC provides:
+inventory_list_id
+: Received from SFCC.
+ocapi_callback_url
+: NewStore can use this to execute the import job in SFCC.
+Fetches the file via the
+Get ATP for channel
+method.
+Performs the transformation of the format from JSON to SFCC XML.
+Uploads the file to an S3 bucket.
+Runs a job in SFCC using OCAPI, in order to process the uploaded file and import it.
+The following attributes are sent:
+InventoryUrl
+: The url to download the inventory.xml from.
+InventoryListID
+: The SFCC Inventory listID. Sent back to NewStore in the Notify step.
+LastUpdatedAt
+: Used for providing deltas from NewStore to SFCC. This value isn’t used by SFCC, only sent back to NewStore when the inventory was successfully imported. This value is saved and used on the subsequent inventory export processes.
+SFCC notifies NewStore by sending
+LastUpdatedAt
+.
+Mapping between SFCC inventory lists and NewStore group names
+Main inventory lists
+Inventory lists are the aggregated availabilities from multiple fulfillment locations.
+For every inventory list existing in SFCC which needs to be updated with availability data from NewStore, there needs to exist an Availability Group Name in NewStore.
+Create an availability group with the
+Create fulfillment location group
+method. Use this method to specify which fulfillment locations are part of that aggregated availability group.
+See the following example:
+{
+    "group_name": "inventory_list_sfcc",
+    "fulfillment_nodes": ["FulfillmentNode01", "FulfillmentNode02"]
+}
+For example the SFCC Storefront Reference Architecture (SFRA) has the
+inventory_m
+inventory list by default. The group name should match this.
+Store inventory lists
+For each inventory list used by stores, a corresponding group name must exist in NewStore.
+However, for stores, there is only one fulfillment location for each group. This fulfillment location is the store itself.
+Use the
+Create fulfillment location group
+method:
+{
+    "group_name": "store_1",
+    "fulfillment_nodes": ["FulfillmentNodeStore01"]
+}
+A store group name with multiple stores can be created, but is typically not required.
+Updating fulfillment location groups
+If the retailer opens a new store and wants to add it to the
+Main inventory lists
+, update the fulfillment location group.
+To do this, use the
+Update fulfillment location group
+method to specify an updated list of fulfillment location, which includes the new store. See the following example:
+{
+    "group_name": "inventory_list_sfcc",
+    "fulfillment_nodes": ["FulfillmentNode01", "FulfillmentNode02", "FulfillmentNode03Store2"]
+}
+Note
+If the retailer has created an inventory list in SFCC, a new corresponding group must be created in NewStore. See the
+example in this section
+.
+Adding tenant-specific mapping configuration for product ID
+Each customer may have a different extended attribute to identify the SFCC
+productID
+in NewStore.
+For example, using the
+Start global ATP export
+method generates an availabilities file which can be then retrieved and looks like this:
+{
+    "atps": [
+        {
+            "atp": 19991,
+            "external_identifiers": [
+                {
+                    "catalog": "storefront-catalog-en",
+                    "identifiers": {
+                        "sku": "640188016624M",
+                        "upc": "640188016624"
+                    },
+                    "locale": "en-us"
+                },
+                {
+                    "catalog": "sfra-apparel-catalog-en",
+                    "identifiers": {
+                        "sku": "640188016624M"
+                    },
+                    "locale": "en-us"
+                }
+            ],
+            "future_atp": 0,
+            "present_atp": 19991,
+            "product_id": "640188016624M"
+        }
+    ]
+}
+Any of the external identifiers can be used as SFCC
+productID
+, so that when the inventory XML file is generated, this external identifier is used and matches the productID in SFCC.
+Note
+If the attribute
+external_identifiers
+from the file generated by the
+Start global ATP export
+method isn’t present, then
+product_id
+is used as the default mapping attribute.
+For that, a mapping configuration for each inventory list needs to be provided in the manner specified below:
+POST: {{SFCC_CONNECTOR_ENDPOINT}}/sfcc-api/v1/mapping_config/availability
+{
+    "inventory_list_id": "inventory_m",
+    "config": {
+        "catalog": "storefront-catalog-en-test",
+        "locale": "en-us",
+        "external_id": "upc",
+        "handling": "preorder"
+    }
+}
+This specifies that for inventory list
+inventory_m
+and catalog
+storefront-catalog-en-test
+, the external id
+upc
+should be used as the SFCC
+productID
+identifier.
+This generates a file, located under:
+v.sfcc.newstore.transformation.data/inventory/team-sfcc/
+OCAPI credentials
+Since NewStore calls the cartridge using OCAPI, use the following method to allow authentication:
+POST: {{SFCC_CONNECTOR_ENDPOINT}}/sfcc-api/v1/ocapi_credentials
+{
+    "client_id": "Client ID provided by the SFCC implementation partner",
+    "client_secret": "URL ENCODED client secret ID provided by the SFCC implementation partner"
+}
+Important
+Remember to URL encode the password before posting it.
+Future inventory handling for pre-orders
+In the
+mapping configuration
+, the
+handling
+attribute is provided with the value
+preorder
+(for pre-orders).
+This is used to populate the
+preorder-backorder-handling
+SFCC attribute.
+Important
+NewStore does not currently support managing
+backorders
+.
+Currently, NewStore only manages future availability for DCs. Stores do not support future availability. For more information, see
+Pre-orders
+.
+Related topics
+Integrating Salesforce Commerce Cloud
+Availabilities
+Importing orders
+Pre-orders
+Was this article helpful?
+Yes
+No
+Tags
+api
+catalog
+data import
+integration
+inventory
+newstore platform
+order management
+platform
+product import
+SFCC
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

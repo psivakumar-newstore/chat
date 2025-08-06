@@ -1,0 +1,226 @@
+Product Export | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Import Schemas
+Pricebook Export
+Product Export
+Customer API (current)
+Customer API (experimental)
+Import Data API
+Catalog Locale Manager API
+NewStore SFCC Integration API
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+Product export
+get
+listProducts
+API docs by Redocly
+Product Export
+(
+1.0.0
+)
+Download OpenAPI specification
+:
+Download
+Team Products Prices Promotions
+:
+team-product-prices-promotions@newstore.com
+URL:
+https://www.newstore.com
+Product Export API
+Product export
+Product Export
+listProducts
+Use this resource to download products in a file. The export can be requested in CSV.
+CSV delimiter is
+\t
+(tab)
+CSV line is ended with
+\n
+(end line)
+CSV cell is escaped when containing special characters
+\t
+(tab)
+\n
+(new line)
+\r
+(carriage return) with
+\\t
+\\n
+\\r
+CSV cell is escaped with
+"
+(double quote) when contain double quote originally (relevant to json fields)
+RFC 4180
+Schema:
+product_id (string)
+variant_group_id (string)
+is_available (bool) - true if product ATP > 0. This value is synchronized from Order Management. This field is eventually consistent. There is no SLA how old this value can be. Please consider using OM directly for use-cases requiring strict consistency.
+categories (json array)
+path (string)
+position (int32)
+main_category_path (string)
+main_category_position (int32)
+external_identifiers (json array)
+type (string)
+value (string)
+extended_attributes (json array)
+name (string)
+value (string)
+title (string)
+brand	(string)
+caption (string)
+description (string)
+keywords (json array of strings)
+images (json array)
+url (string)
+title (string)
+identifier (string)
+altText (string)
+dominantColor (string)
+width (int32)
+height (int32)
+aspectRatio (float32)
+tags (json array of strings)
+template_id string
+price (float32) price from default pricebook
+currency (string)
+country_of_origin (string)
+tax_class_id (string)
+preorder_start (string RFC3339 truncated to seconds)
+online_from (string RFC3339 truncated to seconds)
+online_to (string RFC3339 truncated to seconds)
+variation_color_value (string)
+variation_size_value (string)
+variation_size_gender (string)
+variation_size_type (string)
+variation_size_system (string)
+variation_size_sort_position (int32)
+variation_additional_1_name (string)
+variation_additional_1_value (string)
+variation_additional_2_name (string)
+variation_additional_2_value (string)
+product_hts_number (string)
+schedule_b (string)
+shipping_dimension_height (float32)
+shipping_dimension_length (float32)
+shipping_dimension_unit (string)
+shipping_dimension_width (float32)
+shipping_weight_value (float32)
+shipping_weight_unit (string)
+serialized_inventory  (bool)
+variable_pricing  (bool)
+inventory_tracked  (bool)
+material  (string)
+updated_at  (int64 Unix Timestamp Milliseconds) - some products may have this value empty, value is then considered to be Thu Jan 01 1970 00:00:00 GMT+0000
+Files are refreshed automatically. They are scheduled daily. Usually at 8:00 UTC. They are usually finished before 9:00 UTC.
+API can be used to retrieve max 1 day old snapshot of product data.
+Response header
+Last-Modified
+can be used to determine when file was updated last time (example value
+Mon, 18 Dec 2023 08:00:21 GMT
+).
+Response header
+ETag
+can be used to determine whether version you already downloaded before match current one. (example value
+"2ad5ba4e24fe1c0d225e9a94049f142d"
+)
+Please use it with combination with
+If-None-Match
+request header to download file only when something changed.
+Authorizations:
+oauth
+path
+Parameters
+catalog
+required
+string
+>= 1
+The catalog the product, the user wants to export, belongs to.
+query
+Parameters
+locale
+string
+>= 1
+Default:
+"en-us"
+The locale the user wants to export. Example en-us.csv
+redirect
+boolean
+Default:
+true
+if true api will return HTTP 302 redirect to resource, otherwise it will return json response with link to a file.
+header
+Parameters
+Accept
+string
+Default:
+text/csv
+Value
+:
+"text/csv"
+Responses
+200
+Response with a download link
+302
+Temporary redirect to actual export file, stored in S3.
+400
+Bad Request
+401
+Unauthorized
+403
+Forbidden, authentication scope did not met requirements
+404
+Not found
+429
+Too Many Requests
+500
+Internal Error
+get
+/catalogs/{catalog}/offlineproducts
+/catalog
+/catalogs/{catalog}/offlineproducts
+/catalog
+/catalogs/{catalog}/offlineproducts
+Response samples
+200
+400
+401
+403
+404
+429
+500
+Content type
+application/json
+Copy
+{
+"download_url"
+:
+"string"
+}
+Previous
+Pricebook Export
+Next
+Customer API (current)
+Copyright © 2025 NewStore, Inc.

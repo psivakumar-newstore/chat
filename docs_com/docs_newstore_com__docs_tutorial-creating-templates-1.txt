@@ -1,0 +1,1532 @@
+Tutorial: Creating templates
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Tutorial: Creating templates
+Updated on
+Apr 29, 2025
+Published on Oct 1, 2024
+38 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+In this tutorial, we will create a new sales receipt template to help familiarize you with the way templates work at NewStore.
+Important
+We assume that you are familiar with
+jinja2
+.
+NewStore only supports templates that are less than 1 MB in size. Documents exceeding this size are not generated.
+We also assume in this tutorial that as a retailer, you operate in a country where
+fiscal regulations
+apply, so you need a
+fiscal signature
+to be printed in the receipts.
+For a guide on creating a fiscal signature template, see
+this section
+of the tutorial.
+Important
+We assume that you have an authentication token stored in the
+AUTH_TOKEN
+variable. Retrieve one with the following call:
+export AUTH_TOKEN=$(curl -s <url>/v0/token -d \
+"grant_type=password&username=<myusername>&password=<mypassword>" | jq -r.access_token)
+Using the API
+Let's create a sales receipt using the methods under the
+/templates
+resource
+:
+https://{retailer}.{stage}.newstore.net/{version}/d/templates/
+All the methods are authenticated and managed in an
+OAuth 2.0
+compliant way. See
+Getting started with NewStore APIs
+for more information.
+Preparing to create a sales receipt template
+Before we begin, let's create or gather all the information we might need during this process:
+A folder to contain the template for each locale required by the retailer.
+The design specifications and size requirements for the template. For example, knowing whether the document being generated from the template uses a receipt printer, document printer or a thermal printer might influence the size and design of the template.
+Common assets that we want to reuse across templates to reinforce the retailer's branding guidelines. For example, the logo, social media icons, address and contact information, etc.
+When we're ready, let's create a sales receipt template.
+Important
+Receipts created within non-production environments should be marked with an indicator, such as a header text or watermark. The indicator must state that the receipt is not valid and is for testing purposes only. The indicator helps retailers to identify a test receipt and prevents unintended usage of such receipts.
+Getting the available templates
+Let's retrieve the list of available templates and their identifier by using the
+list template method
+:
+curl -H "Authorization: Bearer $AUTH_TOKEN" -X GET "https://<url>/v0/d/templates/templates"
+The response contains all the template identifiers:
+{
+  "data":[
+    {
+      "id":"in_store_pickup_ready_email_subject"
+    },
+    {
+      "id":"in_store_pickup_ready_email"
+    },
+    {
+      "id":"sales_receipt"
+    },
+    {
+      "id":"invoice"
+    },
+    {
+      "id":"shipment_label"
+    }
+  ]
+}
+The
+sales_receipt
+template is the one we have to use.
+Retrieving the sales receipt template
+Let's retrieve the sales receipt template in the
+en_US
+locale with the
+get template method
+:
+curl -H "Authorization: Bearer $AUTH_TOKEN" -X GET "https://<url>/v0/d/templates/templates/sales_receipt/localization/en_US"
+The response contains the template itself:
+{%- set decimal_separator = decimal_separator | default('.') -%}
+{%- set num_items_on_one_page = num_items_on_one_page | default(6) -%}
+
+{%- macro currency(amount) -%}
+{% set split = format_currency(amount).split(decimal_separator, 1) %}
+<span class="currency"><span class="symbol">{{ currency_symbol(currency_code) }}</span><span class="whole">{{ split[0] }}</span><span class="decimal">{{ decimal_separator }}</span><span class="fractional">{{ split[1] }}</span></span>
+{%- endmacro -%}
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Receipt</title>
+    <style>...</style>
+</head>
+<body>
+    <div class="book">
+    {%- set grouped_items = group_items(flat_items|default(items), "external_identifier", "sku") -%}
+    {% with paginated_items = paginate(grouped_items, num_items_on_one_page) %}
+    {% for items in paginated_items %}
+        <div class="page">
+        <div class="subpage">
+            <div class="header">
+            <img src="https://assets.newstore.net/giovanna-dodici/giovanna-dodici-optimized.svg" alt="Giovanna Dodici">
+            <div class="description">
+                <p>
+                {{tenant_address.address_line_1}},
+                {{tenant_address.address_line_2 + ', ' if tenant_address.address_line_2 else ''}}
+                {{tenant_address.city}},
+                {{tenant_address.state + ' ' if tenant_address.state else ''}}
+                {{tenant_address.zip_code + ', ' if tenant_address.zip_code else ''}}
+                {{tenant_address.country_code}}
+            {%if store_phone_number%}<br/>{{store_phone_number}}{% endif %}
+                </p>
+                <p>giovannadodici.com</p>
+            </div>
+            </div>
+            <!--truncated -->
+    {% endfor %}
+    {% endwith %}
+    </div>
+</body>
+</html>
+Getting the sample data for the sales receipt template
+To see how to define a data payload to render for the sales receipt template, use the
+get sample data method
+:
+curl -H "Authorization: Bearer $AUTH_TOKEN" -X GET "https://<url>/v0/d/templates/templates/sales_receipt/sample_data"
+The response contains the sample data as JSON:
+{
+  "customer_name": "John Doe",
+  "associate_name": "Example Associate Name",
+  "store_name": "Example Store Name",
+  "tenant_address": {
+    "name": "Example Fashion LLC",
+    "country_name": "United States of America",
+    "country_code": "US",
+    "city": "NEW YORK",
+    "zip_code": "10012",
+    "state": "NY",
+    "address_line_2": "",
+    "address_line_1": "70 WOOSTER ST"
+  },
+  "store_phone_number": "+123456789",
+  "order_number": "order-1234",
+  "external_id": "external-1234",
+  "currency_code": "USD",
+  "payment_method_label": "Credit Card",
+  "tax_exempt": false,
+  "extended_attributes": [
+    {
+      "name": "attr1",
+      "value": "val1"
+    }
+  ],
+  "flat_items": [
+    {
+      "product_name": "Awesome Pollo",
+      "product_id": "13451",
+      "fulfillment_group_type": "SHIPPING",
+      "external_identifier": {
+        "epc": "1234240000000",
+        "sku": "13451",
+        "abc": "2345511110002222"
+      },
+      "amount": 70,
+      "product_attributes": {
+        "variation_size_value": "XXL"
+      },
+      "price_net": 213.45,
+      "price_gross": 200.0,
+      "price_tax": 13.45,
+      "price_catalog": 180.0,
+      "item_discount": 3.92,
+      "item_order_discount": 3.92,
+      "product_image_url": "www.example.com",
+      "tax_method": "vat_included",
+      "discounts": [
+        {
+          "level": "order",
+          "discount_value": 90.0,
+          "discount_type": "percentage",
+          "reason": "ifkBiVvXba",
+          "coupon_code": "",
+          "promotion_uuid": "3efc6043-89fb-45ed-9e19-7ee558b5d309",
+          "price_adjustment": 3.92
+        },
+        {
+          "level": "item",
+          "discount_value": 3.92,
+          "discount_type": "fixed",
+          "reason": "ifkBiVvXba",
+          "coupon_code": "",
+          "promotion_uuid": "3efc6043-89fb-45ed-9e19-7ee558b5d312",
+          "price_adjustment": 3.92
+        }
+      ],
+      "group_id": "",
+      "extended_attributes": [
+        {
+          "name": "attr1",
+          "value": "val1"
+        }
+      ]
+    },
+    {
+      "product_name": "Average Polo",
+      "product_id": "13451",
+      "fulfillment_group_type": "IN_STORE_HANDOVER",
+      "external_identifier": {
+        "epc": "1234240000000",
+        "sku": "13451",
+        "abc": "2345511110002222"
+      },
+      "amount": 70,
+      "product_attributes": {
+        "variation_size_value": "XXL"
+      },
+      "price_net": 213.45,
+      "price_gross": 200.0,
+      "price_tax": 13.45,
+      "price_catalog": 180.0,
+      "item_discount": 3.92,
+      "item_order_discount": 3.92,
+      "product_image_url": "www.example.com",
+      "tax_method": "vat_included",
+      "discounts": [
+        {
+          "level": "order",
+          "discount_value": 90.0,
+          "discount_type": "percentage",
+          "reason": "ifkBiVvXba",
+          "coupon_code": "",
+          "promotion_uuid": "3efc6043-89fb-45ed-9e19-7ee558b5d309",
+          "price_adjustment": 3.92
+        },
+        {
+          "level": "item",
+          "discount_value": 3.92,
+          "discount_type": "fixed",
+          "reason": "ifkBiVvXba",
+          "coupon_code": "",
+          "promotion_uuid": "3efc6043-89fb-45ed-9e19-7ee558b5d312",
+          "price_adjustment": 3.92
+        }
+      ],
+      "group_id": "",
+      "extended_attributes": [
+        {
+          "name": "attr1",
+          "value": "val1"
+        }
+      ]
+    }
+  ],
+  "fulfillment_group_amounts": {
+    "IN_STORE_HANDOVER": {
+      "tax_lines": [
+        {
+          "name": "total eclipse tax",
+          "rate": 0.0098,
+          "amount": 123.23
+        }
+      ],
+      "sub_total": 217.37,
+      "grand_total": 90,
+      "taxes": 10,
+      "shipping_and_handling": 10
+    },
+    "SHIPPING": {
+      "tax_lines": [
+        {
+          "name": "blood moon tax",
+          "rate": 0.0098,
+          "amount": 334.23
+        }
+      ],
+      "sub_total": 217.37,
+      "grand_total": 90,
+      "taxes": 10,
+      "shipping_and_handling": 10
+    }
+  },
+  "amounts": {
+    "shipping_and_handling": 10,
+    "taxes": 10,
+    "grand_total": 90,
+    "sub_total": 217.37,
+    "tax_lines": [
+      {
+        "amount": 334.23,
+        "rate": 0.0098,
+        "name": "blood moon tax"
+      },
+      {
+        "amount": 123.23,
+        "rate": 0.0098,
+        "name": "total eclipse tax"
+      }
+    ]
+  },
+  "billing_address": {
+    "name": "Dr Mr John Christopher Doe Jr",
+    "country_name": "United States of America",
+    "country_code": "US",
+    "city": "Boston",
+    "zip_code": "02111",
+    "address_line_2": "",
+    "address_line_1": "745 Atlantic Ave",
+    "state": "MA",
+    "email": "jdoe@example.com"
+  },
+  "shipping_address": {
+    "name": "Dr Mr John Christopher Doe Jr",
+    "country_name": "United States of America",
+    "country_code": "US",
+    "city": "Boston",
+    "zip_code": "02111",
+    "address_line_2": "",
+    "address_line_1": "745 Atlantic Ave",
+    "state": "MA",
+    "email": "jdoe@example.com"
+  },
+  "created_at": "2016-10-07T07:10:38.506538",
+  "qr_code": "iVBORw0KGgoAAAANSUhEUgAAANwAAADcAQMAAAAhlF3CAAAABlBMVEX///8AAABVwtN+AAABCklEQVRYhe3XuxGDQAwE0L0hIKQESqE0UxqluARCAg8ye6fDB/5gzzhjlaFHpJGQgOXoURlQG7qcGSEkDmBU1rc3oJ2AbooZXISODStVeflADEtmFv6Gj9oK35QPcViFv+E6vEvqys/by8k+Ma4LYOm+hMUCEB7gJpjCuzgreqUqS1CbDfWMbgwcWOERpmZjo3E78EAD0ZNCn09eF33stonfuxDfvgi/wTGstbUrkDqw8doK+RC8fMsJ23r5BqT5FB6jB2sbg+dHMwPCiJajuDB220H4AYdY2Nx9RW03x++pcf3FtPQHkPZn6j6h8H94Ky4M4beYhzfetww/P3qh7RaAFRfG0/4UvsI7lvB94BBFc0MAAAAASUVORK5CYII=","timezone": "America/New_York",
+  "discounts": [
+    {
+      "level": "order",
+      "discount_value": 90.0,
+      "discount_type": "percentage",
+      "reason": "ifkBiVvXba",
+      "coupon_code": "",
+      "promotion_uuid": "3efc6043-89fb-45ed-9e19-7ee558b5d309",
+      "price_adjustment": 3.92
+    },
+    {
+      "level": "item",
+      "discount_value": 3.92,
+      "discount_type": "fixed",
+      "reason": "ifkBiVvXba",
+      "coupon_code": "",
+      "promotion_uuid": "3efc6043-89fb-45ed-9e19-7ee558b5d312",
+      "price_adjustment": 3.92
+    }
+  ],
+  "instruments": [
+    {
+      "instrument_id": "5efc6043-89fb-45ed-9e19-7ee558b5d316",
+      "payment_provider": "stripe",
+      "payment_method": "credit_card",
+      "currency_code": "USD",
+      "metadata": {
+        "instrument_details": {
+          "last4": "4242",
+          "brand": "MasterCard"
+        }
+      },
+      "amount": 60
+    },
+    {
+      "instrument_id": "6ifc6043-89fb-45ed-9e19-7ee558b5d315",
+      "payment_provider": "clutch",
+      "payment_method": "gift_card",
+      "currency_code": "USD",
+      "metadata": {},
+      "amount": 30
+    }
+  ],
+  "shipping_method": "in_store_handover",
+  "order_notes": [
+    {
+      "text": "Customer received a discount for their 10th order with us.",
+      "source": "354332bc-513d-4574-857f-16946a18ff52",
+      "source_type": "user",
+      "tags": ["loyal customer"],
+      "created_iat": "2016-10-07T07:10:38.506538"
+    },
+    {
+      "text": "This product is on us",
+      "source": "354332bc-513d-4574-857f-16946a18ff52",
+      "source_type": "user",
+      "tags": ["loyal customer"],
+      "created_iat": "2016-10-07T07:10:38.506538",
+      "item_id": "8681977b-78d5-48f4-92b9-b035d20009c8",
+      "product_id": "13451"
+    }
+  ]
+}
+Previewing the sales receipt template
+Previewing a template with its accompanying sample data is useful to understand how to customize it. This is also helpful for testing your changes. Let's use the
+preview template method
+to accomplish this.
+First
+retrieve the template
+.
+Then
+get the sample data
+for the template.
+In a JSON file named
+request_body.json
+, let's define the template as a string stripped of its carriage returns, the data as an object, and the content type as a string:
+{
+  "template": "<html><body><p>User name: {{user_name}}</p></body></html>",
+  "data": {
+    "user_name": "John Doe"
+  },
+  "content_type": "html"
+}
+Let's render the output by calling the
+preview template method
+:
+curl -X POST "https://<url>/v0/d/templates/templates/sales_receipt/preview" \
+     -H "Authorization: Bearer $AUTH_TOKEN" -d @request_body.json
+Creating a customized sales receipt template
+We can create or customize our own sales receipt template now that we know how to get the template and sample data and use them together.
+Note
+This example sales receipt template is optimized to print receipts via receipt printers that print on 3.5 inch paper.
+Using the fields and data from the
+sample data
+, let's create a new template
+sales_receipt.j2
+:
+{%- from 'macros' import positive_currency, negative_currency with context -%}
+{%- import 'tenant' as tenant -%}
+
+{% set total_items = flat_items|length %}
+{% set total_instruments = instruments|length %}
+{% set total_credit_cards = instruments|selectattr('payment_method', 'equalto', 'credit_card')|list|length|int %}
+
+{% set top_info_height = 0 %}
+{% if self.top_info() %}
+  {% if (billing_address and billing_address.name) or (shipping_address and shipping_address.name) %}
+    {% set top_info_height = 0.77 %}
+  {% else %}
+    {% set top_info_height = 0.65 %}
+  {% endif %}
+{% endif %}
+
+{% set item_list_height = 0 %}
+{% if self.item_list_sales() %}
+  {% set item_list_height = (total_items * 0.46) + (item_discounts * 0.32) + 0.265 %}
+{% endif %}
+
+{% set pricing_info_height = 0 %}
+{% if self.pricing_info_sales() %}
+  {% set pricing_info_height = (order_discounts * 0.14) + 0.46 %}
+{% endif %}
+
+{% set payment_info_height = 0 %}
+{% if self.payment_info() %}
+  {% set payment_info_height = 0.35 + ((total_instruments - total_credit_cards) * 0.152) + (total_credit_cards * 0.304) %}
+{% endif %}
+
+{% set receipt_height = 0.3 + top_info_height + item_list_height + pricing_info_height + payment_info_height %}
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="print.css">
+    <style>
+        @font-face {
+            font-family: 'Roboto';
+            font-style: normal;
+            font-weight: 400;
+            src: url('{{ tenant.fonts.roboto }}') format("woff2");
+        }
+        @page {
+            size: 3.125in {
+                {
+                    receipt_height
+                }
+            }
+            in;
+            margin-left:.1in;
+            margin-right:.1in;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        @media print {
+            body,
+            page {
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img class="logo" src="{{ tenant.print_logo }}" />
+        <p>
+            <span class="adr">
+                    <span class="street-address">{{ store_address.address }}</span>
+            </span>
+        </p>
+        {% if store_phone_number %}
+        <p>phone: {{store_phone_number}}</p>{% endif %} {% if tenant.emails.customer_service %}
+        <p>email: {{tenant.emails.customer_service}}</p>{% endif %} {% if tenant.vat_number %}
+        <p>VAT {{tenant.vat_number}}</p>{% endif %}
+    </div>
+
+    {% block top_info %}
+    <div class="top_info">
+        <p class="order_id"><strong>Order no. </strong>{{ order_details.order_id }}</p>
+    </div>
+    {% endblock %}
+    {% block item_list_sales %}
+    <div class="item_list">
+        <div class="item_list_header">
+            <p>Description</p>
+            <p>Price</p>
+        </div>
+        {% set show_gross_prices = flat_items|selectattr("tax_method", "equalto", "vat_included")|list|count > 0 -%}
+        <div class="item_list_item">
+            <div class="item_list_item_product_name">
+                <p>{{ item.product_name }}</p>
+            </div>
+            <div class="item_list_net_total">
+                {% if show_gross_prices %}
+                <p>{{ positive_currency(item.price_gross) }}</p>
+                {% else %}
+                <p>{{ positive_currency(item.price_net) }})</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endblock %}
+    {% block pricing_info_sales %} {% set show_gross_prices = flat_items|selectattr("tax_method", "equalto", "vat_included")|list|count > 0 -%}
+    <div class="pricing_info">
+        <div class="pricing_info_subtotal">
+            <p>Subtotal</p>
+            {% if show_gross_prices %}
+            <p>{{ positive_currency(amounts.sub_total + amounts.taxes) }}</p>
+            {% else %}
+            <p>{{ positive_currency(amounts.sub_total) }}</p>
+            {% endif %}
+        </div>
+
+        <div class="pricing_info_taxes">
+            <p>Taxes{%- if show_gross_prices -%}(Incl){% else %}(Excl){%- endif -%}</p>
+            <p>{{ positive_currency(amounts.taxes) }}</p>
+        </div>
+        <div class="pricing_info_total">
+            <p>Total</p>
+            <p>{{ positive_currency(amounts.grand_total) }}</p>
+        </div>
+    </div>
+    {% endblock %}
+    {% block payment_info %}
+    <div class="payment_info">
+        <div class="payment_info_header">
+            <p>Payments</p>
+        </div>
+        {% for instrument in instruments %} {%- if instrument.payment_method == "credit_card" -%}
+        <div class="payment_info_credit_card">
+            <p>Credit&nbsp;Card</p>
+            <p>{{ positive_currency(instrument.amount) }}</p>
+        </div>
+        {%- else -%}
+        <div>
+            <p>{{ instrument.payment_method }}</p>
+            <p>{{ positive_currency(instrument.amount) }}</p>
+        </div>
+        {%- endif -%} {% endfor %}
+    </div>
+    {% endblock %}
+
+    <div class="footer">
+        <p class="media_text"><a href="{{ tenant.urls.home }}">{{ tenant.urls.home }}</a></p>
+        <div class="media_icons">
+            <img src="{{ tenant.icons.instagram }}" />
+        </div>
+        {%- set effective_date = created_at | default(order_details and order_details.started_at) -%}
+    </div>
+</body>
+</html>
+Creating a fiscal signature template
+In some countries, retailers must print the
+fiscal signature
+on the receipts. For more details, see
+Adding fiscal signatures to receipts
+.
+The
+f11n
+property includes the list of transactions under the
+transactions
+field, and is available under sales, return, or exchange receipt templates.
+Important
+The retailer is responsible for verifying local regulations and ensuring compliance of the receipt in each country where fiscal regulations apply.
+Note
+In fiscal countries, the receipts generated in
+Offline Mode
+may not have the
+f11n
+property. Based on the selected fiscal signing strategy, receipts may therefore be generated without a fiscal signature. For more details, see
+Configuring Offline Mode in fiscal countries
+.
+Use the parameter
+is_copy
+in the template to determine whether the current receipt is a copy or not.
+To create the fiscal signature template under
+fiscal_signature.j2
+, see the following code sample:
+{# MAIN MACRO - USE IN TEMPLATES TO DISPLAY FISCAL SIGNATURE FOR ANY COUNTRY #}
+{%- macro showFiscalSignature(f11n, txnType) -%}
+  {% if f11n is defined and f11n %}
+
+    {# override styles in your template #}
+    {{inlineStyles()}}
+
+    {#
+      extracting specific f11nTransaction:
+      1. if txnType is defined, filtering just txn with specific type
+      2. selecting first transaction in the list
+    #}
+
+    {% if txnType %}
+      {% set transactions = f11n.transactions | selectattr('type','equalto', txnType) | list %}
+    {% else %}
+      {% set transactions = f11n.transactions %}
+    {% endif %}
+    {% if transactions|length > 0 %}
+      {% set f11nTransaction = transactions[0] %}
+    {% endif %}
+
+    {% if f11nTransaction is defined %}
+      {# temporary signature is provided in case there is a failure with 3rd party fiscal provider #}
+      {% set f11nSignature = f11nTransaction.signature or f11nTransaction.temporarySignature %}
+
+      <div class="fiscal_signature">
+        {% if f11n.countryCode == "AT" %}
+          {{showFiscalSignatureAT(f11nSignature)}}
+        {% elif f11n.countryCode == "DE" %}
+          {{showFiscalSignatureDE(f11nTransaction)}}
+        {% elif f11n.countryCode == "FR" %}
+          {{showFiscalSignatureFR(f11nSignature)}}
+        {% elif f11n.countryCode == "MC" %}
+          {{showFiscalSignatureFR(f11nSignature)}}
+        {% elif f11n.countryCode == "IE" %}
+          {{showFiscalSignatureIE(f11nTransaction)}}
+        {% elif f11n.countryCode == "IN" %}
+          {{showFiscalSignatureIN(f11nTransaction)}}
+        {% elif f11n.countryCode == "PR" %}
+          {{showFiscalSignaturePR(f11nTransaction)}}
+        {% elif f11n.countryCode == "SE" %}
+          {{showFiscalSignatureSE(f11nTransaction)}}
+        {% endif %}
+      </div>
+    {% endif %}
+
+  {% endif %}
+{%- endmacro -%}
+
+{# ----------------------------------------------------------------------------------------------- #}
+
+{# AUSTRIA #}
+{%- macro showFiscalSignatureAT(signature) -%}
+  {{showFiscalInfo('FISCAL', statusAT(signature))}}
+  {{showFiscalInfo('RKSV-Identification', signature.cashBoxName)}}
+  {{showFiscalInfo('RKSV-Receipt number', signature.receiptId)}}
+  {% if signature.environment != 'production' %}
+    {{showFiscalInfo('ENV', signature.environment)}}
+  {% endif %}
+  {{showFiskaltrustQRCode(signature)}}
+{%- endmacro -%}
+
+{%- macro statusAT(signature) -%}
+  {% if signature.state == 'OK' %}
+    OK
+  {% elif signature.state == 'OUT_OF_SERVICE' %}
+    SIGNATURE DEVICE FAILED (OOS)
+  {% elif signature.state == 'SSCD_TEMPORARY_OUT_OF_SERVICE' %}
+    SIGNATURE DEVICE FAILED (TEMP)
+  {% elif signature.state == 'SSCD_PERMANENETLY_OUT_OF_SERVICE' %}
+    SIGNATURE DEVICE FAILED (PERM)
+  {% elif signature.state == 'SUBSEQUENT_ENTRY_ACTIVATED' %}
+    OK
+  {% elif signature.state == 'MONTHLY_REPORT_DUE' %}
+    OK
+  {% elif signature.state == 'ANNUAL_REPORT_DUE' %}
+    OK
+  {% elif signature.state == 'MESSAGE_PENDING' %}
+    OK
+  {% elif signature.state == 'SSCD_BACKUP_IN_USE' %}
+    SIGNATURE DEVICE FAILED (BCKP)
+  {% else %}
+    {{signature.state}}
+  {% endif %}
+
+  {% if signature.stateData.Signing == false %}
+    <p>SIGNING NOT REQUIRED </p>
+  {% endif %}
+{%- endmacro -%}
+
+{# ----------------------------------------------------------------------------------------------- #}
+
+{# GERMANY #}
+{%- macro showFiscalSignatureDE(transaction) -%}
+  {% set signature = transaction.signature or transaction.temporarySignature %}
+  {% if transaction.type.startswith('foreign') %}
+    <div>Auslandsverkäufe</div>
+  {% endif %}
+  {{showFiscalInfo('FISCAL', statusDE(signature))}}
+  {% if signature.environment != 'production' %}
+    {{showFiscalInfo('ENV', signature.environment)}}
+  {% endif %}
+  {{showFiscalInfo('Receipt Id', signature.receiptId)}}
+  {{showSignatureItem(signature, 'CERTIFICATION_IDENTIFICATION', 'TSE - Zertifizierung-Id')}}
+  {{showSignatureItem(signature, 'TSE_SERIAL_NUMBER', 'TSE - Seriennummer')}}
+  {{showSignatureItem(signature, 'RECEIPT_QR_VERSION', 'TSE - QR-Version')}}
+  {{showSignatureItem(signature, 'RECEIPT_POS_SERIAL_NO', 'TSE - Seriennummer Kasse')}}
+  {{showSignatureItem(signature, 'RECEIPT_PROCESSTYPE', 'TSE - Prozesstyp')}}
+  {{showSignatureItem(signature, 'RECEIPT_PROCESSDATA', 'TSE - Prozessdaten')}}
+  {{showSignatureItem(signature, 'RECEIPT_TRANSACTION_NUMBER', 'TSE - Transaktions-Zähler')}}
+  {{showSignatureItem(signature, 'RECEIPT_SIGNATURE_COUNTER', 'TSE - Signatur-Zähler')}}
+  {{showSignatureItem(signature, 'RECEIPT_START_TIME', 'TSE - Start')}}
+  {{showSignatureItem(signature, 'RECEIPT_LOGTIME', 'TSE - Stop')}}
+  {{showSignatureItem(signature, 'RECEIPT_SIGNATURE_ALGORITHM', 'TSE - HashAlgorithmus')}}
+  {{showSignatureItem(signature, 'RECEIPT_LOGTIME_FORMAT', 'TSE - Zeitformat')}}
+  {{showSignatureItem(signature, 'RECEIPT_SIGNATURE', 'TSE - Signatur')}}
+  {{showSignatureItem(signature, 'RECEIPT_PUBLIC_KEY', 'TSE - PublicKey')}}
+  {{showSignatureItem(signature, 'RECEIPT_PROCESS_START', 'TSE - Vorgangsbeginn')}}
+  {{showSignatureItem(signature, 'ARCHIVING_REQUIRED', 'Archivierung erforderlich')}}
+  {{showSignatureItem(signature, 'NOTIFICATION', 'Benachrichtigung')}}
+  {{showSignatureItem(signature, 'INFORMATION_NOTIFICATION', 'Information')}}
+  {{showSignatureItem(signature, 'ALERT_NOTIFICATION', 'Alarm')}}
+  {{showSignatureItem(signature, 'FAILURE_NOTIFICATION', 'Fehler')}}
+  <div class="fiscal_info">{{showFiskaltrustQRCode(signature)}}</div>
+{%- endmacro -%}
+
+{%- macro statusDE(signature) -%}
+  {% if signature.state == 'OK' %}
+    OK
+  {% elif signature.state == 'OUT_OF_SERVICE' %}
+    TSE FAILED (OOS)
+  {% elif signature.state == 'TSE_DEVICE_COMM_BROKEN' %}
+    TSE DEVICE COMM. FAILED
+  {% elif signature.state == 'LATE_SIGNING_MODE' %}
+    OK
+  {% elif signature.state == 'MESSAGE_PENDING' %}
+    OK
+  {% else %}
+    {{signature.state}}
+  {% endif %}
+{%- endmacro -%}
+
+{# ----------------------------------------------------------------------------------------------- #}
+
+{# FRANCE #}
+{%- macro showFiscalSignatureFR(signature) -%}
+  <h4>Caractéristiques de sécurité<h4>
+    {{showFiskaltrustQRCode(signature)}}
+  <div class="signature_items_wrapper">
+    {{showSignatureItems(signature)}}
+  </div>
+{%- endmacro -%}
+
+{%- macro statusFR(signature) -%}
+  {% if signature.state == 'OK' %}
+    OK
+  {% elif signature.state == 'OUT_OF_SERVICE' %}
+    MODE DÉGRADÉ
+  {% elif signature.state == 'LATE_SIGNING_MODE' %}
+    MODE DE SIGNATURE TARDIVE
+  {% elif signature.state == 'MESSAGE_PENDING' %}
+    MESSAGE EN ATTENTE
+  {% else %}
+    {{signature.state}}
+  {% endif %}
+{%- endmacro -%}
+
+{# ----------------------------------------------------------------------------------------------- #}
+
+{# INDIA #}
+{%- macro showFiscalSignatureIN(transaction) -%}
+  {% set signature = transaction.signature %}
+  {% if signature.environment != 'production' %}
+  <div class="fiscal_info">
+    <span class="fiscal_info_caption">ENV: {{signature.environment}}</span>
+  </div>
+  {% endif %}
+  <div class="fiscal_info">
+    <span class="fiscal_info_caption">Receipt number: {{signature.receiptNumber}}</span>
+  </div>
+{%- endmacro -%}
+
+{# ----------------------------------------------------------------------------------------------- #}
+
+{# IRELAND #}
+{%- macro showFiscalSignatureIE(transaction) -%}
+  {% set signature = transaction.signature %}
+  {% if signature.environment != 'production' %}
+  <div class="fiscal_info">
+    <span class="fiscal_info_caption">ENV: {{signature.environment}}</span>
+  </div>
+  {% endif %}
+  <div class="fiscal_info">
+    {{showQRCode(signature.digitalSignatureQrCode)}}
+  </div>
+{%- endmacro -%}
+
+{# ----------------------------------------------------------------------------------------------- #}
+
+{# PUERTO RICO #}
+{%- macro showFiscalSignaturePR(transaction) -%}
+  {% set signature = transaction.signature or transaction.temporarySignature %}
+  {% if signature.environment != 'production' %}
+    <div><span class="fiscal_info_caption">ENVIRONMENT:</span> <span class="fiscal_info_value">{{signature.environment}}</span></div>
+  {% endif %}
+  <div><span class="fiscal_info_caption">TRANSACTION NO:</span> <span class="fiscal_info_value">{{transaction.transactionNumber}}</span></div>
+  {{controlNumberPR(transaction)}}
+  {{statusPR(transaction)}}
+{%- endmacro -%}
+
+{%- macro statusPR(transaction) -%}
+  {% if transaction.signature %}
+    {% if transaction.signature.processor %}
+      <div class="fiscal_info_message">{{transaction.signature.processor}}</div>
+      <div class="fiscal_info_message">{{transaction.signature.processorMessage}}</div>
+    {% elif transaction.signature.signingRequired == false %}
+      <div class="fiscal_info_message">SIGNING NOT REQUIRED</div>
+    {% endif %}
+  {% endif %}
+{%- endmacro -%}
+
+{%- macro controlNumberPR(transaction) -%}
+  {% if transaction.signature %}
+    {# Print control number only for the first copy of sale transaction #}
+    {% if transaction.signature.controlNumber and transaction.type == 'sale' and is_copy != true %}
+      <div><span class="fiscal_info_caption">CONTROL:</span> <span class="fiscal_info_value">{{transaction.signature.controlNumber}}</span></div>
+    {% endif %}
+  {% elif transaction.temporarySignature %}
+    <div><span class="fiscal_info_caption">CONTROL:</span> <span class="fiscal_info_value">NOT AVAILABLE</span></div>
+  {% endif %}
+{%- endmacro -%}
+
+{# ----------------------------------------------------------------------------------------------- #}
+
+{# SPAIN #}
+{%- macro showFiscalReceiptNumberES(f11n) -%}
+  {{getDataFromSignature(f11n, "receiptNumber")}}
+{%- endmacro -%}
+
+{# ----------------------------------------------------------------------------------------------- #}
+
+{# SWEDEN #}
+{%- macro showFiscalSignatureSE(transaction) -%}
+  {% set signature = transaction.signature or transaction.temporarySignature %}
+  <div>FISCAL: {{statusSE(transaction)}}</div>
+  <div>Receipt No.: {{transaction.transactionNumber}}</div>
+  {% if signature.environment != 'production' %}
+    <div><small>ENV: {{signature.environment}}</small></div>
+  {% endif %}
+  <div><small>Cash register: {{signature.cashRegisterName}}</div>
+  <div><small>CCU: {{signature.controlUnitSerial}}</div>
+{%- endmacro -%}
+
+{%- macro statusSE(transaction) -%}
+  {% if transaction.signature %}
+    OK
+  {% elif transaction.temporarySignature %}
+    CCU OUT OF SERVICE
+  {% endif %}
+{%- endmacro -%}
+
+{# ----------------------------------------------------------------------------------------------- #}
+
+{# NORWAY #}
+{%- macro showCashRegisterIdFromSignatureNO(f11n, index) -%}
+  {{getDataFromSignature(f11n, "cashRegisterId", index)}}
+{%- endmacro -%}
+
+{# ----------------------------------------------------------------------------------------------- #}
+
+{# COMMON #}
+{%- macro showFiskaltrustQRCode(signature) -%}
+  {% for signatureItem in signature.signatureItems %}
+    {% if signatureItem.format == 'QR_CODE' %}
+      {{showQRCode(signatureItem.data)}}
+    {% endif %}
+  {% endfor %}
+{%- endmacro -%}
+
+{%- macro showQRCode(qrCode) -%}
+  <div class="signature_qr_code_wrapper">
+    <img alt="QR-Code" class="qr_code" src="data:image/png;base64,{{qrCode}}">
+  </div>
+{%- endmacro -%}
+
+{%- macro showSignatureItem(signature, type, caption) -%}
+  {% for signatureItem in signature.signatureItems %}
+    {% if signatureItem.type == type %}
+      {{showFiscalInfo(caption, signatureItem.data)}}
+    {% endif %}
+  {% endfor %}
+{%- endmacro -%}
+{%- macro showFiscalInfo(caption, data) -%}
+  <div class="fiscal_info">
+    <span class="fiscal_info_caption">{{caption}}:</span>
+    <span class="fiscal_info_data">{{data}}</span>
+  </div>
+{%- endmacro -%}
+{%- macro showSignatureItems(signature) -%}
+  {% for signatureItem in signature.signatureItems %}
+    {% if signatureItem.format == 'TEXT' %}
+      {{showSignatureText(signatureItem.caption, signatureItem.data)}}
+    {% endif %}
+  {% endfor %}
+{%- endmacro -%}
+{%- macro showSignatureText(caption, data) -%}
+  <div class="signature_text_caption">{{caption}}</div>
+  <div class="signature_text_data">{{data}}</div>
+{%- endmacro -%}
+
+{%- macro getDataFromSignature(f11n, key, index) -%}
+  {% if f11n is defined and f11n %}
+    {% if index %}
+      {% set f11nTransaction = f11n.transactions[index] %}
+    {% else %}
+    {% set f11nTransaction = f11n.transactions[0] %}
+    {% endif %}
+
+    {% if f11nTransaction is defined %}
+      {% set signature = f11nTransaction.signature or f11nTransaction.temporarySignature %}
+      {% if signature is defined %}
+        {{ signature[key] }}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{%- endmacro -%}
+
+{%- macro inlineStyles() -%}
+  <style>
+   .fiscal_signature {
+      font-size: 55%;
+      float: right;
+      max-width: 40%;
+    };
+    small {
+      45%
+    }
+   .fiscal_info {
+      font-size: 70%;
+    }
+   .fiscal_info > span {
+      display: inline-block;
+    }
+   .fiscal_info >.fiscal_info_caption {
+      font-weight: 500;
+      vertical-align: top;
+      width: 30%;
+    }
+   .fiscal_info >.fiscal_info_data {
+      word-break: break-word;
+      overflow-wrap: break-word;
+      width: 65%;
+    }
+   .fiscal_info >.signature_qr_code_wrapper {
+      margin-top: 2px;
+    }
+   .signature_items_wrapper {
+      margin-left: 4px;
+    }
+   .signature_items_wrapper > div {
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+   .signature_items_wrapper >.signature_text_caption {
+      font-weight: 800;
+    }
+   .signature_items_wrapper >.signature_text_data {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+  </style>
+{%- endmacro -%}
+Import the
+showFiscalSignature
+function, available under the fiscal signature template, into the receipt template:
+{%- from 'fiscal_signature' import showFiscalSignature with context -%}
+Call the
+showFiscalSignature
+function from the receipt template:
+<div class="fiscal_signature_wrapper">
+  {{ showFiscalSignature(f11n) }}
+</div>
+Updating templates
+We'll work through this process using the packing slip template as an example. The packing slip contains the full name of the associate who picked and packed items in the order. You can also specify the billing address of the customer in the packing slip, if required. To comply with privacy rules, we'll remove the associate's personal information from the template.
+Important
+Ensure that you work on the correct instance of the template and sync all your changes to other instances of the template stored across NewStore.
+Let's first retrieve the packing slip from our production environment. In this example we're using
+en_US
+as the template locale.
+curl -H "Authorization: Bearer $AUTH_TOKEN" \
+    -X GET "https://{retailer}.p.newstore.net/v0/d/templates/templates/packing_slip/localization/en_US" \
+    > packing_slip.j2
+Here's an example of what you'll see in the template:
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Packing slip</title>
+    <link rel="stylesheet" type="text/css" href="print.css">
+</head>
+<div class="book">
+{% with paginated_items = paginate(flat_items, 6) %}
+{% for items in paginated_items %}
+    <div class="page">
+        <div class="subpage">
+            <div class="header">
+                <div class="description">
+                    <p>{{from_address.address_line_1}}{{from_address.address_line_2|format_if_valid(' {}')}}, {{from_address.city}}{{from_address.state|format_if_valid(', {}')}}{{from_address.zip_code|format_if_valid(' {}')}}</p>
+                </div>
+            </div>
+            <div class="information">
+                <div class="note">
+                    <p>Deliver to:</p>
+                    <p class='name'> {{ to_address.name }} </p>
+                    <p>{{ to_address.address_line_1 }}{{to_address.address_line_2|format_if_valid(' {}')}}</p>
+                    <p>{{ to_address.city }}{{to_address.state|format_if_valid(', {}')}}{{ to_address.zip_code|format_if_valid(' {}')}}</p>
+                    <p>{{ to_address.country_name }}</p>
+                </div>
+                <div class="user_order_details">
+                    <p>{{ order_details.consumer_name }}</p>
+                    <p>{{ format_date(order_details.placed_at, store_timezone) }}</p>
+                    {% if order_details.shipping_carrier and order_details.shipping_type_name %}
+                        <p>{{ order_details.shipping_carrier }}, {{ order_details.shipping_type_name }}</p>
+                    {% endif %}
+                    <p>{{ order_details.packer_id }}</p>
+                </div>
+                <div class="order_details">
+                    <p>Customer: </p>
+                    <p>Date: </p>
+                    {% if order_details.shipping_carrier and order_details.shipping_type_name %}
+                        <p>Shipping:</p>
+                    {% endif %}
+                    <p>Agent:</p>
+                </div>
+            </div>
+            <div class="contents">
+                <div class="table-wrapper">
+                <div class="subject">
+                <div class="subject_left">
+                    Packing Slip
+                </div>
+                <div class="subject_right">
+                    {{ order_details.order_id }} - Package {{ current_package }} of {{ number_of_packages }}
+                </div>
+            </div>
+                <table>
+                        <tr>
+                        <th class="desc">Description</th>
+                        <th class="epc">Item ID</th>
+                        <th class="quantity">Quantity</th>
+                        <th class="returned_qty"></th>
+                        <th class="reason_code"></th>
+                        </tr>
+                        {% for item in items %}
+
+                                <tr>
+                                <td class="desc">
+                                    <strong>{{ item.name }}</strong><br>
+                                    Size {{ item.product_attributes.variation_size_value }}
+                                </td>
+                                <td class="epc">
+                                    <span> {{ item.external_identifier.epc if item.external_identifier and item.external_identifier.epc else '---' }} </span>
+                                </td>
+                                <td class="quantity">
+                                    <span> 1 </span>
+                                </tr>
+
+                        {% endfor %}
+                </table>
+                </div>
+            </div>
+            <div class="footer">
+                <div class="qr_code_wrapper">
+                    <img alt="QR-Code" class="qr_code" src="data:image/png;base64,{{ qr_code }}">
+                </div>
+                <div class="footer_order_details">
+
+                    <p><strong> {{ order_details.order_id }} </strong></p>
+                    <p><p>{{ format_date(order_details.started_at, store_timezone) }} at {{ format_time(order_details.started_at, store_timezone) }}</p></p>
+                    <p>Page {{ loop.index }} of {{ paginated_items|length }}</p>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endwith %}
+</div>
+</html>
+To find the field name that contains the associate's personal information, let's download the sample data for the packing slip.
+curl -H "Authorization: Bearer $AUTH_TOKEN" \
+    -X GET "https://{retailer}.p.newstore.net/v0/d/templates/templates/packing_slip/sample_data" \
+    > packing_slip.mock.json
+The
+order_details->packer_id
+field contains the associate's name.
+{
+    "order_details": {
+        "placed_at": "2017-01-03T15:58:32.008988",
+        "shipping_type_name": "Same Day",
+        "consumer_name": "Janet Doe",
+        "order_id": "TH-000000872",
+        "shipping_carrier": "DELIV",
+        "external_order_id": "ORD-000000872",
+        "packer_id": "Johny Doe"
+    }
+}
+Let's remove instances where this field was used in the template.
+For example, you'll see ,
+<p>{{ order_details.packer_id }}</p>
+wrapped in HTML. Removing this line removes the name of the associate and the related content from the Jinja2 packing slip template.
+Now, we can upload the modified template.
+curl -H "Authorization: Bearer $AUTH_TOKEN" \
+  -X PUT "{retailer}.p.newstore.net/v0/d/templates/templates/packing_slip/localization/en_US" \
+  -d @packing_slip.j2
+Note
+Ensure that your changes are synced to other instances of this template in NewStore.
+Best practices for creating templates
+Using helper functions
+You can find helper functions in the NewStore repository to help you set up templates. For example, below is a function that you can use in a sales receipt template. It covers all the
+if-else
+cases in payment information, to decrease complexity in the template.
+def get_instrument_info(instrument):
+    """
+    Gets the instrument brand and additional infromation from the metadata
+    """
+
+    metadata = instrument['metadata']
+    payment_method = instrument['payment_method']
+    payment_method_mapped = payment_method_dict(payment_method) or desnake(payment_method)
+    instrument_info = {
+        'brand': payment_method_mapped,
+        'info': ''
+    }
+    # if there is no metadata return payment_method at least
+    if not metadata:
+        return instrument_info
+
+    if payment_method == 'credit_card':
+        last4 = metadata.get('instrument_details', {}).get('last4', '')
+        instrument_info['brand'] = metadata.get('instrument_details', {}).get('brand', '')
+        if last4:
+            instrument_info['info'] = '*' * 4 + last4
+    elif payment_method == 'paypal':
+        instrument_info['info'] = metadata.get('instrument_details', {}).get('email', '')
+    elif payment_method == 'gift_card':
+        instrument_info['info'] = metadata.get('instrument_details', {}).get('card_id', '')
+
+    if payment_method != 'cash' and not instrument_info['info']:
+        logger.warning(
+            'failed to get payment method info for payment method with type %s and metadata %s',
+            payment_method, metadata)
+
+    return instrument_info
+Working with email templates
+You can customize the subject and the body of email messages, and update the email template to include images, your logo, and links to websites. Linking images is good practice since the same link can be reused, but they must be online in order to be available.
+Some email providers don't use current HTML standards. Ensure that your email templates adhere to the email provider's requirements. For example, ensure that the fonts you use in the template are allowed by the email provider. Most email viewers will not correctly render CSS Flexbox or CSS Grid, so use HTML tables to position your components in the email.
+Working with print templates
+To ensure that your receipt templates are rendered correctly as PDFs, define the size accurately:
+Standard letter-sized PDF receipts
+: Set the page height as 11" and the width as 8.5" in the CSS.
+Ribbon receipts
+: The length of these receipts is dynamic and depends on the number of line items it contains. Ensure that you calculate the height for the template as a sum of the individual components it can contain.
+Importing templates
+If you know you're going to reuse data across multiple templates, to prevent duplication of code create this data in a separate file and import it into each template.
+For example, let's define retailer-specific data in tenant.j2, which we can import into another template:
+{%- set id = 'dodici' -%}
+{%- set name = 'Dodici' -%}
+{%- set email_logo = 'https://assets.example.com/dodici/logo.png' -%}
+{%- set phone = '+49 55 55 55 55' -%}
+{%- set emails = {
+    'contact': 'customerservice@dodici.com'
+} -%}
+{%- set urls = {
+    'home': 'www.dodici.com',
+    'instagram': 'https://www.instagram.com/dodici/'
+} -%}
+{%- set policies = {
+    'return_period': '14'
+} -%}
+{%- set fonts = {
+    'roboto': 'https://fonts.gstatic.com/s/roboto/v19/KFOmCnqEu92Fr1Mu7GxKKTU1Kvnz.woff2'
+} -%}
+In another template file, we can import
+tenant.j2
+:
+{%- import 'tenant' as tenant -%}
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+      @font-face {
+          font-family: 'Roboto';
+          font-style: normal;
+          font-weight: 400;
+          src: url('{{ tenant.fonts.roboto }}') format("woff2");
+      }
+  </style>
+</head>
+<body>
+  <div class="header">
+      <img class="logo" src="{{ tenant.email_logo }}" /> {% if tenant.emails.contact %}
+      <p>Email: {{tenant.emails.contact}}</p>{% endif %} {% if tenant.policies %}
+      <p>Return policies: {{tenant.policies}}</p>{% endif %}
+  </div>
+  <div class="footer">
+      <p class="media_text"><a href="{{ tenant.urls.home }}">{{ tenant.urls.home }}</a></p>
+      <div class="logo">
+          <img src="{{ tenant.email_logo }}" />
+      </div>
+  </div>
+</body>
+</html>
+Using predefined functions
+We have predefined functions from our templating engine, which you can use to create your templates.
+Function
+Description
+format_currency(amt)
+Formats the amount to have two digits after the period.
+@environmentfunction
+format_date(env, dt, timezone=None, format='long')
+Formats date in template.
+Uses jinja2 environmentfunction decorator.
+@environmentfunction
+format_time(env, dt, timezone, format='short')
+Formats time in template.
+Uses jinja2 environmentfunction decorator.
+desnake(s)
+Converts snake case to normal case.
+paginate(items, page_limit)
+Groups all items into pages depending on the page limit.
+group_items(items, \*keys)
+Groups a set of flat items according to a key (or nested keys) in the item dictionaries.
+Items from the different fulfillment groups of the mixed order are not grouped together.
+Sums up the price details of each item.
+items | indexed
+A jinja2 filter that adds a field
+index
+to the given items that enumerates them.
+is_mixed(items)
+Returns true if the given products have a different fulfillment group type.
+items | with_fulfillment_group(ff_group_type)
+A jinja2 filter that returns a list of products with the given
+fulfillment_group_type
+Supported fulfillment group types are IN_STORE_HANDOVER and SHIPPING.
+items | sorted_by_fulfillment_group(priority)
+A jinja2 filter that orders the given items by
+fulfillment_group_type
+key using the given priority list.
+The default priority is
+['IN_STORE_HANDOVER', 'SHIPPING']
+.
+Supported fulfillment group types are
+IN_STORE_HANDOVER
+and
+SHIPPING
+.
+currency_symbol(currency)
+Converts currency letters to its symbol if it exists.
+get_instrument_info(instrument)
+Gets the instrument brand and additional information from the metadata.
+total_discount_per_level(discounts, key)
+Calculates the total price adjustment of all discounts with the given level.
+Macro naming considerations
+Name your macros in a way that is clear to understand.
+As an example, let's take the following macro. It formats the currency depending on whether the amount is negative or positive but its name and its parameters doesn't tell us what the function does.
+{%- macro currency(amount, isNegative=false) -%}
+  {% set split = format_currency(amount|abs).split(decimal_separator, 1) %}
+  <span class="currency">
+      {% if split[0] == '0' and split[1] == '00' %}
+      {% elif isNegative == true %}
+          <span>-</span>
+      {% else  %}
+      {% endif %}
+      <span class="symbol">{{ currency_symbol(currency_code) }}</span>
+      <span class="whole">{{ split[0] }}</span>
+      <span class="decimal">{{ decimal_separator }}</span>
+      <span class="fractional">{{ split[1] }}</span>
+  </span>
+{%- endmacro -%}
+We can create more meaningful macros by giving them names that explain their function and have them call the previous macro with the correct parameters.
+{%- macro positive_currency(amount) -%}
+    {{ currency(amount, false) }}
+{%- endmacro -%}
+
+{%- macro negative_currency(amount) -%}
+    {{ currency(amount, true) }}
+{%- endmacro -%}
+
+{%- macro currency(amount, isNegative=false) -%}
+    {% if tenant.business_rules.currency == 'try_symbol' %}
+        {% set currency_sym = currency_symbol(currency_code) %}
+    {% elif tenant.business_rules.currency == 'use_code' %}
+        {% set currency_sym = currency_code %}
+    {% else %}
+        {% set currency_sym = currency_symbol(currency_code) %}
+    {% endif %}
+
+    {% set split = format_currency(amount|abs).split(decimal_separator, 1) %}
+    <span class="currency">
+        {% if isNegative == true %}
+            <span>-</span>
+        {% endif %}
+        {% if currency_sym|length <= 1 %}
+            <span class="symbol">{{ currency_sym }}</span>
+        {% endif %}
+        <span class="whole">{{ split[0] }}{{ decimal_separator }}{{ split[1] }}</span>
+        {% if currency_sym|length > 1 %}
+            <span class="symbol">&nbsp;{{ currency_sym }}</span>
+        {% endif %}
+    </span>
+{%- endmacro -%}
+This macro checks to see whether
+try_symbol
+or
+use_code
+is set to determine whether to use the currency symbol or the currency code. It formats the currency amount depending on whether it is positive or negative and puts the currency symbol/code before the amount if it is not more than 1 character long.
+Supporting mixed orders
+Mixed orders contain items with different fulfillment group types. Supported fulfillment group types are
+IN_STORE_HANDOVER
+and
+SHIPPING
+. In order to group items on the receipt by fulfillment group type, we can use the following snippet to initialize
+is_mixed_order
+flag and two lists of items
+shipping_items
+and
+in_store_handover_items
+.
+{% set is_mixed_order = False %}
+{% if is_mixed(items) %}
+   {% set items = items | sorted_by_fulfillment_group | indexed %}
+   {% set is_mixed_order = True %}
+   {% set shipping_items = items | with_fulfillment_group('SHIPPING') %}
+   {% set in_store_handover_items = items | with_fulfillment_group('IN_STORE_HANDOVER') %}
+{% endif %}
+When iterating over the items, we can use the following snippet to print the header of the fulfillment group.
+{% for item in items %}
+  ...
+   {% if is_mixed_order %}
+      {% if item == shipping_items | first %}
+         <h3> Shipped </h3>
+      {% elif item == in_store_handover_items | first %}
+         <h3> In-store </h3>
+      {% endif %}
+   {% endif %}
+  ...
+{% endfor %}
+Defining fallbacks for external resources
+If you provide CSS or fonts hosted by an external source, ensure the external source is highly reliable. If the resource cannot be downloaded, it will be ignored, and the template will be rendered with a default CSS or font.
+We suggest providing a fallback font in your font-family CSS definition and testing your template with the fallback font.
+Example:
+@font-face {
+font-family: 'YourFontName';
+url('http://domain.example/fonts/font.ttf');
+}
+
+body {
+  font-family: 'YourFontName', Arial, Helvetica, sans-serif;
+}
+The unavailability of external resources may lead to the generated document looking different than usual. For example, the printed receipt the customer receives may look different.
+To identify which external resource is currently unavailable, we recommend checking the error logs in the template editor in Omnichannel Manager.
+Testing templates
+Here are general guidelines for testing template changes:
+Use the
+preview template method
+to preview the template as HTML, PDF, or text.
+Use the
+update template method
+to update the template in the sandbox or staging environment.
+Download the NewStore Associate App for your retailer and create a business event (like triggering an order and paying with cash) to generate a document.
+Navigate to NewStore Omnichannel Manager, click on an Order ID, scroll to
+Documents
+and download one of the documents to view it.
+When previewing templates, ensure that templates that are included in other templates (
+macros.j2
+,
+printbase.j2
+,
+emailbase.j2
+) are uploaded to the system first
+Our preview API isn’t locale-aware: a workaround is to add a locale field to the mock data
+If you run into any issues, contact the
+support team
+.
+Debugging templates
+General guidelines for debugging templates:
+Preview your templates before you upload them. Remember to upload base templates and any imported ones beforehand. You can use a local CSS file for the preview call.
+If your templates contain syntax errors, expect the following error when trying to preview the template:
+HTTP Error 500: Internal Server Error
+
+{
+    "request_id": "94157.2.18",
+    "messages": [
+        "unexpected '%' (at input line 1), code=template_syntax_error"
+    ]
+}
+Fix the errors and try to generate a preview again.
+Certain template errors may not be detectable during preview. For instance, an
+if
+condition error might only become apparent when the
+if
+condition is true. These errors can only be identified when documents are generated using the template. To check for any template errors that occurred during actual document generation, in Omnichannel Manager go to
+Tools
+>
+Templates Editor
+, and click
+See errors
+on the top of the page.
+Alternatively you can use this API to get list of errors:
+curl -H "Authorization: Bearer $AUTH_TOKEN" \
+    -X GET "https://{retailer}.p.newstore.net/v0/d/templates/logs" \
+Environments
+We work with the following environments at NewStore: demo (d), development (v), sandbox (x), staging (s), production (p). As the integrations team, you should be working with the templates API against the sandbox environment.
+Note that clients can always make changes to the templates in the production environment.
+Deploying templates
+Upload your finished templates to the sandbox, staging, and production environment. You should always commit your changes into the
+newstore-integrations
+repository so that we can maintain an up-to-date reference of what is deployed and have a record of the different versions. Since we don’t currently have a CI/CD pipeline, these two processes will be separate tasks. We can’t assume that what is in production is what is committed in the Git repository.
+Moreover, once you upload a template, the defaults will be overwritten, so consider using the preview API first.
+This is the general process for pushing out template changes:
+Open a pull request with the desired changes.
+Get the PR through the review process and get it merged to the master branch.
+Checkout the master branch, and pull your merged changes (this ensures you don't lose anyone else's changes).
+For each template that was changed:
+Upload the template to sandbox.
+If your changes and any others that have been merged since the last upload to staging/production do not require any backend code changes, upload to staging and production.
+Note
+This is temporary; in the future, templates will be migrated from sandbox to staging, and staging to production, when code is pushed out to each environment). Otherwise, monitor any related code changes and upload the templates to staging and production once the code changes get deployed to those environments.
+FAQ
+Is the status of business event suppression visible through the API?
+No.
+How can I be sure that my template is correct before I upload it?
+You can upload it first to staging or use the /preview method.
+How do I get a preview for a subject?
+Use the /preview method and set it to HTML.
+Can I use other filenames?
+Yes.
+Can you delete a template?
+Templates cannot be deleted once they are uploaded.
+Can I get back the defaults after uploading?
+No.
+Can I have common includes across different locales?
+No.
+Related topics
+Customizing templates
+About customer documents and notifications
+Configuring documents for print in a store or warehouse
+Was this article helpful?
+Yes
+No
+Tags
+Associate App
+configuration
+documents
+fiscalization
+internationalization
+omnichannel manager
+receipts
+sales
+selling experience
+template
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

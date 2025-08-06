@@ -1,0 +1,149 @@
+openapi: 3.0.1
+tags:
+  - name: Mispick Report
+    description: |
+      Provides endpoints for obtaining mispick reports.
+info:
+  title: Inventory Overview API
+  contact:
+    name: Team Inventory
+    url: https://apidocs.newstore.io
+  description: Use this API to get the mispick reports.
+  version: '0.1'
+servers:
+  - url: https://dodici.x.newstore.net/v0
+paths:
+  /mispicks:
+    get:
+      tags:
+        - Mispick
+      description: |
+        Retrieves the list of mispicks.
+      summary: Get mispicks.
+      operationId: getMispicks
+      parameters:
+        - name: count
+          in: query
+          description: |
+            The number of results retrieved
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - name: offset
+          in: query
+          description: >
+            The offset of the retrieved results relative to all the matching
+            results
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                title: Get count tasks response
+                type: object
+                $ref: '#/components/schemas/getMispicksResponse'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+components:
+  schemas:
+    error:
+      title: General error format.
+      properties:
+        error_data:
+          type: object
+          description: Information regarding errors in case operation fails.
+          properties:
+            code:
+              type: string
+              description: Custom error code which gives you brief details about the error.
+            description:
+              type: string
+              description: Error description which gives you more details about the error.
+    getMispicksResponse:
+      title: Get Mispicks response
+      required:
+        - items
+        - pagination
+      type: object
+      properties:
+        items:
+          description: The list of mispicks
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - order_id
+              - updated_at
+              - fulfillment_associate_name
+            properties:
+              id:
+                type: string
+                description: The internal id of the mispick
+              order_id:
+                type: string
+                description: The associated order id
+              store_id:
+                type: string
+                description: The store UUID of the mispick
+              fulfillment_node_id:
+                type: string
+                description: Fulfilment node associated with the mispick and the store
+              fulfillment_associate_name:
+                type: string
+                description: The name of the associate responsible for the mispick
+              count_task:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Internal UUID of the associated count task
+                  external_id:
+                    type: string
+                    description: External id of the associated count task
+              mispicked_items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Mispicked item id
+                    quantity:
+                      type: integer
+                      description: Mispicked quantity
+              updated_at:
+                type: string
+                format: datetime
+                description: The date and time of the mispick
+        pagination:
+          type: object
+          properties:
+            offset:
+              type: integer
+              description: |
+                The pagination offset
+            count:
+              type: integer
+              description: |
+                The pagination count
+            total:
+              type: integer
+              description: |
+                The pagination total

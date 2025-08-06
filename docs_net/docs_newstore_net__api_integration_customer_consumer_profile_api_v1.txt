@@ -1,0 +1,1669 @@
+(Legacy) Customer Profile API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+(Legacy) Customer Profile API
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+customerProfile
+get
+List customer profiles
+post
+Get or create customer profile
+get
+Get customer profile
+patch
+Update customer profile
+post
+Request customer profile deletion
+address
+post
+Get or create address
+get
+List addresses for profile id
+get
+Get address for profile id and address id
+patch
+Update address
+del
+Delete address
+data
+post
+Store a new PII data entry in a residency compliant way
+get
+Get data entry for the provided data ID
+del
+Delete data
+tokenOperations
+post
+Tokenize PII data
+post
+Detokenize multiple tokens
+API docs by Redocly
+(Legacy) Customer Profile API
+(
+1.0.0
+)
+Download OpenAPI specification
+:
+Download
+Team Clienteling
+:
+team-clienteling@newstore.com
+URL:
+https://goodscloud.atlassian.net/wiki/spaces/CLIEN/overview
+Represents customer information related to multiple customer data operations. A customer
+is identified by a customer
+id
+in NewStore. You can use this resource
+to manage customers and also for clienteling activities in NewStore applications.
+Typically, customers are created automatically
+when they place an order online or when they provide their email address
+during an in-store purchase.
+Note:
+The
+Customer Profile API v1
+will be deprecated and NewStore will announce the migration plan soon for the retailers using this API. 
+We recommend that all new integrations use the latest
+Customer Profile API v2
+.
+Please use the
+migration guide
+to migrate from this version to the new version.
+customerProfile
+Customer profiles operations
+List customer profiles
+Deprecated
+Returns a searchable list of consumer profiles.
+Note: This endpoint is designed for paginated front-end use with a search function. It is not suitable for exporting a comprehensive list of all customers due to the following limitations:
+Pagination Per Page Limit: Up to 500 profiles can be fetched per page.
+Total Profiles Limit: There is a maximum limit of 10,000 profiles.
+API Error Beyond Limit: When trying to paginate beyond 10,000 profiles, the API will start returning errors.
+query
+Parameters
+q
+string
+The search term to filter customers. The term is compared to the
+values in the
+email
+,
+fullname
+and
+phonenumber
+fields. A partial match is also
+considered a match.
+sort
+string
+The sort to be applied to customers response.
+offset
+integer
+<
+int64
+>
+>= 0
+Default:
+0
+The customer profiles page offset.
+count
+integer
+<
+int64
+>
+[ 1 .. 500 ]
+Default:
+10
+The number of requested customer profiles.
+Responses
+200
+The list customer profiles response.
+400
+Bad Request.
+500
+Internal server error.
+502
+Bad gateway.
+get
+/profiles
+The public pii API server
+/v1/d/pii
+/profiles
+Response samples
+200
+400
+500
+502
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"profiles"
+:
+[
+{
+"id"
+:
+"NS-EU-01FXX4RSTKMVBFPBVZFPGM97ZW-01FXX4S1V1R8M4PF9H1S1D82CX"
+,
+"display_id"
+:
+"string"
+,
+"email"
+:
+"string"
+,
+"full_name"
+:
+"string"
+,
+"phone_number"
+:
+"string"
+,
+"store_id"
+:
+"string"
+,
+"created_by"
+:
+"string"
+,
+"extended_attributes"
+:
+{
+"loyalty_id"
+:
+{
+"data_type"
+:
+"string"
+,
+"value"
+:
+"0123456789"
+}
+}
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+]
+,
+"pagination_info"
+:
+{
+"count"
+:
+0
+,
+"total"
+:
+0
+,
+"offset"
+:
+0
+}
+}
+Get or create customer profile
+Deprecated
+Retrieves an existing customer profile or creates a new customer profile in case it has not been created yet.
+Request Body schema:
+application/json
+email
+required
+string
+<
+email
+>
+Email of the customer.
+full_name
+string or null
+<= 256
+Full name of the customer, including first, middle and last name.
+phone_number
+string or null
+Phone number of the customer in E.164 format.
+store_id
+string or null
+The identifier of the store, profile is being created in.
+created_by
+string or null
+The identifier of the associate creating profile
+extended_attributes
+object
+[ 0 .. 20 ] items
+Additional attributes for a customer.
+Responses
+200
+A customer profile with the same email already exists response.
+201
+The create customer profile response.
+400
+Bad Request.
+409
+Conflict.
+422
+Unable to process the entity.
+500
+Internal server error.
+502
+Bad gateway.
+post
+/profiles
+The public pii API server
+/v1/d/pii
+/profiles
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"email"
+:
+"user@example.com"
+,
+"full_name"
+:
+"string"
+,
+"phone_number"
+:
+"string"
+,
+"store_id"
+:
+"string"
+,
+"created_by"
+:
+"string"
+,
+"extended_attributes"
+:
+{
+"loyalty_id"
+:
+{
+"data_type"
+:
+"string"
+,
+"value"
+:
+"0123456789"
+}
+}
+}
+Response samples
+200
+201
+400
+409
+422
+500
+502
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"NS-EU-01FXX4RSTKMVBFPBVZFPGM97ZW-01FXX4S1V1R8M4PF9H1S1D82CX"
+,
+"display_id"
+:
+"string"
+,
+"email"
+:
+"string"
+,
+"full_name"
+:
+"string"
+,
+"phone_number"
+:
+"string"
+,
+"store_id"
+:
+"string"
+,
+"created_by"
+:
+"string"
+,
+"extended_attributes"
+:
+{
+"loyalty_id"
+:
+{
+"data_type"
+:
+"string"
+,
+"value"
+:
+"0123456789"
+}
+}
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+Get customer profile
+Deprecated
+Returns a single customer profile for the given customer
+profile_id
+.
+path
+Parameters
+profile_id
+required
+string
+Profile ID
+Responses
+200
+The customer profile response.
+400
+Bad Request.
+404
+Not Found.
+500
+Internal server error.
+502
+Bad gateway.
+get
+/profiles/{profile_id}
+The public pii API server
+/v1/d/pii
+/profiles/{profile_id}
+Response samples
+200
+400
+404
+500
+502
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"NS-EU-01FXX4RSTKMVBFPBVZFPGM97ZW-01FXX4S1V1R8M4PF9H1S1D82CX"
+,
+"display_id"
+:
+"string"
+,
+"email"
+:
+"string"
+,
+"full_name"
+:
+"string"
+,
+"phone_number"
+:
+"string"
+,
+"store_id"
+:
+"string"
+,
+"created_by"
+:
+"string"
+,
+"extended_attributes"
+:
+{
+"loyalty_id"
+:
+{
+"data_type"
+:
+"string"
+,
+"value"
+:
+"0123456789"
+}
+}
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+Update customer profile
+Deprecated
+Updates an existing customer profile for the given
+profile_id
+.
+path
+Parameters
+profile_id
+required
+string
+Profile ID
+Request Body schema:
+application/json
+last_updated_at
+required
+string
+<
+date-time
+>
+The timestamp of the profile's last update.
+This must match the current
+updated_at
+value; otherwise, the update request will be rejected with a 409 Conflict error.
+This check prevents silent data loss by detecting concurrent updates.
+email
+string
+<
+email
+>
+Email of the customer.
+full_name
+string or null
+<= 256
+Full name of the customer, including first, middle and last name.
+phone_number
+string or null
+Phone number of the customer in E.164 format.
+store_id
+string or null
+The identifier of the store, profile is being created in.
+created_by
+string or null
+The identifier of the associate creating profile
+extended_attributes
+object
+[ 0 .. 20 ] items
+Additional attributes for a customer.
+Responses
+200
+The update customer profile response.
+404
+Profile not found.
+409
+Profile update conflict.
+The provided
+last_updated_at
+value does not match the profile's current
+updated_at
+value.
+This indicates that the profile was modified by another process in the meantime.
+This check helps detect concurrent updates and prevents silent data loss.
+422
+Unable to process the entity.
+500
+Internal server error.
+502
+Bad gateway.
+patch
+/profiles/{profile_id}
+The public pii API server
+/v1/d/pii
+/profiles/{profile_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"last_updated_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"email"
+:
+"user@example.com"
+,
+"full_name"
+:
+"string"
+,
+"phone_number"
+:
+"string"
+,
+"store_id"
+:
+"string"
+,
+"created_by"
+:
+"string"
+,
+"extended_attributes"
+:
+{
+"loyalty_id"
+:
+{
+"data_type"
+:
+"string"
+,
+"value"
+:
+"0123456789"
+}
+}
+}
+Response samples
+200
+404
+409
+422
+500
+502
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"NS-EU-01FXX4RSTKMVBFPBVZFPGM97ZW-01FXX4S1V1R8M4PF9H1S1D82CX"
+,
+"display_id"
+:
+"string"
+,
+"email"
+:
+"string"
+,
+"full_name"
+:
+"string"
+,
+"phone_number"
+:
+"string"
+,
+"store_id"
+:
+"string"
+,
+"created_by"
+:
+"string"
+,
+"extended_attributes"
+:
+{
+"loyalty_id"
+:
+{
+"data_type"
+:
+"string"
+,
+"value"
+:
+"0123456789"
+}
+}
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+Request customer profile deletion
+Deprecated
+Creates request for customer profile deletion.
+path
+Parameters
+profile_id
+required
+string
+Profile ID
+Responses
+202
+Deletion request accepted.
+400
+Bad Request.
+404
+Profile not found.
+409
+Deletion already requested.
+500
+Internal server error.
+502
+Bad gateway.
+post
+/profiles/{profile_id}/delete
+The public pii API server
+/v1/d/pii
+/profiles/{profile_id}/delete
+Response samples
+400
+404
+409
+500
+502
+Content type
+application/problem+json
+Copy
+{
+"request_id"
+:
+"some-request-id"
+,
+"message"
+:
+"An error happened."
+,
+"type"
+:
+"about:blank"
+,
+"title"
+:
+"string"
+}
+address
+Customer profile address operations
+Get or create address
+Deprecated
+Retrieves an existing address or creates a new address in case it has not been added yet.
+path
+Parameters
+profile_id
+required
+string
+Profile ID
+Request Body schema:
+application/json
+full_name
+required
+string
+Full name.
+company_name
+string or null
+Company name.
+address_line_1
+required
+string
+First line of the address. Typically, the street and house number.
+address_line_2
+string
+Second line of the address. Typically, the apartment number or PO box
+zip_code
+required
+string
+Postal code of the address.
+city
+required
+string
+The city/town of the address.
+state
+string or null
+State/province or region of the address.
+country_code
+required
+string
+Country code in ISO 3166-1 alpha-2 format.
+contact_phone
+string or null
+Phone number of the address.
+Responses
+200
+Existing address response.
+201
+The create addresses response.
+400
+Bad Request.
+404
+Profile not found.
+422
+Unable to process the entity.
+500
+Internal server error.
+502
+Bad gateway.
+post
+/profiles/{profile_id}/addresses
+The public pii API server
+/v1/d/pii
+/profiles/{profile_id}/addresses
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"full_name"
+:
+"string"
+,
+"company_name"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"zip_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_code"
+:
+"string"
+,
+"contact_phone"
+:
+"string"
+}
+Response samples
+200
+201
+400
+404
+422
+500
+502
+Content type
+application/json
+Copy
+{
+"id"
+:
+"NS-EU-01FXX4THCG41RFCXVEQGKD60Y4-01FXX4TTF7X8CF5JR3B35TD70F"
+,
+"full_name"
+:
+"string"
+,
+"company_name"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"zip_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_code"
+:
+"string"
+,
+"contact_phone"
+:
+"string"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+List addresses for profile id
+Deprecated
+Returns a list of addresses for given customer
+profile_id
+.
+path
+Parameters
+profile_id
+required
+string
+Profile ID
+query
+Parameters
+offset
+integer
+<
+int64
+>
+>= 0
+Default:
+0
+The addresses page offset.
+count
+integer
+<
+int64
+>
+[ 1 .. 1000 ]
+Default:
+10
+The number of requested addresses.
+Responses
+200
+The addresses list.
+404
+Profile not found.
+500
+Internal server error.
+502
+Bad gateway.
+get
+/profiles/{profile_id}/addresses
+The public pii API server
+/v1/d/pii
+/profiles/{profile_id}/addresses
+Response samples
+200
+404
+500
+502
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"addresses"
+:
+[
+{
+"id"
+:
+"NS-EU-01FXX4THCG41RFCXVEQGKD60Y4-01FXX4TTF7X8CF5JR3B35TD70F"
+,
+"full_name"
+:
+"string"
+,
+"company_name"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"zip_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_code"
+:
+"string"
+,
+"contact_phone"
+:
+"string"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+]
+,
+"pagination_info"
+:
+{
+"count"
+:
+0
+,
+"total"
+:
+0
+,
+"offset"
+:
+0
+}
+}
+Get address for profile id and address id
+Deprecated
+Returns an address for the given customer
+profile_id
+and
+address_id
+.
+path
+Parameters
+profile_id
+required
+string
+Profile ID
+address_id
+required
+string
+Address ID
+Responses
+200
+The address.
+400
+Bad Request.
+404
+Profile or address not found.
+500
+Internal server error.
+502
+Bad gateway.
+get
+/profiles/{profile_id}/addresses/{address_id}
+The public pii API server
+/v1/d/pii
+/profiles/{profile_id}/addresses/{address_id}
+Response samples
+200
+400
+404
+500
+502
+Content type
+application/json
+Copy
+{
+"id"
+:
+"NS-EU-01FXX4THCG41RFCXVEQGKD60Y4-01FXX4TTF7X8CF5JR3B35TD70F"
+,
+"full_name"
+:
+"string"
+,
+"company_name"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"zip_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_code"
+:
+"string"
+,
+"contact_phone"
+:
+"string"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+Update address
+Deprecated
+Updates address for the given customer
+profile_id
+and
+address_id
+.
+path
+Parameters
+profile_id
+required
+string
+Profile ID
+address_id
+required
+string
+Address ID
+Request Body schema:
+application/json
+last_updated_at
+required
+string
+<
+date-time
+>
+The timestamp of the profile's last update.
+This must match the current
+updated_at
+value; otherwise, the update request will be rejected with a 409 Conflict error.
+This check prevents silent data loss by detecting concurrent updates.
+full_name
+string or null
+Full name.
+company_name
+string or null
+Company name.
+address_line_1
+string or null
+First line of the address. Typically, the street and house number.
+address_line_2
+string or null
+Second line of the address. Typically, the apartment number or PO box
+zip_code
+string or null
+Postal code of the address.
+city
+string or null
+The city/town of the address.
+state
+string or null
+State/province or region of the address.
+country_code
+string or null
+Country code in ISO 3166-1 alpha-2 format.
+contact_phone
+string or null
+Phone number of the address.
+Responses
+200
+The update address response.
+404
+Profile or address not found.
+409
+Update conflict.
+422
+Unable to process the entity.
+500
+Internal server error.
+502
+Bad gateway.
+patch
+/profiles/{profile_id}/addresses/{address_id}
+The public pii API server
+/v1/d/pii
+/profiles/{profile_id}/addresses/{address_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"last_updated_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"full_name"
+:
+"string"
+,
+"company_name"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"zip_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_code"
+:
+"string"
+,
+"contact_phone"
+:
+"string"
+}
+Response samples
+200
+404
+409
+422
+500
+502
+Content type
+application/json
+Copy
+{
+"id"
+:
+"NS-EU-01FXX4THCG41RFCXVEQGKD60Y4-01FXX4TTF7X8CF5JR3B35TD70F"
+,
+"full_name"
+:
+"string"
+,
+"company_name"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"zip_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_code"
+:
+"string"
+,
+"contact_phone"
+:
+"string"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+Delete address
+Deprecated
+Deletes address from the latest customer profile.
+path
+Parameters
+profile_id
+required
+string
+Profile ID
+address_id
+required
+string
+Address ID
+Responses
+204
+The delete address response.
+400
+Address deletion bad request.
+404
+Profile or address not found.
+409
+Address deletion conflict.
+500
+Internal server error.
+502
+Bad gateway.
+delete
+/profiles/{profile_id}/addresses/{address_id}
+The public pii API server
+/v1/d/pii
+/profiles/{profile_id}/addresses/{address_id}
+Response samples
+400
+404
+409
+500
+502
+Content type
+application/problem+json
+Copy
+{
+"request_id"
+:
+"some-request-id"
+,
+"message"
+:
+"An error happened."
+,
+"type"
+:
+"about:blank"
+,
+"title"
+:
+"string"
+}
+data
+Data operations
+Store a new PII data entry in a residency compliant way
+Deprecated
+Stores a new PII data entry in a residency compliant way.
+Request Body schema:
+application/json
+content_type
+required
+string
+The media type of the content data.
+content
+required
+string
+<
+binary
+>
+The file content to store.
+ttl
+integer
+<
+int64
+>
+Time to live in days, will be kept indefinitely if not set.
+Responses
+201
+The create data response.
+400
+Bad Request.
+500
+Internal server error.
+post
+/data
+The public pii API server
+/v1/d/pii
+/data
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"content_type"
+:
+"application/pdf"
+,
+"content"
+:
+"string"
+,
+"ttl"
+:
+30
+}
+Response samples
+201
+400
+500
+Content type
+application/json
+Copy
+{
+"id"
+:
+"NS-EU-a5548746-acc1-4d75-81b9-72aec2bfebb7"
+}
+Get data entry for the provided data ID
+Deprecated
+Returns data for the given
+data_id
+, depending on the defined content-type.
+path
+Parameters
+data_id
+required
+string
+^NS-[A-Z]{2}-[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[...
+Show pattern
+Example:
+NS-EU-a5548746-acc1-4d75-81b9-72aec2bfebb7
+Data ID
+Responses
+200
+The data entry. The content-type depends on the data entry.
+400
+Bad Request.
+404
+The data was not found.
+500
+Internal server error.
+get
+/data/{data_id}
+The public pii API server
+/v1/d/pii
+/data/{data_id}
+Response samples
+400
+404
+500
+Content type
+application/problem+json
+Copy
+{
+"request_id"
+:
+"some-request-id"
+,
+"message"
+:
+"An error happened."
+,
+"type"
+:
+"about:blank"
+,
+"title"
+:
+"string"
+}
+Delete data
+Deprecated
+Deletes data entry for the given
+data_id
+.
+path
+Parameters
+data_id
+required
+string
+^NS-[A-Z]{2}-[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[...
+Show pattern
+Example:
+NS-EU-a5548746-acc1-4d75-81b9-72aec2bfebb7
+Data ID
+Responses
+204
+The delete data entry response.
+400
+Bad Request.
+404
+Data entry not found.
+500
+Bad request
+delete
+/data/{data_id}
+The public pii API server
+/v1/d/pii
+/data/{data_id}
+Response samples
+400
+404
+500
+Content type
+application/problem+json
+Copy
+{
+"request_id"
+:
+"some-request-id"
+,
+"message"
+:
+"An error happened."
+,
+"type"
+:
+"about:blank"
+,
+"title"
+:
+"string"
+}
+tokenOperations
+Token operations
+Tokenize PII data
+Deprecated
+Tokenizes PII data that is not related to a profile, tokens are only valid for 30 days.
+Request Body schema:
+application/json
+data
+required
+object
+[ 1 .. 25 ] properties
+Sensitive data to be tokenized.
+property name*
+additional property
+any
+Responses
+200
+The list of tokenized PII data.
+400
+Bad request.
+500
+Internal Server Error.
+post
+/tokenize
+The public pii API server
+/v1/d/pii
+/tokenize
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"data"
+:
+{
+"email"
+:
+"john.doe@example.org"
+,
+"key1"
+:
+"foo"
+,
+"key2"
+:
+"bar"
+}
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"tokens"
+:
+{
+"email"
+:
+"NS-EU-01FXX5DQ3NP19AKJK7045F5ST2-01FXX5DZFQ9CJQ3D29JPTXXXRX"
+}
+,
+"errors"
+:
+{
+"key1"
+:
+"retryable_error"
+,
+"key2"
+:
+"internal_error"
+}
+}
+Detokenize multiple tokens
+Deprecated
+Detokenizes a list of tokens for profiles, addresses, or data entries.
+Request Body schema:
+application/json
+tokens
+required
+object
+[ 1 .. 25 ] properties
+NewStore platform tokens.
+Responses
+200
+The list of detokenized PII data.
+400
+Bad Request.
+500
+Internal server error.
+post
+/detokenize
+The public pii API server
+/v1/d/pii
+/detokenize
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"tokens"
+:
+{
+"key1"
+:
+"NS-EU-01FXX4SCM7D4FCFJT8ZKD4JRV7-01FXX4SHNQQK1XDQHTZX6V6608"
+,
+"key2"
+:
+"NS-EU-01FXX4SPXKPQCEWSZRZS9D7992-01FXX4SWFJKK66QGEEWQ8TRPAM"
+}
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"data"
+:
+{
+"key1"
+:
+"john.doe@example.org"
+}
+,
+"errors"
+:
+{
+"key2"
+:
+"token_not_found_error"
+}
+}
+Previous
+Reason Codes
+Next
+Highstreet E-commerce Platform API
+Copyright © 2025 NewStore, Inc.

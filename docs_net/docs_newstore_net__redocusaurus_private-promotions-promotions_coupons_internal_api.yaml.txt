@@ -1,0 +1,4304 @@
+openapi: 3.1.0
+x-stoplight:
+  id: s97tlye0qbd2s
+info:
+  title: Coupons
+  version: '1.0'
+  description: >
+    Use this API to manage Coupons in NewStore, such as creating, retrieving, or
+    updating coupons and coupon codes.
+
+
+    You can use these methods to create coupons and coupon codes for specific
+    products or for the whole cart, which are applied manually in NewStore
+    Associate App.
+
+
+    For a guide on how to use coupons via NewStore Omnichannel Manager, see
+    [this guide](/product/nomapp/nom-coupons). Also you can find additinal
+    information in [process
+    documentation](/product/processes/about-discounts-promotions)
+servers:
+  - url: http://localhost:8080
+    description: The local development server
+paths:
+  /coupon:
+    post:
+      summary: Create Coupon
+      operationId: postCoupon
+      responses:
+        '201':
+          description: A coupon plus HATEOAS fields.
+          content: &ref_22
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    x-stoplight: &ref_15
+                      id: rg2szi6za6lcq
+                    description: Object links.
+                    title: ObjectLinks
+                    type: object
+                    properties: &ref_16
+                      self:
+                        type: string
+                        x-stoplight:
+                          id: xw9mxuly7oirw
+                        description: A link to the object itself.
+                        readOnly: true
+                  coupon:
+                    x-stoplight:
+                      id: 1evhov2ryxoud
+                    allOf:
+                      - x-stoplight: &ref_12
+                          id: ocetl6k65s4uq
+                        description: A coupon.
+                        title: Coupon
+                        type: object
+                        required: &ref_13
+                          - name
+                          - validFrom
+                          - category
+                          - currencies
+                        properties: &ref_14
+                          id:
+                            type: string
+                            description: The coupon ID.
+                            example: 64357c41-cad8-4000-8000-d998be563098
+                            readOnly: true
+                          name:
+                            type: string
+                            x-stoplight:
+                              id: 5vl9hj7tg6uvp
+                            description: The name of the coupon.
+                            example: Black Friday Coupon
+                          description:
+                            type: string
+                            x-stoplight:
+                              id: ccafx9oss0w5z
+                            description: An alias for the name field.
+                            example: Black Friday Coupon
+                            readOnly: true
+                          validFrom:
+                            type: string
+                            x-stoplight:
+                              id: ik2jt2n7yi7ww
+                            description: >-
+                              The date the coupon becomes valid. If
+                              localizedTimezone is false, timezone can be
+                              indicated at the end of the string.
+                            example: '2023-11-01T00:00:00'
+                            pattern: >-
+                              (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                          validTo:
+                            type: string
+                            x-stoplight:
+                              id: ol81la2d0n0up
+                            description: >-
+                              The date the coupon becomes invalid. If
+                              localizedTimezone is false, timezone can be
+                              indicated at the end of the string.
+                            example: '2023-12-01T00:00:00'
+                            pattern: >-
+                              (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                          category:
+                            x-stoplight:
+                              id: lnayba3kzc6nh
+                            oneOf:
+                              - x-stoplight: &ref_39
+                                  id: nocwpwq0st277
+                                title: CartLevelPercentageCategory
+                                type: object
+                                description: >-
+                                  A promotion which is applied as a % discount
+                                  to the entire cart.
+                                properties: &ref_40
+                                  kind:
+                                    type: string
+                                    x-stoplight:
+                                      id: vk8x7rz4007a1
+                                    description: |
+                                      The promotion type discriminator.
+                                    pattern: ^CartLevelPercentage$
+                                    example: CartLevelPercentage
+                                  discount:
+                                    type: integer
+                                    x-stoplight:
+                                      id: glhx45ic95l9c
+                                    description: >
+                                      The % discount applied to the cart, from 0
+                                      to 100.
+                                    minimum: 0
+                                    maximum: 100
+                                    example: 10
+                                required: &ref_41
+                                  - kind
+                                  - discount
+                                examples: &ref_42
+                                  - kind: CartLevelPercentage
+                                    discount: 10
+                              - x-stoplight: &ref_43
+                                  id: efxy8hbsuxn4g
+                                title: CartLevelFixedCategory
+                                type: object
+                                description: >-
+                                  A promotion which is applied as a fixed amount
+                                  discount to the entire cart.
+                                examples: &ref_44
+                                  - kind: CartLevelFixed
+                                    discounts:
+                                      - amount: 10
+                                        currency: EUR
+                                      - amount: 5
+                                        currency: USD
+                                properties: &ref_45
+                                  kind:
+                                    type: string
+                                    x-stoplight:
+                                      id: chkcdae3qiwxm
+                                    pattern: ^CartLevelFixed$
+                                    description: The promotion type discriminator.
+                                    example: CartLevelFixed
+                                  discounts:
+                                    type: array
+                                    x-stoplight:
+                                      id: n4x7tnlx8e3c8
+                                    description: >-
+                                      Discounts to be applied for the given
+                                      currencies.
+                                    items:
+                                      x-stoplight: &ref_3
+                                        id: 1t1yqbqgt2jcu
+                                      title: FixedDiscount
+                                      type: object
+                                      properties: &ref_4
+                                        amount:
+                                          type: number
+                                          x-stoplight:
+                                            id: 23ztxmkrmb36d
+                                          example: 9.99
+                                          description: The amount of the discount.
+                                        currency:
+                                          type: string
+                                          x-stoplight:
+                                            id: 0a3n75noatkf8
+                                          example: EUR
+                                          description: The currency of the discount.
+                                      required: &ref_5
+                                        - amount
+                                        - currency
+                                      description: >-
+                                        A fixed amount discount for a specific
+                                        currency.
+                                      examples: &ref_6
+                                        - amount: 9.99
+                                          currency: EUR
+                                required: &ref_46
+                                  - kind
+                                  - discounts
+                              - x-stoplight: &ref_47
+                                  id: v36b7o60ktmtp
+                                title: ProductLevelPercentageCategory
+                                type: object
+                                examples: &ref_48
+                                  - kind: ProductLevelPercentage
+                                    includedCategories:
+                                      - path:
+                                          - clothes
+                                          - skirts
+                                    includedProducts: []
+                                    excludedProducts: []
+                                    shopId: storefront-catalog-en
+                                    locale: en-us
+                                    discount: 10
+                                description: >-
+                                  A promotion which is applied as a % amount
+                                  discount to a product.
+                                properties: &ref_49
+                                  kind:
+                                    type: string
+                                    x-stoplight:
+                                      id: qx54ua5dfcnjg
+                                    pattern: ^ProductLevelPercentage$
+                                    description: The promotion type discriminator.
+                                    example: ProductLevelPercentage
+                                  discount:
+                                    type: integer
+                                    x-stoplight:
+                                      id: uhxmztlfcidyn
+                                    minimum: 0
+                                    maximum: 100
+                                    description: >-
+                                      The % discount applied to the cart, from 0
+                                      to 100.
+                                    example: 20
+                                  includedCategories:
+                                    x-stoplight:
+                                      id: 7b6dilzlwmf7v
+                                    description: >-
+                                      Categories of products for which the
+                                      promotion will be applied. This property
+                                      is mutually exclusive with
+                                      'includedProducts'.
+                                    type: array
+                                    items:
+                                      x-stoplight: &ref_0
+                                        id: ufl5si94abtwr
+                                      title: ProductCategory
+                                      type: object
+                                      description: A product category.
+                                      examples: &ref_1
+                                        - path:
+                                            - clothes
+                                            - skirts
+                                      properties: &ref_2
+                                        path:
+                                          type: array
+                                          x-stoplight:
+                                            id: ex73y6u0kpnk1
+                                          description: A category path.
+                                          items:
+                                            x-stoplight:
+                                              id: a53os4l06ytj3
+                                            type: string
+                                            example: '["clothes", "skirts"]'
+                                  includedProducts:
+                                    type: array
+                                    x-stoplight:
+                                      id: oaodrhhtbsx9f
+                                    description: >-
+                                      A list of products for which the promotion
+                                      will be applied. This property is mutually
+                                      exclusive with 'includedCategories'.
+                                    items:
+                                      x-stoplight:
+                                        id: jbcmzixesbry4
+                                      type: string
+                                      example: '["1000501", "1000551"]'
+                                  excludedProducts:
+                                    type: array
+                                    x-stoplight:
+                                      id: u20le9eg97yvl
+                                    description: >-
+                                      A list of products for which the promotion
+                                      not will be applied.
+                                    items:
+                                      x-stoplight:
+                                        id: h0zwbueq7chjd
+                                      type: string
+                                  shopId:
+                                    type: string
+                                    x-stoplight:
+                                      id: 0zc22v27vnchy
+                                    description: >-
+                                      Shop ID for which the promotion will be
+                                      applied.
+                                  locale:
+                                    type: string
+                                    x-stoplight:
+                                      id: xlbfyyxaixykb
+                                    description: >-
+                                      Locale for which the promotion will be
+                                      applied.
+                                required: &ref_50
+                                  - kind
+                                  - discount
+                                  - shopId
+                                  - locale
+                              - x-stoplight: &ref_51
+                                  id: zs6alzw4h3p46
+                                title: ProductLevelFixedCategory
+                                type: object
+                                description: >-
+                                  A promotion which is applied as a fixed amount
+                                  discount to a product.
+                                examples: &ref_52
+                                  - kind: ProductLevelFixed
+                                    includedCategories:
+                                      - path:
+                                          - clothes
+                                          - skirts
+                                    includedProducts: []
+                                    excludedProducts: []
+                                    shopId: storefront-catalog-en
+                                    locale: en-us
+                                    discounts:
+                                      - amount: 10
+                                        currency: EUR
+                                      - amount: 5
+                                        currency: USD
+                                properties: &ref_53
+                                  kind:
+                                    type: string
+                                    x-stoplight:
+                                      id: fvpykgrr6osvn
+                                    pattern: ^ProductLevelFixed$
+                                    description: The promotion type discriminator.
+                                    example: ProductLevelFixed
+                                  includedCategories:
+                                    type: array
+                                    x-stoplight:
+                                      id: qrmoxcain88i1
+                                    description: >-
+                                      Categories of products for which the
+                                      promotion will be applied. This property
+                                      is mutually exclusive with
+                                      'includedProducts'.
+                                    items:
+                                      x-stoplight: *ref_0
+                                      title: ProductCategory
+                                      type: object
+                                      description: A product category.
+                                      examples: *ref_1
+                                      properties: *ref_2
+                                  includedProducts:
+                                    type: array
+                                    x-stoplight:
+                                      id: am3ywhjpbgqlf
+                                    description: >-
+                                      A list of products for which the promotion
+                                      will be applied. This property is mutually
+                                      exclusive with 'includedCategories'.
+                                    items:
+                                      x-stoplight:
+                                        id: 2aw9zqd8o03yz
+                                      type: string
+                                      example: '["P0001", "P0002", "P0003"]'
+                                  excludedProducts:
+                                    type: array
+                                    x-stoplight:
+                                      id: yqi0qziej3u90
+                                    description: >-
+                                      A list of products for which the promotion
+                                      not will be applied.
+                                    items:
+                                      x-stoplight:
+                                        id: 1bdmb8f8x0ote
+                                      type: string
+                                      example: '["P0004", "P0005"]'
+                                  shopId:
+                                    type: string
+                                    x-stoplight:
+                                      id: thc9fzofwwjke
+                                    description: >-
+                                      Shop ID for which the promotion will be
+                                      applied.
+                                    example: storefront-catalog-en
+                                  locale:
+                                    type: string
+                                    x-stoplight:
+                                      id: 2o9sa6k4wv9ke
+                                    description: >-
+                                      Locale for which the promotion will be
+                                      applied.
+                                    example: us-en
+                                  discounts:
+                                    x-stoplight:
+                                      id: g1j023ie4ulfi
+                                    description: >-
+                                      Discounts to be applied for the given
+                                      currencies.
+                                    type: array
+                                    items:
+                                      x-stoplight: *ref_3
+                                      title: FixedDiscount
+                                      type: object
+                                      properties: *ref_4
+                                      required: *ref_5
+                                      description: >-
+                                        A fixed amount discount for a specific
+                                        currency.
+                                      examples: *ref_6
+                                required: &ref_54
+                                  - kind
+                                  - shopId
+                                  - locale
+                                  - discounts
+                              - x-stoplight: &ref_55
+                                  id: 86y4yxi8xbaf7
+                                title: BogoPercentageCategory
+                                type: object
+                                description: >-
+                                  A promotion which is applied as a % discount
+                                  to a set of items in the for of Buy X Get Y.
+                                examples: &ref_56
+                                  - kind: BogoPercentage
+                                    buy:
+                                      quantity: 3
+                                      includedProducts:
+                                        - P0001
+                                        - P0002
+                                        - P0003
+                                      includedCategories: []
+                                      excludedProducts: []
+                                    get:
+                                      quantity: 1
+                                      includedProducts:
+                                        - P0004
+                                      includedCategories: []
+                                      excludedProducts: []
+                                    discount: 10
+                                    shopId: storefront-catalog-en
+                                    locale: us-en
+                                  - kind: BogoPercentage
+                                    buy:
+                                      quantity: 3
+                                      includedProducts: []
+                                      includedCategories:
+                                        - path:
+                                            - clothes
+                                            - skirts
+                                        - path:
+                                            - clothes
+                                            - trousers
+                                      excludedProducts: []
+                                    get:
+                                      quantity: 1
+                                      includedProducts: []
+                                      includedCategories:
+                                        - path:
+                                            - clothes
+                                            - shoes
+                                      excludedProducts: []
+                                    discount: 10
+                                    shopId: storefront-catalog-en
+                                    locale: us-en
+                                properties: &ref_57
+                                  kind:
+                                    type: string
+                                    x-stoplight:
+                                      id: hfadtmycrfyc3
+                                    pattern: ^BogoPercentage$
+                                    description: The promotion type discriminator.
+                                    example: BogoPercentage
+                                  buy:
+                                    x-stoplight: &ref_7
+                                      id: whoxvl7vm1mg9
+                                    description: >-
+                                      A constranint on the quantity and quality
+                                      of objects that define a BOGO promotion.
+                                    title: BogoCondition
+                                    type: object
+                                    examples: &ref_8
+                                      - quantity: 3
+                                        includedProducts:
+                                          - P0001
+                                          - P0002
+                                        includedCategories: []
+                                        excludedProducts: []
+                                      - quantity: 3
+                                        includedProducts: []
+                                        includedCategories:
+                                          - path:
+                                              - clothes
+                                              - skirts
+                                        excludedProducts:
+                                          - P0005
+                                    properties: &ref_9
+                                      quantity:
+                                        type: integer
+                                        x-stoplight:
+                                          id: fvz8eh1bv7a57
+                                        minimum: 1
+                                        description: >-
+                                          The quantity in which the eligible
+                                          products must appear.
+                                        example: 3
+                                      includedProducts:
+                                        type: array
+                                        x-stoplight:
+                                          id: yjs1euvcqb58k
+                                        description: >-
+                                          Products that must be included in the
+                                          right quantities in order to activate
+                                          the promotion.
+                                        items:
+                                          x-stoplight:
+                                            id: 8ey1r842gxrbw
+                                          type: string
+                                          example: '["P0001", "P0002"]'
+                                      includedCategories:
+                                        type: array
+                                        x-stoplight:
+                                          id: c2e0u3mp37gze
+                                        description: >-
+                                          Products of given categories that must
+                                          be included in the right quantities in
+                                          order to activate the promotion.
+                                        items:
+                                          x-stoplight: *ref_0
+                                          title: ProductCategory
+                                          type: object
+                                          description: A product category.
+                                          examples: *ref_1
+                                          properties: *ref_2
+                                      excludedProducts:
+                                        type: array
+                                        x-stoplight:
+                                          id: c0vssrr8kswwv
+                                        description: >-
+                                          Products that will be excluded from the
+                                          products combination.
+                                        items:
+                                          x-stoplight:
+                                            id: 8uu8zmdf9qdwy
+                                          type: string
+                                          example: '["P0005"]'
+                                    required: &ref_10
+                                      - quantity
+                                  get:
+                                    x-stoplight: *ref_7
+                                    description: >-
+                                      A constranint on the quantity and quality
+                                      of objects that define a BOGO promotion.
+                                    title: BogoCondition
+                                    type: object
+                                    examples: *ref_8
+                                    properties: *ref_9
+                                    required: *ref_10
+                                  discount:
+                                    type: integer
+                                    x-stoplight:
+                                      id: 5bepjrtzp43ao
+                                    minimum: 1
+                                    maximum: 100
+                                    description: >-
+                                      The % discount applied to the cart, from 0
+                                      to 100.
+                                    example: 10
+                                  shopId:
+                                    type: string
+                                    x-stoplight:
+                                      id: izckh84ke77in
+                                    description: >-
+                                      Shop ID for which the promotion will be
+                                      applied.
+                                    example: storefront-catalog-en
+                                  locale:
+                                    type: string
+                                    x-stoplight:
+                                      id: rix9ezmihtxgy
+                                    description: >-
+                                      Locale for which the promotion will be
+                                      applied.
+                                    example: us-en
+                                required: &ref_58
+                                  - kind
+                                  - buy
+                                  - get
+                                  - discount
+                                  - shopId
+                                  - locale
+                              - x-stoplight: &ref_59
+                                  id: 2nbad1bg0soos
+                                title: BogoFixedCategory
+                                type: object
+                                description: >-
+                                  A promotion which is applied as a fixed
+                                  discount to a set of items in the for of Buy X
+                                  Get Y.
+                                examples: &ref_60
+                                  - kind: BogoFixed
+                                    buy:
+                                      quantity: 3
+                                      includedProducts:
+                                        - P0001
+                                        - P0002
+                                      includedCategories: []
+                                      excludedProducts: []
+                                    get:
+                                      quantity: 2
+                                      includedProducts:
+                                        - P0007
+                                        - P0008
+                                      includedCategories: []
+                                      excludedProducts: []
+                                    shopId: storefront-catalog-en
+                                    locale: en-us
+                                    discounts:
+                                      - amount: 20
+                                        currency: USD
+                                  - kind: BogoFixed
+                                    buy:
+                                      quantity: 3
+                                      includedProducts: []
+                                      includedCategories:
+                                        - path:
+                                            - clothes
+                                            - skirts
+                                        - path:
+                                            - clothes
+                                            - trousers
+                                      excludedProducts: []
+                                    get:
+                                      quantity: 1
+                                      includedProducts: []
+                                      includedCategories:
+                                        - path:
+                                            - clothes
+                                            - shoes
+                                      excludedProducts: []
+                                    shopId: storefront-catalog-en
+                                    locale: en-us
+                                    discounts:
+                                      - amount: 20
+                                        currency: USD
+                                properties: &ref_61
+                                  kind:
+                                    type: string
+                                    x-stoplight:
+                                      id: 19p73nx7grbmo
+                                    pattern: ^BogoFixed$
+                                    description: The promotion type discriminator.
+                                    example: BogoFixed
+                                  buy:
+                                    x-stoplight: *ref_7
+                                    description: >-
+                                      A constranint on the quantity and quality
+                                      of objects that define a BOGO promotion.
+                                    title: BogoCondition
+                                    type: object
+                                    examples: *ref_8
+                                    properties: *ref_9
+                                    required: *ref_10
+                                  get:
+                                    x-stoplight: *ref_7
+                                    description: >-
+                                      A constranint on the quantity and quality
+                                      of objects that define a BOGO promotion.
+                                    title: BogoCondition
+                                    type: object
+                                    examples: *ref_8
+                                    properties: *ref_9
+                                    required: *ref_10
+                                  shopId:
+                                    type: string
+                                    x-stoplight:
+                                      id: rvmau3vrva4bw
+                                    description: >-
+                                      Shop ID for which the promotion will be
+                                      applied.
+                                    example: storefront-catalog-en
+                                  locale:
+                                    type: string
+                                    x-stoplight:
+                                      id: i1hqrx6nyhz2x
+                                    description: >-
+                                      Locale for which the promotion will be
+                                      applied.
+                                    example: en-us
+                                  discounts:
+                                    type: array
+                                    x-stoplight:
+                                      id: aguy9iq8dvr7g
+                                    description: >-
+                                      Discounts to be applied for the given
+                                      currencies.
+                                    items:
+                                      x-stoplight: *ref_3
+                                      title: FixedDiscount
+                                      type: object
+                                      properties: *ref_4
+                                      required: *ref_5
+                                      description: >-
+                                        A fixed amount discount for a specific
+                                        currency.
+                                      examples: *ref_6
+                                required: &ref_62
+                                  - kind
+                                  - buy
+                                  - get
+                                  - shopId
+                                  - locale
+                                  - discounts
+                              - x-stoplight: &ref_63
+                                  id: glurqsv8nh6zw
+                                title: FreeShipping
+                                type: object
+                                description: >-
+                                  A promotion that gives a 100% discount on the
+                                  shipping costs if conditions are met.
+                                properties: &ref_64
+                                  kind:
+                                    type: string
+                                    x-stoplight:
+                                      id: lvbo404n428m8
+                                    pattern: ^FreeShippingPercentage$
+                                    description: The promotion type discriminator.
+                                    example: FreeShippingPercentage
+                                  shippingOptions:
+                                    type: array
+                                    x-stoplight:
+                                      id: 2r6nmlannw2k3
+                                    description: >-
+                                      Shipping options for which the promotion
+                                      should be applied.
+                                    items:
+                                      x-stoplight:
+                                        id: zrvo4x59ydtdw
+                                      type: string
+                                      example: >-
+                                        ["SHIP_OPT_01", "SHIP_OPT_02",
+                                        "SAME_DAY", "STANDARD"]
+                                  shopId:
+                                    type: string
+                                    x-stoplight:
+                                      id: ib7eb0e3ywqrf
+                                    description: >-
+                                      Shop ID for which the promotion will be
+                                      applied.
+                                    example: storefront-catalog-en
+                                  locale:
+                                    type: string
+                                    x-stoplight:
+                                      id: ls5wu0wzcd163
+                                    description: >-
+                                      Locale for which the promotion will be
+                                      applied.
+                                    example: en-us
+                                required: &ref_65
+                                  - kind
+                                  - shippingOptions
+                                  - shopId
+                                  - locale
+                                examples: &ref_66
+                                  - kind: FreeShippingPercentage
+                                    shippingOptions:
+                                      - SHIP_OPT_01
+                                      - SHIP_OPT_02
+                                      - SAME_DAY
+                                      - STANDARD
+                                    shopId: storefront-catalog-en
+                                    locale: en-us
+                            description: The actual promotion kind.
+                          active:
+                            type: boolean
+                            x-stoplight:
+                              id: snetpiva2od0r
+                            description: Indicates whether the coupon is active or not.
+                          createdAt:
+                            type: string
+                            x-stoplight:
+                              id: a0p33h7l0dby6
+                            description: The creation date.
+                            example: '2023-04-11T00:00:00Z'
+                            readOnly: true
+                          createdBy:
+                            type: string
+                            x-stoplight:
+                              id: a6va2nbfq0kd2
+                            description: The user that created the coupon.
+                            example: 25dd570161b05f0cae353a56757f8495
+                            readOnly: true
+                          updatedAt:
+                            type: string
+                            x-stoplight:
+                              id: w9ckm2te4m9g8
+                            description: The last update date.
+                            example: '2023-04-11T00:00:00Z'
+                            readOnly: true
+                          updatedBy:
+                            type: string
+                            x-stoplight:
+                              id: 15c1ld2fdnjed
+                            description: The user that updated the coupon.
+                            example: 25dd570161b05f0cae353a56757f8495
+                            readOnly: true
+                          tenant:
+                            type: string
+                            x-stoplight:
+                              id: w9e0bd38w5cey
+                            description: The tenant that owns the coupon.
+                            example: dodici
+                            readOnly: true
+                          currencies:
+                            type: array
+                            x-stoplight:
+                              id: 7fhe1npp6o4pi
+                            description: >-
+                              A list of conditions on currencies to satisfy in
+                              order for the coupon to be applied.
+                            items:
+                              x-stoplight: &ref_67
+                                id: zhme1hwqqgbcy
+                              title: Currency
+                              type: object
+                              description: >-
+                                An object representing a constraint on a
+                                currency.
+                              examples: &ref_68
+                                - code: EUR
+                                  minimumCartValue: 50
+                              properties: &ref_69
+                                code:
+                                  type: string
+                                  x-stoplight:
+                                    id: z3tec0ox6m11d
+                                  description: Currency code.
+                                  example: EUR
+                                minimumCartValue:
+                                  type: number
+                                  x-stoplight:
+                                    id: 9ru9b7ppk52zx
+                                  minimum: 0
+                                  default: 0
+                                  description: >-
+                                    The minimum cart value for a given currency
+                                    needed to apply the promotion.
+                                  example: 50
+                              required: &ref_70
+                                - code
+                                - minimumCartValue
+                          singleUse:
+                            type: boolean
+                            x-stoplight:
+                              id: zx2a0kmt5altm
+                            description: >
+                              Indicates whether the coupon codes are single use
+                              or not.
+                          localizedTimezone:
+                            type: boolean
+                            x-stoplight:
+                              id: v3okrte7oj8x3
+                            description: >-
+                              Optional, this property determines local timezone
+                              validity for the coupon. If true, UTC is assumed
+                              with no timezone required in "validFrom" and
+                              "validTo". If false, timezone must be specified in
+                              those fields.
+                          stores:
+                            type: array
+                            x-stoplight:
+                              id: 7zts856w1d7rg
+                            description: >-
+                              Indicates in which stores the coupon can be used.
+                              A list of IDs states that the coupon can be used
+                              in the given stores while an empty array states
+                              that the coupon can be used in any store.
+                            example:
+                              - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                              - b25fd287-90cb-421c-a2b7-27691742f55b
+                            items:
+                              x-stoplight:
+                                id: 2nkdbt77nz9yw
+                              type: string
+                          consumers:
+                            type: array
+                            x-stoplight:
+                              id: re5sykvb1jpkh
+                            description: >
+                              Indicates by which consumers the coupon can be
+                              used. A list of IDs states that the coupon can be
+                              used by the given consumers while an empty array
+                              states that the coupon can be used by any
+                              consumers.
+                            example:
+                              - 2dbb6700-d847-11ed-afa1-0242ac120002
+                              - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                            maxItems: 10000
+                            items:
+                              x-stoplight:
+                                id: xbjma4uessh4l
+                              type: string
+                          externalId:
+                            type: string
+                            x-stoplight:
+                              id: bwxyvvtw9zkww
+                            description: >-
+                              Optional, The identifier of the corresponding
+                              coupon/voucher on the caller’s system.
+                          exclusive:
+                            type: boolean
+                            x-stoplight:
+                              id: a4kyqvamxy87j
+                            description: >-
+                              Indicates whether the promotion is exclusive or
+                              not.
+                          segment:
+                            x-stoplight: &ref_71
+                              id: ss0w3btjgdqk6
+                            description: A customer segmentation.
+                            title: Segment
+                            type: &ref_72
+                              - object
+                              - 'null'
+                            examples: &ref_73
+                              - key: type
+                                value: gold member
+                                schama: 1
+                            properties: &ref_74
+                              key:
+                                type: string
+                                x-stoplight:
+                                  id: myc0pnvhjl1oa
+                                description: >-
+                                  The name of the customer profile extended
+                                  attribute. 
+                              value:
+                                type: string
+                                x-stoplight:
+                                  id: lc3v4pfdqii2r
+                                description: >-
+                                  The **value** of the selected name in customer
+                                  profile extended attribute. 
+                              schema:
+                                type: number
+                                x-stoplight:
+                                  id: uhn3z696oxl6m
+                                description: >-
+                                  Represents the version of the data structure.
+                                  For now it is **1**.
+                            required: &ref_75
+                              - key
+                              - value
+                              - schema
+                      - type: object
+                        x-stoplight:
+                          id: z7uqpde6buocg
+                        properties:
+                          version:
+                            type: string
+                            x-stoplight:
+                              id: 3xdghkeog5nz0
+                            description: A UUID representing the version of the coupon.
+                            example: bf6a0288-d64e-4cb6-b534-a8a6c4724d06
+                            readOnly: true
+                          codes:
+                            type: array
+                            x-stoplight:
+                              id: 4kp87as5tuyr8
+                            deprecated: true
+                            example: []
+                            items:
+                              x-stoplight:
+                                id: yclpi3phj2msp
+                              type: string
+                        required:
+                          - version
+              examples:
+                Response CartLevelPercentage coupon Without Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00'
+                      validTo: '2023-12-01T00:00:00'
+                      category:
+                        kind: CartLevelPercentage
+                        discount: 10
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: true
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response CartLevelPercentage coupon With Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00+01:00'
+                      validTo: '2023-12-01T00:00:00+01:00'
+                      category:
+                        kind: CartLevelPercentage
+                        discount: 10
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: false
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response CartLevelFixed coupon Without Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black coupon Promo
+                      description: Black coupon Promo
+                      validFrom: '2023-11-01T00:00:00'
+                      validTo: '2023-12-01T00:00:00'
+                      category:
+                        kind: CartLevelFixed
+                        discounts:
+                          - amount: 10
+                            currency: EUR
+                          - amount: 5
+                            currency: USD
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                        - code: USD
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: true
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response CartLevelFixed coupon With Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00+01:00'
+                      validTo: '2023-12-01T00:00:00+01:00'
+                      category:
+                        kind: CartLevelFixed
+                        discounts:
+                          - amount: 10
+                            currency: EUR
+                          - amount: 5
+                            currency: USD
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                        - code: USD
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: false
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response ProductLevelPercentage coupon Without Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00'
+                      validTo: '2023-12-01T00:00:00'
+                      category:
+                        kind: ProductLevelPercentage
+                        includedCategories:
+                          - path:
+                              - clothes
+                              - skirts
+                        includedProducts: []
+                        excludedProducts: []
+                        shopId: storefront-catalog-en
+                        locale: en-us
+                        discount: 10
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: true
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response ProductLevelPercentage coupon With Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00+01:00'
+                      validTo: '2023-12-01T00:00:00+01:00'
+                      category:
+                        kind: ProductLevelPercentage
+                        includedCategories:
+                          - path:
+                              - clothes
+                              - skirts
+                        includedProducts: []
+                        excludedProducts: []
+                        shopId: storefront-catalog-en
+                        locale: en-us
+                        discount: 10
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: false
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response ProductLevelFixed coupon Without Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00'
+                      validTo: '2023-12-01T00:00:00'
+                      category:
+                        kind: ProductLevelFixed
+                        includedCategories:
+                          - path:
+                              - clothes
+                              - skirts
+                        includedProducts: []
+                        excludedProducts: []
+                        shopId: storefront-catalog-en
+                        locale: en-us
+                        discounts:
+                          - amount: 10
+                            currency: EUR
+                          - amount: 5
+                            currency: USD
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                        - code: USD
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: true
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response ProductLevelFixed coupon With Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00+01:00'
+                      validTo: '2023-12-01T00:00:00+01:00'
+                      category:
+                        kind: ProductLevelPercentage
+                        includedCategories:
+                          - path:
+                              - clothes
+                              - skirts
+                        includedProducts: []
+                        excludedProducts: []
+                        shopId: storefront-catalog-en
+                        locale: en-us
+                        discount: 10
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: false
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response BogoPercentage coupon Without Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00'
+                      validTo: '2023-12-01T00:00:00'
+                      category:
+                        kind: BogoPercentage
+                        buy:
+                          quantity: 3
+                          includedProducts:
+                            - P0001
+                            - P0002
+                            - P0003
+                          includedCategories: []
+                          excludedProducts: []
+                        get:
+                          quantity: 1
+                          includedProducts:
+                            - P0004
+                          includedCategories: []
+                          excludedProducts: []
+                        discount: 10
+                        shopId: storefront-catalog-en
+                        locale: us-en
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: true
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response BogoPercentage coupon With Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00+01:00'
+                      validTo: '2023-12-01T00:00:00+01:00'
+                      category:
+                        kind: BogoPercentage
+                        buy:
+                          quantity: 3
+                          includedProducts:
+                            - P0001
+                            - P0002
+                            - P0003
+                          includedCategories: []
+                          excludedProducts: []
+                        get:
+                          quantity: 1
+                          includedProducts:
+                            - P0004
+                          includedCategories: []
+                          excludedProducts: []
+                        discount: 10
+                        shopId: storefront-catalog-en
+                        locale: us-en
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: false
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response BogoFixed coupon Without Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00'
+                      validTo: '2023-12-01T00:00:00'
+                      category:
+                        kind: BogoFixed
+                        buy:
+                          quantity: 3
+                          includedProducts:
+                            - P0001
+                            - P0002
+                          includedCategories: []
+                          excludedProducts: []
+                        get:
+                          quantity: 2
+                          includedProducts:
+                            - P0007
+                            - P0008
+                          includedCategories: []
+                          excludedProducts: []
+                        shopId: storefront-catalog-en
+                        locale: en-us
+                        discounts:
+                          - amount: 20
+                            currency: USD
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: USD
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: true
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response BogoFixed coupon With Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00+01:00'
+                      validTo: '2023-12-01T00:00:00+01:00'
+                      category:
+                        kind: BogoFixed
+                        buy:
+                          quantity: 3
+                          includedProducts:
+                            - P0001
+                            - P0002
+                          includedCategories: []
+                          excludedProducts: []
+                        get:
+                          quantity: 2
+                          includedProducts:
+                            - P0007
+                            - P0008
+                          includedCategories: []
+                          excludedProducts: []
+                        shopId: storefront-catalog-en
+                        locale: en-us
+                        discounts:
+                          - amount: 20
+                            currency: USD
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: USD
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: false
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response FreeShippingPercentage coupon Without Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00+01:00'
+                      validTo: '2023-12-01T00:00:00+01:00'
+                      category:
+                        kind: BogoFixed
+                        buy:
+                          quantity: 3
+                          includedProducts:
+                            - P0001
+                            - P0002
+                          includedCategories: []
+                          excludedProducts: []
+                        get:
+                          quantity: 2
+                          includedProducts:
+                            - P0007
+                            - P0008
+                          includedCategories: []
+                          excludedProducts: []
+                        shopId: storefront-catalog-en
+                        locale: en-us
+                        discounts:
+                          - amount: 20
+                            currency: USD
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: USD
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: false
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                Response FreeShippingPercentage coupon With Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00+01:00'
+                      validTo: '2023-12-01T00:00:00+01:00'
+                      category:
+                        kind: FreeShippingPercentage
+                        shippingOptions:
+                          - SHIP_OPT_01
+                          - SHIP_OPT_02
+                          - SAME_DAY
+                          - STANDARD
+                        shopId: storefront-catalog-en
+                        locale: en-us
+                      active: true
+                      createdAt: '2023-04-11T00:00:00'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                      localizedTimezone: false
+                      version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      codes: []
+                      singleUse: true
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+        '400':
+          description: An error response.
+          content: &ref_11
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    x-stoplight:
+                      id: 4mgqrxp3tu5wn
+                    description: The error message.
+                    readOnly: true
+                  status:
+                    x-stoplight:
+                      id: yyoejnlmfxvr3
+                    description: The HTTP status code.
+                    type: integer
+                    readOnly: true
+                  causes:
+                    type: array
+                    x-stoplight:
+                      id: z8rq6uglrfhpk
+                    description: A list of causes. It's optional.
+                    items:
+                      x-stoplight:
+                        id: p29zlrbqmwd67
+                      type: string
+                      readOnly: true
+                required:
+                  - message
+                  - status
+              examples:
+                Example 1:
+                  value:
+                    message: not found
+                    status: 404
+                Example 2:
+                  value:
+                    message: internal server error
+                    status: 500
+        '409':
+          description: An error response.
+          content: *ref_11
+        '500':
+          description: An error response.
+          content: *ref_11
+      description: Creates a specified coupon.
+      requestBody:
+        content: &ref_76
+          application/json:
+            schema:
+              title: Coupon
+              x-stoplight: *ref_12
+              type: object
+              description: A coupon.
+              required: *ref_13
+              properties: *ref_14
+            examples:
+              Create CartLevelPercentage Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create CartLevelPercentage Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create CartLevelFixed Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: CartLevelFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create CartLevelFixed Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create ProductLevelPercentage Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: ProductLevelPercentage
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discount: 10
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create ProductLevelPercentage Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: ProductLevelPercentage
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discount: 10
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create ProductLevelFixed Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: ProductLevelFixed
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create ProductLevelFixed Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: ProductLevelFixed
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create BogoPercentage Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: BogoPercentage
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                        - P0003
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 1
+                      includedProducts:
+                        - P0004
+                      includedCategories: []
+                      excludedProducts: []
+                    discount: 10
+                    shopId: storefront-catalog-en
+                    locale: us-en
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create BogoPercentage Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: BogoPercentage
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                        - P0003
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 1
+                      includedProducts:
+                        - P0004
+                      includedCategories: []
+                      excludedProducts: []
+                    discount: 10
+                    shopId: storefront-catalog-en
+                    locale: us-en
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create BogoFixed Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: BogoFixed
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 2
+                      includedProducts:
+                        - P0007
+                        - P0008
+                      includedCategories: []
+                      excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 20
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create BogoFixed Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: BogoFixed
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 2
+                      includedProducts:
+                        - P0007
+                        - P0008
+                      includedCategories: []
+                      excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 20
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create FreeShippingPercentage Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: FreeShippingPercentage
+                    shippingOptions:
+                      - SHIP_OPT_01
+                      - SHIP_OPT_02
+                      - SAME_DAY
+                      - STANDARD
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Create FreeShippingPercentage Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: FreeShippingPercentage
+                    shippingOptions:
+                      - SHIP_OPT_01
+                      - SHIP_OPT_02
+                      - SAME_DAY
+                      - STANDARD
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+        description: Create coupon request.
+      parameters:
+        - name: tenant
+          in: header
+          required: true
+          schema: &ref_17
+            type: string
+            example: test-tenant
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: &ref_18
+            type: string
+            example: test-userid
+          description: The test user ID.
+    get:
+      summary: List Coupons
+      operationId: getCoupons
+      responses:
+        '200':
+          description: >-
+            A page of coupons, the links for the previous and next pages and
+            pagination information.
+          content: &ref_84
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    x-stoplight:
+                      id: 56q8g6j680vst
+                    description: An array of coupons plus HATEOAS fields.
+                    items:
+                      x-stoplight:
+                        id: 8buyiesozdqvi
+                      type: object
+                      properties:
+                        links:
+                          x-stoplight: *ref_15
+                          description: Object links.
+                          title: ObjectLinks
+                          type: object
+                          properties: *ref_16
+                        coupon:
+                          x-stoplight:
+                            id: 5hc6b0plilyom
+                          description: The coupon.
+                          allOf:
+                            - x-stoplight: *ref_12
+                              title: Coupon
+                              type: object
+                              description: A coupon.
+                              required: *ref_13
+                              properties: *ref_14
+                            - type: object
+                              x-stoplight:
+                                id: 9e41svz5cwp17
+                              properties:
+                                version:
+                                  type: string
+                                  x-stoplight:
+                                    id: xii5yc6djyc56
+                                  description: >-
+                                    A UUID representing the version of the
+                                    coupon.
+                                  example: bf6a0288-d64e-4cb6-b534-a8a6c4724d06
+                                  readOnly: true
+                                codes:
+                                  x-stoplight:
+                                    id: a4lh1atu46a1l
+                                  type: array
+                                  description: An array of coupon codes.
+                                  deprecated: true
+                                  items:
+                                    x-stoplight: &ref_19
+                                      id: elwd3d3z49i9p
+                                    title: CouponCode
+                                    type: object
+                                    examples: &ref_20
+                                      - id: 629868d2-58ac-4000-8000-3766e65e2e3d
+                                        name: CODE1
+                                        redemptions: 0
+                                        active: true
+                                    description: A coupon code.
+                                    properties: &ref_21
+                                      id:
+                                        type: string
+                                      name:
+                                        type: string
+                                        x-stoplight:
+                                          id: t9yb3723klecb
+                                        pattern: '[a-zA-Z0-9-%_@&!]'
+                                      redemptions:
+                                        type: number
+                                        x-stoplight:
+                                          id: oxwtoxt6qhlul
+                                      active:
+                                        type: boolean
+                                        x-stoplight:
+                                          id: oih2gm4t69315
+                              required:
+                                - version
+                  links:
+                    x-stoplight: &ref_23
+                      id: kq5c4f1naz4c4
+                    description: Pagination links.
+                    title: PageLinks
+                    type: object
+                    properties: &ref_24
+                      next:
+                        type:
+                          - string
+                          - 'null'
+                        x-stoplight:
+                          id: ao33rogw6hmf2
+                        description: >-
+                          The link in a pagination response pointing to the next
+                          page.
+                        example: /promotion?count=50&page=2
+                        readOnly: true
+                      previous:
+                        type:
+                          - string
+                          - 'null'
+                        x-stoplight:
+                          id: o987sbgbb7e4j
+                        description: >-
+                          the link in a pagination response pointing to the
+                          previous page.
+                        example: 'null'
+                        readOnly: true
+                    examples: &ref_25
+                      - next: /promotion?count=50&page=2
+                        previous: 'null'
+                      - next: /coupon?count=50&page=2&partial=true
+                        previous: 'null'
+                  pagination:
+                    x-stoplight: &ref_26
+                      id: ljr10w15qrsbu
+                    description: Pagination response fields.
+                    title: Pagination
+                    type: object
+                    properties: &ref_27
+                      count:
+                        type: integer
+                        x-stoplight:
+                          id: 6wo5iwzjp77sh
+                        description: Echoes the 'count' value from 'Query Prameters'.
+                        example: 50
+                      page:
+                        type: integer
+                        x-stoplight:
+                          id: 1etmwaggh8lke
+                        description: Echoes the 'page' value from 'Query Prameters'.
+                        example: 1
+                      total:
+                        type: integer
+                        x-stoplight:
+                          id: jdmaljuhy3e7o
+                        description: The total number of resources matching the query.
+                        example: 220
+                    examples: &ref_28 []
+              examples:
+                Coupons Response:
+                  value:
+                    items:
+                      - links:
+                          self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                        coupon:
+                          id: 64357c41-cad8-4000-8000-d998be563098
+                          name: Black Friday Coupon
+                          description: Black Friday Coupon
+                          validFrom: '2023-11-01T00:00:00'
+                          validTo: '2023-12-01T00:00:00'
+                          category:
+                            kind: CartLevelPercentage
+                            discount: 10
+                          active: true
+                          createdAt: '2023-04-11T00:00:00'
+                          createdBy: 25dd570161b05f0cae353a56757f8495
+                          updatedAt: '2023-04-11T00:00:00'
+                          updatedBy: 25dd570161b05f0cae353a56757f8495
+                          tenant: dodici
+                          currencies:
+                            - code: EUR
+                              minimumCartValue: 50
+                          stores:
+                            - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                          singleUse: false
+                          localizedTimezone: true
+                          codes: []
+                          exclusive: true
+                          segment:
+                            key: type
+                            value: gold member
+                            schema: 1
+                          version: a43a5a2d-1424-4c80-a252-992d489062eb
+                      - links:
+                          self: /coupon/633e9b5e-983b-4000-8000-bdde1340e55f
+                        coupon:
+                          id: 633e9b5e-983b-4000-8000-bdde1340e55f
+                          name: Coupon for hoodies
+                          description: Coupon for hoodies
+                          validFrom: '2023-04-27T00:00:00'
+                          validTo: '2023-04-30T23:59:59'
+                          category:
+                            kind: ProductLevelFixed
+                            includedCategories:
+                              - path:
+                                  - Shop
+                                  - Accessories
+                            includedProducts: []
+                            excludedProducts: []
+                            shopId: storefront-catalog-en
+                            locale: en-us
+                            discounts:
+                              - amount: 50
+                                currency: EUR
+                              - amount: 50
+                                currency: USD
+                          active: false
+                          createdAt: '2023-04-27T13:15:55Z'
+                          createdBy: 3227aa4cdff85694a7788450e3c269b2
+                          updatedAt: '2022-10-06T09:09:50Z'
+                          updatedBy: 3227aa4cdff85694a7788450e3c269b2
+                          tenant: dodici
+                          currencies:
+                            - code: EUR
+                              minimumCartValue: 150
+                            - code: USD
+                              minimumCartValue: 150
+                          stores: []
+                          singleUse: false
+                          localizedTimezone: true
+                          codes: []
+                          exclusive: true
+                          segment:
+                            key: member
+                            value: VIP
+                            schema: 1
+                          version: 6255ca9a-a025-4846-826a-f69fd6da4917
+                    links:
+                      next: /coupon?count=2&page=1
+                      previous: null
+                    pagination:
+                      count: 2
+                      page: 1
+                      total: 15
+        '400':
+          description: An error response.
+          content: *ref_11
+        '500':
+          description: An error response.
+          content: *ref_11
+      description: Retrieves all coupons.
+      parameters:
+        - name: count
+          in: query
+          required: true
+          schema: &ref_29
+            type: integer
+            maximum: 150
+          description: The number of coupons to get at once.
+        - name: page
+          in: query
+          required: true
+          schema: &ref_30
+            type: integer
+            minimum: 1
+          description: The page number.
+        - name: name
+          in: query
+          required: false
+          schema: &ref_90
+            type: string
+          description: >-
+            The names of the coupons you want to get (it can be a list of comma
+            separated values)
+        - name: code
+          in: query
+          required: false
+          schema: &ref_91
+            type: string
+          description: >-
+            The codes for which you want to get the coupons (it can be a list of
+            comma separated values)
+        - name: tenant
+          in: header
+          required: true
+          schema: *ref_17
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: *ref_18
+          description: The test user ID.
+        - name: kind[]
+          in: query
+          schema: &ref_92
+            type: string
+            enum:
+              - CartLevelFixed
+              - CartLevelPercentage
+              - ProductLevelFixed
+              - ProductLevelPercentage
+              - BogoFixed
+              - BogoPercentage
+              - FreeShippingFixed
+              - FreeShippingPercentage
+            example: CartLevelFixed
+          description: The type of the coupon you want to get
+        - name: active
+          in: query
+          required: false
+          schema: &ref_93
+            type: boolean
+            example: true
+          description: >-
+            This flag should be set to true to return `running`, `planned` and
+            `past` coupons. If set to `false` it will return only disabled
+            coupons. 
+        - name: validFrom
+          in: query
+          required: false
+          schema: &ref_94
+            type: string
+            example: '2023-09-03T00:00:00'
+            pattern: >-
+              (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+          description: >-
+            By setting this field, you will only get coupons which are valid
+            from this date onward.
+        - name: validTo
+          in: query
+          required: false
+          schema: &ref_95
+            type: string
+            example: '2023-09-11T23:59:59'
+            pattern: >-
+              (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+          description: >-
+            By setting this field, you will only get coupons which are valid up
+            to this date.
+        - name: segment
+          in: query
+          required: false
+          schema: &ref_96
+            type: string
+            example: member
+          description: >-
+            Indicates the **Key** or **Value** of customer profile extended
+            attribute.
+        - name: partial-category
+          in: query
+          required: false
+          schema: &ref_97
+            type: boolean
+            example: true
+            default: true
+          description: >-
+            This flag should be always present with ``true`` value , it prevents
+            loads of categories.
+  /coupon/{id}:
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+        description: The ID of the coupon.
+    get:
+      summary: Get Coupon
+      responses:
+        '200':
+          description: A coupon plus HATEOAS fields.
+          content: &ref_83
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    x-stoplight: *ref_15
+                    description: Object links.
+                    title: ObjectLinks
+                    type: object
+                    properties: *ref_16
+                  coupon:
+                    x-stoplight:
+                      id: whvv4128ou6r0
+                    allOf:
+                      - x-stoplight: *ref_12
+                        description: A coupon.
+                        title: Coupon
+                        type: object
+                        required: *ref_13
+                        properties: *ref_14
+                      - type: object
+                        x-stoplight:
+                          id: zgife8ww97i0f
+                        properties:
+                          version:
+                            type: string
+                            x-stoplight:
+                              id: fgwep5ns4k5vd
+                            description: A UUID representing the version of the coupon.
+                            example: bf6a0288-d64e-4cb6-b534-a8a6c4724d06
+                            readOnly: true
+                          codes:
+                            type: array
+                            x-stoplight:
+                              id: 6apikpdq4bpm4
+                            description: An array of the coupon codes.
+                            deprecated: true
+                            items:
+                              x-stoplight: *ref_19
+                              title: CouponCode
+                              type: object
+                              examples: *ref_20
+                              description: A coupon code.
+                              properties: *ref_21
+                        required:
+                          - version
+              examples:
+                Coupon Response Without Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00'
+                      validTo: '2023-12-01T00:00:00'
+                      category:
+                        kind: CartLevelPercentage
+                        discount: 10
+                      active: true
+                      createdAt: '2023-04-11T00:00:00Z'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00Z'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                      codes: []
+                      singleUse: true
+                      localizedTimezone: true
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                        - b25fd287-90cb-421c-a2b7-27691742f55b
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                      version: bf6a0288-d64e-4cb6-b534-a8a6c4724d06
+                Coupon Response With Timezone:
+                  value:
+                    links:
+                      self: /coupon/64357c41-cad8-4000-8000-d998be563098
+                    coupon:
+                      id: 64357c41-cad8-4000-8000-d998be563098
+                      name: Black Friday Coupon
+                      description: Black Friday Coupon
+                      validFrom: '2023-11-01T00:00:00+01:00'
+                      validTo: '2023-12-01T00:00:00+01:00'
+                      category:
+                        kind: CartLevelPercentage
+                        discount: 10
+                      active: true
+                      createdAt: '2023-04-11T00:00:00Z'
+                      createdBy: 25dd570161b05f0cae353a56757f8495
+                      updatedAt: '2023-04-11T00:00:00Z'
+                      updatedBy: 25dd570161b05f0cae353a56757f8495
+                      tenant: dodici
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 50
+                      codes: []
+                      singleUse: true
+                      localizedTimezone: false
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                        - b25fd287-90cb-421c-a2b7-27691742f55b
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                      exclusive: true
+                      segment:
+                        key: type
+                        value: gold member
+                        schema: 1
+                      version: bf6a0288-d64e-4cb6-b534-a8a6c4724d06
+        '404':
+          description: An error response.
+          content: *ref_11
+        '500':
+          description: An error response.
+          content: *ref_11
+      operationId: getCoupon
+      description: >-
+        Retrieves the specified coupon by ID. To retrieve the coupon ID, use the
+        list coupon API.
+      parameters:
+        - name: tenant
+          in: header
+          required: true
+          schema: *ref_17
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: *ref_18
+          description: The test user ID.
+    put:
+      summary: Update Coupon
+      operationId: updateCoupon
+      responses:
+        '200':
+          description: A coupon plus HATEOAS fields.
+          content: *ref_22
+        '400':
+          description: An error response.
+          content: *ref_11
+        '404':
+          description: An error response.
+          content: *ref_11
+        '409':
+          description: An error response.
+          content: *ref_11
+        '500':
+          description: An error response.
+          content: *ref_11
+      description: >-
+        Updates the specified coupon with new information. The only property
+        that cannot be updated is the category.
+      requestBody:
+        content: &ref_77
+          application/json:
+            schema:
+              allOf:
+                - title: Coupon
+                  x-stoplight: *ref_12
+                  type: object
+                  description: A coupon.
+                  required: *ref_13
+                  properties: *ref_14
+                - type: object
+                  x-stoplight:
+                    id: 0virqd9di7jka
+                  properties:
+                    version:
+                      type: string
+                      x-stoplight:
+                        id: 9r9jyrhykmxby
+                      description: A UUID representing the version of the coupon.
+                      example: a43a5a2d-1424-4c80-a252-992d489062eb
+                      writeOnly: true
+                  required:
+                    - version
+            examples:
+              Update CartLevelPercentage Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update CartLevelPercentage Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update CartLevelFixed Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: CartLevelFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update CartLevelFixed Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update ProductLevelPercentage Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: ProductLevelPercentage
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discount: 10
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update ProductLevelPercentage Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: ProductLevelPercentage
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discount: 10
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update ProductLevelFixed Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: ProductLevelFixed
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update ProductLevelFixed Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: ProductLevelFixed
+                    includedCategories:
+                      - path:
+                          - clothes
+                          - skirts
+                    includedProducts: []
+                    excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update BogoPercentage Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: BogoPercentage
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                        - P0003
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 1
+                      includedProducts:
+                        - P0004
+                      includedCategories: []
+                      excludedProducts: []
+                    discount: 10
+                    shopId: storefront-catalog-en
+                    locale: us-en
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update BogoPercentage Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: BogoPercentage
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                        - P0003
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 1
+                      includedProducts:
+                        - P0004
+                      includedCategories: []
+                      excludedProducts: []
+                    discount: 10
+                    shopId: storefront-catalog-en
+                    locale: us-en
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update BogoFixed Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: BogoFixed
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 2
+                      includedProducts:
+                        - P0007
+                        - P0008
+                      includedCategories: []
+                      excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 20
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update BogoFixed Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: BogoFixed
+                    buy:
+                      quantity: 3
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      includedCategories: []
+                      excludedProducts: []
+                    get:
+                      quantity: 2
+                      includedProducts:
+                        - P0007
+                        - P0008
+                      includedCategories: []
+                      excludedProducts: []
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                    discounts:
+                      - amount: 20
+                        currency: USD
+                  active: true
+                  currencies:
+                    - code: USD
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update FreeShippingPercentage Coupon Without Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00'
+                  validTo: '2023-12-01T00:00:00'
+                  category:
+                    kind: FreeShippingPercentage
+                    shippingOptions:
+                      - SHIP_OPT_01
+                      - SHIP_OPT_02
+                      - SAME_DAY
+                      - STANDARD
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: true
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+              Update FreeShippingPercentage Coupon With Timezone:
+                value:
+                  name: Black Friday Coupon
+                  validFrom: '2023-11-01T00:00:00+01:00'
+                  validTo: '2023-12-01T00:00:00+01:00'
+                  category:
+                    kind: FreeShippingPercentage
+                    shippingOptions:
+                      - SHIP_OPT_01
+                      - SHIP_OPT_02
+                      - SAME_DAY
+                      - STANDARD
+                    shopId: storefront-catalog-en
+                    locale: en-us
+                  active: true
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 50
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                  localizedTimezone: false
+                  version: a43a5a2d-1424-4c80-a252-992d489062eb
+                  singleUse: false
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  exclusive: true
+                  segment:
+                    key: type
+                    value: gold member
+                    schema: 1
+        description: Update coupon request.
+      parameters:
+        - name: tenant
+          in: header
+          required: true
+          schema: *ref_17
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: *ref_18
+          description: The test user ID.
+  /coupon/{id}/code:
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        description: The ID of the coupon.
+        required: true
+    post:
+      summary: Create coupon codes
+      operationId: createCouponCodes
+      responses:
+        '201':
+          description: ' A coupon codes list plus HATEOAS fields'
+          content: &ref_85
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    x-stoplight:
+                      id: pzu3f5ww9j3tl
+                    type: array
+                    description: An array of the HATEOAS fields for the coupon codes.
+                    items:
+                      x-stoplight: *ref_15
+                      title: ObjectLinks
+                      type: object
+                      description: Object links.
+                      properties: *ref_16
+                  codes:
+                    type: array
+                    x-stoplight:
+                      id: j7eyi4u2ecsb5
+                    description: An array of the coupon codes.
+                    items:
+                      x-stoplight: *ref_19
+                      title: CouponCode
+                      type: object
+                      examples: *ref_20
+                      description: A coupon code.
+                      properties: *ref_21
+              examples:
+                Example 1:
+                  value:
+                    links:
+                      - self: >-
+                          /coupon/62839b62-80ff-4000-8000-01b47275b241/code/629868d2-58ac-4000-8000-3766e65e2e3d
+                      - self: >-
+                          /coupon/62839b62-80ff-4000-8000-01b47275b241/code/62986960-0b13-4000-8000-1a636b395759
+                    codes:
+                      - id: 629868d2-58ac-4000-8000-3766e65e2e3d
+                        name: CODE1
+                        redemptions: 0
+                        active: true
+                      - id: 629868d2-58ac-4000-8000-3766e65e2e3d
+                        name: CODE2
+                        redemptions: 0
+                        active: true
+        '400':
+          description: An error response.
+          content: *ref_11
+        '404':
+          description: An error response.
+          content: *ref_11
+        '409':
+          description: An error response.
+          content: *ref_11
+        '500':
+          description: An error response.
+          content: *ref_11
+      description: >-
+        Use this method to create coupon codes associated to a coupon
+        definition. To retrieve the coupon ID, use the [List
+        coupons](#operation/getCoupons) method.
+
+        You don't need the ``Label`` property in the request payload while
+        creating coupons.
+      requestBody:
+        content: &ref_78
+          application/json:
+            schema:
+              type: object
+              properties:
+                codes:
+                  type: array
+                  x-stoplight:
+                    id: mjztvbf7my99v
+                  description: A list of new coupon codes.
+                  items:
+                    x-stoplight:
+                      id: y1lz8dj46550n
+                    type: string
+              required:
+                - codes
+            examples:
+              Example 1:
+                value:
+                  codes:
+                    - CODE1
+                    - CODE2
+        description: Create coupon code request.
+      parameters:
+        - name: tenant
+          in: header
+          required: true
+          schema: *ref_17
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: *ref_18
+          description: The test user ID.
+    get:
+      summary: Get Coupon Codes
+      operationId: getCouponCodes
+      responses:
+        '200':
+          description: >-
+            A page of coupon codes, the links for the previous and next pages
+            and pagination information.
+          content: &ref_86
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    x-stoplight:
+                      id: 87zvzv1s8iuic
+                    items:
+                      x-stoplight:
+                        id: jfzahvus538ji
+                      type: object
+                      properties:
+                        links:
+                          x-stoplight: *ref_15
+                          description: Object links.
+                          title: ObjectLinks
+                          type: object
+                          properties: *ref_16
+                        codes:
+                          x-stoplight: *ref_19
+                          title: CouponCode
+                          type: object
+                          examples: *ref_20
+                          description: A coupon code.
+                          properties: *ref_21
+                  links:
+                    x-stoplight: *ref_23
+                    title: PageLinks
+                    type: object
+                    description: Pagination links.
+                    properties: *ref_24
+                    examples: *ref_25
+                  pagination:
+                    x-stoplight: *ref_26
+                    title: Pagination
+                    type: object
+                    description: Pagination response fields.
+                    properties: *ref_27
+                    examples: *ref_28
+              examples:
+                Example 1:
+                  value:
+                    items:
+                      - links:
+                          self: >-
+                            /coupon/62839b62-80ff-4000-8000-01b47275b241/code/629868d2-58ac-4000-8000-3766e65e2e3d
+                        codes:
+                          id: 629868d2-58ac-4000-8000-3766e65e2e3d
+                          name: CODE1
+                          redemptions: 0
+                          active: true
+                      - links:
+                          self: >-
+                            /coupon/62839b62-80ff-4000-8000-01b47275b241/code/62986960-0b13-4000-8000-1a636b395759
+                        codes:
+                          id: 62986960-0b13-4000-8000-1a636b395759
+                          name: CODE2
+                          redemptions: 0
+                          active: true
+                    links:
+                      next: >-
+                        /coupon/62839b62-80ff-4000-8000-01b47275b241/code?count=2&page=2
+                      previous: 'null'
+                    pagination:
+                      count: 2
+                      page: 1
+                      total: 15
+        '400':
+          description: An error response.
+          content: *ref_11
+        '500':
+          description: An error response.
+          content: *ref_11
+      parameters:
+        - name: count
+          in: query
+          required: true
+          schema: *ref_29
+          description: The number of coupons to get at once.
+        - name: page
+          in: query
+          required: true
+          schema: *ref_30
+          description: The page number.
+        - name: tenant
+          in: header
+          required: true
+          schema: *ref_17
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: *ref_18
+          description: The test user ID.
+      description: Use this method to retrieve coupon codes.
+  /coupon/{id}/code/{code_id}:
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+        description: The ID of the coupon.
+      - schema:
+          type: string
+        name: code_id
+        in: path
+        required: true
+        description: The ID of the coupon code.
+    patch:
+      summary: Update Coupon Codes
+      operationId: updateCouponCodes
+      responses:
+        '200':
+          description: Coupon code updated successfully.
+        '400':
+          description: An error response.
+          content: *ref_11
+      description: >-
+        Use this method to update the specified coupon code, you can switch a
+        coupon code to an ``active`` state or not.
+      requestBody:
+        description: ''
+        content: &ref_79
+          application/json:
+            schema:
+              title: CouponCode
+              x-stoplight: *ref_19
+              type: object
+              examples: *ref_20
+              description: A coupon code.
+              properties: *ref_21
+            examples:
+              Example 1:
+                value:
+                  id: 629868d2-58ac-4000-8000-3766e65e2e3d
+                  name: CODE1
+                  redemptions: 0
+                  active: true
+      x-internal: false
+      parameters:
+        - name: tenant
+          in: header
+          required: true
+          schema: *ref_17
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: *ref_18
+          description: The test user ID.
+  /coupon/{id}/code/import:
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+        description: The ID of the coupon.
+    post:
+      summary: Create Coupon Codes Import
+      operationId: postCouponCodesImport
+      responses:
+        '202':
+          description: >-
+            A create coupon codes import response.It indicates the status of the
+            request and the number of processed, created, and erroneous coupon
+            code of the imported CSV file.
+          content: &ref_87
+            application/json:
+              schema:
+                type: object
+                properties:
+                  codesImport:
+                    x-stoplight: &ref_31
+                      id: lh6hx1xycm9go
+                    title: CouponCodesImport
+                    type: object
+                    properties: &ref_32
+                      id:
+                        type: string
+                        x-stoplight:
+                          id: z6jh671hqlslv
+                        description: The import ID.
+                        example: 646b39ac-14e7-4000-8000-8fb14bc22cec
+                      status:
+                        x-stoplight:
+                          id: bgns8n9vg1uot
+                        enum:
+                          - CREATED
+                          - PROCESSING
+                          - DONE
+                        type: string
+                        description: The status of the importing coupon codes operation.
+                      processed:
+                        type: integer
+                        x-stoplight:
+                          id: bsdpxw92rcftl
+                        description: Indicates the number of processed coupon codes.
+                        example: 1000
+                      created:
+                        type: integer
+                        x-stoplight:
+                          id: 7gn54tydyqg0j
+                        description: Indicates the number of created coupon codes.
+                        example: 700
+                      errors:
+                        type: integer
+                        x-stoplight:
+                          id: 5wj4e2qeja9ck
+                        description: >-
+                          Indicates the number of coupon codes which could not
+                          be created.
+                        example: 300
+                      updatedAt:
+                        type: string
+                        x-stoplight:
+                          id: rp8fahnress76
+                        example: 2023-05-22 11:27:53.639 +0000 UTC
+                        description: The last update date.
+                    description: A Coupon Codes Import.
+              examples:
+                Example 1:
+                  value:
+                    codesImport:
+                      id: 646b39ac-14e7-4000-8000-8fb14bc22cec
+                      status: CREATED
+                      processed: 1000
+                      created: 700
+                      errors: 300
+                      updatedAt: 2023-05-22 11:27:53.639 +0000 UTC
+        '400':
+          description: An error response.
+          content: *ref_11
+        '500':
+          description: An error response.
+          content: *ref_11
+      description: >-
+        Use this method to create coupon codes by importing a CSV file.
+
+
+        **Important:** if you want to import large quantities of codes, please
+        do not provide one single big file, but split them into multiple files
+        with 50-100k codes, in order not to overload the system.
+      requestBody:
+        content: &ref_80
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                import:
+                  type: string
+                  format: binary
+                  x-stoplight:
+                    id: w816je46qw7u0
+                  description: CSV file.
+                  pattern: '[a-zA-Z0-9-%_@&!]'
+              required:
+                - import
+        description: >-
+          Create coupon codes import request by importing a CSV file containing
+          coupon codes.
+      parameters:
+        - name: tenant
+          in: header
+          required: true
+          schema: *ref_17
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: *ref_18
+          description: The test user ID.
+    get:
+      summary: List Coupon Codes Import
+      operationId: getCouponCodesImport
+      responses:
+        '200':
+          description: >-
+            A page of coupon codes imports response, the links for the previous
+            and next pages and pagination information. The response indicates
+            the status of the import and the number of processed, created,
+            erroneous coupon codes per import request.
+          content: &ref_88
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    x-stoplight:
+                      id: yb78s2rw08dii
+                    description: An array of coupons codes import plus HATEOAS fields.
+                    items:
+                      x-stoplight:
+                        id: 1o0q1vt8smnvp
+                      type: object
+                      properties:
+                        links:
+                          x-stoplight: *ref_15
+                          title: ObjectLinks
+                          type: object
+                          description: Object links.
+                          properties: *ref_16
+                        codesImport:
+                          x-stoplight: *ref_31
+                          title: CouponCodesImport
+                          type: object
+                          properties: *ref_32
+                          description: A Coupon Codes Import.
+                  links:
+                    x-stoplight: *ref_23
+                    description: Pagination links.
+                    title: PageLinks
+                    type: object
+                    properties: *ref_24
+                    examples: *ref_25
+                  pagination:
+                    x-stoplight: *ref_26
+                    description: Pagination response fields.
+                    title: Pagination
+                    type: object
+                    properties: *ref_27
+                    examples: *ref_28
+              examples:
+                Example 1:
+                  value:
+                    items:
+                      - links:
+                          self: >-
+                            /coupon/646b3cb3-14e7-4000-8000-8fb14bc22d03/code/import/646b51b9-14e7-4000-8000-8fb14bc22d15
+                        codesImport:
+                          id: 646b51b9-14e7-4000-8000-8fb14bc22d15
+                          status: CREATED
+                          processed: 1000
+                          created: 700
+                          errors: 300
+                          updatedAt: 2023-05-22 11:27:53.639 +0000 UTC
+                      - links:
+                          self: >-
+                            /coupon/646b3cb3-14e7-4000-8000-8fb14bc22d03/code/import/646b46b1-14e7-4000-8000-8fb14bc22d0b
+                        codesImport:
+                          id: 646b46b1-14e7-4000-8000-8fb14bc22d0b
+                          status: CREATED
+                          processed: 700
+                          created: 300
+                          errors: 400
+                          updatedAt: 2023-05-23 10:27:53.639 +0000 UTC
+                    links:
+                      next: >-
+                        /coupon/64677e31-14e7-4000-8000-8fb14bc22ce6/code/import?count=2&page=1
+                      previous: 'null'
+                    pagination:
+                      count: 2
+                      page: 1
+                      total: 220
+        '400':
+          description: An error response.
+          content: *ref_11
+        '500':
+          description: An error response.
+          content: *ref_11
+      description: Use this method to retrieve a list of coupon codes imports.
+      parameters:
+        - name: count
+          in: query
+          required: true
+          schema: *ref_29
+          description: The number of coupons to get at once.
+        - name: page
+          in: query
+          required: true
+          schema: *ref_30
+          description: The page number.
+        - name: tenant
+          in: header
+          required: true
+          schema: *ref_17
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: *ref_18
+          description: The test user ID.
+  /coupon/{id}/code/import/{import_id}:
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+        description: The ID of the coupon.
+      - schema:
+          type: string
+        name: import_id
+        in: path
+        required: true
+        description: The ID of the imported coupon code.
+    get:
+      summary: Get Coupon Codes Import
+      operationId: getCouponCodesImports
+      responses:
+        '200':
+          description: >-
+            A coupon codes import response plus HATEOAS fields. The response
+            indicates the status of the import and the number of processed,
+            created, erroneous coupon codes in the specified coupon codes
+            import.
+          content: &ref_89
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    x-stoplight: *ref_15
+                    title: ObjectLinks
+                    type: object
+                    description: Object links.
+                    properties: *ref_16
+                  codesImport:
+                    x-stoplight: *ref_31
+                    title: CouponCodesImport
+                    type: object
+                    properties: *ref_32
+                    description: A Coupon Codes Import.
+              examples:
+                Example 1:
+                  value:
+                    links:
+                      self: >-
+                        /coupon/646b3cb3-14e7-4000-8000-8fb14bc22d03/code/import/646b51b9-14e7-4000-8000-8fb14bc22d15
+                    codesImport:
+                      id: 646b39ac-14e7-4000-8000-8fb14bc22cec
+                      status: CREATED
+                      processed: 1000
+                      created: 700
+                      errors: 300
+                      updatedAt: 2023-05-22 11:27:53.639 +0000 UTC
+        '400':
+          description: An error response.
+          content: *ref_11
+        '404':
+          description: An error response.
+          content: *ref_11
+        '500':
+          description: An error response.
+          content: *ref_11
+      description: Use this method to retrieve a specified coupon codes import.
+      parameters:
+        - name: tenant
+          in: header
+          required: true
+          schema: *ref_17
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: *ref_18
+          description: The test user ID.
+  /code/redemption:
+    post:
+      summary: Create Coupon Code Redemption
+      operationId: postCodeRedemption
+      responses:
+        '201':
+          description: The redemption was created successfully.
+        '400':
+          description: A detailed error response.
+          content: &ref_33
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    x-stoplight:
+                      id: i1d3axsxjr5jo
+                    description: The error message.
+                    readOnly: true
+                  status:
+                    x-stoplight:
+                      id: 0l8ahp0z6t881
+                    description: The HTTP status code.
+                    type: integer
+                    readOnly: true
+                  causes:
+                    type: array
+                    x-stoplight:
+                      id: bhwfgwmhldyc9
+                    description: A list of causes. It's optional.
+                    items:
+                      x-stoplight:
+                        id: xancky3nnadhu
+                      type: string
+                      readOnly: true
+                  id:
+                    type: string
+                    x-stoplight:
+                      id: 1jrmk0ll98gbc
+                  type:
+                    type: string
+                    x-stoplight:
+                      id: j5w3uu9w1ygh3
+                  code:
+                    type: string
+                    x-stoplight:
+                      id: 9pl6y65vdzcu7
+                required:
+                  - message
+                  - status
+              examples:
+                Example 1:
+                  value:
+                    message: not found
+                    status: 404
+                Example 2:
+                  value:
+                    message: internal server error
+                    status: 500
+        '404':
+          description: A detailed error response.
+          content: *ref_33
+        '409':
+          description: A detailed error response.
+          content: *ref_33
+        '500':
+          description: A detailed error response.
+          content: *ref_33
+      description: >
+        Use this method to redeem a coupon code. 
+
+
+        This method is not idempotent and should be called when the coupon was
+        used. If the order for which this coupon was used failes, the coupon is
+        unredeemed automatically at a later stage.
+
+
+        After a successful execution a 200 status is returned.
+      requestBody:
+        content: &ref_81
+          application/json:
+            schema:
+              title: CodeRedemption
+              x-stoplight: &ref_34
+                id: fsvjnd9vq5igu
+              type: object
+              properties: &ref_35
+                codes:
+                  type: array
+                  example:
+                    - SUMMER2022
+                    - DRESS10
+                  items:
+                    type: string
+                consumerId:
+                  type: string
+                  example: consumer-id-123
+                channelType:
+                  type: string
+                  example: store
+                catalogTotal:
+                  type: number
+                  example: 100
+                currency:
+                  type: string
+                  example: USD
+                orderId:
+                  type: string
+                  example: 2b89a5e0-1f1f-4374-b6d3-272341193cc7
+              required: &ref_36
+                - codes
+                - orderId
+              description: A code redemption.
+        description: A coupon code redemption request.
+      parameters:
+        - name: tenant
+          in: header
+          required: true
+          schema: *ref_17
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: *ref_18
+          description: The test user ID.
+    patch:
+      summary: Coupon Code Unredemption
+      operationId: patchCodeRedemption
+      responses:
+        '200':
+          description: A detailed error response.
+          content: *ref_33
+        '400':
+          description: Bad Request
+        '404':
+          description: A detailed error response.
+          content: *ref_33
+        '409':
+          description: Conflict
+        '500':
+          description: A detailed error response.
+          content: *ref_33
+      x-stoplight:
+        id: awpiji2q6x2my
+      description: Use this method to unredeem a coupon code based on order id.
+      parameters:
+        - name: tenant
+          in: header
+          required: true
+          schema: *ref_17
+          description: The test tenant name.
+        - name: user-id
+          in: header
+          required: true
+          schema: *ref_18
+          description: The test user ID.
+      requestBody:
+        content: &ref_82
+          application/json:
+            schema:
+              title: CodeUnredemption
+              x-stoplight: &ref_37
+                id: yo65m8bvhsiiq
+              type: object
+              description: A code unredemption request.
+              properties: &ref_38
+                orderId:
+                  type: string
+                  x-stoplight:
+                    id: qx67k0m8f38oa
+                  example: 2b89a5e0-1f1f-4374-b6d3-272341193cc7
+                  deprecated: true
+                sales_order_uuid:
+                  type: string
+                  x-stoplight:
+                    id: v4aaojocpjt4j
+                  example: bf6a0288-d64e-4cb6-b534-a8a6c4724d06
+        description: >-
+          A coupon code unredemption request. It is required to use either
+          **sales_order_uuid** or **orderId**. If **sales_order_uuid** is
+          provided, we use that for unredemption, otherwise we use **orderId**.
+components:
+  schemas:
+    Coupon:
+      title: Coupon
+      x-stoplight: *ref_12
+      type: object
+      description: A coupon.
+      required: *ref_13
+      properties: *ref_14
+    CouponCode:
+      title: CouponCode
+      x-stoplight: *ref_19
+      type: object
+      examples: *ref_20
+      description: A coupon code.
+      properties: *ref_21
+    CouponCodesImport:
+      title: CouponCodesImport
+      x-stoplight: *ref_31
+      type: object
+      properties: *ref_32
+      description: A Coupon Codes Import.
+    CodeRedemption:
+      title: CodeRedemption
+      x-stoplight: *ref_34
+      type: object
+      properties: *ref_35
+      required: *ref_36
+      description: A code redemption.
+    CodeUnredemption:
+      title: CodeUnredemption
+      x-stoplight: *ref_37
+      type: object
+      description: A code unredemption request.
+      properties: *ref_38
+    ObjectLinks:
+      title: ObjectLinks
+      x-stoplight: *ref_15
+      type: object
+      description: Object links.
+      properties: *ref_16
+    CartLevelPercentageCategory:
+      title: CartLevelPercentageCategory
+      x-stoplight: *ref_39
+      type: object
+      description: A promotion which is applied as a % discount to the entire cart.
+      properties: *ref_40
+      required: *ref_41
+      examples: *ref_42
+    FixedDiscount:
+      title: FixedDiscount
+      x-stoplight: *ref_3
+      type: object
+      properties: *ref_4
+      required: *ref_5
+      description: A fixed amount discount for a specific currency.
+      examples: *ref_6
+    CartLevelFixedCategory:
+      title: CartLevelFixedCategory
+      x-stoplight: *ref_43
+      type: object
+      description: >-
+        A promotion which is applied as a fixed amount discount to the entire
+        cart.
+      examples: *ref_44
+      properties: *ref_45
+      required: *ref_46
+    ProductCategory:
+      title: ProductCategory
+      x-stoplight: *ref_0
+      type: object
+      description: A product category.
+      examples: *ref_1
+      properties: *ref_2
+    ProductLevelPercentageCategory:
+      title: ProductLevelPercentageCategory
+      x-stoplight: *ref_47
+      type: object
+      examples: *ref_48
+      description: A promotion which is applied as a % amount discount to a product.
+      properties: *ref_49
+      required: *ref_50
+    ProductLevelFixedCategory:
+      title: ProductLevelFixedCategory
+      x-stoplight: *ref_51
+      type: object
+      description: A promotion which is applied as a fixed amount discount to a product.
+      examples: *ref_52
+      properties: *ref_53
+      required: *ref_54
+    BogoCondition:
+      title: BogoCondition
+      x-stoplight: *ref_7
+      type: object
+      description: >-
+        A constranint on the quantity and quality of objects that define a BOGO
+        promotion.
+      examples: *ref_8
+      properties: *ref_9
+      required: *ref_10
+    BogoPercentageCategory:
+      title: BogoPercentageCategory
+      x-stoplight: *ref_55
+      type: object
+      description: >-
+        A promotion which is applied as a % discount to a set of items in the
+        for of Buy X Get Y.
+      examples: *ref_56
+      properties: *ref_57
+      required: *ref_58
+    BogoFixedCategory:
+      title: BogoFixedCategory
+      x-stoplight: *ref_59
+      type: object
+      description: >-
+        A promotion which is applied as a fixed discount to a set of items in
+        the for of Buy X Get Y.
+      examples: *ref_60
+      properties: *ref_61
+      required: *ref_62
+    FreeShipping:
+      title: FreeShipping
+      x-stoplight: *ref_63
+      type: object
+      description: >-
+        A promotion that gives a 100% discount on the shipping costs if
+        conditions are met.
+      properties: *ref_64
+      required: *ref_65
+      examples: *ref_66
+    Currency:
+      title: Currency
+      x-stoplight: *ref_67
+      type: object
+      description: An object representing a constraint on a currency.
+      examples: *ref_68
+      properties: *ref_69
+      required: *ref_70
+    Segment:
+      title: Segment
+      x-stoplight: *ref_71
+      type: *ref_72
+      description: A customer segmentation.
+      examples: *ref_73
+      properties: *ref_74
+      required: *ref_75
+    PageLinks:
+      title: PageLinks
+      x-stoplight: *ref_23
+      type: object
+      description: Pagination links.
+      properties: *ref_24
+      examples: *ref_25
+    Pagination:
+      title: Pagination
+      x-stoplight: *ref_26
+      type: object
+      description: Pagination response fields.
+      properties: *ref_27
+      examples: *ref_28
+  securitySchemes: {}
+  requestBodies:
+    CreateCouponRequest:
+      content: *ref_76
+      description: Create coupon request.
+    UpdateCouponRequest:
+      content: *ref_77
+      description: Update coupon request.
+    CreateCouponCodesRequest:
+      content: *ref_78
+      description: Create coupon code request.
+    UpdateCouponCodesRequest:
+      content: *ref_79
+    CreateCouponCodesImportRequest:
+      content: *ref_80
+      description: >-
+        Create coupon codes import request by importing a CSV file containing
+        coupon codes.
+    CreateCodeRedemption:
+      content: *ref_81
+      description: A coupon code redemption request.
+    UpdateCodeRedemption:
+      content: *ref_82
+      description: >-
+        A coupon code unredemption request. It is required to use either
+        **sales_order_uuid** or **orderId**. If **sales_order_uuid** is
+        provided, we use that for unredemption, otherwise we use **orderId**.
+  responses:
+    CouponResponse:
+      description: A coupon plus HATEOAS fields.
+      content: *ref_83
+    Error:
+      description: An error response.
+      content: *ref_11
+    CouponsResponse:
+      description: >-
+        A page of coupons, the links for the previous and next pages and
+        pagination information.
+      content: *ref_84
+    CreateCouponCodesResponse:
+      description: ' A coupon codes list plus HATEOAS fields'
+      content: *ref_85
+    GetCouponCodesResponse:
+      description: >-
+        A page of coupon codes, the links for the previous and next pages and
+        pagination information.
+      content: *ref_86
+    CreateUpdateCouponResponse:
+      description: A coupon plus HATEOAS fields.
+      content: *ref_22
+    CreateCouponCodesImportResponse:
+      description: >-
+        A create coupon codes import response.It indicates the status of the
+        request and the number of processed, created, and erroneous coupon code
+        of the imported CSV file.
+      content: *ref_87
+    GetCouponCodesImportsResponse:
+      description: >-
+        A page of coupon codes imports response, the links for the previous and
+        next pages and pagination information. The response indicates the status
+        of the import and the number of processed, created, erroneous coupon
+        codes per import request.
+      content: *ref_88
+    GetCouponCodesImportResponse:
+      description: >-
+        A coupon codes import response plus HATEOAS fields. The response
+        indicates the status of the import and the number of processed, created,
+        erroneous coupon codes in the specified coupon codes import.
+      content: *ref_89
+    ServiceError:
+      description: A detailed error response.
+      content: *ref_33
+  parameters:
+    count:
+      name: count
+      in: query
+      required: true
+      schema: *ref_29
+      description: The number of coupons to get at once.
+    page:
+      name: page
+      in: query
+      required: true
+      schema: *ref_30
+      description: The page number.
+    name:
+      name: name
+      in: query
+      required: false
+      schema: *ref_90
+      description: >-
+        The names of the coupons you want to get (it can be a list of comma
+        separated values)
+    code:
+      name: code
+      in: query
+      required: false
+      schema: *ref_91
+      description: >-
+        The codes for which you want to get the coupons (it can be a list of
+        comma separated values)
+    tenant:
+      name: tenant
+      in: header
+      required: true
+      schema: *ref_17
+      description: The test tenant name.
+    user-id:
+      name: user-id
+      in: header
+      required: true
+      schema: *ref_18
+      description: The test user ID.
+    kind:
+      name: kind[]
+      in: query
+      schema: *ref_92
+      description: The type of the coupon you want to get
+    active:
+      name: active
+      in: query
+      required: false
+      schema: *ref_93
+      description: >-
+        This flag should be set to true to return `running`, `planned` and
+        `past` coupons. If set to `false` it will return only disabled coupons. 
+    validFrom:
+      name: validFrom
+      in: query
+      required: false
+      schema: *ref_94
+      description: >-
+        By setting this field, you will only get coupons which are valid from
+        this date onward.
+    validTo:
+      name: validTo
+      in: query
+      required: false
+      schema: *ref_95
+      description: >-
+        By setting this field, you will only get coupons which are valid up to
+        this date.
+    segment:
+      name: segment
+      in: query
+      required: false
+      schema: *ref_96
+      description: >-
+        Indicates the **Key** or **Value** of customer profile extended
+        attribute.
+    partial-category:
+      name: partial-category
+      in: query
+      required: false
+      schema: *ref_97
+      description: >-
+        This flag should be always present with ``true`` value , it prevents
+        loads of categories.
+x-internal: true

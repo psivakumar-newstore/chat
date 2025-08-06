@@ -1,0 +1,131 @@
+openapi: 3.0.3
+info:
+  title: Device Registrations
+  description: |
+    This api is used by the Associate App
+  version: 1.0.0
+  x-audience: internal-company
+  x-api-id: notification-gateway-registrations
+  contact:
+    name: Team Mobile Platform
+    url: https://www.newstore.com
+    email: team-mobile-platform@newstore.com
+  x-domain-gateway-integration:
+    serviceName: device-registrations
+    lambda:
+      arn: >-
+        arn:aws:lambda:{{.region}}:{{.target_account}}:function:notifications-gateway-prod-registrations
+servers:
+  - url: https://retail-org.s.newstore.domains
+  - url: https://retail-org.p.newstore.domains
+tags:
+  - name: Device registrations
+    description: Manages device registrations
+paths:
+  /devices/registrations:
+    post:
+      operationId: createRegistration
+      description: Creates a registration for push notifications
+      summary: Create registration to send notifications
+      security:
+        - oauth2:
+            - device-registrations:registrations:write
+      tags:
+        - Device registrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+      responses:
+        '201':
+          description: Created a new registration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResponse'
+        '400':
+          description: Bad request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '422':
+          description: Received information does not match the expected schema.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        default:
+          description: Unexpected error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+components:
+  schemas:
+    ValidationError:
+      type: object
+      required:
+        - status_code
+        - error
+      properties:
+        status_code:
+          type: integer
+          description: HTTP status code
+          format: int32
+          example: 500
+        error:
+          type: string
+          description: Error message
+          example: Internal server error
+    RegistrationRequest:
+      type: object
+      required:
+        - device_id
+        - app_name
+        - app_os
+      properties:
+        device_id:
+          type: string
+          description: Registration or device id.
+        user_id:
+          type: string
+          description: Identifier of the user who recently used the device.
+        store_id:
+          type: string
+          description: Identifier of the store id who recently used the device
+        app_name:
+          type: string
+          description: Identifier of the app name who recently used the device
+        app_os:
+          type: string
+          description: Identifier of the app os who recently used the device
+    RegistrationResponse:
+      type: object
+      required:
+        - device_id
+      properties:
+        device_id:
+          type: string
+          description: Registration or device id.
+        user_id:
+          type: string
+          description: Identifier of the user who recently used the device.
+        store_id:
+          type: string
+          description: Identifier of the store id who recently used the device
+        app_name:
+          type: string
+          description: Identifier of the app name who recently used the device
+        app_os:
+          type: string
+          description: Identifier of the app OS who recently used the device
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: /v0/token
+          scopes:
+            device-registrations:registrations:write: Create registration

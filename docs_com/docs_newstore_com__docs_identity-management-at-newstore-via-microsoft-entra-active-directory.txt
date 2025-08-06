@@ -1,0 +1,375 @@
+Identity management via Microsoft Entra Active Directory
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Identity management via Microsoft Entra Active Directory
+Updated on
+Dec 10, 2024
+Published on Oct 1, 2024
+3 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Pre-requisites
+To set up an identity management application to manage authentication for NewStore apps, ensure that you have access to:
+Omnichannel Manager
+Microsoft Entra Admin Center
+Important
+To enable users from your corporate directory to be able to use the NewStore applications, you have to create users, assign them to a store, and assign relevant roles in NewStore.
+Setting up Microsoft Entra ID with NewStore
+This process involves working with Microsoft Entra ID and Omnichannel Manager in tandem. Ensure you have access to both before you proceed.
+Log into Microsoft Entra Admin Center..
+In the navigation menu, in the
+Identity
+section, click
+Applications
+>
+App registrations
+.
+Click
+New registration
+and enter the following details:
+Name
+:
+For non-production systems such as staging environments, specify
+newstore-staging
+.
+For production systems, specify
+newstore-production
+.
+Select
+Accounts in these organizational directory only
+.
+Leave the
+Redirect URI
+empty.
+Click
+Register
+.
+After the application is created, in the left menu, click
+API permissions
+.
+A list of default permissions appear.
+Click
+Add a permission
+>
+Microsoft Graph
+>
+Application permissions
+.
+Add the following permissions. Ensure that you specify the correct
+Type
+and
+Admin
+privileges.
+API/Permission name
+Type
+Description
+Admin
+Directory.Read.All
+Application
+Read directory data
+Yes
+Group.Read.All
+Application
+Read all groups
+Yes
+Group.Member.Read.All
+Application
+Read all group memberships
+Yes
+After you have added these permissions, click
+Grant admin consent for <retailer name>
+.
+The status for all permissions is updated to
+Granted
+.
+In the left menu, click
+Certificates & secrets
+>
+New client secret
+.
+In the screen that appears, enter a description, set the
+Expired
+field to one of the provided options, and click
+Add
+.
+Important
+Ensure that you get notified and rotate the
+client secret
+before it expires. After the secret expires, the login credentials to NewStore will not work anymore. Follow the
+updating guidelines
+to rotate a secret.
+The new secret is created and added to the list of
+Client secrets
+.
+Copy the
+Value
+of the new secret securely for later use.
+Note
+The value of the new secret can only be viewed immediately after creation. If you missed copying the
+Value
+, create a new secret.
+In the left menu, click
+Overview
+, and copy the
+Application (client) ID
+and
+Directory (tenant) ID
+securely for later use.
+Open the
+Omnichannel Manager
+in a separate tab.
+Click
+Settings
+>
+Users & Roles
+>
+Single Sign-On
+.
+Click
+Configure Single Sign-On
+.
+Select Vendor
+MICROSOFT
+.
+Fill in the saved data from the previous configuration.
+Secret
+from step 11
+Directory (Tenant) ID
+and
+Application (Client) ID
+from step 12
+Click
+Connect
+.
+Switch back to
+Microsoft Entra ID
+tab.
+In the left menu, click
+Authentication
+>
+Platform configurations
+>
+Add a platform
+.
+Select
+Web
+.
+Paste the
+Redirect URI
+and
+Logout URL
+from the
+Omnichannel Manager
+tab.
+Click
+Configure
+.
+In the left menu, click
+Token configuration
+, and click
+Add groups claim
+.
+In the
+Edit groups claim
+screen, specify the following:
+Select
+Security groups
+.
+In the
+Access
+area, select
+Group ID
+and
+Emit groups as role claims
+.
+Specify the same settings as described in the previous step for the
+ID
+and
+SAML
+areas.
+Click
+Add
+.
+Click
+Add optional claim
+.
+In the screen that appears, select
+Access
+as the
+Token type
+, and select the following:
+email
+family_name
+given_name
+upn
+Click
+Add
+.
+Repeat the same steps for
+ID
+as the
+Token type
+.
+(Optional)
+To remove explicit user assignment in Microsoft Entra ID, see this
+section
+.
+Single Sign-on is successfully configured with Microsoft Entra ID.
+Updating client secrets in Omnichannel Manager
+Log into Microsoft Entra Admin Center (formerly Azure AD management portal).
+In the navigation menu, in the
+Identity
+section, click
+Applications
+>
+App registrations
+.
+Open the application you want to update.
+In the left menu, click
+Certificates & secrets
+>
+New client secret
+.
+In the screen that appears, enter a description, set the
+Expired
+field to one of the provided options, and click
+Add
+.
+The new secret is created and added to the list of
+Client secrets
+.
+Copy the
+Value
+of the new secret securely for later use.
+Note
+The value of the new secret can only be viewed immediately after creation. If you missed copying the
+Value
+, create a new secret.
+Open
+Omnichannel Manager
+.
+Click
+Settings
+>
+Users & Roles
+>
+Single Sign-On
+.
+Click on the displayed name
+MICROSOFT
+.
+Paste the new secret value in the
+Secret
+form.
+Important
+Ensure that this secret exists and is valid in Microsoft Entra ID. There is no way to revert after updating the secret.
+Click
+Update
+.
+Click
+Confirm
+.
+You have successfully rotated your secret.
+(Optional)
+Removing explicit user assignment
+To remove explicit user assignment in Microsoft Entra ID:
+Log into the Microsoft Entra Admin Center.
+In the navigation menu, in the
+Identity
+section, click
+Applications
+>
+Enterprise applications
+.
+In the list, search for the system environment (such as
+newstore-staging
+or
+newstore-production
+) and select it.
+In the left menu, click
+Properties
+.
+For the
+Assignment required?
+field, select
+No
+.
+Related topics
+Configuring identity and access management
+Identity management at NewStore via Okta
+Identity management at NewStore via Google Workspace
+Was this article helpful?
+Yes
+No
+Tags
+auth
+authentication
+identity management
+integration
+microsoft azure
+platform
+sso
+user account
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

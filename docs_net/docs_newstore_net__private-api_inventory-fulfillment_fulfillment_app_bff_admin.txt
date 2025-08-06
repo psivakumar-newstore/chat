@@ -1,0 +1,487 @@
+Fulfillment App API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Fulfillment App API
+Fulfillment config admin API
+Fulfillment Configuration API
+Fulfillment Request
+Configuration API
+Inventory Overview API
+Package Options
+Store Fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+Store fulfillment requests
+get
+Get associate
+put
+Update associate
+post
+Initiate return
+get
+Get product
+get
+Get data
+post
+Sends test notification.
+get
+Unassigned fufillment requests.
+API docs by Redocly
+Fulfillment App API
+(
+0.1
+)
+Download OpenAPI specification
+:
+Download
+URL:
+https://apidocs.newstore.io
+License:
+NewStore
+Implements endpoints used by the app.
+Store fulfillment requests
+Use this resource to manage orders that are currently in the process of being fulfilled by a store or are in
+transit from or to a store.
+Get associate
+Returns the associate object associated with the token sent with the header.
+Responses
+200
+OK
+404
+The associate was not found.
+500
+An internal error occurred.
+get
+/fulfillment_associate
+/v0/d
+/fulfillment_associate
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"associate"
+:
+{
+"absent_since"
+:
+"2019-08-24T14:15:22Z"
+,
+"completed_tasks_count"
+:
+0
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"email"
+:
+"string"
+,
+"first_name"
+:
+"string"
+,
+"id"
+:
+"string"
+,
+"image_url"
+:
+"string"
+,
+"is_available"
+:
+true
+,
+"last_name"
+:
+"string"
+,
+"open_tasks_count"
+:
+0
+,
+"revision"
+:
+1
+,
+"status"
+:
+"can_receive_requests"
+,
+"store_id"
+:
+"string"
+,
+"telephone_number"
+:
+"string"
+,
+"tenant"
+:
+"string"
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+}
+Update associate
+Updates the associate object.
+Request Body schema:
+application/json
+status
+required
+string
+Enum
+:
+"can_receive_requests"
+"cannot_receive_requests"
+"not_available"
+Responses
+200
+OK
+404
+The associate was not found.
+500
+An internal error occurred.
+put
+/fulfillment_associate
+/v0/d
+/fulfillment_associate
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"status"
+:
+"can_receive_requests"
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"associate"
+:
+{
+"absent_since"
+:
+"2019-08-24T14:15:22Z"
+,
+"completed_tasks_count"
+:
+0
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"email"
+:
+"string"
+,
+"first_name"
+:
+"string"
+,
+"id"
+:
+"string"
+,
+"image_url"
+:
+"string"
+,
+"is_available"
+:
+true
+,
+"last_name"
+:
+"string"
+,
+"open_tasks_count"
+:
+0
+,
+"revision"
+:
+1
+,
+"status"
+:
+"can_receive_requests"
+,
+"store_id"
+:
+"string"
+,
+"telephone_number"
+:
+"string"
+,
+"tenant"
+:
+"string"
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+}
+Initiate return
+Initiates the return process for the specified items.
+path
+Parameters
+uuid
+required
+string
+The identifier of the fulfillment logistic order.
+Request Body schema:
+application/json
+returned_order_items
+required
+Array of
+objects
+(
+returnedItem
+)
+non-empty
+A list of objects, containing returned items
+sales_order_uuid
+required
+string
+= 36 characters
+store_id
+string
+The store where the return is initiated from.
+Responses
+200
+OK
+404
+The sales order was not found.
+422
+The provided request body is not valid.
+500
+An internal error occurred.
+post
+/fulfillment_logistic_orders/{uuid}/initiate_return
+/v0/d
+/fulfillment_logistic_orders/{uuid}/initiate_return
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"returned_order_items"
+:
+[
+{
+"order_item_uuid"
+:
+"stringstringstringstringstringstring"
+,
+"quality_inspection_code"
+:
+0
+,
+"quality_inspection_option"
+:
+"string"
+,
+"return_code"
+:
+0
+,
+"return_reason"
+:
+"string"
+,
+"sales_order_item_uuid"
+:
+"stringstringstringstringstringstring"
+}
+]
+,
+"sales_order_uuid"
+:
+"stringstringstringstringstringstring"
+,
+"store_id"
+:
+"string"
+}
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"return_uuid"
+:
+"stringstringstringstringstringstring"
+}
+Get product
+Returns the product with the given ID.
+path
+Parameters
+id
+required
+string
+The identifier of the product.
+query
+Parameters
+locale
+string
+A locale code. Can be used to fetch product information in different languages.
+catalog
+string
+DEPRECATED. Use
+shop
+instead. The identifier of the product catalog.
+shop
+string
+The identifier of the shop the product belongs to.
+Responses
+200
+The product with the given id exists.
+404
+The product was not found.
+500
+An internal error occurred.
+get
+/products/{id}
+/v0/d
+/products/{id}
+Response samples
+200
+Content type
+application/json
+Copy
+{ }
+Get data
+Retrieves a dictionary with all the necessary data to set up the NewStore app.
+query
+Parameters
+locale
+string
+A locale code. Can be used to fetch product information in different languages.
+Responses
+200
+OK
+404
+The associate or store was not found.
+500
+An internal error occurred.
+get
+/setup_data
+/v0/d
+/setup_data
+Sends test notification.
+Sends a test notification to the user. Use this method to verify the notification setup.
+Request Body schema:
+application/json
+message
+string
+The message that will be sent in the notification, a default message is used if none is provided.
+notification_type
+required
+string
+non-empty
+Responses
+202
+The request was accepted and the notification should be sent.
+400
+Bad request
+500
+An internal error occurred.
+post
+/test_notifications
+/v0/d
+/test_notifications
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"message"
+:
+"string"
+,
+"notification_type"
+:
+"string"
+}
+Response samples
+202
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"status"
+:
+{
+"message"
+:
+"string"
+,
+"status_identifier"
+:
+"string"
+}
+}
+Unassigned fufillment requests.
+Gets the count of unassigned fulfillment requests, based on the priority.
+Responses
+200
+OK
+204
+No content available.
+400
+Bad request
+500
+An internal error occurred.
+get
+/unassigned_fulfillment_request_count
+/v0/d
+/unassigned_fulfillment_request_count
+Previous
+Webhook API
+Next
+Fulfillment config admin API
+Copyright © 2025 NewStore, Inc.

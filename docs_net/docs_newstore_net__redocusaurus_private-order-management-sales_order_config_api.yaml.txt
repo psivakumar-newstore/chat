@@ -1,0 +1,258 @@
+openapi: 3.0.0
+info:
+  title: External OMS Config API
+  version: v0
+  description: >
+Use this API to configure NewStore as a secondary
+
+    [order management system](/docs/glossary.html#term-OMS) for retailers, to
+
+    allow them to continue using their
+
+    legacy order management system (OMS) for primary order fulfillment tasks.
+
+
+    When NewStore is the secondary OMS for your business, it provides the
+
+    following features from the perspective of order routing and fulfillment:
+
+
+    - Order placement and returns via NewStore Associate App. Orders placed via
+    the app
+      are then routed to the external OMS for fulfillment.
+    - Managing payments for [in-store
+    purchase](/docs/processes/about-ffment.html) orders.
+
+    - [Store fulfillment](/docs/bpmn/store-fulfillment.html) and handling
+    shipping
+      for orders fulfilled via stores.
+    - Inventory management of stores, as NewStore will be the
+      [inventory master](/docs/processes/about-inventory-management.html#choosing-your-inventory-master)
+      for your business in the stores.
+
+    The external or legacy OMS is responsible for the following in your
+    business:
+
+
+    - [ATP](/docs/glossary.html#term-ATP), [order
+    routing](/docs/processes/order-routing.html),
+      order modifications, and customer support.
+    - [Rerouting](/docs/processes/about-ffment.html#rerouted-requests) rejected
+    store fulfillment orders.
+
+    - Handling shipping for orders fulfilled from a [DC or
+    warehouse](/docs/bpmn/dc-fulfillment.html).
+
+    - Managing payments for all order fulfillment scenarios except in-store
+    purchases.
+servers:
+  - url: https://dodici.x.newstore.net/v0
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /config/sales_order/external_oms:
+    get:
+      responses:
+        '200':
+          description: External OMS Configuration Setting.
+          content:
+            application/json:
+              example:
+                enabled: true
+              schema:
+                description: The external OMS configuration.
+                type: object
+                required:
+                  - enabled
+                properties:
+                  enabled:
+                    type: boolean
+                    description: Specifies if the tenant is using an external OMS.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't process request due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+      description: >
+        Retrieves the current configuration for the external
+
+        [order management system](/docs/glossary.html#term-OMS) enabled for the
+        retailer.
+      summary: Get external OMS configuration
+      operationId: get-oms-configuration
+    post:
+      responses:
+        '200':
+          description: External OMS Configuration Setting.
+          content:
+            application/json:
+              example:
+                enabled: true
+              schema:
+                description: The external OMS configuration.
+                type: object
+                required:
+                  - enabled
+                properties:
+                  enabled:
+                    type: boolean
+                    description: Specifies if the tenant is using an external OMS.
+        '400':
+          description: Bad Request Error.
+          content:
+            application/json:
+              example:
+                error_code: bad_request
+                message: Value provided should be a string.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '409':
+          description: Conflict Error.
+          content:
+            application/json:
+              example:
+                error_code: concurrent_update_on_tenant_setting
+                message: >-
+                  Concurrent update detected on external_oms configuration
+                  setting.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't process request due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+      description: >
+        Specify that the retailer will use an external
+
+        [order management system](/docs/glossary.html#term-OMS) configuration
+        for
+
+        [order fulfillment](/docs/processes/about-ffment.html).
+
+
+        If you want to disable the external OMS for the retailer, in the request
+        payload,
+
+        specify ``false`` as the value for the ``enabled`` property.
+
+
+        **Note:** To understand what NewStore is responsible for when it is the
+        secondary
+
+        OMS for your business, see the [resource definition](#oms).
+      summary: Enable external OMS configuration
+      operationId: set-external-oms-configuration
+      requestBody:
+        content:
+          application/json:
+            example:
+              enabled: true
+            schema:
+              description: The external OMS configuration.
+              type: object
+              required:
+                - enabled
+              properties:
+                enabled:
+                  type: boolean
+                  description: Specifies if the tenant is using an external OMS.
+        required: true

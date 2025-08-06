@@ -1,0 +1,946 @@
+Tutorial: Setting up a fulfillment configuration
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Tutorial: Setting up a fulfillment configuration
+Updated on
+Jan 8, 2025
+Published on Sep 27, 2024
+22 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Important
+This guide focuses on using the
+Routing ruleset
+and
+Service levels
+APIs to set up your fulfillment configuration. The guide also describes how to use the
+Fulfillment config history API
+to switch to any other version of your fulfillment configuration.
+The
+legacy fulfillment configuration API
+is only required to set up provider rates and their priority.
+Using these APIs allows you to:
+Independently set up and update service levels and routes for your fulfillment configuration, without having to use a massive JSON payload, which is required when using the
+legacy fulfillment configuration API
+that must contain everything in the payload.
+Switch to any version of the fulfillment configuration if necessary.
+Only use the
+Provider rates guide
+to set up provider rates and provider rates priority.
+Add multiple stores and zip codes to your fulfillment configuration without having to list everything out as part of the
+legacy fulfillment configuration API payload
+.
+If you still need to set up a fulfillment configuration completely via the
+legacy fulfillment configuration API
+, see this
+guide
+instead.
+The aim of this tutorial is to guide you through the process of setting up a basic fulfillment strategy for an imaginary business based in New York City that has the following characteristics:
+One store located in New York City, whose
+fulfillment_node_id
+is
+store1_NYC
+.
+One DC, whose
+fulfillment_node_id
+is
+DC01
+.
+Domestic delivery.
+(Optional) International delivery.
+(Optional) Transfers from the store to the DC.
+No in-store pickup orders.
+A fulfillment configuration cannot manage in-store pickup orders. To enable in-store pickup, see
+Tutorial: Setting up an in-store pickup configuration
+.
+This business offers the following shipping methods:
+Same-day and traditional delivery from the store to New York City addresses.
+Traditional delivery from the DC to the USA, including New York City.
+International delivery from the store to Germany and France.
+Traditional delivery for transferred inventory from the store to the DC.
+Note
+This is an example of how a fulfillment configuration works. Business scenarios may involve hundreds of stores and warehouses across multiple locations, so keep that in mind when creating your fulfillment strategy. For more information on how order fulfillment works in general, see
+About order fulfillment
+.
+You
+can revert
+to an older format of the fulfillment configuration even after you have set up a fulfillment configuration using the new process. However, reverting to the legacy version of the fulfillment configuration may include setting up a lot of information such as fulfillment location groups or zip code regions from scratch.
+Proceed with caution!
+For more information, see the guide on
+changing versions
+.
+Pre-requisites
+Before getting started with this tutorial, ensure that you:
+Understand how routing works at NewStore. See
+About order routing
+.
+Have created at least 1 store. See
+Tutorial: Setting up a store
+.
+Imported master data into your store and DC. See
+Tutorial: Importing products
+.
+This tutorial involves using 3 different APIs to set up the fulfillment configuration:
+Use the
+Routing ruleset
+and
+Service levels
+APIs to set up your routing configuration and service levels, including the priority of service levels for your fulfillment configuration. This includes fulfillment locations, shipping options, geographic regions, and the priority of
+service levels
+.
+(Optional)
+: You can also use the
+Shipping rules
+API to set up the routing configuration via a CSV file with all the routing details.
+Use the
+Legacy fulfillment configuration
+API to set up the delivery configuration for your business (specifically the
+Add fulfillment configuration
+method). This includes setting up
+provider rates
+, which are not part of the new configuration APIs mentioned above.
+Setting up the shipping strategy
+First, let's define the shipping strategy for our business. You can see another example of shipping strategy in
+About order routing
+.
+In the case of our small business, the shipping options are:
+Same-day
+,
+Traditional
+, and
+International
+.
+To leverage these shipping options, the shipping strategy is:
+Country
+Zip code
+Fulfillment node id
+Supported shipping options
+US
+10*
+store1_NYC
+Same-day and traditional
+US
+*
+DC01
+Traditional
+DE
+*
+store1_NYC
+International
+FR
+*
+store1_NYC
+International
+Developing an adapter
+Since we know the shipping methods we want to offer, we can choose the shipping provider(s) that supports these shipping methods amongst all the shipping providers on the market. In our case, let's imagine that UPS can perform both traditional and same-day shipping and has been selected as our provider.
+We must develop an adapter to allow integration between UPS and NewStore. This adapter enables NewStore to get shipping offers, book them, cancel them, etc. Both our store and our DC will receive shipment offers from this adapter.
+To learn more about shipping adapters, see
+Integrating a shipping provider
+.
+Note
+If you are working with several shipping providers, create an adapter for each of them.
+Once you have developed the adapter, send its URL and the name of the shipping provider to NewStore. When the retailer sends you the URL of the shipping adapter,
+add it via the API
+.
+Creating a shipping options token
+For shipping orders other than
+transfers
+, ensure that you have already created a shipping option token key pair using the
+Delivery
+API. For instructions on creating a shipping option token key pair, see the request sample of the
+Create or update a shipping option token key pair
+method.
+Creating the fulfillment configuration
+A fulfillment configuration represents your shipping strategy in NewStore. To create one, we use the
+Add fulfillment configuration
+method, along with the
+Routing ruleset
+and
+Service levels
+APIs.
+The
+Add fulfillment configuration
+method allows us to create
+provider rates
+in one call. To learn more about these concepts, see
+Fulfillment configuration
+. First, let's define each part separately then put them together when we are ready to call the method.
+Note
+If inventory transfers are enabled for your business, you can create a shipping configuration for transfer orders based on your fulfillment configuration. See
+Shipping transfer orders
+.
+Service levels
+Importante
+This section uses the
+Service levels API
+. Since service levels have an impact on how your routing rules and shipping configuration works, ensure that you set this up first before configuring routes or provider rates.
+A
+service level
+is a shipping method that the user can select during the checkout process. The selected service level impacts how NewStore routes and fulfills the order after checkout.
+For our business case, let's define our shipping methods as follows:
+{
+    "service_levels": {
+        "SAME_DAY_DELIVERY": {
+            "price": 15,
+            "tax_code": "",
+            "display_name": "Same day delivery",
+            "currency_code": "USD",
+            "delivery_time": "Today, if order is placed by 2pm.",
+            "remorse_period": 120,
+            "delivery_time_after_cutoff_hour": "Tomorrow"
+        },
+        "TRADITIONAL": {
+            "price": 0,
+            "tax_code": "",
+            "display_name": "Traditional delivery",
+            "currency_code": "USD",
+            "delivery_time": "3-7 business days",
+            "delivery_time_after_cutoff_hour": "4-8 business days"
+        }
+    }
+}
+Note
+The business hours defined for your store have an influence on order routing. See
+Store configuration
+.
+If inventory transfers are enabled for your business, the service levels that you define here are also used for shipping inventory transfers. See
+Shipping transfer orders
+.
+Important
+When requesting shipping options from the NewStore platform, results will only include shipping options for the service levels defined in the
+sl_levels_priority
+list. See
+Routes
+.
+Provider rates
+Important
+This section uses the
+Legacy fulfillment configuration
+API.
+A
+provider rate
+represents the shipping providers offering the service levels we just defined. All service levels must be connected to a provider rate.
+Note
+If the value for the flag
+use_as_customer_facing_cost
+is true, NewStore uses the quote from the shipping provider. The service level cost defined in the fulfillment configuration is ignored, and the shipping provider cost is displayed to the customer. See
+Retrieving custom shipping prices for orders
+.
+In our example business case here, we have created 2 service levels:
+SAME_DAY_DELIVERY
+and
+TRADITIONAL
+, which are both managed by UPS.
+When defining provider rates, we can specify the priority in which the provider rates are used to route orders.
+To enable prioritization of provider rates, see
+Enabling prioritization of provider rates
+.
+Importante
+It is crucial to specify the priority of provider rates via the
+provider_rates_priority
+property in the payload for routes. Otherwise you
+cannot
+use the new fulfillment configuration setup process.
+If
+provider_rates_priority
+is not specified in the new configuration process, the APIs calls will be successful, but NewStore will not be able to book shipments for your orders.
+According to the
+Add fulfillment configuration
+method, let's define our provider rates as follows:
+{
+  "provider_rates": {
+    "UPS_SAME_DAY_RATE": {
+      "service_level": "SAME_DAY_DELIVERY",
+      "shipping_type": "same_day_delivery",
+      "return_provider_rate": "",
+      "shipping_carrier_name": "UPS",
+      "use_as_customer_facing_cost": false,
+      "carrier_defined_service_level": "ExpressPlus"
+    },
+    "UPS_TRADITIONAL_RATE": {
+      "service_level": "TRADITIONAL",
+      "shipping_type": "traditional_delivery",
+      "return_provider_rate": "",
+      "shipping_carrier_name": "UPS",
+      "use_as_customer_facing_cost": false,
+      "carrier_defined_service_level": "Ground"
+    }
+  },
+  "provider_rates_priority": {
+      "*": {
+        "*": {
+            "SAME_DAY_DELIVERY": [
+              "UPS_SAME_DAY_RATE"
+            ],
+            "TRADITIONAL": [
+              "UPS_TRADITIONAL_RATE"
+            ]
+        }
+      },
+      "US": {
+        "*": {
+            "SAME_DAY_DELIVERY": [
+              "UPS_SAME_DAY_RATE"
+            ],
+            "TRADITIONAL": [
+              "UPS_TRADITIONAL_RATE"
+            ]
+        },
+        "DC01": {
+            "SAME_DAY_DELIVERY": [
+              "UPS_SAME_DAY_RATE"
+            ],
+            "TRADITIONAL": [
+              "UPS_TRADITIONAL_RATE"
+            ]
+          }
+        }
+    }
+}
+In our case we have created service levels for only
+one
+shipping provider (UPS). Therefore, when routing same day delivery and traditional orders:
+In the US, all fulfillment locations, including the store (
+store1_NYC
+) and DC (
+DC01
+), consider the provider rates
+UPS_SAME_DAY_RATE
+and
+UPS_TRADITIONAL_RATE
+as highest priority by default.
+In all other countries, for all fulfillment locations, the provider rates
+UPS_SAME_DAY_RATE
+and
+UPS_TRADITIONAL_RATE
+have highest priority by default.
+Important
+When defining provider rates with the same shipping provider, ensure that the
+carrier_defined_service_level
+is unique for each provider rate. For example, you cannot specify
+ExpressPlus
+as the
+carrier_defined_service_level
+for both
+UPS_SAME_DAY_RATE
+and
+UPS_TRADITIONAL_RATE
+.
+For a detailed list of prioritized provider rates from multiple shipping providers, see the
+Fulfillment configuration payload example
+.
+Routes
+Important
+This section uses the
+Routing ruleset API
+.
+Now that we have defined the service levels and the provider rates related to them, we can define the routes. A route represents one row of the table containing the shipping strategy, as defined earlier, which specifies the relation between provider rates, shipping zones, and fulfillment location IDs.
+Let's take another look at our shipping strategy for this tutorial:
+Country
+Zip code
+Fulfillment node id
+Supported shipping options
+US
+10*
+store1_NYC
+Same-day and traditional
+US
+*
+DC01
+Traditional
+DE
+*
+store1_NYC
+International
+FR
+*
+store1_NYC
+International
+Note
+To ship orders internationally, such as to Germany and France, see
+*(Optional)* Shipping orders internationally
+.
+To expand this shipping strategy (for US locations) into a payload version that can be interpreted by the
+Routing ruleset API
+, we will create a data table that looks like this:
+Routes
+Zip codes
+Location groups
+Service levels priority
+Country
+Destination region
+Shipping options
+Location group priority
+US
+NY
+Traditional, Same-day
+Store Group 0
+NY
+All
+Main DC
+Store Group 0
+TRADITIONAL
+US
+All
+Traditional
+Main DC
+10*
+*
+DC 01
+store1_NYC
+SAME_DAY
+For the routing rules to apply, we must now do the following:
+Group the fulfillment locations and prioritize them, based on which location groups you want to fulfill orders from first, and so on. In our case, we have 2 location groups:
+Store Group 0
+, which contains the store with the fulfillment location ID as
+store1_NYC
+Main DC
+, which contains the warehouse with the fulfillment location ID as
+DC01
+Note
+You can have multiple warehouses or stores fulfilling orders in 1 location group. Also, fulfillment locations can be part of multiple location groups. We have only used 1 in each group to reduce complexity for the tutorial.
+For each route, we must now also define the
+destination_region
+, which is a combination of the country you want to ship orders to (
+US
+in our case) and the
+zip_code_region
+, which is a collection of all relevant zip codes that you want the route to fulfill orders to.
+For
+SAME_DAY_DELIVERY
+, we will fulfill orders via the store
+store1_NYC
+and ship to all zip codes or shipping zones in New York City that start with the numerals
+10
+.
+For
+TRADITIONAL
+routes, we will fulfill orders via the warehouse
+DC01
+, and ship to all zip codes or shipping zones in the US.
+Our shipping strategy then transforms to the following payload sample in JSON:
+Routing Ruleset API
+Routing Ruleset API v1
+The following payload defines a single country per route entry in the routing ruleset.
+{
+  "routes": [
+    {
+      "fulfilled_by": {
+        "SAME_DAY_DELIVERY": ["Store Group 0"],
+        "TRADITIONAL": ["Store Group 0"]
+      },
+      "destination_region": {
+        "country": "US",
+        "zip_code_region": "NY"
+      }
+    },
+    {
+      "fulfilled_by": {
+        "TRADITIONAL": ["Main DC"]
+      },
+      "destination_region": {
+        "country": "US",
+        "zip_code_region": "All"
+      }
+    }
+  ],
+  "sl_levels_priority": ["TRADITIONAL", "SAME_DAY_DELIVERY"],
+  "location_groups": {
+    "Main DC": ["DC01"],
+    "Store Group 0": ["store1_NYC"]
+  },
+  "zip_code_regions": {
+    "NY": ["10*"],
+    "All": ["*"]
+  }
+}
+The following payload allows you to define multiple countries per route entry in the routing ruleset.
+{
+  "routes": [
+    {
+      "fulfilled_by": {
+        "SAME_DAY_DELIVERY": ["Store Group 0"],
+        "TRADITIONAL": ["Store Group 0"]
+      },
+      "destination_region": {
+        "countries": ["US"],
+        "zip_code_region": "NY"
+      }
+    },
+    {
+      "fulfilled_by": {
+        "TRADITIONAL": ["Main DC"]
+      },
+      "destination_region": {
+        "countries": ["US"],
+        "zip_code_region": "All"
+      }
+    }
+  ],
+  "sl_levels_priority": ["TRADITIONAL", "SAME_DAY_DELIVERY"],
+  "location_groups": {
+    "Main DC": ["DC01"],
+    "Store Group 0": ["store1_NYC"]
+  },
+  "zip_code_regions": {
+    "NY": ["10*"],
+    "All": ["*"]
+  }
+}
+(Optional)
+Using the Shipping Rules API to set up routes
+Alternatively, you can also use the
+Shipping rules
+API to set up routes based on the strategy you have set up in this table:
+Routes
+Zip codes
+Location groups
+Service levels priority
+Country
+Destination region
+Shipping options
+Location group priority
+US
+NY
+Traditional, Same-day
+Store Group 0
+NY
+All
+Main DC
+Store Group 0
+TRADITIONAL
+US
+All
+Traditional
+Main DC
+10*
+*
+DC 01
+store1_NYC
+SAME_DAY
+You can use Google Docs or an Excel sheet to create this data, and export it as a CSV file to send it via the API.
+Our CSV data looks like this:
+Routes,,,,,Zip codes,,,Location groups,,,Service levels priority
+Country,Destination region,Shipping options,Location group priority,,NY,All,,Main DC,Store Group 0,,TRADITIONAL
+US,NY,"Traditional, Same-day",Stores Group 0,,10*,*,,DC01,store1_NYC,,SAME_DAY
+US,All,Traditional,Main DC,,,,,,,,
+Let's assume that this CSV file is saved in
+/tmp/my-excellent-business.csv
+, let's try the upload:
+AUTH_TOKEN=1234abcdef
+TENANT=my-excellent-business
+CONFIG=/tmp/my-excellent-business.csv
+curl --include \
+     --request POST \
+     --header "Authorization: Bearer ${AUTH_TOKEN}" \
+     --form file="@${CONFIG}" \
+     "https://${TENANT}.p.newstore.net/api/v1/org/config/fulfillment/routing_configuration"
+Note
+The maximum file size for this method is 10 MB.
+This CSV structure for routes will supersede the legacy JSON format for routes.
+Final outcome and next steps
+Once you have called the new
+Routing ruleset
+and
+Service levels
+APIs for setting up service levels and routes, and the legacy
+Add fulfillment configuration
+API to set up provider rates and provider rate priority, orders are routed according to your strategy.
+Note
+If you want to enable in-store pickup orders, see
+Tutorial: Setting up an in-store pickup configuration
+.
+We have completed creating the fulfillment configuration. We can now:
+Update the fulfillment configuration to enable shipping international orders from the store. See
+*(Optional)* Shipping orders internationally
+.
+Create an
+optional
+transfer configuration. If you do not want to transfer inventory between stores, you do not need a transfer configuration. See
+Tutorial: Setting up a transfer configuration
+.
+If necessary, revert or change to an older version of the fulfillment configuration using the
+Fulfillment config history API
+. For more information, see
+Switching to another version of the fulfillment configuration
+.
+You can now also use
+Omnichannel Manager
+to manage your fulfillment configuration elements such as priority of fulfillment locations or capacity of stores for fulfillment.
+(Optional)
+Shipping orders internationally
+Note
+Ignore this section if you do not need to fulfill orders internationally.
+You can set up stores in your business to ship orders internationally, using
+EasyPost
+. To enable international shipments from your store, set up and configure an adapter with EasyPost.
+To develop the adapter and configure EasyPost for shipping orders in your business, contact the
+support team
+.
+To learn more about shipping adapters, see
+Integrating a shipping provider
+.
+Defining the strategy
+Based on
+the strategy
+we created for our business, we have already set up a DC, a store, and a fulfillment configuration.
+We can now enable international shipments from our store
+store1_NYC
+to Germany and France.
+Updating the fulfillment configuration
+Use the
+Service levels
+API to create a new
+service level
+, for example,
+INTERNATIONAL_EXPRESS
+. Specify applicable pricing and other details.
+Note
+Delivery times can vary, as they are returned by
+EasyPost
+.
+Let's define our international service level as follows:
+{
+    "service_levels": {
+        "INTERNATIONAL_EXPRESS": {
+            "price": 100,
+            "tax_code": "",
+            "display_name": "International delivery",
+            "currency_code": "USD",
+            "delivery_time": "2 weeks, if order is placed today.",
+            "remorse_period": 120,
+            "delivery_time_after_cutoff_hour": "3 weeks"
+        }
+    }
+}
+See the
+EasyPost guide
+for provider rates that can fulfill the service level you just defined for international shipments.
+The service level we defined,
+INTERNATIONAL EXPRESS
+, is managed by FedEx. To set up this provider rate and its priority, use the
+legacy fulfillment configuration
+API.
+Let's define our provider rate for international shipping as follows:
+{
+    "provider_rates": {
+        "INTERNATIONAL_PRIORITY": {
+            "service_level": "INTERNATIONAL_EXPRESS",
+            "shipping_type": "traditional_carrier",
+            "return_provider_rate": "",
+            "shipping_carrier_name": "FedEx",
+            "use_as_customer_facing_cost": false
+        }
+    }
+}
+Create routes for the service level and provider rates, using the same process as described in
+Routes
+using the
+Routing ruleset
+API, with the following additions:
+In
+destination_region
+, specify the country you want to ship to. For example,
+DE
+or
+FR
+.
+Specify the
+fulfillment_node_id
+of the stores that can fulfill international orders. In our case, this will be the
+store1_NYC
+store that fulfills all orders in Germany and France.
+This is what the updated fulfillment strategy will look like in a tabular format:
+Routes
+Zip codes
+Location groups
+Service levels priority
+Country
+Destination region
+Shipping options
+Location group priority
+US
+NY
+Traditional, Same-day
+Store Group 0
+NY
+All
+Main DC
+Store Group 0
+TRADITIONAL
+US
+All
+Traditional
+Main DC
+10*
+*
+DC 01
+store1_NYC
+SAME_DAY
+DE
+All
+International
+Store Group 0
+*
+INTERNATIONAL
+FR
+All
+International
+Store Group 0
+*
+INTERNATIONAL
+Routing Ruleset API
+Routing Ruleset API v1
+Here is a sample payload of the full routing rules using a single country per route entry:
+{
+    "routes": [
+        {
+            "fulfilled_by": {
+                "SAME_DAY_DELIVERY": ["Store Group 0"],
+                "TRADITIONAL": ["Store Group 0"]
+            },
+            "destination_region": {
+                "country": "US",
+                "zip_code_region": "NY"
+            }
+        },
+        {
+            "fulfilled_by": {
+                "TRADITIONAL": ["Main DC"]
+            },
+            "destination_region": {
+                "country": "US",
+                "zip_code_region": "All"
+            }
+        },
+        {
+            "fulfilled_by": {
+                "INTERNATIONAL_EXPRESS": ["Store Group 0"]
+            },
+            "destination_region": {
+                "country": "DE",
+                "zip_code_region": "All"
+            }
+        },
+        {
+            "fulfilled_by": {
+                "INTERNATIONAL_EXPRESS": ["Store Group 0"]
+            },
+            "destination_region": {
+                "country": "FR",
+                "zip_code_region": "All"
+            }
+        }
+    ],
+    "sl_levels_priority": ["SAME_DAY_DELIVERY", "TRADITIONAL", "INTERNATIONAL_EXPRESS"],
+    "location_groups": {
+        "Main DC": ["DC01"],
+        "Store Group 0": ["store1_NYC"]
+    },
+    "zip_code_regions": {
+        "NY": ["10*"],
+        "All": ["*"]
+    }
+}
+Here is a sample payload of the full routing rules using multiple countries per route entry:
+{
+    "routes": [
+        {
+            "fulfilled_by": {
+                "SAME_DAY_DELIVERY": ["Store Group 0"],
+                "TRADITIONAL": ["Store Group 0"]
+            },
+            "destination_region": {
+                "countries": ["US"],
+                "zip_code_region": "NY"
+            }
+        },
+        {
+            "fulfilled_by": {
+                "TRADITIONAL": ["Main DC"]
+            },
+            "destination_region": {
+                "countries": ["US"],
+                "zip_code_region": "All"
+            }
+        },
+        {
+            "fulfilled_by": {
+                "INTERNATIONAL_EXPRESS": ["Store Group 0"]
+            },
+            "destination_region": {
+                "countries": ["DE"],
+                "zip_code_region": "All"
+            }
+        },
+        {
+            "fulfilled_by": {
+                "INTERNATIONAL_EXPRESS": ["Store Group 0"]
+            },
+            "destination_region": {
+                "countries": ["FR"],
+                "zip_code_region": "All"
+            }
+        }
+    ],
+    "sl_levels_priority": ["SAME_DAY_DELIVERY", "TRADITIONAL", "INTERNATIONAL_EXPRESS"],
+    "location_groups": {
+        "Main DC": ["DC01"],
+        "Store Group 0": ["store1_NYC"]
+    },
+    "zip_code_regions": {
+        "NY": ["10*"],
+        "All": ["*"]
+    }
+}
+(Optional) Using the Shipping Rules API to set up routes
+The above data can also be uploaded via a CSV file using the
+Shipping rules
+API.
+When transformed into a CSV file, the data for routes will look like this:
+Routes,,,,,Zip codes,,,Location groups,,,Service levels priority
+Country,Destination region,Shipping options,Location group priority,,NY,All,,Main DC,Store Group 0,,TRADITIONAL
+US,NY,"Traditional, Same-day",Stores Group 0,,10*,*,,DC01,store1_NYC,,SAME_DAY
+US,All,Traditional,Main DC,,,,,,,,INTERNATIONAL
+DE,All,International,Stores Group 0,,,,,,,,
+FR,All,International,Stores Group 0,,,,,,,,
+Let's assume that this CSV file is saved in
+/tmp/my-excellent-business.csv
+, let's try the upload:
+AUTH_TOKEN=1234abcdef
+TENANT=my-excellent-business
+CONFIG=/tmp/my-excellent-business.csv
+    curl --include \
+     --request POST \
+     --header "Authorization: Bearer ${AUTH_TOKEN}" \
+     --form file="@${CONFIG}" \
+     "https://${TENANT}.p.newstore.net/api/v1/org/config/fulfillment/routing_configuration"
+Note
+The maximum file size for this method is 10 MB.
+Final outcome and next steps
+Once you have called the new APIs for setting up service levels and routes, and the legacy
+Add fulfillment configuration
+API to set up provider rates and provider rate priority, orders are routed according to your strategy. You can now also use
+Omnichannel Manager
+to manage your fulfillment configuration elements such as priority of fulfillment locations or capacity of stores for fulfillment.
+We have now completed updating the fulfillment config to ship orders internationally. Before we can start shipping orders to Germany and France though, there are some pre-requisites for your business that must be fulfilled. See
+*(Optional)* Booking an international shipment
+.
+If you want to transfer inventory between stores, create an
+optional
+transfer config. See
+Tutorial: Setting up a transfer configuration
+.
+Switching to another version of the fulfillment configuration
+To switch to an older or newer version of the fulfillment configuration, use the
+Fulfillment config history API
+.
+Important
+If you are using the newer process to set up your fulfillment configuration (using the
+Routing ruleset
+API and the
+Service levels
+API), we
+do not recommend
+switching to an older version of the config that was set up using the
+legacy fulfillment configuration API
+, as this may cause unexpected behavior or need you to set up lot of information such as fulfillment location groups or zip code regions from scratch.
+To view other versions of the fulfillment configuration that have been set up for your business, use the
+Get all revisions
+or
+Get a specific revision
+methods.
+Related topics
+Tutorial: Setting up a transfer configuration
+Tutorial: Setting up a store
+Tutorial: Setting up an in-store pickup configuration
+Shipping transfer orders
+Migrating from the legacy fulfillment configuration to the new fulfillment configuration
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+dellivery
+Easypost
+fulfillment
+fulfillment configuration
+integration
+international shipping
+newstore platform
+onboarding
+order fulfillment
+platform
+preorder
+provider rates
+routing
+routing rules
+shipping
+stock on hand
+store fulfillment
+tutorial
+warehouse fulfillment
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

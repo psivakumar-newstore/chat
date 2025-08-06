@@ -1,0 +1,401 @@
+consumes:
+  - application/json
+produces:
+  - application/json
+schemes:
+  - https
+swagger: '2.0'
+info:
+  description: |
+    Endpoints used for Back in Stock notifications for Consumer App
+  title: Stock Subscription
+  version: '4.5'
+paths:
+  /stock_subscriptions:
+    get:
+      description: |
+        Lists all active stock subscriptions.
+      tags:
+        - Stock Subscriptions
+      summary: List subscriptions
+      operationId: ListStockSubscriptions
+      parameters:
+        - $ref: '#/parameters/basic_auth'
+      responses:
+        '200':
+          $ref: '#/responses/stock_subscriptions_success'
+        '401':
+          $ref: '#/responses/unauthorized'
+        '500':
+          $ref: '#/responses/server_error'
+definitions:
+  Address:
+    allOf:
+      - $ref: '#/definitions/AddressFields'
+      - type: object
+        required:
+          - street
+          - house_number
+          - first_name
+          - last_name
+          - postal_code
+          - city
+          - country_id
+    example:
+      city: Utrecht
+      country_id: NL
+      first_name: App
+      house_number: '154'
+      last_name: Tester
+      postal_code: 3514 AZ
+      street: Hooghiemstraplein
+      telephone: 030-2769165
+  AddressFields:
+    description: An address
+    properties:
+      addition:
+        description: Addition
+        type: string
+        minLength: 1
+      city:
+        description: The city name
+        type: string
+        minLength: 1
+      company:
+        description: The company name of the recipient
+        type: string
+        minLength: 1
+      country_id:
+        $ref: '#/definitions/CountryCode'
+      first_name:
+        description: The recipient's first name
+        type: string
+        minLength: 1
+      house_number:
+        description: House number
+        type: string
+        minLength: 1
+      last_name:
+        description: The recipient's last name
+        type: string
+        minLength: 1
+      postal_code:
+        description: Postal or ZIP code
+        type: string
+        minLength: 1
+      state:
+        description: The state code.
+        type: string
+        minLength: 1
+      street:
+        description: Street name
+        type: string
+        minLength: 1
+      telephone:
+        description: The phone number of the recipient
+        type: string
+        minLength: 1
+  Barcode:
+    description: Description of a barcode.
+    type: object
+    required:
+      - type
+      - value
+    properties:
+      type:
+        description: The barcode type.
+        type: string
+        enum:
+          - code128
+          - qr
+      value:
+        description: The value to encode as a barcode.
+        type: string
+        minLength: 1
+    example:
+      type: code128
+      value: '100302107016259158'
+  Coordinates:
+    description: GPS coordinates
+    type: object
+    required:
+      - latitude
+      - longitude
+    properties:
+      latitude:
+        description: Latitude
+        type: number
+        maximum: 90
+        minimum: -90
+      longitude:
+        description: Longitude
+        type: number
+        maximum: 180
+        minimum: -180
+    example:
+      latitude: 52.0986345
+      longitude: 5.1251368
+  CountryCode:
+    description: >-
+      A two character [ISO 3166-1
+      Alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.
+    type: string
+    maxLength: 2
+    minLength: 2
+  Email:
+    description: E-mail address of the customer
+    type: string
+    format: email
+    minLength: 1
+  Err:
+    description: Highstreet Error
+    type: object
+    properties:
+      debug:
+        description: |
+          Debugging data. Can be anything. Only exposed in staging environments.
+      message:
+        description: Developer friendly error message.
+        type: string
+  OptionalAddress:
+    allOf:
+      - $ref: '#/definitions/AddressFields'
+      - type:
+          - object
+          - 'null'
+    x-nullable: true
+  OptionalEmail:
+    description: E-mail address of the customer
+    type:
+      - string
+      - 'null'
+    format: email
+    minLength: 1
+  PartialAddress:
+    allOf:
+      - $ref: '#/definitions/AddressFields'
+      - type: object
+  RGBA:
+    description: |
+      A 4-element array describing a RGBA color value. The first three values
+      (red, green, blue) range from `0` to `255`. The last number (opacity) from
+      `0` to `1`.
+    type: array
+    maxItems: 4
+    minItems: 4
+    items:
+      description: a color value.
+      type: number
+      maximum: 255
+      minimum: 0
+  ServerError:
+    allOf:
+      - $ref: '#/definitions/Err'
+      - description: An internal server error
+        type: object
+        required:
+          - code
+        properties:
+          code:
+            description: An error code
+            type: string
+            enum:
+              - config_error
+              - convert_error
+              - fetch_error
+    example:
+      code: convert_error
+      message: can't convert Basket to cart
+  StockSubscriptionSummary:
+    type: object
+    required:
+      - count
+      - country
+      - product_id
+    properties:
+      count:
+        description: >
+          The number of customers that are interested in receiving a
+          notification
+
+          when the product is back in stock
+        type: number
+        minimum: 0
+      country:
+        $ref: '#/definitions/CountryCode'
+      product_id:
+        description: A product ID
+        type: string
+  StockSubscriptionsList:
+    type: object
+    required:
+      - stock_subscriptions
+    properties:
+      stock_subscriptions:
+        type: array
+        items:
+          $ref: '#/definitions/StockSubscriptionSummary'
+  UpstreamError:
+    allOf:
+      - $ref: '#/definitions/Err'
+      - description: An error related to connecting with an upstream service
+        type: object
+        required:
+          - code
+        properties:
+          code:
+            description: An error code
+            type: string
+            enum:
+              - fetch_error
+    example:
+      code: fetch_error
+      message: e-commerce platform temporarily unavailable
+  currency_code:
+    description: >-
+      A three character [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217)
+      currency code.
+    type: string
+    maxLength: 3
+    minLength: 3
+    example: EUR
+parameters:
+  access_token:
+    type: string
+    description: Access token
+    name: Authorization
+    in: header
+    required: true
+  latitude:
+    type: number
+    description: The latitude in which to search (overrides address)
+    name: latitude
+    in: query
+  longitude:
+    type: number
+    description: The longitude in which to search (overrides address)
+    name: longitude
+    in: query
+  optional_access_token:
+    type: string
+    description: Access token
+    name: Authorization
+    in: header
+  optional_storefront:
+    type: string
+    description: Identifier of the selected storefront
+    name: X-Selected-Storefront
+    in: header
+  storefront:
+    type: string
+    description: Identifier of the selected storefront
+    name: X-Selected-Storefront
+    in: header
+    required: true
+responses:
+  invalid_token:
+    description: Access token is missing, invalid or expired.
+    headers:
+      WWW-Authenticate:
+        type: string
+        description: Reason for failure.
+    examples:
+      application/json:
+        code: invalid
+        message: invalid or expired token
+  not_implemented:
+    description: Endpoint is not implemented for current merchant.
+    schema:
+      allOf:
+        - $ref: '#/definitions/Err'
+        - type: object
+          properties:
+            code:
+              description: An error code
+              type: string
+              enum:
+                - unimplemented
+    examples:
+      application/json:
+        code: unimplemented
+        message: endpoint is not implemented for current merchant
+  server_error:
+    description: An internal server error occured
+    schema:
+      $ref: '#/definitions/ServerError'
+    headers:
+      Retry-After:
+        type: string
+        description: |
+          A suggested back off period in seconds (if the error is temporary).
+  stock_subscriptions_success:
+    description: Success
+    schema:
+      $ref: '#/definitions/StockSubscriptionsList'
+    examples:
+      application/json:
+        stock_subscriptions:
+          - count: 3
+            country: NL
+            product_id: 1234_AB-S
+          - count: 1
+            country: BE
+            product_id: 1234_AB-S
+          - count: 2
+            country: NL
+            product_id: 9876_CD-M
+  unknown_resource:
+    description: Not Found
+    schema:
+      allOf:
+        - $ref: '#/definitions/Err'
+        - properties:
+            code:
+              enum:
+                - unknown_resource
+      example:
+        code: unknown_resource
+        message: can't find it
+  unknown_storefront:
+    description: Storefront does not exist
+    schema:
+      allOf:
+        - $ref: '#/definitions/Err'
+        - description: An error during storefront selection
+          type: object
+          required:
+            - error
+          properties:
+            error:
+              description: A debug message
+              type: string
+    examples:
+      application/json:
+        error: no such storefront
+  upstream_error:
+    description: An error occured when connecting to an upstream service
+    schema:
+      $ref: '#/definitions/UpstreamError'
+    headers:
+      Retry-After:
+        type: string
+        description: |
+          A suggested back off period in seconds (if the error is temporary).
+    examples:
+      application/json:
+        code: fetch_error
+        message: 'loyalty platform temporarily unavailable: 15 consecutive errors'
+securityDefinitions:
+  AccessToken:
+    type: oauth2
+    flow: password
+    tokenUrl: http://merchant.api.highstreetapp.com/token
+    scopes:
+      full: There are no scopes, really
+security:
+  - AccessToken:
+      - full
+tags:
+  - name: Stock Subscriptions
+x-logo:
+  url: https://rebilly.github.io/ReDoc/petstore-logo.png

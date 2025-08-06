@@ -1,0 +1,675 @@
+openapi: 3.0.0
+info:
+  title: Gift Card Provider Webhooks
+  version: v0
+  description: >
+    Allows integration of [gift card](/docs/glossary.html#term-gift-card)
+    providers with the NewStore platform.
+
+
+    ## Authenticating webhook requests
+
+
+    In order to authenticate the requests NewStore sends to the gift card
+    provider it is possible to configure an `api_key` for the provider.
+
+
+    To achieve this add the `api_key` field to the provider in the `gift_card`
+    configuration. See [Update gift card
+    configuration](/api/configuration/payment/payment_config_api#operation/putGiftCardConfiguration)
+servers:
+  - url: https://example.com
+security: []
+paths:
+  /gift_card/balance:
+    post:
+      description: >
+        Returns the balance for the gift card.
+
+
+        This method is called by NewStore Associate App during the checkout
+        process, when a gift
+
+        card number is provided.
+
+
+        The returned balance can then be deducted from the total amount payable
+        by the customer. If the balance can be
+
+        adjusted against only part of the amount, the remainder can be deducted
+        using other payment methods, including
+
+        other gift cards, until the amount payable by the customer is zero.
+      operationId: returnBalance
+      summary: Return balance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              GetBalance:
+                value:
+                  identifier:
+                    number: 5h78k5367h09q34n22
+                    pin: '4125'
+                  metadata:
+                    store_id: some-store-identifier
+            schema:
+              title: Represents a request to get cards balance
+              type: object
+              required:
+                - identifier
+              properties:
+                identifier:
+                  type: object
+                  title: A gift card identifier
+                  required:
+                    - number
+                  properties:
+                    number:
+                      type: string
+                      description: Number of the card.
+                      minLength: 1
+                    pin:
+                      type: string
+                      description: >-
+                        Personal Identification Number to be sent to the
+                        customer for usage.
+                metadata:
+                  description: >-
+                    Provider-specific metadata. For example, this property can
+                    contain custom business information related to getting the
+                    balance of the gift card. The field 'store_id' is always
+                    provided.
+                  type: object
+      responses:
+        '200':
+          description: Balance could be retrieved
+          content:
+            application/json:
+              examples:
+                Balance:
+                  value:
+                    value: 100
+                    currency: USD
+              schema:
+                type: object
+                title: A monetary amount consisting of value and currency.
+                required:
+                  - value
+                  - currency
+                properties:
+                  value:
+                    type: number
+                    description: Monetary amount.
+                    minimum: 0
+                  currency:
+                    description: >-
+                      Currency in the ISO 4217 Alpha-3-character format
+.
+                    type: string
+                    maxLength: 3
+                    minLength: 3
+        '400':
+          description: Error retrieving balance
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on an error raised when processing a
+                  request.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_accepted
+                properties:
+                  error_code:
+                    description: >-
+                      Code of the error, you can use it to aggregate classes of
+                      errors.
+                    type: string
+                  message:
+                    description: Optional human readable message.
+                    type: string
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging
+                      the error.
+                    type: object
+                  request_accepted:
+                    description: >-
+                      Set to false when the request is rejected before being
+                      processed by the provider.
+                    type: boolean
+  /gift_card/issue:
+    post:
+      description: >
+        Issues a new gift card.
+
+
+        Depending on the gift card provider, the gift card might need to be
+        activated before it can
+
+        be used. Cards are activated using the
+
+        [Activate gift
+        card](/newstore-cloud/payment/gift_card_hook.html#operation/activateGiftCard)
+        method.
+      summary: Issue gift card
+      operationId: issueGiftCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              IssueGiftCard:
+                value:
+                  amount:
+                    value: 100
+                    currency: USD
+                  customer:
+                    id: 34683bfjbfjbdfkbfk
+                    name: Jay DoubleYou
+                  idempotence_key: 5kl5345b2hjj5k79
+            schema:
+              title: Expected integration interface for issuing a new gift card
+              type: object
+              required:
+                - amount
+                - customer
+              properties:
+                amount:
+                  description: Initial amount assigned to a gift card.
+                  type: object
+                  title: A monetary amount consisting of value and currency.
+                  required:
+                    - value
+                    - currency
+                  properties:
+                    value:
+                      type: number
+                      description: Monetary amount.
+                      minimum: 0
+                    currency:
+                      description: >-
+                        Currency in the ISO 4217 Alpha-3-character format
+.
+                      type: string
+                      maxLength: 3
+                      minLength: 3
+                customer:
+                  description: Customer information to add to the specified card.
+                  type: object
+                  title: Customer identifying information
+                  required:
+                    - id
+                  properties:
+                    id:
+                      type: string
+                      description: Unique identifier of the customer for the tenant.
+                      minLength: 1
+                    email:
+                      description: >-
+                        Customer's email. You can use it to send out gift card
+                        email notifications.
+                      type: string
+                    name:
+                      description: The full name of the customer.
+                      type: string
+                    greeting_name:
+                      description: >-
+                        Name of the customer used in greetings. For example,
+                        "Hello
+,".
+                      type: string
+                metadata:
+                  description: >-
+                    Provider-specific metadata. For example, this property can
+                    contain custom business information on why the gift card was
+                    issued. The field 'original_operation' will be set to either
+                    'refund' or 'activation' according to the reason of the
+                    issue. This data can also be exposed to the customer if
+                    needed. Talk to your contact point at NewStore for more
+                    information.
+                  type: object
+                idempotence_key:
+                  description: >-
+                    Identifier of the request to make sure the request is not
+                    performed twice when retried in case of network issues. The
+                    response should always be the same for all requests
+                    containing the same key, regardless of parameter changes.
+                  type: string
+      responses:
+        '200':
+          description: >
+            Returns the registered card information, including the PIN if
+            required by the retailer and/or provider.
+          content:
+            application/json:
+              examples:
+                IssueGiftCard:
+                  value:
+                    identifier:
+                      number: 5h78k5367h09q34n22
+                      pin: '4125'
+                    amount:
+                      value: 100
+                      currency: USD
+              schema:
+                title: >-
+                  Expected integration interface for issued gift card
+                  information
+                type: object
+                required:
+                  - identifier
+                  - amount
+                properties:
+                  identifier:
+                    type: object
+                    title: A gift card identifier
+                    required:
+                      - number
+                    properties:
+                      number:
+                        type: string
+                        description: Number of the card.
+                        minLength: 1
+                      pin:
+                        type: string
+                        description: >-
+                          Personal Identification Number to be sent to the
+                          customer for usage.
+                  customer:
+                    deprecated: true
+                    type: object
+                    title: Customer identifying information
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: string
+                        description: Unique identifier of the customer for the tenant.
+                        minLength: 1
+                      email:
+                        description: >-
+                          Customer's email. You can use it to send out gift card
+                          email notifications.
+                        type: string
+                      name:
+                        description: The full name of the customer.
+                        type: string
+                      greeting_name:
+                        description: >-
+                          Name of the customer used in greetings. For example,
+                          "Hello
+,".
+                        type: string
+                  metadata:
+                    description: >-
+                      Provider-specific metadata. For example, this property can
+                      contain custom business information related to the
+                      activation of the gift card. This data can also be exposed
+                      to the customer if needed. Talk to your contact point at
+                      NewStore for more information.
+                    type: object
+                  amount:
+                    description: Initial amount assigned to the gift card.
+                    type: object
+                    title: A monetary amount consisting of value and currency.
+                    required:
+                      - value
+                      - currency
+                    properties:
+                      value:
+                        type: number
+                        description: Monetary amount.
+                        minimum: 0
+                      currency:
+                        description: >-
+                          Currency in the ISO 4217 Alpha-3-character format
+.
+                        type: string
+                        maxLength: 3
+                        minLength: 3
+                  idempotence_key:
+                    description: >-
+                      Identifier of the request to make sure the request is not
+                      performed twice when retried in case of network issues.
+                      The response should always be the same for all requests
+                      containing the same key, regardless of parameter changes.
+                    type: string
+        '400':
+          description: >-
+            No new card could be issued or the specified card number was not
+            found in the provider's registry.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on an error raised when processing a
+                  request.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_accepted
+                properties:
+                  error_code:
+                    description: >-
+                      Code of the error, you can use it to aggregate classes of
+                      errors.
+                    type: string
+                  message:
+                    description: Optional human readable message.
+                    type: string
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging
+                      the error.
+                    type: object
+                  request_accepted:
+                    description: >-
+                      Set to false when the request is rejected before being
+                      processed by the provider.
+                    type: boolean
+  /gift_card/activate:
+    post:
+      description: >
+        Activates an existing gift card.
+
+
+        Before they can be activated, cards are issued with the
+
+        [Issue gift
+        card](/newstore-cloud/payment/gift_card_hook.html#operation/issueGiftCard)
+        method.
+
+
+        **Important:** Successful responses for a given gift card are stored and
+        reused for any future attempts to activate it,
+
+        so this method will no longer be called for any gift cards previously
+        activated in NewStore.
+
+        In order to avoid unforseen side-effects, do not reuse gift cards with
+        the same number.
+
+
+        **Note:** The activation process might also be called *registration*,
+        depending on the provider.
+      summary: Activate gift card
+      operationId: activateGiftCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              ActivateGiftCard:
+                value:
+                  card_number: 5h78k5367h09q34n22
+                  amount:
+                    value: 100
+                    currency: USD
+                  customer:
+                    id: '64810476'
+                    email: jay_doubleyou@example.com
+                    name: Jay Doubleyou
+                  idempotence_key: 6234h6k263bb589v0bnv3
+            schema:
+              title: Registers an existing gift card with the provider.
+              type: object
+              required:
+                - card_number
+                - amount
+                - customer
+              properties:
+                card_number:
+                  type: string
+                  description: >-
+                    Identifier of the card to receive the specified amount and
+                    customer description.
+                amount:
+                  description: Initial amount assigned to the gift card.
+                  type: object
+                  title: A monetary amount consisting of value and currency.
+                  required:
+                    - value
+                    - currency
+                  properties:
+                    value:
+                      type: number
+                      description: Monetary amount.
+                      minimum: 0
+                    currency:
+                      description: >-
+                        Currency in the ISO 4217 Alpha-3-character format
+.
+                      type: string
+                      maxLength: 3
+                      minLength: 3
+                customer:
+                  description: Customer information to add to the card.
+                  type: object
+                  title: Customer identifying information
+                  required:
+                    - id
+                  properties:
+                    id:
+                      type: string
+                      description: Unique identifier of the customer for the tenant.
+                      minLength: 1
+                    email:
+                      description: >-
+                        Customer's email. You can use it to send out gift card
+                        email notifications.
+                      type: string
+                    name:
+                      description: The full name of the customer.
+                      type: string
+                    greeting_name:
+                      description: >-
+                        Name of the customer used in greetings. For example,
+                        "Hello
+,".
+                      type: string
+                metadata:
+                  description: >-
+                    Provider-specific metadata. For example, this property can
+                    contain custom business information related to the
+                    activation of the gift card. The field 'original_operation'
+                    = 'activation' is always provided. This data can also be
+                    exposed to the customer if needed. Talk to your contact
+                    point at NewStore for more information.
+                  type: object
+                idempotence_key:
+                  description: >-
+                    Identifier of the request to make sure the request is not
+                    performed twice when retried in case of network issues. The
+                    response should always be the same for all requests
+                    containing the same key, regardless of parameter changes.
+                  type: string
+      responses:
+        '200':
+          description: >
+            Returns the activated card information, including the PIN if
+            required by the retailer and/or provider.
+          content:
+            application/json:
+              examples:
+                ActivateGiftCard:
+                  value:
+                    identifier:
+                      number: 5h78k5367h09q34n22
+                      pin: '4125'
+              schema:
+                title: Response for the activate method.
+                type: object
+                required:
+                  - identifier
+                properties:
+                  identifier:
+                    type: object
+                    title: A gift card identifier
+                    required:
+                      - number
+                    properties:
+                      number:
+                        type: string
+                        description: Number of the card.
+                        minLength: 1
+                      pin:
+                        type: string
+                        description: >-
+                          Personal Identification Number to be sent to the
+                          customer for usage.
+                  metadata:
+                    description: >-
+                      Provider-specific metadata. For example, this property can
+                      contain custom business information related to the
+                      activation of the gift card. This data can also be exposed
+                      to the customer if needed. Talk to your contact point at
+                      NewStore for more information.
+                    type: object
+        '400':
+          description: >-
+            The card could not be activated or the card was not found in the
+            provider's registry.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on an error raised when processing a
+                  request.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_accepted
+                properties:
+                  error_code:
+                    description: >-
+                      Code of the error, you can use it to aggregate classes of
+                      errors.
+                    type: string
+                  message:
+                    description: Optional human readable message.
+                    type: string
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging
+                      the error.
+                    type: object
+                  request_accepted:
+                    description: >-
+                      Set to false when the request is rejected before being
+                      processed by the provider.
+                    type: boolean
+  /gift_card/deactivate:
+    post:
+      description: >
+        Deactivates an existing gift card, invalidating all the remaining
+        balance.
+      summary: Deactivate gift card
+      operationId: deactivateGiftCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              DeactivateGiftCard:
+                value:
+                  card_number: 5h78k5367h09q34n22
+                  pin: '1043'
+                  store_id: '842840192840129841092'
+                  idempotence_key: 6234h6k263bb589v0bnv3
+            schema:
+              title: Deactivates an existing gift card with the provider.
+              type: object
+              required:
+                - card_number
+              properties:
+                card_number:
+                  type: string
+                  description: >-
+                    Identifier of the card to receive the specified amount and
+                    customer description.
+                pin:
+                  type: string
+                  description: The pin associated with the gift card.
+                store_id:
+                  type: string
+                  description: Identifier of the store where the card is being deactivated.
+                idempotence_key:
+                  description: >-
+                    Identifier of the request to make sure the request is not
+                    performed twice when retried in case of network issues. The
+                    response should always be the same for all requests
+                    containing the same key, regardless of parameter changes.
+                  type: string
+      responses:
+        '200':
+          description: Card was deactivated successfully.
+          content:
+            application/json:
+              examples:
+                DeactivateGiftCardResponse:
+                  value:
+                    deactivated_at: '2023-12-31T10:11:17Z'
+              schema:
+                title: Response for the Deactivate method.
+                type: object
+                properties:
+                  deactivated_at:
+                    description: >-
+                      The time when this request was processed, containing date,
+                      time and timezone as defined by
+                      https://tools.ietf.org/html/rfc3339 (ISO 8601). If invalid
+                      or not provided, the timestamp at the time of receiving
+                      successful response is used.
+                    type: string
+                    format: date-time
+        '400':
+          description: >-
+            The card could not be deactivated or the card was not found in the
+            provider's registry.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on an error raised when processing a
+                  request.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_accepted
+                properties:
+                  error_code:
+                    description: >-
+                      Code of the error, you can use it to aggregate classes of
+                      errors.
+                    type: string
+                  message:
+                    description: Optional human readable message.
+                    type: string
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging
+                      the error.
+                    type: object
+                  request_accepted:
+                    description: >-
+                      Set to false when the request is rejected before being
+                      processed by the provider.
+                    type: boolean
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}

@@ -1,0 +1,1153 @@
+EasyPost Adapter | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Delivery Options API
+Shipping Options Webhooks
+EasyPost Adapter
+Shipment notification configuration API
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+get
+Get Easypost shipping configuration
+put
+Create or update Easypost shipping configuration
+del
+Delete Easypost shipping configuration
+post
+EasyPost Webhook Endpoint to update a delivery tracking
+post
+Create shipping option
+post
+Book shipment
+post
+Create Manifest (also named ScanForm)
+post
+Cancel shipment
+API docs by Redocly
+EasyPost Adapter
+(
+1.0.0
+)
+Download OpenAPI specification
+:
+Download
+Team Delivery
+:
+team-delivery@newstore.com
+EasyPost adapter is an implementation of the
+NewStore Shipping options webhook
+that allows you to use EasyPost as a shipping provider. As an integrator, implement the methods of this resource to integrate multiple shipping providers through the EasyPost adapter with NewStore Omnichannel Cloud. Use the EasyPost adapter to offer shipping options and delivery booking requests from NewStore Omnichannel Cloud, through the EasyPost shipment API.
+Get Easypost shipping configuration
+Retrieves the shipping configuration of the retailer that is integrated with the EasyPost adapter. Credentials are redacted but you can still push the configuration using the PUT endpoint with the REDACTED value: we will use the current value. A new value will be validated before saving the configuration.
+Authorizations:
+None
+Responses
+200
+EasyPost shipping configuration.
+401
+Unauthorized
+403
+Forbidden
+500
+Internal Server Error
+default
+Unexpected Error
+get
+/{tenant}/config
+/{tenant}/config
+Response samples
+200
+403
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"easypost_api_key"
+:
+"string"
+,
+"base_customization_url"
+:
+"string"
+,
+"ignore_customization_failure_on_booking"
+:
+true
+,
+"newstore_username"
+:
+"string"
+,
+"newstore_password"
+:
+"string"
+,
+"newstore_url"
+:
+"string"
+,
+"shipment_creation_options"
+:
+{
+"fedex"
+:
+{
+"easypost_option_key"
+:
+"easypost_option_value: see https://docs.easypost.com/docs/shipments/options#options-object"
+}
+}
+,
+"carrier_accounts"
+:
+{
+"fedex"
+:
+{
+"newstore_fulfillment_node_id"
+:
+"ca_xxxxxx: easypost carrier account id"
+}
+}
+}
+Create or update Easypost shipping configuration
+Creates or updates the shipping configuration of the retailer that is integrated with the EasyPost adapter. Any current data in the existing configuration is overwritten using this request.
+A few notes on this configuration:
+When an account has a large number of carrier accounts, please do associate a Fulfillment Node to a Carrier Account. Not doing so will result in long response time, waste of resources, extra easypost charges and possibly order injection issues.
+Once the easypost API Key has been set, it is forbidden to change it. This is to prevent options that were already generated to become completely invalid in case the api key isn't from the same account. If you really need to change this key, please open a case in the NewStore Support Portal and we will discuss the best way to do that.
+Authorizations:
+None
+Request Body schema:
+application/json
+easypost_api_key
+required
+string
+The API key provided by EasyPost.
+base_customization_url
+string
+The customization webhook URL to customize the data used to create the shipment.
+ignore_customization_failure_on_booking
+boolean
+If set to true, the EasyPost adapter books a shipment with non-customized data if the call to the "base customization URL" fails. If set to false, the shipment is not booked if the call to the "base customization URL" fails. The value of the flag does not affect the processing of shipping options for the shipment.
+newstore_username
+string
+The username provided by NewStore.
+newstore_password
+string
+the password provided by NewStore.
+newstore_url
+string
+Optional: The base URL to NewStore API. This is used to push package status update from carriers.
+shipment_creation_options
+object
+The name of the shipping carrier in lowercase.
+carrier_accounts
+object
+The name of the shipping carrier in lowercase.
+Responses
+200
+EasyPost shipping configuration.
+400
+Bad Request
+401
+Unauthorized
+403
+Forbidden
+500
+Internal Server Error
+default
+Unexpected Error
+put
+/{tenant}/config
+/{tenant}/config
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"easypost_api_key"
+:
+"EKxxxxxx-your-tenant-easypost-API-Key"
+,
+"base_customization_url"
+:
+"
+http://example.com/customization/
+"
+,
+"ignore_customization_failure_on_booking"
+:
+true
+,
+"newstore_username"
+:
+"user@newstore.com"
+,
+"newstore_password"
+:
+"password"
+,
+"newstore_url"
+:
+"
+https://tenant.x.newstore.com/v0/
+"
+,
+"shipment_creation_options"
+:
+{
+"ups"
+:
+{
+"by_drone"
+:
+true
+}
+,
+"fedex"
+:
+{
+"label_format"
+:
+"PDF"
+,
+"delivery_confirmation"
+:
+"SIGNATURE"
+}
+}
+,
+"carrier_accounts"
+:
+{
+"ups"
+:
+{
+"US01"
+:
+"ca_us_01"
+,
+"US02"
+:
+"ca_us_02"
+}
+,
+"fedex"
+:
+{
+"US01"
+:
+"ca_us_02"
+,
+"US02"
+:
+"ca_us_03"
+}
+}
+}
+Response samples
+200
+400
+403
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"easypost_api_key"
+:
+"string"
+,
+"base_customization_url"
+:
+"string"
+,
+"ignore_customization_failure_on_booking"
+:
+true
+,
+"newstore_username"
+:
+"string"
+,
+"newstore_password"
+:
+"string"
+,
+"newstore_url"
+:
+"string"
+,
+"shipment_creation_options"
+:
+{
+"fedex"
+:
+{
+"easypost_option_key"
+:
+"easypost_option_value: see https://docs.easypost.com/docs/shipments/options#options-object"
+}
+}
+,
+"carrier_accounts"
+:
+{
+"fedex"
+:
+{
+"newstore_fulfillment_node_id"
+:
+"ca_xxxxxx: easypost carrier account id"
+}
+}
+}
+Delete Easypost shipping configuration
+Deletes the shipping configuration of the retailer that is integrated with the EasyPost adapter.
+Authorizations:
+None
+Responses
+204
+Successfully deleted.
+401
+Unauthorized
+403
+Forbidden
+500
+Internal Server Error
+default
+Unexpected Error
+delete
+/{tenant}/config
+/{tenant}/config
+Response samples
+403
+default
+Content type
+application/problem+json
+Copy
+{
+"error"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+EasyPost Webhook Endpoint to update a delivery tracking
+This endpoint is a webhook that can be set in EasyPost to update delivery tracking. This in turn calls NewStore's Delivery Set Shipment Status endpoint.
+Request Body schema:
+application/json
+description
+required
+string
+result
+required
+object
+(
+EasyPostWebHookUpdateResult
+)
+Responses
+200
+Status update has been successful up to NewStore systems.
+post
+/{tenant}/update
+/{tenant}/update
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"description"
+:
+"string"
+,
+"result"
+:
+{
+"tracking_code"
+:
+"string"
+,
+"status"
+:
+null
+,
+"updated_at"
+:
+"string"
+}
+}
+Response samples
+200
+Content type
+application/json
+Copy
+"assigned"
+Create shipping option
+Creates a shipment in EasyPost and returns related rates as possible shipping options for NewStore to use.
+Request Body schema:
+application/json
+ready_by
+required
+string
+<
+date-time
+>
+shipping_address
+required
+object
+(
+PartialAddress
+)
+sender_address
+required
+object
+(
+Address
+)
+provider_rate
+required
+string
+service_level
+required
+string
+deliverables
+required
+Array of
+objects
+(
+Deliverable
+)
+non-empty
+fulfillment_node_id
+string
+customs_info
+object
+(
+CustomsShipmentInfo
+)
+Responses
+200
+Shipping options that represent possible delivery windows.
+post
+/{tenant}/{carrier}/shipping_offers
+/{tenant}/{carrier}/shipping_offers
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"ready_by"
+:
+"2019-08-24T14:15:22Z"
+,
+"shipping_address"
+:
+{
+"zip_code"
+:
+"string"
+,
+"country_code"
+:
+"string"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"phone"
+:
+"string"
+}
+,
+"sender_address"
+:
+{
+"zip_code"
+:
+"string"
+,
+"country_code"
+:
+"string"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"phone"
+:
+"string"
+}
+,
+"provider_rate"
+:
+"string"
+,
+"service_level"
+:
+"string"
+,
+"deliverables"
+:
+[
+{
+"quantity"
+:
+0
+,
+"item"
+:
+{
+"price"
+:
+{
+"amount"
+:
+0
+,
+"currency"
+:
+"string"
+}
+,
+"weight"
+:
+{
+"amount"
+:
+0
+,
+"unit"
+:
+null
+}
+,
+"dimensions"
+:
+{
+"unit"
+:
+null
+,
+"width"
+:
+0
+,
+"height"
+:
+0
+,
+"length"
+:
+0
+}
+,
+"identifier"
+:
+{
+"property1"
+:
+null
+,
+"property2"
+:
+null
+}
+,
+"customs_info"
+:
+{
+"description"
+:
+"string"
+,
+"hs_number"
+:
+"string"
+,
+"hts_number"
+:
+"string"
+,
+"origin_country"
+:
+"string"
+}
+}
+}
+]
+,
+"fulfillment_node_id"
+:
+"string"
+,
+"customs_info"
+:
+{
+"customs_signer"
+:
+"string"
+}
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"offer"
+:
+"string"
+,
+"provider_rate"
+:
+"string"
+,
+"service_level"
+:
+"string"
+,
+"delivery_estimate"
+:
+{
+"starts_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"ends_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"expires_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"guaranteed"
+:
+true
+}
+,
+"quote"
+:
+{
+"price"
+:
+0
+,
+"currency"
+:
+"string"
+}
+}
+]
+Book shipment
+Books the shipment created in EasyPost using the
+Create shipping option
+method, with the specified shipping option.
+Request Body schema:
+application/json
+rate
+required
+string
+items
+required
+Array of
+objects
+(
+ItemWithCustomsInfo
+)
+non-empty
+booking_method
+required
+any
+sender_address
+required
+object
+(
+Address
+)
+shipping_address
+required
+object
+(
+Address
+)
+package_option
+object
+(
+PackageOptions
+)
+fulfillment_node_id
+string
+demand_location_id
+string
+external_order_id
+required
+string
+customs_info
+object
+(
+CustomsShipmentInfo
+)
+Responses
+200
+Shipment and return booking references.
+post
+/{tenant}/{carrier}/shipments
+/{tenant}/{carrier}/shipments
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"rate"
+:
+"string"
+,
+"items"
+:
+[
+{
+"price"
+:
+{
+"amount"
+:
+0
+,
+"currency"
+:
+"string"
+}
+,
+"weight"
+:
+{
+"amount"
+:
+0
+,
+"unit"
+:
+null
+}
+,
+"dimensions"
+:
+{
+"unit"
+:
+null
+,
+"width"
+:
+0
+,
+"height"
+:
+0
+,
+"length"
+:
+0
+}
+,
+"identifier"
+:
+{
+"property1"
+:
+null
+,
+"property2"
+:
+null
+}
+,
+"customs_info"
+:
+{
+"description"
+:
+"string"
+,
+"hs_number"
+:
+"string"
+,
+"hts_number"
+:
+"string"
+,
+"origin_country"
+:
+"string"
+}
+}
+]
+,
+"booking_method"
+:
+null
+,
+"sender_address"
+:
+{
+"zip_code"
+:
+"string"
+,
+"country_code"
+:
+"string"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"phone"
+:
+"string"
+}
+,
+"shipping_address"
+:
+{
+"zip_code"
+:
+"string"
+,
+"country_code"
+:
+"string"
+,
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"phone"
+:
+"string"
+}
+,
+"package_option"
+:
+{
+"weight"
+:
+{
+"amount"
+:
+0
+,
+"unit"
+:
+null
+}
+,
+"dimensions"
+:
+{
+"unit"
+:
+null
+,
+"width"
+:
+0
+,
+"height"
+:
+0
+,
+"length"
+:
+0
+}
+}
+,
+"fulfillment_node_id"
+:
+"string"
+,
+"demand_location_id"
+:
+"string"
+,
+"external_order_id"
+:
+"string"
+,
+"customs_info"
+:
+{
+"customs_signer"
+:
+"string"
+}
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"cost"
+:
+{
+"currency"
+:
+"string"
+,
+"amount"
+:
+0
+}
+,
+"offer"
+:
+"string"
+,
+"label_url"
+:
+"string"
+,
+"tracking_code"
+:
+"string"
+,
+"tracking_url"
+:
+"string"
+,
+"commercial_invoice_url"
+:
+"string"
+,
+"return_offer"
+:
+"string"
+,
+"return_cost"
+:
+{
+"currency"
+:
+"string"
+,
+"amount"
+:
+0
+}
+,
+"return_label_url"
+:
+"string"
+,
+"return_tracking_code"
+:
+"string"
+,
+"return_tracking_url"
+:
+"string"
+,
+"return_commercial_invoice_url"
+:
+"string"
+}
+Create Manifest (also named ScanForm)
+Regroupe multiple shipments under a single Manifest in order to simplify handover to carrier.
+Request Body schema:
+application/json
+offers
+required
+Array of
+strings
+Responses
+200
+Manifest references.
+post
+/{tenant}/{carrier}/manifests
+/{tenant}/{carrier}/manifests
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"offers"
+:
+[
+"string"
+]
+}
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"document_url"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+Cancel shipment
+Cancels a booked shipment using the tracking code.
+Responses
+200
+Successfully cancelled.
+post
+/{tenant}/{carrier}/shipments/{tracking_code}/_cancel
+/{tenant}/{carrier}/shipments/{tracking_code}/_cancel
+Previous
+Shipping Options Webhooks
+Next
+Shipment notification configuration API
+Copyright © 2025 NewStore, Inc.

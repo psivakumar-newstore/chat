@@ -1,0 +1,645 @@
+Stock Locations | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Inventory Manager
+Packages
+Stock Locations
+Store operations
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+Return configuration
+Stock locations
+get
+List stock locations
+post
+Create stock location
+get
+Get stock location
+patch
+Update stock location
+Stock on Hand
+get
+Stock of all products in a store
+get
+Stock of a single product in a store
+Return process configuration
+get
+Get return configuration
+post
+Create or update return configuration
+API docs by Redocly
+Stock Locations
+(
+0.1
+)
+Download OpenAPI specification
+:
+Download
+URL:
+https://apidocs.newstore.io
+An API to manipulate the numbers of inventory in StockLocations (a.k.a.
+Virtual Locations) by adding StockChanges.
+Return configuration
+Enables you to include an item returned to your store in a specific stock location, based on whether
+the returned item is salable or not.
+You can also use this resource to
+create a return configuration
+.
+Stock locations
+Represents the types of
+stock locations
+configured for your business.
+Stock locations are virtual or physical locations that hold salable or unsalable stock. NewStore uses stock locations
+to manage inventory and calculate stock on hand in your store(s), when NewStore is enabled as
+inventory master
+for the store.
+Important:
+Do not confuse this resource with the
+Locations
+resource. This resource represents only
+physical locations
+configured in your business, such as a store or DC,
+that you operate from.
+You can configure each stock location to allow its stock to be included in stock on hand calculations or not.
+See
+stock locations
+. For example, you can set up a
+stock location only for damaged goods, and ensure the stock on hand of your store does not include these goods.
+Note:
+When you
+create a location
+for your business,  the salable stock location will be created by default, if there is no salable stock location type exists then the
+main
+stock location type is created for the location by default. The
+salable
+property for the
+main
+stock location is always set to
+true
+.
+To create stock locations that are available for all stores in your
+business, use the
+Create stock location
+method.
+For a guide on creating stock locations, see
+the
+tutorial
+.
+List stock locations
+Retrieves a list of stock locations configured for your business.
+Responses
+200
+Successful response
+get
+/stock_locations
+/v0
+/stock_locations
+/stock_locations
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"stock_locations"
+:
+[
+{
+"display_name"
+:
+"Main"
+,
+"name"
+:
+"main"
+,
+"salable"
+:
+true
+}
+,
+{
+"name"
+:
+"damaged"
+,
+"salable"
+:
+false
+}
+,
+{
+"display_name"
+:
+"Display"
+,
+"name"
+:
+"display"
+,
+"salable"
+:
+false
+}
+]
+}
+Create stock location
+Creates a stock location that is available for all stores configured for your business.
+We only support one stock location that is salable -
+main
+.
+A salable stock location should be created before performing any inventory stock operations.
+Note:
+To create a salable stock location, make sure to set the
+name
+to
+main
+. Other stock locations will not be salable.
+Important:
+This method creates a virtual stock location. To create a
+physical location
+,
+run a new
+stock import
+.
+Request Body schema:
+application/json
+display_name
+string
+The human readable display name of the stock location. This name is
+visible in NewStore Fulfillment App, NOM, and other fulfillment
+related reports.
+name
+required
+string
+^[^_].*$
+The unique name of the stock location. Must be in lowercase and can
+contain numbers, hyphens, or ASCII characters.
+Responses
+201
+The stock location was successfully created.
+422
+Create stock location validation failed.
+post
+/stock_locations
+/v0
+/stock_locations
+/stock_locations
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"display_name"
+:
+"Damaged goods"
+,
+"name"
+:
+"damaged"
+}
+Response samples
+201
+Content type
+application/json
+Copy
+{
+"display_name"
+:
+"Damaged goods"
+,
+"name"
+:
+"damaged"
+}
+Get stock location
+Retrieves the stock location with the specified name.
+path
+Parameters
+name
+required
+string
+The name of the stock location. To retrieve the name, use the
+List
+stock locations method
+.
+Responses
+200
+Successful response
+404
+Stock location not found.
+get
+/stock_locations/{name}
+/v0
+/stock_locations/{name}
+/stock_locations/{name}
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"display_name"
+:
+"Main"
+,
+"name"
+:
+"main"
+,
+"salable"
+:
+true
+}
+Update stock location
+Updates a stock location that is available for all stores configured for your business. Only the display name is configurable at this point.
+path
+Parameters
+name
+required
+string
+The name of the stock location. To retrieve the name, use the
+List
+stock locations method
+.
+Request Body schema:
+application/json
+display_name
+string
+The human readable display name of the stock location. This name is
+visible in NewStore Fulfillment App, NOM, and other fulfillment
+related reports.
+Responses
+204
+The stock location was successfully updated.
+404
+The stock location name provided does not match a known stock location.
+patch
+/stock_locations/{name}
+/v0
+/stock_locations/{name}
+/stock_locations/{name}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"display_name"
+:
+"1st Quality"
+}
+Stock on Hand
+Stock of all products in a store
+Retrieves stock quantities of all products in a store across all stock locations.
+path
+Parameters
+store_id
+required
+string
+Example:
+7c9f2605-9fb3-5444-8fee-47fe51608efe
+The store in which to search for the stock of the product.
+query
+Parameters
+from
+number
+Allows returning only the stock on hand changed since the provided timestamp.
+sellable
+boolean
+Allows returning only the products in sellable stock locations.
+Responses
+200
+Successful response
+404
+Store not found
+421
+NewStore is not the stock data source for the requested store.
+get
+/stores/{store_id}/products
+/v0
+/stores/{store_id}/products
+/stores/{store_id}/products
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"location_name"
+:
+"main"
+,
+"location_label"
+:
+"Main"
+,
+"location_sellable"
+:
+true
+,
+"stock"
+:
+{
+"PRODUCT-ID-1"
+:
+30
+,
+"PRODUCT-ID-2"
+:
+26
+,
+"PRODUCT-ID-3"
+:
+69
+}
+}
+]
+Stock of a single product in a store
+Retrieves stock quantities of a specific product in a store across all stock locations.
+path
+Parameters
+store_id
+required
+string
+Example:
+7c9f2605-9fb3-5444-8fee-47fe51608efe
+The store in which to search for the stock of the product.
+product_id
+required
+string
+Example:
+PRODUCT-ID-1
+The product to search for in a store across all stock locations.
+Responses
+200
+Successful response
+404
+Store not found
+421
+NewStore is not the stock data source for the requested store.
+get
+/stores/{store_id}/products/{product_id:.*}
+/v0
+/stores/{store_id}/products/{product_id:.*}
+/stores/{store_id}/products/{product_id:.*}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"location_name"
+:
+"main"
+,
+"location_label"
+:
+"Main"
+,
+"location_sellable"
+:
+true
+,
+"stock"
+:
+{
+"PRODUCT-ID-1"
+:
+30
+}
+}
+]
+Return process configuration
+Get return configuration
+Retrieves the return configuration set up for your business. This includes condition codes and their related
+stock locations.
+Note:
+This method only retrieves condition codes that have been mapped to stock locations using the
+return configuration. Any other condition codes configured for your business are ignored.
+A condition code identifies the condition of a returned item.
+The condition code is specified
+when processing a return
+via NewStore Associate App
+,
+or using the
+Create return
+method.
+NewStore creates condition codes for your business. To retrieve the list of condition codes configured for your
+business, contact the support team.
+Related resources:
+Returns
+Related methods:
+Create stock location
+List stock locations
+Responses
+200
+Successful response
+get
+/stock_locations/return_process_configuration
+/v0
+/stock_locations/return_process_configuration
+/stock_locations/return_process_configuration
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"return_process_configuration"
+:
+[
+{
+"condition_code"
+:
+1
+,
+"revision"
+:
+1
+,
+"stock_location"
+:
+{
+"display_name"
+:
+"Main"
+,
+"name"
+:
+"main"
+,
+"salable"
+:
+true
+}
+}
+,
+{
+"condition_code"
+:
+2
+,
+"revision"
+:
+1
+,
+"stock_location"
+:
+{
+"display_name"
+:
+"Damaged"
+,
+"name"
+:
+"damaged"
+,
+"salable"
+:
+false
+}
+}
+]
+}
+Create or update return configuration
+Creates a return configuration for your business. This configuration enables you to include a returned item
+in the specified stock location in your store, using the condition code for the return.
+A condition code identifies the condition of a returned item.
+The condition code is specified when processing a return
+via NewStore Associate App
+,
+or using the
+Create return
+method.
+NewStore creates condition codes for your business. To retrieve the list of condition codes configured for your
+business, contact the support team.
+Note:
+You can only create a return configuration to manage returned items in stores, not DCs.
+If you include a returned item identified as salable in a stock location that contains salable stock, the stock on hand
+for the store increases.
+Note:
+By default, a returned item is included in the
+main
+stock location and considered salable if:
+No condition code is specified when creating a return.
+You have not created stock locations for your business.
+You have not set up a return configuration for your business.
+Related resources:
+Returns
+Related methods:
+Create stock location
+-
+List stock locations
+Request Body schema:
+application/json
+condition_code
+required
+integer
+The condition code for the return reason.
+revision
+integer
+Revision of the return configuration. Starts with 1 and is
+incremented on each update. The return configuration is
+updated only when the new revision number is greater than
+the current revision number in the database.
+stock_location_name
+required
+string
+The name of the stock location. The stock location must be
+already configured for all stores in your business.
+Responses
+201
+The return configuration was successfully created.
+post
+/stock_locations/return_process_configuration
+/v0
+/stock_locations/return_process_configuration
+/stock_locations/return_process_configuration
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"condition_code"
+:
+1
+,
+"revision"
+:
+1
+,
+"stock_location_name"
+:
+"main"
+}
+Response samples
+201
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"condition_code"
+:
+1
+,
+"revision"
+:
+1
+,
+"stock_location"
+:
+{
+"display_name"
+:
+"Main"
+,
+"name"
+:
+"main"
+,
+"salable"
+:
+true
+}
+}
+Previous
+Packages
+Next
+Store operations
+Copyright © 2025 NewStore, Inc.

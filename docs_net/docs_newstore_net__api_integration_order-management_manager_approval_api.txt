@@ -1,0 +1,471 @@
+Manager approval | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Availabilities Export API
+Customer Profile Updates API
+Fulfillment Provider API
+Fulfillment Request API
+Historical order import API
+Item Return API
+Item Return API
+Location API
+Manager approval
+Fulfillment Configuration API
+Manager Approval Rules API
+Order API
+Order Injection API
+Order Notes API
+Order information retrieval API
+Safety Stock API
+Availabilities API
+Stock insights API
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+List approval rules
+post
+Create approval rule
+put
+Update approval rule
+del
+Delete approval rule
+API docs by Redocly
+Manager approval
+(
+1.0.0
+)
+Download OpenAPI specification
+:
+Download
+Manager approval API
+Represents a set of rules which triggers a mandatory approval request within the order fulfillment
+process, typically during
+checkout in NewStore Associate App
+.
+For example
+cash_payment_rule
+or
+discount_rule
+.
+List approval rules
+Retrieves all manager approval rules.
+Responses
+200
+Rules are returned successfully.
+500
+An internal error occurred.
+get
+/manager_approval
+localhost
+/manager_approval
+The sandbox server
+/v1/c
+/manager_approval
+The staging server
+/v1/c
+/manager_approval
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"rules"
+:
+[
+{
+"label"
+:
+"unique_name"
+,
+"description"
+:
+"eaxample description"
+,
+"criteria"
+:
+[
+{
+"name"
+:
+"payment_method"
+,
+"value"
+:
+"cash"
+}
+]
+}
+]
+}
+Create approval rule
+Creates a rule containing the criteria that determines if an order needs approval before it can be placed
+by an associate via NewStore Associate App.
+You can use the following criteria to set approval rules:
+Criterion name
+Type
+has_discount
+Boolean
+discount_value
+Number
+discount_percentage
+Number
+discount_level
+order
+or
+item
+payment_method
+String
+is_return
+Boolean
+is_blind_return
+Boolean
+refund_value
+Number
+has_tax_exemption
+Boolean
+order_value
+Number
+Available values of the
+payment_method
+field are:
+cash
+,
+credit_card
+,
+manual_credit_card
+,
+gift_card
+, and
+non_integrated
+.
+Note:
+NewStore Associate App allows the associate to apply discounts either on
+order
+level or on
+item
+level using the
+discount_level
+property. If no value for
+discount_level
+is specified, it is set
+to
+order
+by default.
+You can apply a fixed discount amount to an order or item(s) using the
+discount_value
+property.
+If an order or item matches or exceeds the criteria specified in the approval rules, the
+order will need approval on the app.
+Request Body schema:
+application/json
+label
+string
+A unique rule name.
+description
+string
+A shrot human readable description of the rule.
+criteria
+Array of
+objects
+(
+Criteria
+)
+List of criteria.
+Responses
+201
+The rule has been created successfully.
+400
+Bad Request - Request data is invalid.
+409
+Conflict, requested rule label already exists.
+500
+An internal error occurred.
+post
+/manager_approval
+localhost
+/manager_approval
+The sandbox server
+/v1/c
+/manager_approval
+The staging server
+/v1/c
+/manager_approval
+Request samples
+Payload
+Content type
+application/json
+Example
+Order level discount approval
+Item level discount approval
+Fixed value discount approval
+Order level discount approval
+Orders with a discount of 80% or more need approval on the app.
+Copy
+Expand all
+Collapse all
+{
+"label"
+:
+"RestrictDiscountsAbove80Percent"
+,
+"description"
+:
+"Discounts equal or above 80%"
+,
+"criteria"
+:
+[
+{
+"name"
+:
+"has_discount"
+,
+"value"
+:
+"true"
+}
+,
+{
+"name"
+:
+"discount_percentage"
+,
+"value"
+:
+"80"
+}
+,
+{
+"name"
+:
+"discount_level"
+,
+"value"
+:
+"order"
+}
+]
+}
+Response samples
+201
+400
+409
+500
+Content type
+application/json
+Copy
+{
+"successful"
+:
+true
+,
+"message"
+:
+""
+}
+Update approval rule
+Updates the specified approval rule.
+Note:
+Requires the
+/{label}
+to identify the rule
+path
+Parameters
+label
+required
+string
+The unique identifier of a manager approval rule.
+Request Body schema:
+application/json
+label
+string
+A unique rule name.
+description
+string
+A shrot human readable description of the rule.
+criteria
+Array of
+objects
+(
+Criteria
+)
+List of criteria.
+Responses
+200
+The rule has been updated successfully.
+400
+Bad Request - Request data is invalid.
+404
+The rule wasn't found.
+409
+Conflict, requested rule label already exists.
+500
+An internal error occurred.
+put
+/manager_approval/{label}
+localhost
+/manager_approval/{label}
+The sandbox server
+/v1/c
+/manager_approval/{label}
+The staging server
+/v1/c
+/manager_approval/{label}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"summary"
+:
+"Order level discount approval"
+,
+"description"
+:
+"Orders with a discount of 80% or more need approval on the app.\n"
+,
+"value"
+:
+{
+"label"
+:
+"RestrictDiscountsAbove80Percent"
+,
+"description"
+:
+"Discounts equal or above 80%"
+,
+"criteria"
+:
+[
+{
+"name"
+:
+"has_discount"
+,
+"value"
+:
+"true"
+}
+,
+{
+"name"
+:
+"discount_percentage"
+,
+"value"
+:
+"80"
+}
+,
+{
+"name"
+:
+"discount_level"
+,
+"value"
+:
+"order"
+}
+]
+}
+}
+Response samples
+200
+400
+404
+409
+500
+Content type
+application/json
+Copy
+{
+"successful"
+:
+true
+,
+"message"
+:
+""
+}
+Delete approval rule
+Deletes the specified rule.
+Note:
+Requires the
+/{label}
+to identify the rule
+path
+Parameters
+label
+required
+string
+The unique identifier of a manager approval rule.
+Responses
+200
+The rule has been deleted successfully.
+400
+Bad Request - Request data is invalid.
+404
+The rule wasn't found.
+500
+An internal error occurred.
+delete
+/manager_approval/{label}
+localhost
+/manager_approval/{label}
+The sandbox server
+/v1/c
+/manager_approval/{label}
+The staging server
+/v1/c
+/manager_approval/{label}
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+{
+"successful"
+:
+true
+,
+"message"
+:
+""
+}
+Previous
+Location API
+Next
+Fulfillment Configuration API
+Copyright © 2025 NewStore, Inc.

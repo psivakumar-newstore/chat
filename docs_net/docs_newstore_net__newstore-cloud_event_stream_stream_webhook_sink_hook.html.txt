@@ -1,0 +1,653 @@
+Event-Stream Webhooks | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Configuration APIs
+Webhooks
+External Availability Webhook
+Custom Tax Provider Webhooks
+Fulfillment Provider Webhooks
+Shipping Provider Webhooks
+Shipping Options Webhooks
+Payment Provider Webhooks
+Gift Card Provider Webhooks
+External Order Webhook
+Event-Stream Webhooks
+New Generation APIs
+post
+Sends Newstore events to subscribed webhooks or S3 buckets
+API docs by Redocly
+Event-Stream Webhooks
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Sends Newstore events to subscribed webhooks or S3 buckets
+Incoming call from NewStore that contains an event. The event is described in the request.
+Managing duplicate events:
+You can receive data from Newstore via Event stream webhooks, as Newstore supports emitting data at least once to
+your integration point. However, Event stream webhooks sometimes deliver events more than once. To protect
+your integration point from duplicate events, we advise you to make your event processing
+idempotent
+. You can detect duplicate events by comparing your
+event's idempotency key with the idempotency keys of previous events. For each event, you will see an
+idempotency key in your webhook description. For more information,
+see
+Stripe's blog
+on idempotency or the
+NewStore
+guide
+.
+NOTE:
+Currently the idempotency key is only unique
+per event
+. Add the event name to the idempotency key to get a
+unique key across all events.
+Order of events:
+You will not receive events in a specific order. You may receive an
+order.cancelled
+event before the
+corresponding
+order.created
+event.
+Event delivery:
+We take at most 15 minutes to send an event to your integration endpoint according to the service-level agreement (SLA) between a retailer
+and NewStore. However, usually, it takes seconds to complete this operation.
+Response code:
+The response code you send back decides whether the whole stream should be interrupted or
+maintained. See the
+Responses
+section below for more information.
+Deprecation note:
+The
+order.shipped
+event has been deprecated. Use the
+order.completed
+event
+for data related to orders that are closed in the NewStore platform.
+Authorizations:
+ApiKeyAuth
+Request Body schema:
+application/json
+tenant
+required
+string
+The tenant name.
+name
+required
+string
+Enum
+:
+"fulfillment_request.assigned"
+"fulfillment_request.items_completed"
+"fulfillment_request.items_failed"
+"fulfillment_request.items_ready_for_handover"
+"order.created"
+"order.opened"
+"order.shipped"
+"order.completed"
+"order.cancelled"
+"order.items_swapped"
+"order.items_cancelled"
+"order.items_on_hold"
+"order.serial_numbers_added"
+"order.customer_profile_amended"
+"invoice.created"
+"return.processed"
+"refund_request.issued"
+"payment_account.amount_authorized"
+"payment_account.amount_captured"
+"payment_account.amount_refunded"
+"payment_account.amount_voided"
+"inventory_transaction.items_received"
+"inventory_transaction.items_ready_for_handover"
+"inventory_transaction.asn_created"
+"inventory_transaction.asn_closed"
+"inventory_transaction.adjustment_created"
+"inventory_transaction.transfer_order_created"
+"inventory_transaction.transfer_order_closed"
+"inventory_count.items_counted"
+"customer.created"
+"customer.updated"
+"customer.address_created"
+"customer.address_updated"
+"customer.address_deleted"
+"employee.created"
+"employee.updated"
+"cash_drawer.activity_recorded"
+"cash_drawer.count_submitted"
+"cash_drawer.drawer_created"
+"cash_drawer.drawer_updated"
+"cash_drawer.float_defined"
+"cash_drawer.transaction_completed"
+"gift_card.deactivated"
+"clienteling.optin_changed"
+The name of the external event.
+published_at
+required
+string
+<
+date-time
+>
+UTC timestamp indicating when this event was generated.
+payload
+required
+order.created (object) or order.opened (object) or order.completed (object) or order.cancelled (object) or order.items_cancelled (object) or order.items_on_hold (object) or order.serial_numbers_added (object) or order.customer_profile_amended (object) or order.items_swapped (object) or invoice.created (object) or return.processed (object) or fulfillment_request.assigned (object) or fulfillment_request.items_completed (object) or fulfillment_request.items_failed (object) or fulfillment_request.items_ready_for_handover (object) or refund_request.issued (object) or payment_account.amount_authorized (object) or payment_account.amount_captured (object) or payment_account.amount_refunded (object) or payment_account.amount_voided (object) or inventory_transaction.items_received (object) or inventory_transaction.items_ready_for_handover (object) or inventory_transaction.asn_created (object) or inventory_transaction.asn_closed (object) or inventory_transaction.adjustment_created (object) or inventory_transaction.transfer_order_created (object) or inventory_transaction.transfer_order_closed (object) or inventory_count.items_counted (object) or customer.created (object) or customer.updated (object) or customer.address_created (object) or customer.address_updated (object) or customer.address_deleted (object) or employee.created (object) or employee.updated (object) or cash_drawer.transaction_completed (object) or cash_drawer.drawer_created (object) or cash_drawer.drawer_updated (object) or cash_drawer.count_submitted (object) or cash_drawer.float_defined (object) or cash_drawer.activity_recorded (object) or gift_card.deactivated (object) or clienteling.optin_changed (object)
+Content of the event defined by the 'name' property.
+Responses
+200
+The event publishing request from NewStore was successfully accepted by your system.
+Important:
+If you respond with anything other than a 200 response code, the whole event stream is
+interrupted and NewStore will keep sending you the last event you didn't acknowledge with a 200
+response code. When you reach the retry limit, no events are sent.
+400
+The event publishing request from NewStore cannot be processed because of an error on
+the client side. The NewStore platform is not retrying and stopping the integration.
+Important:
+When you respond with this error code, the whole event stream is interrupted. No new events are sent.
+To restart the event stream, use the
+start method
+.
+403
+The event publishing request from NewStore cannot be processed because the authorization token
+is not accepted by the client side. The NewStore platform is not retrying and stopping the integration.
+Important:
+When you respond with this error code, the whole event stream is interrupted. No new events are sent.
+To restart the event stream, use the
+start method
+.
+429
+The event publishing request from NewStore failed because too many requests were
+sent to your system. The NewStore platform is throttling the requests and retrying the
+operation according to parameters defined during integration.
+Important:
+When you respond with this error code, the whole event stream is interrupted and NewStore will
+keep sending the last event you didn't acknowledge with a 200 response code. When you reach the
+retry limit, no events are sent.
+500
+The event publishing request from NewStore cannot be processed because of an internal
+error on the external system's side. NewStore throttles the requests and
+retries the operation according to parameters defined during integration.
+Important:
+When you respond with this error code, the whole event stream is interrupted and NewStore will
+keep sending the last event you didn't acknowledge with a 200 response code. When you reach the
+retry limit, no events are sent.
+post
+/event
+/newstore_api/v0
+/event
+Request samples
+Payload
+Content type
+application/json
+Example
+order.created
+order.opened
+order.shipped
+order.completed
+order.cancelled
+order.items_cancelled
+order.items_on_hold
+order.items_swapped
+order.serial_numbers_added
+order.customer_profile_amended
+invoice.created
+fulfillment_request.assigned
+fulfillment_request.items_completed
+fulfillment_request.items_failed
+fulfillment_request.items_ready_for_handover
+return.processed
+refund_request.issued
+payment_account.amount_authorized
+payment_account.amount_captured
+payment_account.amount_refunded
+payment_account.amount_voided
+inventory_transaction.items_received
+inventory_transaction.items_ready_for_handover
+inventory_transaction.asn_created
+inventory_transaction.asn_closed
+inventory_transaction.adjustment_created
+inventory_transaction.transfer_order_created
+inventory_transaction.transfer_order_closed
+inventory_count.items_counted
+customer.created
+customer.updated
+customer.address_created
+customer.address_updated
+customer.address_deleted
+employee.created
+employee.updated
+cash_drawer.transaction_completed
+cash_drawer.activity_recorded
+cash_drawer.float_defined
+cash_drawer.count_submitted
+cash_drawer.drawer_created
+cash_drawer.drawer_updated
+gift_card.deactivated
+clienteling.optin_changed
+order.created
+The order has been successfully created in the NewStore Omnichannel Cloud.
+If the payment authorization fails, this event is not emitted but you might be able to see
+this order in NewStore Omnichannel Manager, depending on your configuration.
+This event is sent at the beginning of the grace period.
+See the
+order lifecycle
+for more information about
+the possible next events to expect.
+Idempotency key:
+id
+Copy
+Expand all
+Collapse all
+{
+"tenant"
+:
+"businessname"
+,
+"name"
+:
+"order.created"
+,
+"published_at"
+:
+"2010-01-01T12:00:00.000Z"
+,
+"payload"
+:
+{
+"id"
+:
+"04d02325-f4ea-4a7b-bfeb-2ff74a0e1a0d"
+,
+"external_id"
+:
+"NSD000000001"
+,
+"created_at"
+:
+"2018-07-06T11:56:34.712Z"
+,
+"placed_at"
+:
+"2018-07-06T12:06:25.989Z"
+,
+"associate_id"
+:
+"fe203100e1e2416ba6932d1561ccc380"
+,
+"associate_email"
+:
+"some@qa2.com"
+,
+"channel_type"
+:
+"web"
+,
+"channel"
+:
+"webshop-123"
+,
+"is_exchange"
+:
+false
+,
+"customer_email"
+:
+"johndoe@example.com"
+,
+"customer_id"
+:
+"3dd42342-0937-4c12-b393-d2c849a590d5"
+,
+"external_customer_id"
+:
+"CUST123423"
+,
+"is_historical"
+:
+false
+,
+"discounts"
+:
+[
+{
+"trigger"
+:
+"coupon"
+,
+"discount_id"
+:
+"xxyz1b25-0937-4c12-b393-d2c849a590d5"
+,
+"coupon_code"
+:
+"COUPON10E"
+}
+]
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"John"
+,
+"last_name"
+:
+"Doe"
+,
+"address_line_1"
+:
+"800 California St"
+,
+"address_line_2"
+:
+""
+,
+"address_line1"
+:
+"800 California St"
+,
+"address_line2"
+:
+""
+,
+"zip_code"
+:
+"94108"
+,
+"city"
+:
+"San Francisco"
+,
+"state"
+:
+"CA"
+,
+"country"
+:
+"US"
+,
+"phone"
+:
+""
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"John"
+,
+"last_name"
+:
+"Doe"
+,
+"address_line_1"
+:
+"800 California St"
+,
+"address_line_2"
+:
+""
+,
+"address_line1"
+:
+"800 California St"
+,
+"address_line2"
+:
+""
+,
+"zip_code"
+:
+"94108"
+,
+"city"
+:
+"San Francisco"
+,
+"state"
+:
+"CA"
+,
+"country"
+:
+"US"
+,
+"phone"
+:
+"07534706323"
+}
+,
+"price_method"
+:
+"tax_excluded"
+,
+"subtotal"
+:
+295
+,
+"discount_total"
+:
+0
+,
+"shipping_total"
+:
+42
+,
+"shipping_tax"
+:
+0
+,
+"tax_total"
+:
+25.08
+,
+"grand_total"
+:
+320.08
+,
+"currency"
+:
+"USD"
+,
+"tax_strategy"
+:
+"fixedrate"
+,
+"tax_exempt"
+:
+false
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"Order level attribute one"
+,
+"value"
+:
+"some value"
+}
+,
+{
+"name"
+:
+"Order level attribute two"
+,
+"value"
+:
+"true"
+}
+]
+,
+"items"
+:
+[
+{
+"id"
+:
+"c1348089-1889-4cb8-8846-ad054d066fbf"
+,
+"item_type"
+:
+"product"
+,
+"product_id"
+:
+"1005404"
+,
+"pricebook_id"
+:
+"default"
+,
+"pricebook_price"
+:
+295
+,
+"list_price"
+:
+295
+,
+"item_discounts"
+:
+0
+,
+"order_discounts"
+:
+0
+,
+"tax"
+:
+25.08
+,
+"tax_provider_details"
+:
+[
+{
+"name"
+:
+"Custom Tax"
+,
+"amount"
+:
+25.08
+,
+"rate"
+:
+0.2
+}
+]
+,
+"tax_class"
+:
+"PC040100"
+,
+"quantity"
+:
+1
+,
+"status"
+:
+"created"
+,
+"shipping_service_level"
+:
+"STANDARD_OVERNIGHT"
+,
+"is_preorder"
+:
+false
+,
+"future_fulfillment_location_id"
+:
+"874e9179-b87f-40f0-a07e-3e6d28ef8fd9"
+,
+"shipping_method"
+:
+"traditional_carrier"
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"Item level attribute one"
+,
+"value"
+:
+"123.45"
+}
+,
+{
+"name"
+:
+"Item level attribute two"
+,
+"value"
+:
+"false"
+}
+]
+,
+"discounts"
+:
+[
+{
+"id"
+:
+"ac568994-28ce-420a-b053-c0010e315920"
+,
+"price_adjustment"
+:
+44
+,
+"reason"
+:
+"Coupon EMPLOYEE"
+,
+"action"
+:
+"percentage"
+,
+"value"
+:
+50
+,
+"level"
+:
+"order"
+,
+"coupon_code"
+:
+"CODE123"
+,
+"externalRef"
+:
+"914e9179-b87f-40f0-a07e-3e6d287f8fd8"
+}
+]
+}
+]
+}
+}
+Previous
+External Order Webhook
+Next
+Next Generation Omnichannel APIs
+Copyright © 2025 NewStore, Inc.

@@ -1,0 +1,11033 @@
+Highstreet E-commerce Platform API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Highstreet E-commerce Platform API
+Push Notifications API
+Jobs API
+Stock Subscription
+Configuration APIs
+Webhooks
+New Generation APIs
+Usage Guide
+Authentication
+Errors
+Response Codes
+Data
+Pagination
+Notes
+Endpoints
+Authorization
+post
+Create an access token
+post
+Cookies
+Basket
+get
+View Basket
+del
+Delete Basket
+post
+Create Basket
+put
+Update Shipping Address
+put
+Update Billing Address
+get
+Get Shipping Methods
+put
+Update Shipping Method
+get
+Get Payment Methods
+put
+Update Payment Method
+post
+Add Line Item
+put
+Update a Line Item
+del
+Delete Line Item
+post
+Add Coupon
+del
+Remove a coupon
+post
+Add Voucher (opt)
+del
+Remove a Voucher (opt)
+put
+Update Customer Details
+post
+Finalize a basket
+Categories
+get
+View Category Tree
+Customer
+get
+View Customer
+post
+Create Customer
+patch
+Update Customer
+post
+Reset Password
+del
+Delete Address
+patch
+Update Address
+get
+View Addresses
+post
+Create Address
+get
+View Customer Orders (opt)
+get
+View Customer Vouchers (opt)
+get
+View Customer Campaign (opt)
+Miscellaneous
+get
+Get Countries
+get
+Get Order
+Products
+Product types
+get
+Search
+get
+Details
+get
+Availability
+get
+Related
+get
+Store Availability
+Stores
+get
+Find nearby stores (opt)
+get
+Get Store Details (opt)
+Wishlists
+get
+Fetch wishlist
+post
+Add wishlist item
+del
+Delete wishlist item
+Changelog
+v0.10-rc3
+03/10/23
+v0.10-rc2
+04/05/20
+v0.10-rc1
+25/06/19
+v0.10
+21/06/19
+v0.9-rc14
+22/05/19
+v0.9-rc13
+15/05/19
+v0.9-rc12
+15/05/19
+v0.9-rc11
+12/03/19
+v0.9-rc10
+06/03/19
+v0.9-rc9
+27/02/19
+v0.9-rc8
+18/02/19
+v0.9-rc7
+12/02/19
+v0.9-rc6
+05/02/19
+v0.9-rc5
+31/01/19
+v0.9-rc4
+25/01/19
+v0.9-rc3
+17/01/19
+v0.9-rc2
+08/01/19
+v0.9-rc1
+21/12/18
+v0.8
+3/12/18
+5/12/18
+API docs by Redocly
+Highstreet E-commerce Platform API
+(
+0.9
+)
+Download OpenAPI specification
+:
+Download
+Contact:
+support@highstreetmobile.com
+This documents a JSON API that should be implemented by you so that the
+Highstreet app can integrate with your E-commerce platform.
+Unless stated otherwise the endpoints listed should accept and return JSON.
+See Usage Guide for general notes about the API and Endpoints for the actual
+implementation details.
+Authentication
+All requests apart from requests to the
+POST /token
+endpoint will contain an API token in the
+X-Hs-Api-Token
+header. This token should be provided by you and be unique to Highstreet.
+As well as the API token some requests will require an authenticated user.
+Such as the basket endpoints or those related to the customer endpoints. This
+token will be provided in the
+Authorization
+header of a request. The token will be of type
+bearer and so will be provided in the following format:
+Bearer <token>
+. For example with a
+token of
+123
+. The value of the
+Authorization
+header would be
+Bearer 123
+Customer authentication is done through the OAuth 2.0 standard detailed in the
+token endpoint
+There are 2 types of users of the app. Guest users and logged in users. Both types of users require
+an access token.
+Errors
+Errors are represented by both the response code and the body of the response.
+All errors should include an error object in the response body that includes a code
+and a message key.
+HTTP
+/
+1.1
+400
+Bad Request
+{
+"code"
+:
+"invalid_email"
+,
+"message"
+:
+"Email is not valid"
+}
+Response Codes
+Only the following response codes are expected to be returned by this API:
+200 - OK
+201 - Created
+204 - No Content
+401 - Unauthorised
+403 - Forbidden
+400 - Bad Request
+404 - Not Found
+500 - Internal Server Error
+Data
+IDs
+All ids ie those of products, baskets etc should be url safe.
+Localisation
+Your e-commerce platform most likely supports multiple locales and currencies. This information
+will be passed on to your API implementation in the url query parameters of the request.
+For example:
+/categories/tree?locale=nl-NL&currency=EUR
+You should use the value of these parameters to determine what language and prices to return to
+the app. Also you may use this information to determine which Catalogue to use, if you have
+multiple catalogues in different countries for instance.
+Currency codes
+Currency codes follow the
+ISO 4217 standard
+.
+For example
+EUR
+,
+GBP
+,
+USD
+Locales
+A Locale is represented as a language code and a country code seperated by a dash (
+-
+).
+For example
+nl-NL
+Languages
+A language is represented as a 2 digit code following the
+ISO 639-1
+standard.
+Countries
+A country is represented by a 2 digit code following the
+ISO 3166-1 Alpha-2
+standard.
+Dates and Time
+Dates and times follow the
+ISO 8601 standard
+.
+All dates/times must be supplied in the ISO 8601 format.
+For example
+2018-08-17T15:53:00+01:00
+Pagination
+Some endpoints support pagination. Pagination should be supported using the
+cursor
+and
+size
+keys supplied in the query parameters of the url.
+The value of
+size
+defines how many items to return and the value of
+cursor
+defines the index of the first item to start counting from. Items should have
+a zero based index. For example
+GET /customers/orders?cursor=0&size=10
+would return the first 10 orders and
+GET /customers/orders?cursor=10&size=10
+would return the following 10 orders.
+Notes
+Not all endpoints are required, depending on what feature sets you wish to
+support. It is noted in the description of the endpoint as to wether the
+endpoint in question is optional or required.
+Authorization
+Describes how to authorize as a customer with your e-commerce platform.
+Note
+Highstreet does support a single sign on flow. i.e login via Facebook is
+supported. Please contact us for more details if you wish to support a
+single sign on flow.
+Create an access token
+This is a required endpoint
+The token endpoint is used to obtain a customer access token for the e-commerce
+platform.
+This endpoint should accept
+application/x-www-form-urlencoded
+data as in
+accordance to the Oauth 2.0 spec
+Only a token of type bearer is supported.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+Request Body schema:
+application/x-www-form-urlencoded
+An OAuth 2.0 Access Token Request encoded as form data
+grant_type
+required
+string
+refresh_token
+password
+guest
+sign_in_with_apple
+refresh_token
+client_id
+string
+client_secret
+string
+refresh_token
+required
+string
+A refresh token that was previously provided
+Responses
+200
+OK
+400
+Bad Request
+post
+/token
+/token
+Response samples
+200
+400
+Content type
+application/json
+Copy
+{
+"access_token"
+:
+"string"
+,
+"token_type"
+:
+"bearer"
+,
+"expires_in"
+:
+0
+,
+"refresh_token"
+:
+"string"
+}
+Cookies
+This is a required endpoint
+Gets frontend cookies using the customer's access token. The cookies can be used
+to continue the session on the web. This allows the user to view
+personal web content that would require a session.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+OK
+401
+API key is missing or invalid
+500
+An internal server error occured
+post
+/cookies
+/cookies
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"cookies"
+:
+[
+"frontend=foo; expires=Wed, 30-May-2018 13:52:19 GMT; Max-Age=2592000; path=/; domain=merchant.com; HttpOnly"
+,
+"frontend_cid=bar; expires=Wed, 30-May-2018 13:52:19 GMT; Max-Age=2592000; path=/; domain=merchant.com; secure; HttpOnly"
+]
+}
+Basket
+Represents a Customer's shopping basket. A customer may only have 1 basket at any given time.
+Seperate endpoints are used to update each attribute of the basket. Eg to set the shipping address. The basket contains
+a
+_errors
+key that provides a list of errors on the basket that need to be
+resolved before it can be converted into an order. It also works as a kind of check list indicating what information
+is still missing. For example, if the shipping address is missing then there
+would be an error related to the shipping address in the array.
+A Basket contains line items not products. A line item references a product by it's id. A line item
+can hold multiple of the same product.
+Payment is managed through an integration with a payment provider. Eg Adyen. When a customer finalizes
+the basket the app will launch a web page hosted by the payment provider. The customer will then
+fill in all necessary payment information within this webpage before being returned to the app.
+View Basket
+This is a required endpoint
+Fetches the basket by ID.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+Success
+401
+API key or access token is missing, invalid or expired.
+404
+The specified resource was not found
+500
+An internal server error occured
+get
+/baskets/{id}
+/baskets/{id}
+Response samples
+200
+401
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Delete Basket
+This is a required endpoint
+Deletes a customer's basket by id.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+204
+No Content
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+delete
+/baskets/{id}
+/baskets/{id}
+Response samples
+401
+500
+Content type
+application/json
+Copy
+{
+"code"
+:
+"invalid_oauth_token"
+,
+"message"
+:
+"invalid or expired token"
+}
+Create Basket
+This is a required endpoint
+Creates an empty basket for a customer. Customers are allowed to have 1
+Basket at a time.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+201
+Created
+401
+API key or access token is missing, invalid or expired.
+403
+Customer already has a Basket
+500
+An internal server error occured
+post
+/baskets
+/baskets
+Response samples
+201
+401
+403
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Update Shipping Address
+This is a required endpoint
+Sets and updates the shippping address of the basket.
+NOTE
+It may be possible that only a partial address is initially provided. This is the case
+when the customer pays with ApplePay for example. Initially the device will only have access
+to a partial address, once the customer authorises the payment this endpoint will be called
+again before finalising the order. As such many fields are optional and if any address
+validation takes places it should be done when the
+POST /orders
+endpoint is called to
+finalize the order. As it is garanteed that the address will be complete once that endpoint has
+been called.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+A Basket Address
+address
+required
+object
+(
+BasketAddress
+)
+An address
+first_name
+string
+The recipient's first name
+last_name
+string
+The recipient's last name
+company
+string
+The company name of the recipient
+street
+string
+Street name
+house_number
+string
+House number
+addition
+string
+Addition
+postal_code
+string
+Postal or ZIP code
+city
+string
+The city name
+state
+string
+The state code.
+country_id
+string
+<= 2 characters
+A two character
+ISO 3166-1 Alpha-2
+country code
+telephone
+string
+The phone number of the recipient
+custom
+object
+Custom address attributes
+Responses
+200
+Success
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+put
+/baskets/{id}/shipping_address
+/baskets/{id}/shipping_address
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+}
+Response samples
+200
+400
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Update Billing Address
+This is a required endpoint
+Sets and updates the billing address of the basket.
+NOTE
+It may be possible that only a partial address is initially provided. This is the case
+when the customer pays with ApplePay for example. Initially the device will only have access
+to a partial address, once the customer authorises the payment this endpoint will be called
+again before finalising the order. As such many fields are optional and if any address
+validation takes places it should be done when the
+POST /orders
+endpoint is called to
+finalize the order. As it is garanteed that the address will be complete once that endpoint has
+been called.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+A Basket Address
+address
+required
+object
+(
+BasketAddress
+)
+An address
+first_name
+string
+The recipient's first name
+last_name
+string
+The recipient's last name
+company
+string
+The company name of the recipient
+street
+string
+Street name
+house_number
+string
+House number
+addition
+string
+Addition
+postal_code
+string
+Postal or ZIP code
+city
+string
+The city name
+state
+string
+The state code.
+country_id
+string
+<= 2 characters
+A two character
+ISO 3166-1 Alpha-2
+country code
+telephone
+string
+The phone number of the recipient
+custom
+object
+Custom address attributes
+Responses
+200
+Success
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+put
+/baskets/{id}/billing_address
+/baskets/{id}/billing_address
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+}
+Response samples
+200
+400
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Get Shipping Methods
+This is a required endpoint
+Gets a list of Shipping methods for a basket. Only applicable shipping methods
+should be returned. For example a US specific shipping method should not be
+returned for a basket with a shipping address in the Netherlands.
+NOTES
+If the shipping address has not been set yet it's expected that the list will be empty.
+Regarding pick up in store. If the e-commerce platform supports pick up in store then a shipping
+method with the code
+pick_up_in_store
+should be returned. The app will then recognise this
+method and make a request to the
+/stores
+endpoint to get a list of the available stores.
+The store id's will then be used as the suboptions for the
+pick_up_in_store
+option.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+Success
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+get
+/baskets/{id}/shipping_methods
+/baskets/{id}/shipping_methods
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"shipping_methods"
+:
+[
+{
+"code"
+:
+"postnl"
+,
+"title"
+:
+"Post NL"
+}
+,
+{
+"code"
+:
+"dhl"
+,
+"title"
+:
+"DHL"
+,
+"options"
+:
+[
+{
+"code"
+:
+"morning"
+,
+"title"
+:
+"Morning Delivery"
+}
+,
+{
+"code"
+:
+"evening"
+,
+"title"
+:
+"Evening Delivery"
+,
+"price"
+:
+2.95
+}
+]
+}
+]
+}
+Update Shipping Method
+This is a required endpoint
+Sets and updates the Shipping method of the basket.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+A Shipping Method object
+shipping_method
+object
+(
+ShippingMethodRequest
+)
+The selected method.
+code
+required
+string
+non-empty
+The unique identifer
+option
+string
+The selected suboption
+Responses
+200
+Success
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+422
+Can't process the request
+500
+An internal server error occured
+put
+/baskets/{id}/shipping_methods
+/baskets/{id}/shipping_methods
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"shipping_method"
+:
+{
+"code"
+:
+"string"
+,
+"option"
+:
+"string"
+}
+}
+Response samples
+200
+400
+401
+422
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Get Payment Methods
+This is a required endpoint
+Gets a list of applicable payment methods for a basket.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+Success
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+get
+/baskets/{id}/payment_methods
+/baskets/{id}/payment_methods
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"payment_methods"
+:
+[
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+]
+}
+Update Payment Method
+This is a required endpoint
+Sets and updates the Payment method of the basket.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+A Payment Method object
+payment_method
+object
+(
+PaymentMethodRequest
+)
+The selected method.
+code
+required
+string
+non-empty
+The unique identifer
+option
+string
+The selected suboption
+Responses
+200
+Successfully updated the payment method
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+422
+Can't process the request
+500
+An internal server error occured
+put
+/baskets/{id}/payment_methods
+/baskets/{id}/payment_methods
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"option"
+:
+"string"
+}
+}
+Response samples
+200
+400
+401
+422
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Add Line Item
+This is a required endpoint
+Add a line item to the basket.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+item
+required
+object
+(
+BasicLineItem
+)
+A line item
+product_id
+required
+string
+non-empty
+Product identifier
+quantity
+required
+number
+>= 0
+Quantity
+Responses
+200
+Success
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+422
+Item cannot be added
+500
+An internal server error occured
+post
+/baskets/{id}/items
+/baskets/{id}/items
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"item"
+:
+{
+"product_id"
+:
+"1234_AB/S"
+,
+"quantity"
+:
+1
+}
+}
+Response samples
+200
+400
+401
+422
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Update a Line Item
+This is a required endpoint
+Updates a line item by either changing the quantity or product id.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+item_id
+required
+string
+Unique identifier of the item.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+item
+required
+object
+(
+BasicLineItem
+)
+A line item
+product_id
+required
+string
+non-empty
+Product identifier
+quantity
+required
+number
+>= 0
+Quantity
+Responses
+200
+Success
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+404
+Item does not exist
+422
+Item cannot be updated
+500
+An internal server error occured
+put
+/baskets/{id}/items/{item_id}
+/baskets/{id}/items/{item_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"item"
+:
+{
+"product_id"
+:
+"1234_AB/S"
+,
+"quantity"
+:
+1
+}
+}
+Response samples
+200
+400
+401
+404
+422
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Delete Line Item
+This is a required endpoint
+Removes a line item from the basket. If the item does not exist the operation
+should be considered successful.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+item_id
+required
+string
+Unique identifier of the item.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+Success
+401
+API key or access token is missing, invalid or expired.
+403
+Item cannot be deleted
+500
+An internal server error occured
+delete
+/baskets/{id}/items/{item_id}
+/baskets/{id}/items/{item_id}
+Response samples
+200
+401
+403
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Add Coupon
+This is a required endpoint
+Applies a coupon to the basket.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+coupon
+required
+object
+(
+CouponItem
+)
+A Coupon.
+code
+required
+string
+non-empty
+The coupon code
+Responses
+200
+Success
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+422
+Coupon code cannot be added
+500
+An internal server error occured
+post
+/baskets/{id}/coupons
+/baskets/{id}/coupons
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"coupon"
+:
+{
+"code"
+:
+"10OFF"
+}
+}
+Response samples
+200
+400
+401
+422
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Remove a coupon
+This is a required endpoint
+Removes a coupon from the basket
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+coupon_code
+required
+string
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+Success
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+delete
+/baskets/{id}/coupons/{coupon_code}
+/baskets/{id}/coupons/{coupon_code}
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Add Voucher (opt)
+This is an optional endpoint
+Applies a voucher to the basket.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+voucher
+required
+object
+(
+VoucherItem
+)
+A Voucher.
+id
+required
+string
+non-empty
+The Voucher id
+Responses
+200
+Success
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+422
+Voucher cannot be added
+500
+An internal server error occured
+post
+/baskets/{id}/vouchers
+/baskets/{id}/vouchers
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"voucher"
+:
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+}
+Response samples
+200
+400
+401
+422
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Remove a Voucher (opt)
+This is an optional endpoint
+Removes a Voucher from the basket
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+voucher_id
+required
+string
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+Success
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+delete
+/baskets/{id}/vouchers/{voucher_id}
+/baskets/{id}/vouchers/{voucher_id}
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Update Customer Details
+This is a required endpoint
+Updates the customer's details on the basket.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+customer
+required
+object
+(
+BasicCustomer
+)
+email
+required
+string
+<
+email
+>
+The customer's e-mail address.
+Responses
+200
+Success
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+put
+/baskets/{id}/customer
+/baskets/{id}/customer
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"customer"
+:
+{
+"email"
+:
+"han@thefalcon.com"
+}
+}
+Response samples
+200
+400
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"_errors"
+:
+[
+{
+"type"
+:
+"string"
+,
+"message"
+:
+"string"
+}
+]
+,
+"id"
+:
+"string"
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+,
+"customer"
+:
+{
+"email"
+:
+"string"
+,
+"id"
+:
+"string"
+}
+,
+"includes_tax"
+:
+true
+,
+"payment_method"
+:
+{
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"title"
+:
+"string"
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"shipping_method"
+:
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+,
+"image"
+:
+"string"
+,
+"options"
+:
+[
+{
+"title"
+:
+"string"
+,
+"code"
+:
+"string"
+,
+"price"
+:
+0
+}
+]
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"promotional"
+:
+false
+,
+"product_id"
+:
+"string"
+,
+"prices"
+:
+{
+"unit_original"
+:
+0
+,
+"unit_effective"
+:
+0
+,
+"unit_effective_tax_free"
+:
+0
+,
+"original"
+:
+0
+,
+"effective"
+:
+0
+,
+"custom"
+:
+{ }
+}
+,
+"quantity"
+:
+0
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"coupons"
+:
+[
+{
+"code"
+:
+"10OFF"
+}
+]
+,
+"vouchers"
+:
+[
+{
+"id"
+:
+"1234-8796-1234-7789"
+}
+]
+,
+"custom"
+:
+{ }
+}
+Finalize a basket
+This is a required endpoint
+Converts a basket into an Order. This means that no changes can be made to
+the basket anymore. This is the final step in the checkout flow and means
+that the app is now waiting on the customer to complete the payment.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+basket_id
+string
+The id of the basket
+Responses
+201
+Created
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+403
+Forbidden
+500
+An error occured finalizing the basket
+post
+/orders
+/orders
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"basket_id"
+:
+"string"
+}
+Response samples
+201
+400
+401
+403
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"PNZfEiFcNM"
+,
+"number"
+:
+"EU000027546"
+,
+"customer_id"
+:
+"1234-6789-1234-0986"
+,
+"customer_email"
+:
+"han@therepublic.com"
+,
+"creation_date"
+:
+"2018-08-17 14:53:00 UTC"
+,
+"source"
+:
+"app"
+,
+"status"
+:
+"created"
+,
+"items"
+:
+[
+{
+"product_id"
+:
+"1234_001-M"
+,
+"product_name"
+:
+"Basic T-Shirt"
+,
+"product_image"
+:
+"
+https://images.com/basic-tshirt.jpg
+"
+,
+"quantity"
+:
+2
+,
+"full_price"
+:
+19.99
+,
+"configuration"
+:
+[
+{
+"name"
+:
+"color"
+,
+"value"
+:
+"white"
+}
+,
+{
+"name"
+:
+"size"
+,
+"value"
+:
+"M"
+}
+]
+}
+]
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+,
+"id"
+:
+"string"
+}
+,
+"payments"
+:
+[
+{
+"amount"
+:
+19.99
+,
+"method_name"
+:
+"iDeal (ING)"
+,
+"status"
+:
+"paid"
+}
+]
+,
+"shipments"
+:
+[
+{
+"address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+,
+"id"
+:
+"string"
+}
+,
+"method_name"
+:
+"UPS Ground Shipping"
+,
+"status"
+:
+"shipped"
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"prices_include_tax"
+:
+true
+,
+"currency_code"
+:
+{ }
+,
+"tracking_url"
+:
+"string"
+}
+Categories
+The Highstreet app uses a category tree to construct the top navigation bar.
+The top navigation contains a list of root categories with sub categories.
+These sub categories may also have sub categories and so on.
+EXAMPLE
+:
+Root
+├── Men
+│   ├── Pants
+│   │   ├── Chinos
+│   │   ├── Jeans
+│   │   └── Shorts
+│   └── Shirts
+│       ├── Long Sleeved
+│       │   ├── Smart
+│       │   └── Casual
+│       └── Polo
+└── Women
+    ├── Bottoms
+    │   ├── Skirts
+    │   ├── Jeans
+    │   └── Shorts
+    └── Shirts
+        ├── Long Sleeved
+        │   ├── Smart
+        │   └── Casual
+        └── Tank Tops
+View Category Tree
+This is a required endpoint
+This endpoint is cached by Highstreet
+Returns the full list of categories in a tree like structure.
+If a category should not be displayed in the app's navigation then the
+value of
+hidden
+can be set to
+true
+. Note that the category's sub
+categories will then also be hidden.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Responses
+200
+Success
+401
+API key is missing or invalid
+500
+An internal server error occured
+get
+/categories/tree
+/categories/tree
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"root"
+,
+"title"
+:
+"Women"
+,
+"product_count"
+:
+155
+,
+"children"
+:
+[
+{
+"id"
+:
+"4"
+,
+"title"
+:
+"Tops"
+,
+"product_count"
+:
+51
+}
+,
+{
+"id"
+:
+"9"
+,
+"title"
+:
+"Bottoms"
+,
+"product_count"
+:
+87
+,
+"children"
+:
+[
+{
+"id"
+:
+"99"
+,
+"title"
+:
+"Jeans"
+,
+"product_count"
+:
+54
+}
+,
+{
+"id"
+:
+"105"
+,
+"title"
+:
+"Chinos"
+,
+"product_count"
+:
+33
+}
+]
+}
+,
+{
+"id"
+:
+"8"
+,
+"title"
+:
+"Shoes"
+,
+"product_count"
+:
+17
+}
+]
+}
+Customer
+Represents a customer's account.
+A customer is identified by the access token in the Authorization header.
+There are a number of account features that are optional.
+These are:
+Points balance. If your platform supports a kind of loyalty points system
+  you can expose the number of points a user has on their account.
+  Indicated by the
+points_balance
+key.
+Customer Card. This lets the customer view a barcode on their account
+  page within the app. This barcode can then be scanned instore to quickly indentifiy the customer.
+  Indicated by the
+barcode
+key.
+Membership Level. If your platform supports multiple levels of Membership
+  you can expose a customer's membership level.
+  Indicated by the
+membership_level
+key.
+If your platform supports none of the above features then you can remove
+the keys related to these from the response.
+View Customer
+This is a required endpoint
+Displays a customers full information
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+Success
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+get
+/customer
+/customer
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"57982b5fecc2"
+,
+"handle"
+:
+"han@thefalcon.com"
+,
+"email"
+:
+"han@thefalcon.com"
+,
+"first_name"
+:
+"Han"
+,
+"default_billing_address_id"
+:
+"home"
+,
+"last_name"
+:
+"Solo"
+,
+"points_balance"
+:
+50
+,
+"membership_level"
+:
+{
+"id"
+:
+"gld_1"
+,
+"title"
+:
+"Gold"
+}
+,
+"basket_id"
+:
+"12345"
+,
+"barcode"
+:
+{
+"type"
+:
+"code128"
+,
+"value"
+:
+"701729857201987409127"
+}
+,
+"addresses"
+:
+[
+{
+"id"
+:
+"home"
+,
+"first_name"
+:
+"Han"
+,
+"last_name"
+:
+"Solo"
+,
+"street"
+:
+"Hooghiemstraplein"
+,
+"house_number"
+:
+"154"
+,
+"postal_code"
+:
+"3514 AZ"
+,
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"telephone"
+:
+"030-2769165"
+}
+,
+{
+"id"
+:
+"work"
+,
+"first_name"
+:
+"Han"
+,
+"last_name"
+:
+"Solo"
+,
+"street"
+:
+"Biltstraat"
+,
+"house_number"
+:
+"1"
+,
+"postal_code"
+:
+"1234 TP"
+,
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"telephone"
+:
+"030-2769165"
+}
+]
+,
+"custom"
+:
+{ }
+,
+"wishlist_id"
+:
+"b8703c50"
+,
+"user_segments"
+:
+[
+"loyalty_member"
+,
+"early_access"
+]
+}
+Create Customer
+This is a required endpoint
+Creates a customer using their basic information.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Request Body schema:
+application/json
+handle
+required
+string
+The login identifier, usually an e-mail address.
+email
+string
+<
+email
+>
+E-mail address
+password
+required
+string
+<
+password
+>
+Desired password
+first_name
+required
+string
+First name
+last_name
+required
+string
+Last name
+custom
+object
+Custom customer attributes
+Responses
+201
+Account was successfully created
+400
+Request body has invalid or missing properties
+401
+API key is missing or invalid
+500
+An internal server error occured
+post
+/customer
+/customer
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"handle"
+:
+"han@thefalcon.com"
+,
+"email"
+:
+"han@thefalcon.com"
+,
+"password"
+:
+"password"
+,
+"first_name"
+:
+"Han"
+,
+"last_name"
+:
+"Solo"
+,
+"custom"
+:
+{ }
+}
+Response samples
+201
+400
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"57982b5fecc2"
+,
+"handle"
+:
+"han@thefalcon.com"
+,
+"email"
+:
+"han@thefalcon.com"
+,
+"first_name"
+:
+"Han"
+,
+"default_billing_address_id"
+:
+"home"
+,
+"last_name"
+:
+"Solo"
+,
+"points_balance"
+:
+50
+,
+"membership_level"
+:
+{
+"id"
+:
+"gld_1"
+,
+"title"
+:
+"Gold"
+}
+,
+"basket_id"
+:
+"12345"
+,
+"barcode"
+:
+{
+"type"
+:
+"code128"
+,
+"value"
+:
+"701729857201987409127"
+}
+,
+"addresses"
+:
+[
+{
+"id"
+:
+"home"
+,
+"first_name"
+:
+"Han"
+,
+"last_name"
+:
+"Solo"
+,
+"street"
+:
+"Hooghiemstraplein"
+,
+"house_number"
+:
+"154"
+,
+"postal_code"
+:
+"3514 AZ"
+,
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"telephone"
+:
+"030-2769165"
+}
+,
+{
+"id"
+:
+"work"
+,
+"first_name"
+:
+"Han"
+,
+"last_name"
+:
+"Solo"
+,
+"street"
+:
+"Biltstraat"
+,
+"house_number"
+:
+"1"
+,
+"postal_code"
+:
+"1234 TP"
+,
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"telephone"
+:
+"030-2769165"
+}
+]
+,
+"custom"
+:
+{ }
+,
+"wishlist_id"
+:
+"b8703c50"
+,
+"user_segments"
+:
+[
+"loyalty_member"
+,
+"early_access"
+]
+}
+Update Customer
+This is a required endpoint
+Updates the customer's info. Currently a customer can only update their name
+and custom attributes through this endpoint.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+first_name
+string
+First name
+last_name
+string
+Last name
+custom
+object
+Custom customer attributes
+Responses
+200
+Success
+400
+Request body has invalid or missing properties
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+patch
+/customer
+/customer
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"first_name"
+:
+"Han"
+,
+"last_name"
+:
+"Solo"
+,
+"custom"
+:
+{ }
+}
+Response samples
+200
+400
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"57982b5fecc2"
+,
+"handle"
+:
+"han@thefalcon.com"
+,
+"email"
+:
+"han@thefalcon.com"
+,
+"first_name"
+:
+"Han"
+,
+"default_billing_address_id"
+:
+"home"
+,
+"last_name"
+:
+"Solo"
+,
+"points_balance"
+:
+50
+,
+"membership_level"
+:
+{
+"id"
+:
+"gld_1"
+,
+"title"
+:
+"Gold"
+}
+,
+"basket_id"
+:
+"12345"
+,
+"barcode"
+:
+{
+"type"
+:
+"code128"
+,
+"value"
+:
+"701729857201987409127"
+}
+,
+"addresses"
+:
+[
+{
+"id"
+:
+"home"
+,
+"first_name"
+:
+"Han"
+,
+"last_name"
+:
+"Solo"
+,
+"street"
+:
+"Hooghiemstraplein"
+,
+"house_number"
+:
+"154"
+,
+"postal_code"
+:
+"3514 AZ"
+,
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"telephone"
+:
+"030-2769165"
+}
+,
+{
+"id"
+:
+"work"
+,
+"first_name"
+:
+"Han"
+,
+"last_name"
+:
+"Solo"
+,
+"street"
+:
+"Biltstraat"
+,
+"house_number"
+:
+"1"
+,
+"postal_code"
+:
+"1234 TP"
+,
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"telephone"
+:
+"030-2769165"
+}
+]
+,
+"custom"
+:
+{ }
+,
+"wishlist_id"
+:
+"b8703c50"
+,
+"user_segments"
+:
+[
+"loyalty_member"
+,
+"early_access"
+]
+}
+Reset Password
+This is a required endpoint
+This is used in the forgot password flow. It is expected that this endpoint
+will trigger an email to be sent to the user containing a link that the user
+can use to reset their password.
+The link should direct the user to the password reset page on your website.
+NOTES
+If the provided email address does not exist on the e-commerce platform then a
+204
+should
+still be returned.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Request Body schema:
+application/json
+email
+string
+The user's email address
+Responses
+204
+Password reset email has been sent
+400
+The request contains invalid or missing data
+401
+API key is missing or invalid
+500
+An internal server error occured
+post
+/customer/password/reset
+/customer/password/reset
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"email"
+:
+"han@thefalcon.com"
+}
+Response samples
+400
+401
+500
+Content type
+application/json
+Copy
+{
+"message"
+:
+"string"
+,
+"code"
+:
+"invalid_email"
+}
+Delete Address
+Deletes a customer's address
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+204
+Deleted
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+delete
+/customer/addresses/{id}
+/customer/addresses/{id}
+Response samples
+401
+500
+Content type
+application/json
+Copy
+{
+"code"
+:
+"invalid_oauth_token"
+,
+"message"
+:
+"invalid or expired token"
+}
+Update Address
+This is a required endpoint
+Updates a customer's address. Updates the address specified by the id.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+An address
+address
+required
+object
+(
+AddressRequest
+)
+An address
+first_name
+string
+The recipient's first name
+last_name
+string
+The recipient's last name
+company
+string
+The company name of the recipient
+street
+string
+Street name
+house_number
+string
+House number
+addition
+string
+Addition
+postal_code
+string
+Postal or ZIP code
+city
+string
+The city name
+state
+string
+The state code.
+country_id
+string
+<= 2 characters
+A two character
+ISO 3166-1 Alpha-2
+country code
+telephone
+string
+The phone number of the recipient
+custom
+object
+Custom address attributes
+Responses
+200
+Success
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+404
+The specified resource was not found
+500
+An internal server error occured
+patch
+/customer/addresses/{id}
+/customer/addresses/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+}
+Response samples
+200
+400
+401
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+,
+"id"
+:
+"string"
+}
+View Addresses
+This is a required endpoint
+View a customer's addresses.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+Success
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+get
+/customer/addresses
+/customer/addresses
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"addresses"
+:
+[
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+,
+"id"
+:
+"string"
+}
+]
+}
+Create Address
+This is a required endpoint
+Creates a new customer address.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+An address
+address
+required
+object
+(
+AddressRequest
+)
+An address
+first_name
+string
+The recipient's first name
+last_name
+string
+The recipient's last name
+company
+string
+The company name of the recipient
+street
+string
+Street name
+house_number
+string
+House number
+addition
+string
+Addition
+postal_code
+string
+Postal or ZIP code
+city
+string
+The city name
+state
+string
+The state code.
+country_id
+string
+<= 2 characters
+A two character
+ISO 3166-1 Alpha-2
+country code
+telephone
+string
+The phone number of the recipient
+custom
+object
+Custom address attributes
+Responses
+201
+Created
+400
+The request body contained invalid or missing data
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+post
+/customer/addresses
+/customer/addresses
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+}
+}
+Response samples
+201
+400
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+,
+"id"
+:
+"string"
+}
+View Customer Orders (opt)
+Optional
+Displays a Customer's order history.
+The response should be paginated. See Pagination for details on how this
+should be implemented.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+size
+required
+string
+The number of items to return
+cursor
+required
+string
+The position of the cursor
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+OK
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+get
+/customer/orders
+/customer/orders
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"total"
+:
+0
+,
+"count"
+:
+0
+,
+"cursor"
+:
+0
+,
+"orders"
+:
+[
+{
+"id"
+:
+"PNZfEiFcNM"
+,
+"number"
+:
+"EU000027546"
+,
+"customer_id"
+:
+"1234-6789-1234-0986"
+,
+"customer_email"
+:
+"han@therepublic.com"
+,
+"creation_date"
+:
+"2018-08-17 14:53:00 UTC"
+,
+"source"
+:
+"app"
+,
+"status"
+:
+"created"
+,
+"items"
+:
+[
+{
+"product_id"
+:
+"1234_001-M"
+,
+"product_name"
+:
+"Basic T-Shirt"
+,
+"product_image"
+:
+"
+https://images.com/basic-tshirt.jpg
+"
+,
+"quantity"
+:
+2
+,
+"full_price"
+:
+19.99
+,
+"configuration"
+:
+[
+{
+"name"
+:
+"color"
+,
+"value"
+:
+"white"
+}
+,
+{
+"name"
+:
+"size"
+,
+"value"
+:
+"M"
+}
+]
+}
+]
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+,
+"id"
+:
+"string"
+}
+,
+"payments"
+:
+[
+{
+"amount"
+:
+19.99
+,
+"method_name"
+:
+"iDeal (ING)"
+,
+"status"
+:
+"paid"
+}
+]
+,
+"shipments"
+:
+[
+{
+"address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+,
+"id"
+:
+"string"
+}
+,
+"method_name"
+:
+"UPS Ground Shipping"
+,
+"status"
+:
+"shipped"
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"prices_include_tax"
+:
+true
+,
+"currency_code"
+:
+{ }
+,
+"tracking_url"
+:
+"string"
+}
+]
+}
+View Customer Vouchers (opt)
+Optional
+Displays a Customer's vouchers.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+basket_id
+string
+A basket ID. When given, only the
+vouchers
+that can be used in a basket
+will be returned.
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+OK
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+get
+/customer/vouchers
+/customer/vouchers
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"vouchers"
+:
+[
+{
+"id"
+:
+"1000000192"
+,
+"description"
+:
+{
+"long"
+:
+"This is the long description"
+,
+"short"
+:
+"This is a summary"
+,
+"title"
+:
+"20% discount on your next order"
+,
+"image"
+:
+"
+http://images.com/voucher-1000000192.jpg
+"
+}
+,
+"validity"
+:
+{
+"start"
+:
+"2018-12-31 23:00:00 UTC"
+,
+"end"
+:
+"2019-12-31 23:00:00 UTC"
+}
+,
+"barcode"
+:
+{
+"type"
+:
+"code128"
+,
+"value"
+:
+"1000000192"
+}
+,
+"reward"
+:
+{
+"type"
+:
+"bonus_product"
+,
+"product_id"
+:
+"1234_A-B"
+}
+}
+]
+}
+View Customer Campaign (opt)
+Optional
+Displays campaigns that are applicable to a customer.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+OK
+401
+API key or access token is missing, invalid or expired.
+500
+An internal server error occured
+get
+/customer/campaigns
+/customer/campaigns
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"campaigns"
+:
+[
+{
+"id"
+:
+"1000000192"
+,
+"description"
+:
+{
+"long"
+:
+"This is the long description"
+,
+"short"
+:
+"This is a summary"
+,
+"title"
+:
+"20% discount on your next order"
+,
+"image"
+:
+"
+http://images.com/voucher-1000000192.jpg
+"
+}
+,
+"validity"
+:
+{
+"start"
+:
+"2018-12-31 23:00:00 UTC"
+,
+"end"
+:
+"2019-12-31 23:00:00 UTC"
+}
+,
+"reward"
+:
+{
+"type"
+:
+"bonus_product"
+,
+"product_id"
+:
+"1234_A-B"
+}
+}
+]
+}
+Miscellaneous
+Get Countries
+This is a required endpoint
+Fetches information about the possible countries that the locale ships too. Only countries that
+are valid for the specified country should be returned.
+This information is used in the address input fields.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Responses
+200
+Success
+400
+The request body contained invalid or missing data
+401
+API key is missing or invalid
+500
+An internal server error occured
+get
+/countries
+/countries
+Response samples
+200
+400
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"countries"
+:
+[
+{
+"name"
+:
+"United States"
+,
+"code"
+:
+"US"
+,
+"states"
+:
+[
+{
+"name"
+:
+"Colorado"
+,
+"code"
+:
+"CO"
+}
+]
+}
+]
+}
+Get Order
+This is a required endpoint
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Responses
+200
+Success
+400
+The request body contained invalid or missing data
+401
+API key is missing or invalid
+500
+An internal server error occured
+get
+/order/{id}
+/order/{id}
+Response samples
+200
+400
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"PNZfEiFcNM"
+,
+"number"
+:
+"EU000027546"
+,
+"customer_id"
+:
+"1234-6789-1234-0986"
+,
+"customer_email"
+:
+"han@therepublic.com"
+,
+"creation_date"
+:
+"2018-08-17 14:53:00 UTC"
+,
+"source"
+:
+"app"
+,
+"status"
+:
+"created"
+,
+"items"
+:
+[
+{
+"product_id"
+:
+"1234_001-M"
+,
+"product_name"
+:
+"Basic T-Shirt"
+,
+"product_image"
+:
+"
+https://images.com/basic-tshirt.jpg
+"
+,
+"quantity"
+:
+2
+,
+"full_price"
+:
+19.99
+,
+"configuration"
+:
+[
+{
+"name"
+:
+"color"
+,
+"value"
+:
+"white"
+}
+,
+{
+"name"
+:
+"size"
+,
+"value"
+:
+"M"
+}
+]
+}
+]
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+,
+"id"
+:
+"string"
+}
+,
+"payments"
+:
+[
+{
+"amount"
+:
+19.99
+,
+"method_name"
+:
+"iDeal (ING)"
+,
+"status"
+:
+"paid"
+}
+]
+,
+"shipments"
+:
+[
+{
+"address"
+:
+{
+"first_name"
+:
+"string"
+,
+"last_name"
+:
+"string"
+,
+"company"
+:
+"string"
+,
+"street"
+:
+"string"
+,
+"house_number"
+:
+"string"
+,
+"addition"
+:
+"string"
+,
+"postal_code"
+:
+"string"
+,
+"city"
+:
+"string"
+,
+"state"
+:
+"string"
+,
+"country_id"
+:
+"st"
+,
+"telephone"
+:
+"string"
+,
+"custom"
+:
+{ }
+,
+"id"
+:
+"string"
+}
+,
+"method_name"
+:
+"UPS Ground Shipping"
+,
+"status"
+:
+"shipped"
+}
+]
+,
+"totals"
+:
+{
+"discount"
+:
+20
+,
+"sub_total"
+:
+100
+,
+"tax"
+:
+0
+,
+"shipping_costs"
+:
+1.5
+,
+"payment_costs"
+:
+0
+,
+"grand_total"
+:
+81.5
+,
+"custom"
+:
+{
+"colorado_sales_tax"
+:
+0.27
+}
+}
+,
+"prices_include_tax"
+:
+true
+,
+"currency_code"
+:
+{ }
+,
+"tracking_url"
+:
+"string"
+}
+Products
+The Product endpoints expose product information. Products are identified by
+a product ID.
+Product types
+Highstreet supports multiple types of products.
+Fixed Products
+Products of type
+fixed
+are the simplest type of product. These are products
+that can be bought "as is" and do not require the customer to select any
+configuration options such as a color or size.
+Variable Products
+Products of type
+variable
+are more complicated products. They require the
+customer to select configuration options such as a size or a color.
+The configuration options are called
+variation attributes
+. Highstreet
+supports up to three variation attributes per product.
+Variant Products
+Products of type
+variant
+are a specific combination of variation
+attributes. Each variant has its own product ID and SKU.
+Search
+This is a required endpoint
+This endpoint is cached by Highstreet
+The Product Search endpoint provides product search and filtering. It is
+used on product lister pages and the product search page.
+There are several query string parameters to restrict the number of search
+results. The following parameters are supported:
+The parameter
+q
+can be used to find all products matching a particular
+search term. Customers can use this to search for a product by name, for
+example.
+The parameter
+cat
+can be used to find all product that are assigned to a
+specific category.
+Filter parameters can be used to filter products based on a predefined
+list of attributes. Filter parameters take the form
+{attr}:{type}
+.
+See the Filtering section below for more details.
+When none of the query string parameters are given it is expected that all
+available products are returned.
+It should be possible to combine query string parameters. This allows a
+customer to search for a product by name within a specific category, for
+example.
+Example
+: Find Polo Shirts in the category Men with a price between
+€25 and €75.
+GET
+/
+product_search
+?
+q
+=
+Polo
++
+shirt
+&
+cat
+=
+men
+&
+price
+:
+range
+=
+25
+,
+75
+Filtering
+Highstreet supports filtering products by a predefined list of attributes
+and their possible values. This list is provided by you in the
+filters
+property of a product search response.
+Applying a filter is done through a query string parameter.
+Two filter types are currently supported:
+A
+set membership filter
+(type
+in
+) only yields products where the
+value of a given attribute is present in a set of given values.
+Example:
+color:in=black|yellow
+finds all products with the color black
+or yellow.
+The
+range filter
+(
+range
+) only yields products where the value of
+a particular attribute falls between a minimum and maximum.
+Example:
+price:range=50,100
+filters on products in the price range
+50 to 100.
+NOTE
+: The list of available filters should be updated when a filter is
+applied.
+Search Results
+Product search results consist of two product IDs:
+The
+display_id
+tells Highstreet which product to display on product
+list views. Usually this is the ID of a product of type
+variant
+.
+The
+details_id
+tells Highstreet which product to use to fetch the
+details. Usually this is the ID of a product of type
+variable
+.
+Example
+: A customer searches for the term "Scarf" and filters on the
+"color" attribute with the value "blue".
+A
+variable product
+available in both blue and yellow matches these
+criteria.
+To ensure the app displays the blue scarf the search result would look
+as follows:
+{
+"details_id"
+:
+"746382"
+,
+"display_id"
+:
+"746382-004"
+}
+Sorting
+Highstreet supports sorting of product search results predefined list of attributes sorting
+options. This list is provided by you in the
+sorting_options
+property of a product search
+response.
+Applying a sorting option is done through a query string parameter (
+sort
+).
+Example:
+sort=price-low-to-high
+sorts the serach results by price in ascending order.
+NOTE
+: For the sake of simplicty invalid sorting_options are expected to be ignored.
+Implementation notes
+It is recommended to exclude products that are (no longer) available from
+search results.
+The query string parameters
+q
+and
+cat
+are required to be implemented.
+The filter parameters are optional.
+This endpoint is used by the barcode scanner in the app. The product's EAN will be contained in
+the
+q
+parameter.
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+cat
+string
+The ID of the category to search in.
+When given the results should be restricted to products falling under
+a certain category (including its child categories).
+q
+string
+A free-form search query.
+When given the results should be restricted to products it matching
+the search query.
+sort
+string
+An id of a sorting option.
+cursor
+required
+string
+The position of the cursor
+size
+required
+string
+The number of items to return
+suggest_filters
+required
+boolean
+When
+true
+the list of suggested filters (
+filters
+) is expected
+in the response.
+{attr}:in
+string
+Set membership filter. Replace
+{attr}
+with an attribute code. Values
+are separated by a pipe (
+|
+).
+{attr}:range
+string
+<
+^[0-9]+,[0-9]+$
+>
+Range filter. Replace
+{attr}
+with an attribute code. The minimum and
+maximum are separated by a comma (
+,
+).
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Responses
+200
+OK
+400
+Bad Request
+401
+API key is missing or invalid
+500
+Internal Server Error
+get
+/product_search
+/product_search
+Response samples
+200
+400
+401
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"results"
+:
+[
+{
+"details_id"
+:
+"1234"
+,
+"display_id"
+:
+"1234_AB-S"
+}
+,
+{
+"details_id"
+:
+"5678"
+,
+"display_id"
+:
+"5678_CD-M"
+}
+]
+,
+"filters"
+:
+[
+{
+"type"
+:
+"in"
+,
+"name"
+:
+"Size"
+,
+"code"
+:
+"c_size"
+,
+"values"
+:
+[
+{
+"name"
+:
+"Small"
+,
+"value"
+:
+"S"
+,
+"product_count"
+:
+9
+}
+,
+{
+"name"
+:
+"Medium"
+,
+"value"
+:
+"29/32"
+,
+"product_count"
+:
+14
+}
+,
+{
+"name"
+:
+"Large"
+,
+"value"
+:
+"29/32"
+,
+"product_count"
+:
+17
+}
+]
+}
+]
+,
+"sorting_options"
+:
+[
+{
+"id"
+:
+"price-asc"
+,
+"name"
+:
+"Price (Low to High)"
+}
+]
+,
+"product_count"
+:
+528
+}
+Details
+This is a required endpoint
+This endpoint is cached by Highstreet
+The Details endpoint provides product information by product ID. This
+endpoint is used on all screens showing product data.
+By default only the
+required
+properties are expected in the response.
+When the query string parameter
+full_details
+is set to
+true
+all
+available properties are expected.
+full_details
+is only set to
+true
+when requesting products to display on the product detail
+page(PDP)
+Caching
+Product data is cached by Highstreet by product ID.
+query
+Parameters
+ids
+required
+string
+A list of max. 50 product IDs separated by commas (
+,
+).
+full_details
+required
+boolean
+Request the full product details
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Responses
+200
+OK
+400
+Bad Request
+401
+API key is missing or invalid
+500
+Internal Server Error
+get
+/product_details
+/product_details
+Response samples
+200
+400
+401
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"results"
+:
+[
+{
+"type"
+:
+"string"
+,
+"id"
+:
+"1234"
+,
+"sku"
+:
+"CF-1234"
+,
+"name"
+:
+"Polo"
+,
+"caption"
+:
+"Summer collection"
+,
+"description"
+:
+"string"
+,
+"specification"
+:
+"string"
+,
+"stock_notifications_enabled"
+:
+true
+,
+"store_availability_enabled"
+:
+true
+,
+"available"
+:
+true
+,
+"size_chart_url"
+:
+"
+http://example.com
+"
+,
+"web_url"
+:
+"
+http://example.com
+"
+,
+"media"
+:
+[
+{
+"url"
+:
+"
+https://merchant.com/images/blue-shirt.jpg
+"
+}
+]
+,
+"pricing"
+:
+{
+"effective"
+:
+45
+,
+"original"
+:
+109.99
+,
+"custom"
+:
+{
+"member_effective"
+:
+45
+,
+"member_original"
+:
+89.99
+}
+}
+,
+"labels"
+:
+[
+{
+"id"
+:
+"new"
+,
+"display_text"
+:
+"Nieuw!"
+}
+]
+,
+"additional_attributes"
+:
+[
+{
+"id"
+:
+"brand"
+,
+"name"
+:
+"Merk"
+,
+"value"
+:
+"Highstreet"
+}
+]
+,
+"swatches"
+:
+{
+"attribute_id"
+:
+"style"
+,
+"values"
+:
+[
+{
+"image"
+:
+"
+https://img1.g-star.com/image/private/c_fill,f_auto,h_24,q_80/v1622042603/D20145-C072-996-M07.jpg
+"
+}
+]
+}
+}
+]
+}
+Availability
+This is a required endpoint
+The Availability endpoint provides up-to-date availability and pricing
+data by product ID. It is used on product detail pages.
+query
+Parameters
+ids
+required
+string
+A list of max. 50 product IDs separated by commas (
+,
+).
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Responses
+200
+OK
+401
+API key is missing or invalid
+500
+An internal server error occured
+get
+/product_availabilities
+/product_availabilities
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"availabilities"
+:
+[
+{
+"id"
+:
+"1234_AB-S"
+,
+"available"
+:
+true
+,
+"availability_class"
+:
+"available"
+,
+"message"
+:
+"Delivered in two weeks"
+,
+"qty"
+:
+23
+,
+"pricing"
+:
+{
+"effective"
+:
+14.95
+}
+,
+"qty_max"
+:
+3
+}
+]
+}
+Related
+This is a required endpoint
+This endpoint is cached by Highstreet
+The Related Products endpoint provides a list recommended products by
+product ID. Multiple types of relations are supported:
+cross-sell
+: products that add additional value when bought together
+with the product being viewed.
+up-sell
+: products that could be bought instead of the product being
+viewed.
+general
+: products with a general relation to the product being viewed.
+accessories
+: products that would be great as an accessory to the
+product being viewed.
+The Related Products endpoint is used on product detail pages.
+query
+Parameters
+id
+required
+string
+A Product id.
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Responses
+200
+OK
+401
+API key is missing or invalid
+500
+Internal Server Error
+get
+/product_related
+/product_related
+Response samples
+200
+401
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"related_product_groups"
+:
+[
+{
+"type"
+:
+"cross-sell"
+,
+"results"
+:
+[
+{
+"details_id"
+:
+"1234"
+,
+"display_id"
+:
+"1234_AB-S"
+}
+]
+}
+]
+}
+Store Availability
+The Store Availability endpoint provides up-to-date in-store availability
+data. It is used to check if a particular product is available in one or
+more particular stores.
+The provided store IDs must be the same store IDs used with the
+Stores endpoints
+.
+query
+Parameters
+product_ids
+required
+string
+A list of max. 50 product IDs separated by commas (
+,
+).
+store_ids
+required
+string
+A list of max. 50 store IDs separated by commas (
+,
+).
+locale
+required
+string
+The identifier of the locale
+currency
+required
+string
+The identifier of the currency
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Responses
+200
+OK
+401
+API key is missing or invalid
+500
+An internal server error occured
+get
+/product_store_availabilities
+/product_store_availabilities
+Response samples
+200
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"store_availabilities"
+:
+[
+{
+"product_id"
+:
+"1234_AB-S"
+,
+"store_id"
+:
+"ff5e5f52-d62e-e511-80c8-02bfac10024b"
+,
+"quantity"
+:
+2
+,
+"message"
+:
+"Low on stock. Order quick!"
+,
+"availability_class"
+:
+"low"
+}
+]
+}
+Stores
+These endpoints are used to fetch information about your physical stores. And are a requirement
+if the e-commerce platform supports pick up in store as a shipping method.
+Find nearby stores (opt)
+Optional
+Returns a list of nearby stores according to a set of coordinates and a
+maximum distance.
+query
+Parameters
+latitude
+required
+string
+Latitude
+longitude
+required
+string
+Longitude
+max_distance
+required
+number
+The maximum distance from the latitude/longitude in kilometers.
+cursor
+required
+string
+The position of the cursor
+size
+required
+string
+The number of items to return
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Responses
+200
+OK
+400
+The request body contained invalid or missing data
+401
+API key is missing or invalid
+500
+An internal server error occured
+get
+/stores
+/stores
+Response samples
+200
+400
+401
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"reference_location"
+:
+{
+"latitude"
+:
+52.0986345
+,
+"longitude"
+:
+5.1251368
+}
+,
+"stores"
+:
+[
+{
+"id"
+:
+"ff5e5f52-d62e-e511-80c8-02bfac10024b"
+,
+"name"
+:
+"Flag Ship Store"
+,
+"address"
+:
+{
+"street"
+:
+"Hooghiemstraplein"
+,
+"house_number"
+:
+"154"
+,
+"postal_code"
+:
+"3514 AZ"
+,
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"telephone"
+:
+"00 31 303004120"
+}
+,
+"coordinates"
+:
+{
+"latitude"
+:
+5.1197
+,
+"longitude"
+:
+52.09123
+}
+,
+"distance"
+:
+0.9
+,
+"opening_hours"
+:
+[
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+]
+}
+]
+}
+Get Store Details (opt)
+Optional
+Finds a store's details by ID.
+path
+Parameters
+id
+required
+string
+Unique identifier of the resource.
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Responses
+200
+OK
+401
+API key is missing or invalid
+404
+The specified resource was not found
+500
+An internal server error occured
+get
+/stores/{id}
+/stores/{id}
+Response samples
+200
+401
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"ff5e5f52-d62e-e511-80c8-02bfac10024b"
+,
+"name"
+:
+"Flag Ship Store"
+,
+"address"
+:
+{
+"street"
+:
+"Hooghiemstraplein"
+,
+"house_number"
+:
+"154"
+,
+"postal_code"
+:
+"3514 AZ"
+,
+"city"
+:
+"Utrecht"
+,
+"country_id"
+:
+"NL"
+,
+"telephone"
+:
+"00 31 303004120"
+}
+,
+"coordinates"
+:
+{
+"latitude"
+:
+5.1197
+,
+"longitude"
+:
+52.09123
+}
+,
+"distance"
+:
+0.9
+,
+"opening_hours"
+:
+[
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+,
+[
+{
+"open"
+:
+"09:00"
+,
+"close"
+:
+"12:00"
+}
+,
+{
+"open"
+:
+"15:00"
+,
+"close"
+:
+"19:00"
+}
+]
+]
+}
+Wishlists
+Wishlists are lists of products that registered customers can maintain. They can be used to implement,
+for example, favorites or gift registries.
+Fetch wishlist
+Finds a wishlist details by ID.
+path
+Parameters
+id
+required
+string
+Unique identifier of the wishlist
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+200
+Success
+401
+API key or access token is missing, invalid or expired.
+404
+The specified resource was not found
+get
+/wishlists/{id}
+/wishlists/{id}
+Response samples
+200
+401
+404
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"id"
+:
+"string"
+,
+"product_id"
+:
+"string"
+}
+]
+,
+"item_count"
+:
+1
+}
+Add wishlist item
+Adds a product to a wishlist. The items is added at the end of the
+existing wishlist.
+path
+Parameters
+id
+required
+string
+Unique identifier of the wishlist
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Request Body schema:
+application/json
+Wishlist item
+item
+required
+object
+Item to add to the wishlist
+product_id
+required
+string
+The ID of the product to add to the wishlist
+Responses
+201
+Success
+401
+API key or access token is missing, invalid or expired.
+404
+The specified resource was not found
+422
+Item cannot be added
+post
+/wishlists/{id}/items
+/wishlists/{id}/items
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"item"
+:
+{
+"product_id"
+:
+"1234_AB/S"
+}
+}
+Response samples
+201
+401
+404
+422
+Content type
+application/json
+Copy
+{
+"id"
+:
+"string"
+,
+"product_id"
+:
+"string"
+}
+Delete wishlist item
+Delete an item from a wishlist. If the item doesn't exist on the server
+the operations is treated as a success.
+path
+Parameters
+id
+required
+string
+Unique identifier of the wishlist
+item_id
+required
+string
+Unique identifier of an item on a wishlist
+query
+Parameters
+locale
+required
+string
+The identifier of the locale
+header
+Parameters
+X-Hs-Api-Token
+required
+string
+An authorization token provided by the e-commerce platform used for authentication
+Authorization
+required
+string
+The customer's access token with the type bearer prefix eg:
+Bearer <token>
+Responses
+204
+Success
+401
+API key or access token is missing, invalid or expired.
+404
+The specified resource was not found
+delete
+/wishlists/{id}/items/{item_id}
+/wishlists/{id}/items/{item_id}
+Response samples
+401
+404
+Content type
+application/json
+Copy
+{
+"code"
+:
+"invalid_oauth_token"
+,
+"message"
+:
+"invalid or expired token"
+}
+v0.10-rc3
+03/10/23
+Adds
+swatches
+attribute to
+product details
+endpoint
+v0.10-rc2
+04/05/20
+Accepts
+hide_in_app
+attribute on category
+Adds
+stock_noficiations_enabled
+attribute to product detail responses
+v0.10-rc1
+25/06/19
+Adds 404 error respone to GET /baskets/:id
+v0.10
+21/06/19
+Adds basic loyalty features
+Adds GET /customer/vouchers
+Adds GET /customer/campaigns
+Adds POST /basket/:id/vouchers
+Adds DELETE /basket/:id/vouchers/:voucher_id
+Adds vouchers key to basket model
+v0.9-rc14
+22/05/19
+Adds customer_email and customer_id to the CustomerOrder model
+Adds tax to the OrderItem model
+v0.9-rc13
+15/05/19
+Address Models
+Allows all fields to be optional
+v0.9-rc12
+15/05/19
+Order Model
+updates the required fields
+v0.9-rc11
+12/03/19
+Product Model
+Adds
+size_chart_url
+v0.9-rc10
+06/03/19
+BasketAddress Model
+changes the required  and optional fields
+v0.9-rc9
+27/02/19
+GET /countries
+changes valid 401 error responses to only check the value of X-Hs-Api-Token
+RGBA Model
+changes model to be of type object with the keys red, green, blue and alpha
+v0.9-rc8
+18/02/19
+GET /product_search
+Adds support for sorting
+v0.9-rc7
+12/02/19
+BasketTotals object
+changes
+payment_costs
+and
+shipping_costs
+to optional
+v0.9-rc6
+05/02/19
+POST /customer
+Adds
+invalid_password
+error
+GET /basket/:id/payment_methods
+Changes
+payment_methods
+key to be required
+v0.9-rc5
+31/01/19
+Customer object
+renames
+default_address_id
+to
+default_billing_address_id
+v0.9-rc4
+25/01/19
+Product object
+Label object
+removes
+from
+removes
+to
+changes
+variation_attribute_values
+v0.9-rc3
+17/01/19
+Product.Label object
+adds
+background_color
+adds
+text_color
+Basket.ItemPrices object
+original
+and
+effective
+now represent the price of the line item not the unit
+Adds
+unit_original
+and
+unit_effective
+renames
+effective_tax_free
+to
+unit_effective_tax_free
+GET /baskets/:id/countries
+Moved endpoint to
+GET /countries
+v0.9-rc2
+08/01/19
+Account object
+adds optional
+basket_id
+POST /baskets
+adds basket_id to the error response
+v0.9-rc1
+21/12/18
+Basket Object
+adds
+includes_tax
+key
+changes
+items.prices.effective_tax_free
+to be optional
+Add a response body to
+401 Unauthorized
+errors
+POST /baskets
+add a
+403 Forbidden
+response
+PUT /baskets/{id}/billing_address
+simplify
+400 Bad Request
+error document
+PUT /baskets/{id}/shipping_address
+simplify
+400 Bad Request
+error document
+PUT /baskets/{id}/payment_method
+rename the request property 'sub_option' to
+option
+simplify
+400 Bad Request
+error document
+add a
+422 Unprocessable Entity
+response
+PUT /baskets/{id}/shipping_method
+rename the request property 'sub_option' to
+option
+simplify
+400 Bad Request
+error document
+add a
+422 Unprocessable Entity
+response
+POST /baskets/{id}/coupons
+simplify
+400 Bad Request
+error document
+add a
+422 Unprocessable Entity
+response
+POST /orders
+add a
+403 Forbidden
+response
+Basket
+document:
+change the objects contained in
+_errors
+remove the
+id
+property of addresses
+make
+_errors
+,
+id
+and
+totals
+required properties
+Customer
+document:
+remove the
+id
+property from request bodies.
+make
+id
+required in response bodies
+`GET /customer/orders
+add 401 and 500 error responses
+PATCH /customer/addresses/{id}
+add 404 error response
+simplify 401 error response body
+POST /customer/addresses
+simplify 401 error response body
+v0.8
+Adds
+client_id
+and
+client_secret
+to
+/token
+request params
+Category object
+removes
+hidden
+attribute
+changes the
+product_count
+to be optional
+3/12/18
+/product_related
+changes
+ids
+parameter to a single
+id
+5/12/18
+Adds
+/basket/:id/countries
+endpoint
+Previous
+(Legacy) Customer Profile API
+Next
+Push Notifications API
+Copyright © 2025 NewStore, Inc.

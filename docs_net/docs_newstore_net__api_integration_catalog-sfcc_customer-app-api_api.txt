@@ -1,0 +1,1886 @@
+Customer API (experimental) | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Import Schemas
+Pricebook Export
+Product Export
+Customer API (current)
+Customer API (experimental)
+Import Data API
+Catalog Locale Manager API
+NewStore SFCC Integration API
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+Categories
+get
+List categories
+get
+List subcategories
+Prices
+get
+Get prices
+Products
+get
+List products
+get
+Get product details
+API docs by Redocly
+Customer API (experimental)
+(
+v1
+)
+Download OpenAPI specification
+:
+Download
+Warning:
+This API version is in an
+experimental
+state and
+should not be used
+for production.
+We recommend that all integrations use
+Customer API v0
+.
+Categories
+List categories
+Retrieves all top-level categories.
+Important:
+This method will only return results if you performed a
+category import
+. Categories contained in a product
+import will not be returned by this method.
+path
+Parameters
+shop_id
+required
+string
+The identifier of the shop.
+query
+Parameters
+locale
+required
+string
+(^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$...
+Show pattern
+The locale for the products catalog. It should be in format en-US or only en.
+Responses
+200
+Array of top-level categories, including their subcategories.
+206
+Same as 200 but indicating that the result set is not complete. This happens if there were more than 2000 categories found. To receive the missing categories you have to refine your query.
+400
+Bad request.
+Possible error_codes are:
+parameter_mismatch
+: The given request contains the same parameter multiple times.
+parameter_required
+: A required parameter is missing in the given request.
+404
+Not found.
+Possible error_codes are:
+shop_not_found
+: The given shop could not be found.
+500
+Internal server error.
+get
+/{shop_id}/categories
+/api/v1/shops
+/{shop_id}/categories
+Response samples
+200
+206
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"elements"
+:
+[
+{
+"name"
+:
+"Shoes"
+,
+"path"
+:
+"Shoes"
+,
+"path_separator"
+:
+" > "
+,
+"images"
+:
+[
+{
+"url"
+:
+"
+https://example.com/tenant/102291/categories/01-shoes_1.jpg
+"
+,
+"title"
+:
+"Variety of shoes and foot wear"
+,
+"dominant_color"
+:
+"#CCFFF3"
+,
+"width"
+:
+1024
+,
+"height"
+:
+768
+,
+"aspect_ratio"
+:
+1.33
+,
+"tags"
+:
+[
+"shoes"
+,
+"footwear"
+,
+"mixed"
+,
+"newstore:main"
+]
+}
+]
+,
+"position"
+:
+1
+,
+"description"
+:
+"Our finest footwear for any situation."
+,
+"sub_categories"
+:
+[
+{
+"path"
+:
+"Shoes > Woman"
+,
+"has_sub_categories"
+:
+true
+}
+,
+{
+"path"
+:
+"Shoes > Men"
+,
+"has_sub_categories"
+:
+true
+}
+,
+{
+"path"
+:
+"Shoes > Kids"
+,
+"has_sub_categories"
+:
+true
+}
+]
+}
+,
+{
+"name"
+:
+"Clothes"
+,
+"path"
+:
+"Clothes"
+,
+"path_separator"
+:
+" > "
+,
+"images"
+:
+[
+{
+"url"
+:
+"
+https://example.com/tenant/102291/categories/02-clothes_1.jpg
+"
+,
+"title"
+:
+"Variety of different clothes"
+,
+"dominant_color"
+:
+"#CCFFF3"
+,
+"width"
+:
+1024
+,
+"height"
+:
+768
+,
+"aspect_ratio"
+:
+1.33
+,
+"tags"
+:
+[
+"clothes"
+,
+"pants"
+,
+"dresses"
+,
+"shirts"
+,
+"newstore:main"
+]
+}
+]
+,
+"position"
+:
+2
+,
+"description"
+:
+"Our range of clothes are as unique as you."
+,
+"sub_categories"
+:
+[
+{
+"path"
+:
+"Clothes > Woman"
+,
+"has_sub_categories"
+:
+true
+}
+,
+{
+"path"
+:
+"Clothes > Men"
+,
+"has_sub_categories"
+:
+true
+}
+,
+{
+"path"
+:
+"Clothes > Kids"
+,
+"has_sub_categories"
+:
+true
+}
+]
+}
+]
+}
+List subcategories
+Retrieves all subcategories with the given parent category.
+path
+Parameters
+parent
+required
+string
+The path of the parent category, connected by the defined path separator for which the list of subcategories should be requested. You can get the path separator with the 'List categories' method, in the 'path_separator' field.
+shop_id
+required
+string
+The identifier of the shop.
+query
+Parameters
+locale
+required
+string
+(^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$...
+Show pattern
+The locale for the products catalog. It should be in format en-US or only en.
+Responses
+200
+OK. Array of categories belonging to the given parent category, including their subcategories.
+206
+Same as 200 but indicating that the result set is not complete. This happens if there were more than 2000 categories found at this level. To receive the missing categories you have to refine your query.
+400
+Bad request.
+Possible error_codes are:
+parameter_mismatch
+: The given request contains the same parameter multiple times.
+parameter_required
+: A required parameter is missing in the given request.
+404
+Not found.
+Possible error_codes are:
+shop_not_found
+: The given shop could not be found.
+500
+Internal server error.
+get
+/{shop_id}/categories/{parent}
+/api/v1/shops
+/{shop_id}/categories/{parent}
+Response samples
+200
+206
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"elements"
+:
+[
+{
+"name"
+:
+"Winter"
+,
+"path"
+:
+"Shoes > Woman > Winter"
+,
+"path_separator"
+:
+" > "
+,
+"images"
+:
+[
+{
+"url"
+:
+"
+https://example.com/tenant/102291/categories/019281-shoes-woman-winter_1.jpg
+"
+,
+"title"
+:
+"Snowy winter boots"
+,
+"dominant_color"
+:
+"#CCFFF3"
+,
+"width"
+:
+1024
+,
+"height"
+:
+768
+,
+"aspect_ratio"
+:
+1.33
+,
+"tags"
+:
+[
+"vibrant"
+,
+"snow"
+,
+"boots"
+,
+"newstore:main"
+]
+}
+,
+{
+"url"
+:
+"
+https://example.com/tenant/102291/categories/019281-shoes-woman-winter_2.jpg
+"
+,
+"title"
+:
+"Light and warm leather shoes"
+,
+"dominant_color"
+:
+"#FF12B1"
+,
+"width"
+:
+1024
+,
+"height"
+:
+768
+,
+"aspect_ratio"
+:
+1.33
+,
+"tags"
+:
+[
+"leather"
+,
+"warm"
+]
+}
+]
+,
+"position"
+:
+1
+,
+"description"
+:
+"These shoes will keep you warm when it is cold outside."
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"sale-promotion-enabled"
+,
+"value"
+:
+"true"
+}
+]
+,
+"parent_category"
+:
+"Shoes > Woman"
+,
+"sub_categories"
+:
+[ ]
+}
+]
+}
+Prices
+Get prices
+Retrieves the price information of a list of products.
+path
+Parameters
+shop_id
+required
+string
+The identifier of the shop.
+query
+Parameters
+product_id
+required
+Array of
+strings
+The identifier of the product defined during the
+master data import phase
+.
+pricebook_id
+required
+string
+The identifier of the price book.
+Responses
+200
+OK
+400
+Bad request.
+Possible error_codes are:
+invalid_data
+: The given request is invalid due to missing or malformed parameters.
+parameter_mismatch
+: The given request contains the same parameter multiple times.
+parameter_required
+: A required parameter is missing in the given request.
+404
+Not found.
+Possible error_codes are:
+shop_not_found
+: The given shop could not be found.
+not_found
+: The given request returned an empty result.
+500
+Internal server error.
+get
+/{shop_id}/prices
+/api/v1/shops
+/{shop_id}/prices
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"pricebook_id"
+:
+"default"
+,
+"currency"
+:
+"USD"
+,
+"traits"
+:
+[
+"display_only"
+]
+,
+"elements"
+:
+[
+{
+"product_id"
+:
+"1000101"
+,
+"amount"
+:
+1500
+}
+,
+{
+"product_id"
+:
+"1000102"
+,
+"amount"
+:
+1000
+}
+,
+{
+"product_id"
+:
+"1000103"
+,
+"amount"
+:
+300
+}
+]
+}
+Products
+List products
+Retrieves a list of products for the given locale.
+path
+Parameters
+shop_id
+required
+string
+The identifier of the shop.
+query
+Parameters
+locale
+required
+string
+(^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$...
+Show pattern
+The locale for the products catalog. It should be in format en-US or only en.
+q
+string
+[ 1 .. 100 ] characters
+A search term to restrict products. The search considers the following product properties:
+title
+,
+short_description
+,
+description
+,
+color
+and
+size
+.
+Note:
+You can configure attributes to be searchable during the product import.
+See the
+documentation
+and the
+tutorial
+for more details.
+include_variations
+boolean
+Default:
+false
+Flag to return the siblings of a product.
+filter[<field>]
+Array of
+strings
+A
+field=value
+pair defining the filter applied to the response. The field names you can use in the
+filter are available in the facets property in the response of this method. Boolean filters like
+is_preorder
+are not part of the facet properties in the response of this method.
+Note:
+Using this parameter several times on one field in one query creates an
+OR
+operation.
+The
+AND
+operation on the same field is not possible in one query.
+Responses
+200
+OK. Array of products.
+400
+Bad request.
+Possible error_codes are:
+invalid_data
+: The given request is invalid due to missing or malformed parameters.
+invalid_count
+: The given count is out of bounds.
+invalid_offset
+: The given offset is out of bounds or is greater than the total count of elements.
+404
+Not found.
+Possible error_codes are:
+locale_not_found
+: The given locale could not be found.
+shop_not_found
+: The given shop could not be found.
+500
+Internal server error.
+get
+/{shop_id}/products
+/api/v1/shops
+/{shop_id}/products
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"pagination"
+:
+{
+"count"
+:
+10
+,
+"offset"
+:
+0
+,
+"total"
+:
+1000
+}
+,
+"elements"
+:
+[
+{
+"product_id"
+:
+"1200001"
+,
+"title"
+:
+"Black Sweater"
+,
+"short_description"
+:
+"Perfect for the winter."
+,
+"description"
+:
+"Perfect for the winter. Very cozy and comfortable. A must-have for cold days!"
+,
+"is_available"
+:
+true
+,
+"serialized_inventory"
+:
+false
+,
+"variable_pricing"
+:
+false
+,
+"inventory_tracked"
+:
+true
+,
+"online_from"
+:
+"2018-05-17T07:00:00Z"
+,
+"online_to"
+:
+"2020-12-31T13:32:16Z"
+,
+"effective_price"
+:
+{
+"amount"
+:
+89
+,
+"currency"
+:
+"EUR"
+}
+,
+"images"
+:
+[
+{
+"url"
+:
+"
+https://example.com/images/blacksweater.jpg
+"
+,
+"title"
+:
+"Black Sweater Front"
+,
+"dominant_color"
+:
+"#000000"
+,
+"width"
+:
+1242
+,
+"height"
+:
+2208
+,
+"aspect_ratio"
+:
+0.5625
+,
+"tags"
+:
+[
+"newstore:main"
+]
+}
+,
+{
+"url"
+:
+"
+https://example.com/images/black_swatch.jpg
+"
+,
+"title"
+:
+"Color Swatch"
+,
+"dominant_color"
+:
+"#000000"
+,
+"width"
+:
+25
+,
+"height"
+:
+25
+,
+"aspect_ratio"
+:
+1
+,
+"tags"
+:
+[
+"newstore:swatch"
+]
+}
+]
+,
+"extended_attributes"
+:
+[
+{
+"key"
+:
+"exclusive"
+,
+"value"
+:
+"true"
+}
+,
+{
+"key"
+:
+"designer"
+,
+"value"
+:
+"Donatella Dodici"
+}
+]
+,
+"variations"
+:
+[
+{
+"product_id"
+:
+"1200002"
+,
+"is_available"
+:
+true
+,
+"variation_color"
+:
+{
+"value"
+:
+"Black"
+,
+"swatch"
+:
+{
+"url"
+:
+"
+https://example.com/images/black_swatch.jpg
+"
+,
+"title"
+:
+"Color Swatch"
+,
+"dominant_color"
+:
+"#000000"
+,
+"width"
+:
+25
+,
+"height"
+:
+25
+,
+"aspect_ratio"
+:
+1
+,
+"tags"
+:
+[
+"newstore:swatch"
+]
+}
+}
+,
+"variation_size"
+:
+{
+"value"
+:
+"M"
+,
+"gender"
+:
+"unisex"
+,
+"type"
+:
+"regular"
+,
+"system"
+:
+""
+}
+,
+"effective_price"
+:
+{
+"amount"
+:
+89
+,
+"currency"
+:
+"EUR"
+}
+}
+,
+{
+"product_id"
+:
+"1200003"
+,
+"is_available"
+:
+true
+,
+"variation_color"
+:
+{
+"value"
+:
+"Black"
+,
+"swatch"
+:
+{
+"url"
+:
+"
+https://example.com/images/black_swatch.jpg
+"
+,
+"title"
+:
+"Color Swatch"
+,
+"dominant_color"
+:
+"#000000"
+,
+"width"
+:
+25
+,
+"height"
+:
+25
+,
+"aspect_ratio"
+:
+1
+,
+"tags"
+:
+[
+"newstore:swatch"
+]
+}
+}
+,
+"variation_size"
+:
+{
+"value"
+:
+"XL"
+,
+"gender"
+:
+"unisex"
+,
+"type"
+:
+"regular"
+,
+"system"
+:
+""
+}
+,
+"effective_price"
+:
+{
+"amount"
+:
+89
+,
+"currency"
+:
+"EUR"
+}
+}
+]
+}
+,
+{
+"product_id"
+:
+"1300001"
+,
+"title"
+:
+"Leather Boots"
+,
+"short_description"
+:
+"Perfect for the winter."
+,
+"description"
+:
+"Perfect for the winter. Very cozy and comfortable. A must-have for cold days!"
+,
+"is_available"
+:
+true
+,
+"serialized_inventory"
+:
+false
+,
+"variable_pricing"
+:
+false
+,
+"inventory_tracked"
+:
+true
+,
+"online_from"
+:
+"2018-08-01T07:00:00Z"
+,
+"online_to"
+:
+"2020-12-31T13:32:16Z"
+,
+"effective_price"
+:
+{
+"amount"
+:
+100
+,
+"currency"
+:
+"EUR"
+}
+,
+"images"
+:
+[
+{
+"url"
+:
+"
+https://example.com/images/boots.jpg
+"
+,
+"title"
+:
+"Leather Boots Front"
+,
+"dominant_color"
+:
+"#000000"
+,
+"width"
+:
+1242
+,
+"height"
+:
+2208
+,
+"aspect_ratio"
+:
+0.5625
+,
+"tags"
+:
+[
+"newstore:main"
+]
+}
+,
+{
+"url"
+:
+"
+https://example.com/images/leather_swatch.jpg
+"
+,
+"title"
+:
+"Color Swatch"
+,
+"dominant_color"
+:
+"#000000"
+,
+"width"
+:
+25
+,
+"height"
+:
+25
+,
+"aspect_ratio"
+:
+1
+,
+"tags"
+:
+[
+"newstore:swatch"
+]
+}
+]
+,
+"extended_attributes"
+:
+[
+{
+"key"
+:
+"exclusive"
+,
+"value"
+:
+"true"
+}
+,
+{
+"key"
+:
+"designer"
+,
+"value"
+:
+"Donatella Dodici"
+}
+]
+,
+"variations"
+:
+[
+{
+"product_id"
+:
+"1300001"
+,
+"is_available"
+:
+true
+,
+"variation_color"
+:
+{
+"value"
+:
+"Brown"
+,
+"swatch"
+:
+{
+"url"
+:
+"
+https://example.com/images/leather_swatch.jpg
+"
+,
+"title"
+:
+"Color Swatch"
+,
+"dominant_color"
+:
+"#614126"
+,
+"width"
+:
+25
+,
+"height"
+:
+25
+,
+"aspect_ratio"
+:
+1
+,
+"tags"
+:
+[
+"newstore:swatch"
+]
+}
+}
+,
+"variation_size"
+:
+{
+"value"
+:
+"10.5"
+,
+"gender"
+:
+"unisex"
+,
+"type"
+:
+"regular"
+,
+"system"
+:
+""
+}
+,
+"effective_price"
+:
+{
+"amount"
+:
+100
+,
+"currency"
+:
+"EUR"
+}
+}
+,
+{
+"product_id"
+:
+"1300002"
+,
+"is_available"
+:
+true
+,
+"variation_color"
+:
+{
+"value"
+:
+"Dark Grey"
+,
+"swatch"
+:
+{
+"url"
+:
+"
+https://example.com/images/leather_grey_swatch.jpg
+"
+,
+"title"
+:
+"Color Swatch"
+,
+"dominant_color"
+:
+"#565656"
+,
+"width"
+:
+25
+,
+"height"
+:
+25
+,
+"aspect_ratio"
+:
+1
+,
+"tags"
+:
+[
+"newstore:swatch"
+]
+}
+}
+,
+"variation_size"
+:
+{
+"value"
+:
+"10.5"
+,
+"gender"
+:
+"unisex"
+,
+"type"
+:
+"regular"
+,
+"system"
+:
+""
+}
+,
+"effective_price"
+:
+{
+"amount"
+:
+100
+,
+"currency"
+:
+"EUR"
+}
+}
+]
+}
+]
+,
+"facets"
+:
+[
+{
+"field"
+:
+"variation_color_value"
+,
+"enum"
+:
+"enum"
+,
+"values"
+:
+[
+{
+"value"
+:
+"Black"
+,
+"count"
+:
+1
+}
+,
+{
+"value"
+:
+"Brown"
+,
+"count"
+:
+1
+}
+,
+{
+"value"
+:
+"Dark Grey"
+,
+"count"
+:
+1
+}
+]
+}
+,
+{
+"field"
+:
+"variation_size_value"
+,
+"enum"
+:
+"enum"
+,
+"values"
+:
+[
+{
+"value"
+:
+"M"
+,
+"count"
+:
+1
+}
+,
+{
+"value"
+:
+"XL"
+,
+"count"
+:
+1
+}
+,
+{
+"value"
+:
+"10.5"
+,
+"count"
+:
+1
+}
+]
+}
+]
+}
+Get product details
+Returns product detail information including product variant specific information such as
+prices and quantities.
+path
+Parameters
+type
+required
+string
+The type of the external ID. It is the identification system used in your setup.
+Typical systems are EAN, SKU, GTIN, etc.
+Note:
+To use the NewStore ID of the product (
+product_id
+) instead of its external
+identifier, omit this parameter and only use the
+id
+parameter.
+id
+required
+string
+The product identifier, either the internal product id (
+product_id
+), or an external id such as an SKU number. Both identifiers are provided during the
+master data import phase
+:
+To use an external product ID such as an SKU number, provide the
+type
+parameter.
+To use the internal product ID (
+product_id
+), omit the
+type
+parameter.
+Important
+: When retrieving a product whose id contains special characters (reserved, unreserved, and escaped
+characters based on the
+RFC guidelines
+, the value of the product ID must be encoded.
+For more information, see Section 2.1 in the RFC guidelines.
+shop_id
+required
+string
+The identifier of the shop.
+query
+Parameters
+locale
+required
+string
+(^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$...
+Show pattern
+The locale for the products catalog. It should be in format en-US or only en.
+include_variations
+boolean
+Whether to include/populate the product's variations field or not. Variations are included by default.
+Responses
+200
+The product detail information if the provided ID exists.
+404
+Not found.
+Possible error_codes are:
+locale_not_found
+: The given locale could not be found.
+shop_not_found
+: The given shop could not be found.
+not_found
+: The given request returned an empty result.
+500
+Internal server error.
+get
+/{shop_id}/products/{type}{id}
+/api/v1/shops
+/{shop_id}/products/{type}{id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"product_id"
+:
+"1200001"
+,
+"title"
+:
+"Black Sweater"
+,
+"short_description"
+:
+"Perfect for the winter."
+,
+"description"
+:
+"Perfect for the winter. Very cozy and comfortable. A must-have for cold days!"
+,
+"is_available"
+:
+true
+,
+"serialized_inventory"
+:
+false
+,
+"variable_pricing"
+:
+false
+,
+"inventory_tracked"
+:
+true
+,
+"online_from"
+:
+"2018-05-17T07:00:00Z"
+,
+"online_to"
+:
+"2020-12-31T13:32:16Z"
+,
+"effective_price"
+:
+{
+"amount"
+:
+89
+,
+"currency"
+:
+"EUR"
+}
+,
+"images"
+:
+[
+{
+"url"
+:
+"
+https://example.com/images/blacksweater.jpg
+"
+,
+"title"
+:
+"Black Sweater Front"
+,
+"dominant_color"
+:
+"#000000"
+,
+"width"
+:
+1242
+,
+"height"
+:
+2208
+,
+"aspect_ratio"
+:
+0.5625
+,
+"tags"
+:
+[
+"newstore:main"
+]
+}
+,
+{
+"url"
+:
+"
+https://example.com/images/black_swatch.jpg
+"
+,
+"title"
+:
+"Color Swatch"
+,
+"dominant_color"
+:
+"#000000"
+,
+"width"
+:
+25
+,
+"height"
+:
+25
+,
+"aspect_ratio"
+:
+1
+,
+"tags"
+:
+[
+"newstore:swatch"
+]
+}
+]
+,
+"extended_attributes"
+:
+[
+{
+"key"
+:
+"exclusive"
+,
+"value"
+:
+"true"
+}
+,
+{
+"key"
+:
+"designer"
+,
+"value"
+:
+"Donatella Dodici"
+}
+]
+,
+"variations"
+:
+[
+{
+"product_id"
+:
+"1200002"
+,
+"is_available"
+:
+true
+,
+"variation_color"
+:
+{
+"value"
+:
+"Black"
+,
+"swatch"
+:
+{
+"url"
+:
+"
+https://example.com/images/black_swatch.jpg
+"
+,
+"title"
+:
+"Color Swatch"
+,
+"dominant_color"
+:
+"#000000"
+,
+"width"
+:
+25
+,
+"height"
+:
+25
+,
+"aspect_ratio"
+:
+1
+,
+"tags"
+:
+[
+"newstore:swatch"
+]
+}
+}
+,
+"variation_size"
+:
+{
+"value"
+:
+"M"
+,
+"gender"
+:
+"unisex"
+,
+"type"
+:
+"regular"
+,
+"system"
+:
+""
+}
+,
+"effective_price"
+:
+{
+"amount"
+:
+89
+,
+"currency"
+:
+"EUR"
+}
+}
+,
+{
+"product_id"
+:
+"1200003"
+,
+"is_available"
+:
+true
+,
+"variation_color"
+:
+{
+"value"
+:
+"Black"
+,
+"swatch"
+:
+{
+"url"
+:
+"
+https://example.com/images/black_swatch.jpg
+"
+,
+"title"
+:
+"Color Swatch"
+,
+"dominant_color"
+:
+"#000000"
+,
+"width"
+:
+25
+,
+"height"
+:
+25
+,
+"aspect_ratio"
+:
+1
+,
+"tags"
+:
+[
+"newstore:swatch"
+]
+}
+}
+,
+"variation_size"
+:
+{
+"value"
+:
+"XL"
+,
+"gender"
+:
+"unisex"
+,
+"type"
+:
+"regular"
+,
+"system"
+:
+""
+}
+,
+"effective_price"
+:
+{
+"amount"
+:
+89
+,
+"currency"
+:
+"EUR"
+}
+}
+]
+}
+Previous
+Customer API (current)
+Next
+Import Data API
+Copyright © 2025 NewStore, Inc.

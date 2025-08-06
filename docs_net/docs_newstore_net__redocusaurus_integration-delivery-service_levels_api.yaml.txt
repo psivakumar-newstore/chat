@@ -1,0 +1,522 @@
+openapi: 3.1.0
+info:
+  title: Service levels API
+  description: >
+    Represents service levels for routing configuration at NewStore.
+
+
+    **Important:** This endpoint should be used once you have initialized the
+    new version of the configuration 
+
+    through the [Routing Ruleset
+    API](https://docs.newstore.net/api/integration/delivery/routing_ruleset_api/).
+  version: v0
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /service_levels:
+    get:
+      responses:
+        '200':
+          description: |
+            Get list of all shipping levels for the tenant.
+          content:
+            application/json:
+              example:
+                2_DAY:
+                  currency_code: USD
+                  delivery_time: 2-3 business days
+                  delivery_time_after_cutoff_hour: ''
+                  display_name: Standard
+                  price: 22
+                  remorse_period: 30
+                  tax_code: ''
+                GROUND:
+                  currency_code: USD
+                  delivery_time: 3-7 business days
+                  delivery_time_after_cutoff_hour: ''
+                  display_name: Ground - 5 minute remorse period
+                  price: 5
+                  remorse_period: 350
+                  tax_code: ''
+              schema:
+                title: Service levels
+                description: >-
+                  List of service levels with the description taken from
+                  `service_levels` top level section of a fulfillment config
+                type: object
+                patternProperties: &ref_6
+                  .*:
+                    title: Service level
+                    description: Service level config
+                    type: object
+                    required: &ref_2
+                      - currency_code
+                      - delivery_time
+                      - delivery_time_after_cutoff_hour
+                      - display_name
+                      - price
+                      - remorse_period
+                      - tax_code
+                    properties: &ref_3
+                      currency_code:
+                        description: >-
+                          Currency in the ISO 4217 Alpha-3-character format
+.
+                        type: string
+                        maxLength: 3
+                        minLength: 3
+                      delivery_time:
+                        description: >-
+                          User friendly description of amount of time needed to
+                          deliver.
+                        type: string
+                      delivery_time_after_cutoff_hour:
+                        description: >-
+                          User friendly description of amount of time needed to
+                          deliver.
+                        type: string
+                      display_name:
+                        description: >-
+                          Customer-facing name of the service level (known as
+                          'shipping option' to the consumer). This value is
+                          displayed in the NewStore Apps.
+                        type: string
+                      price:
+                        description: Value charged to deliver.
+                        type: number
+                        minimum: 0
+                      remorse_period:
+                        description: >-
+                          The number of seconds the order will stay in on-hold
+                          state before it is processed further by the
+                          fulfillment part. This is a period during which the
+                          order can be manually cancelled.
+                        type: number
+                        minimum: 2
+                        maximum: 3000
+                      tax_code:
+                        description: The identifier for the tax applied.
+                        type: string
+        '404':
+          description: |
+            Not found.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: &ref_0
+                  title:
+                    type: string
+                  type:
+                    type: string
+                  detail:
+                    type: string
+                required: &ref_1
+                  - title
+                  - type
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+      description: |
+        Retrieves all the service levels configurations for your business.
+      summary: List service levels
+      operationId: list-service-levels
+    put:
+      requestBody:
+        content:
+          application/json:
+            example:
+              2_DAY:
+                currency_code: USD
+                delivery_time: 2-3 business days
+                delivery_time_after_cutoff_hour: ''
+                display_name: Standard
+                price: 22
+                remorse_period: 30
+                tax_code: ''
+              GROUND:
+                currency_code: USD
+                delivery_time: 3-7 business days
+                delivery_time_after_cutoff_hour: ''
+                display_name: Ground - 5 minute remorse period
+                price: 5
+                remorse_period: 350
+                tax_code: ''
+            schema:
+              title: Service levels
+              description: >-
+                Service levels information that should be set into a
+                `service_levels` top-level section of a fulfillment config
+              type: object
+              patternProperties: &ref_7
+                .*:
+                  title: Service level
+                  description: Service level config
+                  type: object
+                  required: *ref_2
+                  properties: *ref_3
+      responses:
+        '200':
+          description: |
+            List of all shipping levels for the tenant with the new revision.
+          content:
+            application/json:
+              example:
+                fulfillment_config_uri: fulfillment_config/revisions/1
+                service_levels: &ref_4
+                  2_DAY:
+                    currency_code: USD
+                    delivery_time: 2-3 business days
+                    delivery_time_after_cutoff_hour: ''
+                    display_name: Standard
+                    price: 22
+                    remorse_period: 30
+                    tax_code: ''
+                  GROUND:
+                    currency_code: USD
+                    delivery_time: 3-7 business days
+                    delivery_time_after_cutoff_hour: ''
+                    display_name: Ground - 5 minute remorse period
+                    price: 5
+                    remorse_period: 350
+                    tax_code: ''
+              schema:
+                title: Set service levels response
+                type: object
+                properties: &ref_5
+                  service_levels:
+                    type: object
+                    description: >-
+                      Updated list of service levels with the description taken
+                      from `service_levels` top level section of a fulfillment
+                      config
+                    patternProperties:
+                      .*:
+                        title: Service level
+                        description: Service level config
+                        type: object
+                        required: *ref_2
+                        properties: *ref_3
+                  fulfillment_config_uri:
+                    type: string
+                    description: Revision URI
+        '400':
+          description: |
+            Bad Request.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+      description: |
+        Updates all the service levels configurations for your business.
+      summary: Set service levels
+      operationId: set-service-levels
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: JSON schema for JSONPatch files
+              type: array
+              definitions: &ref_9
+                path: &ref_8
+                  description: A JSON Pointer path.
+                  type: string
+              items: &ref_10
+                oneOf:
+                  - additionalProperties: false
+                    required:
+                      - value
+                      - op
+                      - path
+                    properties:
+                      path:
+                        description: A JSON Pointer path.
+                        type: string
+                      op:
+                        description: The operation to perform.
+                        type: string
+                        enum:
+                          - add
+                          - replace
+                          - test
+                      value:
+                        description: The value to add, replace or test.
+                  - additionalProperties: false
+                    required:
+                      - op
+                      - path
+                    properties:
+                      path:
+                        description: A JSON Pointer path.
+                        type: string
+                      op:
+                        description: The operation to perform.
+                        type: string
+                        enum:
+                          - remove
+                  - additionalProperties: false
+                    required:
+                      - from
+                      - op
+                      - path
+                    properties:
+                      path:
+                        description: A JSON Pointer path.
+                        type: string
+                      op:
+                        description: The operation to perform.
+                        type: string
+                        enum:
+                          - move
+                          - copy
+                      from:
+                        description: >-
+                          A JSON Pointer path pointing to the location to
+                          move/copy from.
+                        type: string
+            example:
+              - op: remove
+                path: /2_DAY
+              - op: replace
+                path: /GROUND/price
+                value: 10
+      responses:
+        '200':
+          description: |
+            List of all shipping levels for the tenant with the new revision.
+          content:
+            application/json:
+              example:
+                fulfillment_config_uri: fulfillment_config/revisions/1
+                service_levels: *ref_4
+              schema:
+                title: Set service levels response
+                type: object
+                properties: *ref_5
+        '400':
+          description: |
+            Bad Request.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '404':
+          description: |
+            Not found.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: |
+            Internal error.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+      description: >
+        Patch list of shipping levels configurations for your business with the
+        given [JSONPatch](https://jsonpatch.com/).
+      summary: Patch service levels
+      operationId: patch-service-levels
+  /service_levels/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The ID of the service level. To retrieve the ID, use the
+          [List service levels](#operation/list-service-levels) method.
+    get:
+      responses:
+        '200':
+          description: |
+            The service level was successfully returned.
+          content:
+            application/json:
+              example:
+                2_DAY:
+                  currency_code: USD
+                  delivery_time: 2-3 business days
+                  delivery_time_after_cutoff_hour: ''
+                  display_name: Standard
+                  price: 22
+                  remorse_period: 30
+                  tax_code: ''
+              schema:
+                title: Service level
+                description: >-
+                  Service level information taken from `service_levels` top
+                  level section of a fulfillment config
+                type: object
+                properties: &ref_11
+                  service_level:
+                    title: Service level
+                    description: Service level config
+                    type: object
+                    required: *ref_2
+                    properties: *ref_3
+        '404':
+          description: |
+            Not found.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: |
+            Internal error.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+      description: |
+        Retrieves the service level by its identifier.
+      summary: Get service level
+      operationId: get-service-level
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    service_level:
+      title: Service level
+      description: Service level config
+      type: object
+      required: *ref_2
+      properties: *ref_3
+    get_service_levels_response:
+      title: Service levels
+      description: >-
+        List of service levels with the description taken from `service_levels`
+        top level section of a fulfillment config
+      type: object
+      patternProperties: *ref_6
+    problem:
+      title: Problem.json
+      description: Schema for problem.json REST API return type
+      type: object
+      properties: *ref_0
+      required: *ref_1
+    put_service_levels_request:
+      title: Service levels
+      description: >-
+        Service levels information that should be set into a `service_levels`
+        top-level section of a fulfillment config
+      type: object
+      patternProperties: *ref_7
+    set_service_levels_response:
+      title: Set service levels response
+      type: object
+      properties: *ref_5
+    path: *ref_8
+    patch_service_levels_request:
+      title: JSON schema for JSONPatch files
+      type: array
+      definitions: *ref_9
+      items: *ref_10
+    get_service_level_by_id_response:
+      title: Service level
+      description: >-
+        Service level information taken from `service_levels` top level section
+        of a fulfillment config
+      type: object
+      properties: *ref_11

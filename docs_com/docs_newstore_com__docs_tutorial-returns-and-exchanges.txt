@@ -1,0 +1,306 @@
+Tutorial: Configuring returns and exchanges
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Tutorial: Configuring returns and exchanges
+Updated on
+Nov 14, 2024
+Published on Oct 1, 2024
+3 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Pure Returns
+Here's how returns and exchanges work in NewStore:
+Assign Customer, place normal order, pay with credit card.
+Look at customer’s Activity screen and open previous order.
+Apply return and inspect cart payload. Note the following:
+All we must do is to create a return is to add
+cart.returns
+to the cart.
+After the cart is synced,
+cart.payments.potential_store_credit
+is added.
+potential_store_credit
+is the total credit the customer has from the returned order.
+Checkout and select
+Refund to Original Payment Method
+. Refunding to original payment method is the default refunding behavior, nothing needs to be set in the cart for choosing this option.
+Because this is a return (no exchange), total refunded amount equals
+cart.remainingAmount
+which is the same as the amount in
+potential_store_credit
+payment.
+Look at
+cart.paymentStatuses
+, note that
+status
+of
+potential_store_credit
+is
+draft
+because we never used this credit.
+To get the refund method (where the money was refunded to), we need to make another API call to
+/customer_orders/<returns[0].orderId>
+.
+On the response payload, we must correlate a payment
+activity
+in
+paymentHistory
+with
+returnId
+from cart. In this case the correlation is
+paymentHistory[1].activities[0].correlationId === cart.returns[0].returnId
+Returns: Questions and more
+Why is a payment called
+potential_store_credit
+?
+Because the store credit hasn't been used yet, it refers to the total amount a customer can potentially use from this credit.
+How do
+cart.ids
+from the original order and the return order relate to each other?
+cart.id
+of the original order correlates with
+returns[*].orderId
+of the return order.
+Why do we call
+/customer_orders/
+with
+<returns[0].orderId>
+?
+Because
+<returns[0].orderId>
+contains the original payment methods along with the returns.
+Why are we getting the
+orderId
+from
+returns[0]
+? What if there is more than one?
+All
+returns[*]
+belong to the same order, returns from different orders is currently not supported.
+Can we call the
+/customer_orders/
+endpoint with
+cart.id
+from the return order?
+We won't find the information we need there, since refund methods are in the payment history of the original order.
+Is a new order being created when placing the return?
+No, since we are not actually creating a new order, just returning from the original order.
+Equal Exchanges
+Create an equal exchange order by returning a product and buying a product with the same price.
+Look at
+cart.payments
+:
+paymentStatuses[...].status
+for
+store_credit
+payment is
+succeeded
+because we successfully processed
+store_credit
+(we used the store credit to buy the new item).
+We got a new property in the cart:
+cart.exchange
+, with information about this exchange checkout.
+Equal Exchanges: Questions and more
+Why are we calling
+/customer_orders/
+with
+<returns[0].orderId>
+?
+Because
+<returns[0].orderId>
+contains the original payment methods along with the returns.
+Note
+There are no payments in
+paymentHistory
+to correlate to this return. Why? Because customer didn’t get refunded.
+Is a new order being created when placing the return?
+Yes, the new order for the new product(s) bought.
+Look at exchange and original orders in HQ
+What payment information do we get when calling
+customer_orders/
+with
+cart.id
+from the original order?
+Original payment and
+store_credit
+issued
+What payment information we get when calling
+customer_orders/
+with
+cart.id
+from the return order?
+store_credit
+redeemed (used to pay for exchanged product)
+Negative exchanges
+Create negative exchange order by returning product and adding product with lower
+price
+to the cart. Inspect payload:
+cart.payments.potential_store_credit.amount
+is equal to the total exchange credit available to the customer.
+cart.exchange.amount
+is the total amount of the refund.
+remainingAmount
+is equal to
+cart.totals.grandTotal
+minus payments amount.
+Place cart and inspect cart payload again:
+store_credit
+payment changed. Now it is equal to the total credit used for this checkout. Therefore,
+remainingAmount
+is now 0.
+For exchanges, always use
+cart.exchange
+for determining balance amount.
+Look at response payload from
+/customer_orders/
+and correlate
+paymentHistory
+activity with
+returnId
+to determine where the money was refunded.
+Negative exchanges: Questions and more
+Look at exchange and original orders in HQ.
+Why does
+store_credit
+payment changes amounts?
+It changes because customer didn't use the whole credit amount.
+What payment information do we get when calling
+customer_orders/
+with
+cart.id
+from the original order?
+Original payment
+store_credit
+issued
+Amount refunded to original payment method
+What payment information we get when calling
+customer_orders/
+with
+cart.id
+from the return order?
+store_credit
+redeemed (used to pay for exchanged product)
+Positive exchanges
+Create a positive exchange order by returning a product and adding a product with higher price to the cart. Inspect
+cart
+payload (
+payments
+,
+paymentStatuses
+,
+returnStatus
+,
+exchange
+).
+Place cart, inspect
+cart
+payload:
+Look at
+cart.payments
+: new payment and
+store_credit
+payments are there.
+Look at
+cart.paymentStatuses
+to check that all
+statuses
+are
+succeeded
+. Note that
+payments
+ids correlate with
+paymentStatuses
+ids.
+Look at
+cart.returnStatus
+to check that returns
+succeeded
+Look at
+cart.exchange
+to get type and balance information on the exchange.
+Related topics
+Configuring exchanges as a payment strategy
+Configuring exchanges as a payment strategy
+Placing orders
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+cart
+config api
+configuration
+exchange
+omnichannel manager
+order
+payment
+payment options
+platform
+refund
+return
+tutorial
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

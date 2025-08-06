@@ -1,0 +1,590 @@
+Cash settings | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Cash Drawer API
+Cash Drawer Reports API
+Cash settings
+Payment Provider Asynchronous API
+Gift Card API
+NewStore Checkout API
+NewStore Checkout Secrets API
+Payment Accounts API
+Payment Options API
+Payment troubleshoot API
+Adyen credentials API
+Refund API (order level, deprecated)
+Refund API (item level)
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+List transaction types
+put
+Configure transaction type
+post
+Create reason
+patch
+Update reason
+API docs by Redocly
+Cash settings
+(
+1.0
+)
+Download OpenAPI specification
+:
+Download
+API for configuring cash transaction types.
+List transaction types
+Returns all possible transaction types together with the corresponding list of reasons.
+The list includes transaction types that have been configured as well as not configured.
+Not configured transaction types contain default values.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+The list of transaction types with the corresponding reasons.
+get
+/cash_transaction_types
+/api/v1/org/config
+/cash_transaction_types
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"transaction_types"
+:
+{
+"add_to_float"
+:
+{
+"balance_modification"
+:
+"cash_in"
+,
+"enabled"
+:
+true
+,
+"affected_report_fields"
+:
+[
+"non_sale_cash_in_total"
+,
+"deposit_total"
+]
+,
+"reasons"
+:
+[ ]
+}
+,
+"add_petty_cash"
+:
+{
+"balance_modification"
+:
+"cash_in"
+,
+"enabled"
+:
+false
+,
+"affected_report_fields"
+:
+[
+"non_sale_cash_in_total"
+]
+,
+"reasons"
+:
+[ ]
+}
+,
+"transfer_in"
+:
+{
+"balance_modification"
+:
+"cash_in"
+,
+"enabled"
+:
+true
+,
+"affected_report_fields"
+:
+[
+"non_sale_cash_in_total"
+]
+,
+"reasons"
+:
+[ ]
+}
+,
+"adjustment_in"
+:
+{
+"balance_modification"
+:
+"cash_in"
+,
+"enabled"
+:
+true
+,
+"affected_report_fields"
+:
+[
+"non_sale_cash_in_total"
+]
+,
+"reasons"
+:
+[ ]
+}
+,
+"remove_petty_cash"
+:
+{
+"balance_modification"
+:
+"cash_out"
+,
+"enabled"
+:
+true
+,
+"affected_report_fields"
+:
+[
+"non_sale_cash_out_total"
+]
+,
+"reasons"
+:
+[ ]
+}
+,
+"cash_pull"
+:
+{
+"balance_modification"
+:
+"cash_out"
+,
+"enabled"
+:
+true
+,
+"affected_report_fields"
+:
+[
+"non_sale_cash_out_total"
+]
+,
+"reasons"
+:
+[ ]
+}
+,
+"transfer_out"
+:
+{
+"balance_modification"
+:
+"cash_out"
+,
+"enabled"
+:
+true
+,
+"affected_report_fields"
+:
+[
+"non_sale_cash_out_total"
+]
+,
+"reasons"
+:
+[ ]
+}
+,
+"adjustment_out"
+:
+{
+"balance_modification"
+:
+"cash_out"
+,
+"enabled"
+:
+true
+,
+"affected_report_fields"
+:
+[
+"non_sale_cash_out_total"
+]
+,
+"reasons"
+:
+[ ]
+}
+,
+"no_sale"
+:
+{
+"balance_modification"
+:
+"cash_in"
+,
+"enabled"
+:
+true
+,
+"affected_report_fields"
+:
+[
+"non_sale_cash_in_total"
+,
+"deposit_total"
+]
+,
+"reasons"
+:
+[
+{
+"code"
+:
+"post_office"
+,
+"label"
+:
+"Post office"
+,
+"enabled"
+:
+true
+}
+,
+{
+"code"
+:
+"food"
+,
+"label"
+:
+"Buy snacks"
+,
+"enabled"
+:
+false
+}
+]
+}
+}
+}
+Configure transaction type
+Configures a transaction type.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+code
+required
+string
+Enum
+:
+"add_to_float"
+"add_petty_cash"
+"transfer_in"
+"adjustment_in"
+"remove_petty_cash"
+"cash_pull"
+"transfer_out"
+"adjustment_out"
+"no_sale"
+"gift_card_cash_out"
+Code of the transaction type
+Request Body schema:
+application/json
+balance_modification
+required
+string
+Enum
+:
+"cash_in"
+"cash_out"
+"neutral"
+Defines how the cash transaction affects the balance.
+affected_report_fields
+required
+Array of
+strings
+Items
+Enum
+:
+"non_sale_cash_in_total"
+"non_sale_cash_out_total"
+"deposit_total"
+List of report fields affected by the cash transaction.
+enabled
+required
+boolean
+Defines if the transaction type is available for usage.
+Responses
+200
+The transaction type was successfully configured.
+400
+Bad request.
+500
+Internal server error.
+put
+/cash_transaction_types/{code}
+/api/v1/org/config
+/cash_transaction_types/{code}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"balance_modification"
+:
+"cash_in"
+,
+"enabled"
+:
+true
+,
+"affected_report_fields"
+:
+[
+"non_sale_cash_in_total"
+,
+"deposit_total"
+]
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"invalid_body"
+,
+"message"
+:
+"The request provided is invalid."
+,
+"request_id"
+:
+"123.4567"
+}
+Create reason
+Creates a reason code for the transaction type, including a label that is displayed in NewStore Associate App
+to the associate.
+Transaction types need to be explicitly configured through the Configure transaction type endpoint before
+reasons can be added for it.
+If no reason codes are specified for a transaction type, the label of the transaction type
+itself is displayed in Associate App.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+code
+required
+string
+Enum
+:
+"add_to_float"
+"add_petty_cash"
+"transfer_in"
+"adjustment_in"
+"remove_petty_cash"
+"cash_pull"
+"transfer_out"
+"adjustment_out"
+"no_sale"
+"gift_card_cash_out"
+Code of the transaction type
+Request Body schema:
+application/json
+code
+required
+string
+non-empty
+The unique reason code that will be exposed to external consumers.
+label
+required
+string
+non-empty
+The label for the reason.
+Responses
+200
+The reason was successfully created.
+400
+Bad request.
+404
+The transaction type not configured.
+409
+The provided reason_code already exists.
+500
+Internal server error.
+post
+/cash_transaction_types/{code}/reasons
+/api/v1/org/config
+/cash_transaction_types/{code}/reasons
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"code"
+:
+"post_office"
+,
+"label"
+:
+"Post office"
+}
+Response samples
+400
+404
+409
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"invalid_body"
+,
+"message"
+:
+"The request provided is invalid."
+,
+"request_id"
+:
+"123.4567"
+}
+Update reason
+Updates the specified reason code and label.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+reason_code
+required
+string
+Code of the transaction reason
+code
+required
+string
+Enum
+:
+"add_to_float"
+"add_petty_cash"
+"transfer_in"
+"adjustment_in"
+"remove_petty_cash"
+"cash_pull"
+"transfer_out"
+"adjustment_out"
+"no_sale"
+"gift_card_cash_out"
+Code of the transaction type
+Request Body schema:
+application/json
+label
+required
+string
+non-empty
+The label for the reason.
+enabled
+boolean
+Defines if the reason is enabled or not.
+Responses
+200
+The reason was successfully changed.
+400
+Bad request.
+404
+Reason not found.
+500
+Internal server error.
+patch
+/cash_transaction_types/{code}/reasons/{reason_code}
+/api/v1/org/config
+/cash_transaction_types/{code}/reasons/{reason_code}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"label"
+:
+"Post office"
+,
+"enabled"
+:
+false
+}
+Response samples
+400
+404
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"invalid_body"
+,
+"message"
+:
+"The request provided is invalid."
+,
+"request_id"
+:
+"123.4567"
+}
+Previous
+Cash Drawer Reports API
+Next
+Payment Provider Asynchronous API
+Copyright © 2025 NewStore, Inc.

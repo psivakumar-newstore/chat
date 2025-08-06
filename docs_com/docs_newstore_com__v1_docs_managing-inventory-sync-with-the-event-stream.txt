@@ -1,0 +1,156 @@
+Managing inventory sync with the Event stream
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Managing inventory sync with the Event stream
+Updated on
+Nov 13, 2024
+Published on Oct 1, 2024
+2 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+This guide focuses on integration using the
+Event Stream
+, this is the recommended way. The older alternative is available at
+Managing inventory sync
+.
+Note
+If you work with an ERP that manages fulfillment and no other applications in your project need fulfillment-related data, you do not need this guide. Instead, refer to
+Integrating a fulfillment provider
+and
+Importing data
+.
+Syncing inventory is a continual 2-way process that involves:
+Syncing inventory to other applications
+Syncing inventory to NewStore Omnichannel Cloud
+How inventory sync works
+To sync inventory changes from your business into NewStore Omnichannel Cloud, develop an adapter. An adapter serves as an intermediary integration layer that communicates directly with NewStore Omnichannel Cloud on one side and with business applications that you want to integrate NewStore with, on the other.
+Let's assume your product stock is 10. If 4 items of this product were shipped as part of different orders, here's how inventory will be synced.
+The workflow is as follows:
+NewStore sends fulfillment data items to an adapter via fulfillment request events with logical timestamps to identify the items that failed, were assigned or were completed.
+The adapter syncs inventory changes and remove allocations in your business.
+On NewStore side, when you import stock into NewStore, include a range of logical timestamps for which to remove allocations.
+When an item is shipped, the
+fulfillment_request.items_completed
+event is emitted.
+Each fulfillment event in NewStore is for one item and it is associated with a logical timestamp. A logical timestamp is a number that consistently increases and helps arrange fulfillment events in the sequence in which they occurred. If fulfillment events ff1, ff2, ff3, and ff4 are assigned logical timestamps 10, 11, 12, 13 respectively where 13 is the highest, ff4 is the most recently fulfilled item.
+When an item is shipped,
+allocation
+for the associated item is removed from NewStore Omnichannel Cloud.
+Syncing inventory
+Here's a quick overview of the methods to implement and sync inventory between NewStore Omnichannel Cloud and other applications:
+Syncing inventory to other applications
+Once you implement the
+Publish event
+method, the webhook sends you data about several events. In the context of fulfillment, the following events are emitted:
+fulfillment_request.assigned
+: allows you to initially retrieve the fulfillment id.
+fulfillment_request.items_completed
+: tells you which items have been fulfilled. If needed, you can use this event to ensure that the ERP releases the
+allocation
+s for the fulfilled items.
+fulfillment_request.items_failed
+: tells you which items failed to be fulfilled. The allocations for these items are released for that location and the request is automatically routed to another fulfillment location. If no location can fulfill, the order is put on hold.
+See the
+Event stream webhooks documentation
+for a description of the content of the event.
+Note
+You should use the
+fulfillment_request.items_completed
+event instead of the
+order.completed
+event:
+order.completed
+doesn't include where the item was shipped from.
+order.completed
+doesn't include the logical timestamp which controls the allocation release on
+ATP
+import.
+Syncing inventory to NewStore Omnichannel Cloud
+Use the import job to sync inventory into NewStore Omnichannel Cloud. Use the
+prescribed JSON schema for stock
+. As soon as items are shipped, allocations for the items are removed from NewStore Omnichannel Cloud.
+Inventory in NewStore Omnichannel Cloud and in your business are now in sync.
+Related topics
+Prescribed JSON schema for stock
+Importing data
+Receiving real-time data
+Syncing inventory after a receiving transaction
+Was this article helpful?
+Yes
+No
+Tags
+api
+catalog
+developer
+ERP integration
+event stream
+events
+fulfillment
+integration
+inventory
+newstore platform
+platform
+webhook
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

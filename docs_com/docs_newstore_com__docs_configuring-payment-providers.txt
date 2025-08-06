@@ -1,0 +1,292 @@
+Configuring payment providers
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Configuring payment providers
+Updated on
+Nov 12, 2024
+Published on Oct 1, 2024
+4 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+To set up payments, configure the:
+Payment providers
+that you integrate or need, to process payments, refunds, and exchanges.
+Payment strategies
+that include the available payment methods and the hierarchy that decides which methods are used to capture payments and refund them.
+Configuring payment providers
+Retrieve the current configuration using the
+Get FAT PSP configuration
+method.
+Go to the
+fat_psp
+>
+external_providers
+key.
+Add a new entry to the
+external_providers
+key for each provider that you want to integrate with.
+To be able to process payment transactions from gift cards, add your gift card provider as an external provider here. To enable gift card operations through integrations, also
+add a gift card provider here
+.
+For each entry, specify these values for the following configurations:
+callback_url
+: The payment provider's service URL for which to post requests. Also see
+Payment provider webhooks
+and
+integ-psp
+.
+timeout
+: The maximum amount of time in seconds to wait for the response when calling the payment provider URL.
+Apply the updated configuration using the
+Update FAT PSP configuration
+method.
+Configuring payment strategies
+NewStore Omnichannel Cloud allows you to configure the following 3 payment strategies for your business:
+Configuring a hierarchy for payment methods
+The
+ordered
+strategy allows you to define a hierarchy for the payment methods that the your business supports. To specify this payment strategy:
+Retrieve the current configuration using the
+Get payment account configuration
+method.
+In the
+available_strategies
+>
+ordered
+key, add an array of payment methods that can be used to capture payments or issue refunds. The payment methods are executed in the order in which they exist in the array.
+For example, if you added
+credit_card
+and
+cash
+, the payments made via credit card are captured first before capturing cash payments.
+Important
+To avoid potential issues with split payments for your business, ensure that you add
+cash
+as the first payment method in
+ordered
+.
+Apply the updated configuration using the
+Update payment account configuration
+method.
+Configuring exchanges as a payment strategy
+The
+store credit
+strategy allows you to process exchanges.
+Note
+When a customer exchanges an item, the exchange amount for the item is held as
+store_credit
+, temporarily, until the exchange is complete. This reduces the number of payments transactions processed in NewStore Omnichannel Cloud. For uneven exchanges, a new financial instrument is created for the balance amount. For more information, see
+Integrating a payment service provider
+.
+Retrieve the current provider configuration using the
+Get FAT PSP configuration
+method.
+Add
+store_credit
+to the
+internal_providers
+key.
+Set
+endpoint
+to
+/store_credit.StoreCredit/Execute
+.
+Set
+protocol
+to
+grpc
+.
+In
+timeout
+, set the maximum amount of time (in seconds) allowed when calling the service.
+We recommend specifying a timeout of
+30
+seconds.
+Apply the adjusted configuration using the
+Update FAT PSP configuration
+method.
+Retrieve the current strategy configuration using the
+Get payment account configuration
+method.
+Add
+store_credit
+to the
+available_strategies
+key.
+Apply the updated configuration using the
+Update payment account configuration
+method.
+Configuring gift cards as a payment strategy
+The
+gift_card
+strategy allows you to process payments via gift cards.
+To accept gift card payments and issue refunds:
+Add
+gift_card
+as an external provider. See
+config-payment-providers
+.
+Retrieve the current strategy configuration using the
+Get payment account configuration
+method.
+Add
+gift_card
+to the
+available_strategies
+key.
+Apply the updated configuration using the
+Update payment account configuration
+method.
+Enabling gift card operations
+To enable operations like issuing and activating gift cards:
+Retrieve the current gift card configuration using the
+Get gift card configuration
+method.
+Set the provider's service URL in the
+provider
+>
+endpoint
+key.
+Set the gift card provider's name in the
+provider` >
+name`` key.
+If you sell gift cards as products, to identify a gift card as a product in the cart during checkout, specify the gift card ID in the
+provider
+>
+gift_card_ids
+list.
+Apply the adjusted configuration using the
+Update gift card configuration
+method.
+Also see
+Integrating a gift card provider
+and
+Gift card webhooks
+.
+Configuring default capture and refund strategies
+The default capture strategy is used for capture operations when items are handed over or shipped, while the default refund strategy is used for refunds to original payment methods and appeasements. These configurations do not affect other refund options. For more information, see
+Configuring refund options
+.
+To change the configured values:
+Retrieve the current strategy configuration using the
+Get payment account configuration
+method.
+In the
+default_capture_strategy
+property, set one of the values from the
+available_strategies
+as the default strategy to capture payments.
+ordered
+usually fits most business requirements.
+In the
+default_refund_strategy
+property, set one of the available strategies as the default strategy to process refunds to original payment methods. Some example behaviors:
+If set to
+gift_card
+, refunds can only be issued as gift cards.
+If set to
+ordered
+, the refunds happen to payment methods with amounts available for refunds in the order described in
+available_strategies
+>
+ordered
+. Payment methods not listed are considered after the listed ones, in no particular order.
+Apply the adjusted configuration using the
+Update payment account configuration
+method.
+Related topics
+Configuring refund options
+Placing orders
+Integrating a payment service provider
+Integrating a gift card provider
+Integrating Adyen
+Was this article helpful?
+Yes
+No
+Related articles
+Configuring automatic shipping cost refunds
+Mobile POS > Set up your mobile POS > Set up payments > Configuring refund options
+Tags
+Adyen
+api
+Apple Pay
+Associate App
+config api
+exchange
+external payment options
+gift card
+Google Pay
+NewStore checkout
+payment
+payment device
+payment options
+PayPal
+platform
+refund
+Square
+T2P
+Tap to Pay on iPhone
+tutorial
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

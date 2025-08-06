@@ -1,0 +1,200 @@
+openapi: 3.0.3
+info:
+  title: Associate App Experiments
+  description: |
+    This api is used by the Associate App
+  version: 1.0.0
+  x-audience: internal-company
+  x-api-id: associate-app-experiments
+  contact:
+    name: Team Mobile Platform
+    url: https://www.newstore.com
+    email: team-mobile-platform@newstore.com
+  x-domain-gateway-integration:
+    serviceName: experiments
+    lambda:
+      arn: >-
+        arn:aws:lambda:{{.region}}:{{.target_account}}:function:experiments-prod-experiments
+servers:
+  - url: https://retail-org.s.newstore.domains
+  - url: https://retail-org.p.newstore.domains
+tags:
+  - name: Associate App experiments configuration
+    description: |
+      Configure experiments for Associate App.
+paths:
+  /apps/{appId}/experiments:
+    get:
+      parameters:
+        - in: path
+          name: appId
+          required: true
+          schema:
+            type: string
+      operationId: listExperiments
+      description: >
+        Returns the current experiments configured for Associate App in your
+        business.
+      summary: Get Associate App experiments configuration
+      security:
+        - oauth2:
+            - associate-app-experiments:experiments:read
+      tags:
+        - Associate App experiments configuration
+      responses:
+        '200':
+          description: Experiments configuration for the Associate App.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/experiment'
+        '422':
+          description: Configuration file is not readable.
+    put:
+      parameters:
+        - in: path
+          name: appId
+          required: true
+          schema:
+            type: string
+      operationId: replaceExperiments
+      description: >
+        Updates and replaces the current experiments configuration values for
+        Associate App in
+
+        your business.
+      summary: Update Associate App experiments configuration
+      security:
+        - oauth2:
+            - associate-app-experiments:experiments:write
+      tags:
+        - Associate App experiments configuration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/experiment'
+      responses:
+        '200':
+          description: Returns the new value of the experiments configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/experiment'
+        '400':
+          description: Invalid JSON. Received configuration could not properly parsed.
+        '422':
+          description: >-
+            Invalid schema. Received configuration is not valid against the
+            configuration schema.
+    patch:
+      parameters:
+        - in: path
+          name: appId
+          required: true
+          schema:
+            type: string
+      operationId: updateExperiments
+      description: >
+        Updates the current experiments configuration values for Associate App
+        in
+
+        your business.
+      summary: Update Associate App experiments configuration
+      security:
+        - oauth2:
+            - associate-app-experiments:experiments:write
+      tags:
+        - Associate App experiments configuration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/experiment'
+      responses:
+        '200':
+          description: Returns the new value of the configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/experiment'
+        '400':
+          description: Invalid JSON. Received configuration could not properly parsed.
+        '422':
+          description: >-
+            Invalid schema. Received configuration is not valid against the
+            configuration schema.
+    delete:
+      parameters:
+        - in: path
+          name: appId
+          required: true
+          schema:
+            type: string
+      operationId: destroyExperiments
+      description: >
+        Deletes the current experiments configuration values for Associate App
+        in
+
+        your business.
+      summary: Delete Associate App experiments configuration
+      security:
+        - oauth2:
+            - associate-app-experiments:experiments:write
+      tags:
+        - Associate App experiments configuration
+      responses:
+        '200':
+          description: Returns the new value of the configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/experiment'
+        '422':
+          description: Unable to delete the configuration.
+components:
+  schemas:
+    experiment:
+      type: object
+      properties:
+        rules:
+          type: object
+          properties:
+            storeId:
+              type: string
+              description: A regex pattern to match one or multiple storeIds.
+            associateId:
+              type: string
+              description: A regex pattern to match one or multiple associateIds.
+            appVersion:
+              type: string
+              description: A regex pattern to match one or multiple app versions.
+          required:
+            - appVersion
+          additionalProperties: false
+        combine:
+          type: string
+          enum:
+            - AND
+            - OR
+          default: AND
+        metaData:
+          type: object
+          properties:
+            timeout:
+              type: integer
+              minimum: 0
+          additionalProperties: true
+      required:
+        - rules
+        - combine
+      additionalProperties: false
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: /v0/token
+          scopes:
+            associate-app-experiments:experiments:read: Read experiments
+            associate-app-experiments:experiments:write: Create experiments

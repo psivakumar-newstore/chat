@@ -1,0 +1,333 @@
+Jobs API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Highstreet E-commerce Platform API
+Push Notifications API
+Jobs API
+Stock Subscription
+Configuration APIs
+Webhooks
+New Generation APIs
+Jobs
+post
+Reindex categories
+post
+Stock Notifications
+API docs by Redocly
+Jobs API
+(
+4.5
+)
+Download OpenAPI specification
+:
+Download
+Describes API endpoints that schedule background jobs for various use cases.
+Jobs
+Endpoints to schedule jobs.
+These endpoints are available on the following domain:
+MERCHANTID
+-
+MERCHANT_ENV
+.api.highstreetapp.com
+MERCHANTID
+= the configured merchant id in the app.
+MERCHANT_ENV
+= the applicable environment of the Merchant's backend. eg
+staging
+.
+Note that when the
+-MERCHANT_ENV
+is omitted then the production environment is assumed.
+Also note the
+-
+that should be present between
+MERCHANTID
+and
+MERCHANT_ENV
+. When
+MERCHANT_ENV
+is omitted then the
+-
+should also be omitted.
+Reindex categories
+Schedules a job that refreshes the order of products within categories.
+Note that this job only refreshes the
+order
+of products. The product
+data itself (such as pricing) is not refreshed.
+Authorizations:
+basic_auth
+header
+Parameters
+Authorization
+required
+string
+Authorization header. This endpoint expects Basic Authentication
+Request Body schema:
+application/json
+Request body to schedule a job to reindex categories
+countries
+required
+Array of
+strings
+(
+CountryCode
+)
+[ items
+= 2 characters
+]
+List of country codes
+Responses
+202
+Accepted
+400
+Bad Request
+401
+Unauthorized
+500
+An internal server error occured
+post
+/jobs/reindex-categories
+/jobs/reindex-categories
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"countries"
+:
+[
+"NL"
+,
+"BE"
+]
+}
+Response samples
+202
+400
+401
+500
+Content type
+application/json
+Copy
+{
+"job_id"
+:
+"d02b7e035bd31021168e7557"
+}
+Stock Notifications
+Schedules a job to send back in stock notifications to customers that
+registered to receive one.
+This endpoint can be called any time the stock of a product changes from
+0 (out of stock) to greater than 0 (back in stock).
+This endpoint should only be called with product IDs of fully configured
+products. The following products types are supported:
+Platform
+Product types
+Magento 1 & Magento 2
+simple
+Salesforce Commerce Cloud
+item
+and
+variant
+Self-implemented
+fixed
+and
+variant
+Partially configured products are not supported.
+After receiving a back in stock notification the user will not receive
+a second notification for the same product (unless they explicitly
+register again).
+Authorizations:
+basic_auth
+header
+Parameters
+Authorization
+required
+string
+Authorization header. This endpoint expects Basic Authentication
+Request Body schema:
+application/json
+Request body for scheduling back in stock notifications
+countries
+required
+Array of
+strings
+[ items
+= 2 characters
+]
+One or more countries that the product has come back in stock in. If
+a product has come back in stock in The Netherlands (
+NL
+) but not in
+the United States (
+US
+) then
+US
+should not be included in the list.
+delivery_time
+string
+The date and time the notification should be delivered to the customer
+in ISO 8601 standard format. Notifications will be sent as soon as
+possible by default.
+max_recipients
+number
+>= 1
+The maximum number of customers that will receive a notification. If
+the number of customers that want to receive a notification is higher
+than the maximum number of recipients the users that registered first
+are prioritised. Notifications are sent to all interested customers by
+default.
+message_translations
+required
+Array of
+objects
+(
+Translation
+)
+Translations for the body of the notification. All languages for the
+given
+countries
+should be included.
+product_id
+required
+string
+The ID of the product that has come back in stock.
+title_translations
+required
+Array of
+objects
+(
+Translation
+)
+Translations for the title of the notification. All languages for the
+given
+countries
+should be included.
+Responses
+202
+Accepted
+400
+Bad Request
+401
+Unauthorized
+500
+An internal server error occured
+post
+/jobs/stock_notifications
+/jobs/stock_notifications
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"countries"
+:
+[
+"NL"
+]
+,
+"delivery_time"
+:
+"2019-11-04T13:25:34+00:00"
+,
+"max_receivers"
+:
+24
+,
+"message_translations"
+:
+[
+{
+"language"
+:
+"en"
+,
+"text"
+:
+"The Skim - Washed Up is back in stock. Be quick!"
+}
+,
+{
+"language"
+:
+"nl"
+,
+"text"
+:
+"De Skim - Washed Up is terug. Wees er snel bij!"
+}
+]
+,
+"product_id"
+:
+"1234_AB-S"
+,
+"title_translations"
+:
+[
+{
+"language"
+:
+"en"
+,
+"text"
+:
+"Guess What?"
+}
+,
+{
+"language"
+:
+"nl"
+,
+"text"
+:
+"Goed nieuws"
+}
+]
+}
+Response samples
+202
+400
+401
+500
+Content type
+application/json
+Copy
+{
+"id"
+:
+"03b6c7d6bfa2"
+}
+Previous
+Push Notifications API
+Next
+Stock Subscription
+Copyright © 2025 NewStore, Inc.

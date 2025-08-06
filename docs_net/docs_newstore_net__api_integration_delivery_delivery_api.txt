@@ -1,0 +1,1375 @@
+Delivery API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Delivery API
+Shipping rules API
+Fulfillment config history API
+Capacity-based Routing
+Routing insights API
+Routing ruleset API
+Service levels API
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+Configuration
+post
+Create or update a shipping option token key pair
+get
+Get the public key for a shipping option token
+post
+Add/Update carrier config.
+get
+Get carrier config
+post
+Add/Update customs config.
+get
+Get customs config.
+post
+Add/Update timeout value for HTTP adapters.
+get
+Get timeout value for HTTP adapters
+Delivery
+post
+Create routing options
+get
+List shipments
+post
+Book a Delivery
+post
+Book a Delivery
+post
+Create a Manifest
+post
+Cancel Delivery for Delivery Request ID
+Tracking
+post
+Update shipment tracking details
+post
+Set shipment status
+Support endpoints
+get
+Get booking status
+API docs by Redocly
+Delivery API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Enables shipment of items inside NewStore Platform.
+Configuration
+configuration
+Create or update a shipping option token key pair
+Create or update the public/private key pair used to generate shipping offer tokens.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+public_key
+required
+string
+non-empty
+A PEM formatted RSA public key
+private_key
+required
+string
+non-empty
+A PEM formatted RSA private key
+Responses
+200
+Token was successfully updated.
+post
+/delivery_options/shipping_option_token_key_pair
+/v0/d
+/delivery_options/shipping_option_token_key_pair
+Request samples
+Payload
+Content type
+application/json
+This is not needed anymore. Please do not create any shipping option token key pair.
+Copy
+{
+"public_key"
+:
+"DO NOT PROVIDE ANY KEY"
+,
+"private_key"
+:
+"DO NOT PROVIDE ANY KEY"
+}
+Get the public key for a shipping option token
+Gets the public key for a shipping option token.
+Although the creation of a shipping option token key pair is not needed anymore,
+NewStore maintains a key for BOPIS orders only.
+Authorizations:
+newStoreAccessToken
+header
+Parameters
+tenant
+required
+string
+Request retailer.
+Responses
+200
+The public key was retrieved successfully
+404
+The key doesn't exist for the tenant
+500
+An error occurred on the server.
+get
+/delivery_options/shipping_option_token_public_key
+/v0/d
+/delivery_options/shipping_option_token_public_key
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+{
+"public_key"
+:
+"string"
+}
+Add/Update carrier config.
+Creates/Updates the carrier config for the tenant.
+This allows configuration for the carrier by specifying
+api_base_url
+(webhook),
+api_key
+,
+booking_includes_return
+and
+return_deliveries_should_be_canceled
+.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+value
+required
+object
+configuration payload
+property name*
+additional property
+object
+Name of shipment carrier, Ex: FEDEX
+booking_includes_return
+boolean
+If true the return delivery is booked in the same call as the outbound delivery.
+api_base_url
+required
+string
+The shipping provider adapter URL.
+api_key
+string
+Optional API key used to validate against the shipping provider adapter URL.
+return_deliveries_should_be_canceled
+boolean
+Set to true in order to cancel the return delivery along with the outbound delivery.
+Responses
+200
+The carrier config has been created/updated.
+400
+Incorrect payload for config (validation failed).
+409
+Update failed for carrier config due to lost race.
+500
+Internal server error.
+post
+/config/delivery/carriers
+/v0/d
+/config/delivery/carriers
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"value"
+:
+{
+"FEDEX"
+:
+{
+"booking_includes_return"
+:
+true
+,
+"api_base_url"
+:
+"
+http://example.newstore.com
+"
+,
+"return_deliveries_should_be_canceled"
+:
+true
+}
+}
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+}
+Get carrier config
+Gets the current tenant config for
+carriers
+.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Retrieve the carrier config
+404
+Config key does not exist (it is not a case when key exists but just not set)
+500
+Internal server error
+get
+/config/delivery/carriers
+/v0/d
+/config/delivery/carriers
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"value"
+:
+{
+"FEDEX"
+:
+{
+"booking_includes_return"
+:
+true
+,
+"api_base_url"
+:
+"
+http://example.newstore.com
+"
+,
+"return_deliveries_should_be_canceled"
+:
+true
+}
+}
+,
+"updated_at"
+:
+"2021-07-13T20:18:25Z"
+}
+Add/Update customs config.
+Creates/Updates tenant config for
+fulfillment_node_customs_config
+i.e.
+the customs information for fulfillment nodes. This alllows configurartion for
+customs_signer
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+value
+required
+object
+config payload
+property name*
+additional property
+object
+ID of the fulfillment node. Ex. US01
+customs_signer
+required
+string
+A name of the person who is certifying that the information provided on the customs form is accurate.
+Responses
+200
+The customs config has been created/updated.
+400
+Incorrect payload for config (validation failed).
+409
+Update failed for customs config due to lost race.
+500
+Internal server error.
+post
+/config/delivery/fulfillment_node_customs_info
+/v0/d
+/config/delivery/fulfillment_node_customs_info
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"value"
+:
+{
+"US01"
+:
+{
+"customs_signer"
+:
+"John Doe"
+}
+,
+"US02"
+:
+{
+"customs_signer"
+:
+"John Doe Jr."
+}
+}
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+}
+Get customs config.
+Gets the current tenant config for
+fulfillment_node_customs_config
+.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Retrieve the customs config
+404
+Config key does not exist (it is not a case when key exists but just not set)
+500
+Internal server error
+get
+/config/delivery/fulfillment_node_customs_info
+/v0/d
+/config/delivery/fulfillment_node_customs_info
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"value"
+:
+{
+"US01"
+:
+{
+"customs_signer"
+:
+"John Doe"
+}
+}
+,
+"updated_at"
+:
+"2021-07-13T20:18:25Z"
+}
+Add/Update timeout value for HTTP adapters.
+Creates/Updates tenant config for
+adapter_http_timeout
+i.e.
+the timeout for HTTP adapters in delivery service
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+value
+required
+number
+HTTP adapter timeout. Default value of this config is 20.0
+Responses
+200
+Timeout in seconds for HTTP adapters
+400
+Incorrect payload for config (validation failed).
+409
+Update failed for http adapter config due to lost race.
+500
+Internal server error.
+post
+/config/delivery/adapter_http_timeout
+/v0/d
+/config/delivery/adapter_http_timeout
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"value"
+:
+50
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+}
+Get timeout value for HTTP adapters
+Retrieve tenant config for
+adapter_http_timeout
+i.e.
+the timeout for HTTP adapters in delivery service.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Retrieve the timeout for HTTP adapters in delivery service successfully
+404
+Config key does not exist (it is not a case when key exists but just not set)
+500
+Internal server error
+get
+/config/delivery/adapter_http_timeout
+/v0/d
+/config/delivery/adapter_http_timeout
+Response samples
+200
+500
+Content type
+application/json
+Copy
+{
+"value"
+:
+50
+,
+"updated_at"
+:
+"2021-07-13T20:18:25Z"
+}
+Delivery
+delivery
+Create routing options
+Calculates routing and retrieves options based on the destination
+address and the list of products, in an order.
+Any combination of route/shipping option always provide enough options to ship all products,
+in the desired quantity. However it is up to the consumer of this API to select the options that will
+fulfill the correct amount of products: one route can provide more options than needed. This happens when
+different service levels apply for a same route for example.
+The price is required for international shipments and for
+NewStore Shipping Options Webhooks
+.
+Note:
+This method does not get routing options for in-store pickup orders.
+To calculate routing options for
+in-store pickup orders, use the
+Get in-store pickup options
+method instead.
+Note:
+The validity of a shipping offer token can vary based on the shipping
+provider and shipping offer.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+external_order_id
+string
+non-empty
+The external order ID, as seen by the customer, for which we want shipping options.
+shipping_address
+required
+object
+shopping_cart
+required
+object
+An array of flat items from the shopping cart.
+Responses
+200
+The list of possible routing options is returned.
+400
+The input data is invalid.
+500
+An internal error occurred.
+post
+/routing_options
+/v0/d
+/routing_options
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"external_order_id"
+:
+"CustomerOrderID0001"
+,
+"shipping_address"
+:
+{
+"country"
+:
+"US"
+,
+"zip_code"
+:
+"75008"
+}
+,
+"shopping_cart"
+:
+{
+"catalog"
+:
+{
+"shop_id"
+:
+"store-catalog-en"
+,
+"shop_locale"
+:
+"en-US"
+}
+,
+"items"
+:
+[
+{
+"product_id"
+:
+"1003001"
+,
+"price"
+:
+{
+"amount"
+:
+150
+,
+"currency"
+:
+"USD"
+}
+}
+,
+{
+"product_id"
+:
+"1003002"
+,
+"price"
+:
+{
+"amount"
+:
+150
+,
+"currency"
+:
+"USD"
+}
+,
+"is_preorder"
+:
+false
+,
+"online_from"
+:
+"2021-07-13T20:18:25"
+}
+]
+}
+}
+Response samples
+200
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"routing_options"
+:
+[
+[
+{
+"fulfillment_node"
+:
+{
+"id"
+:
+"string"
+,
+"store_id"
+:
+"string"
+,
+"address"
+:
+{
+"address_line_1"
+:
+"string"
+,
+"address_line_2"
+:
+"string"
+,
+"country_code"
+:
+"st"
+,
+"city"
+:
+"string"
+,
+"zip_code"
+:
+"string"
+,
+"state"
+:
+"string"
+}
+}
+,
+"fulfillment_node_id"
+:
+"string"
+,
+"products"
+:
+[
+{
+"product_id"
+:
+"string"
+,
+"quantity"
+:
+0
+}
+]
+,
+"routing_strategy"
+:
+{
+"strategy"
+:
+"prerouted"
+}
+,
+"shipping_options"
+:
+[
+{
+"shipping_option_token"
+:
+"string"
+,
+"shipping_offer_token"
+:
+"string"
+,
+"price"
+:
+0
+,
+"currency"
+:
+"str"
+,
+"display_name"
+:
+"string"
+,
+"delivery_time"
+:
+"string"
+,
+"service_level_identifier"
+:
+"string"
+,
+"provider_rate_identifier"
+:
+"string"
+,
+"delivery_window"
+:
+{
+"starts_at"
+:
+"string"
+,
+"ends_at"
+:
+"string"
+}
+,
+"shipping_type"
+:
+"traditional_carrier"
+,
+"shipping_carrier"
+:
+"string"
+,
+"remorse_period"
+:
+0
+,
+"tax_class"
+:
+"string"
+}
+]
+}
+]
+]
+}
+List shipments
+Retrieves a list of shipments for a provider and status.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+carrier_code
+required
+string
+The carrier code for the shipping provider.
+status
+required
+string
+Default:
+"open"
+Value
+:
+"open"
+The status of the shipments to retrieve. The
+open
+status includes all shipments not yet delivered or canceled.
+Responses
+200
+400
+Bad Request.
+500
+Internal Server Error.
+get
+/shipments
+/v0/d
+/shipments
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"shipments"
+:
+[
+{
+"tracking_code"
+:
+"XY200189925RV"
+,
+"status"
+:
+"in_transit"
+,
+"carrier_code"
+:
+"CHRONOPOST"
+}
+,
+{
+"tracking_code"
+:
+"XY200202096RV"
+,
+"status"
+:
+"created"
+,
+"carrier_code"
+:
+"CHRONOPOST"
+}
+,
+{
+"tracking_code"
+:
+"XY200329517RV"
+,
+"status"
+:
+"created"
+,
+"carrier_code"
+:
+"CHRONOPOST"
+}
+,
+{
+"tracking_code"
+:
+"XY200206212RV"
+,
+"status"
+:
+"created"
+,
+"carrier_code"
+:
+"CHRONOPOST"
+}
+,
+{
+"tracking_code"
+:
+"XY200189899RV"
+,
+"status"
+:
+"in_transit"
+,
+"carrier_code"
+:
+"CHRONOPOST"
+}
+,
+{
+"tracking_code"
+:
+"XY200189117RV"
+,
+"status"
+:
+"in_transit"
+,
+"carrier_code"
+:
+"CHRONOPOST"
+}
+]
+}
+Book a Delivery
+asynchronously book a delivery by accepting the request and emitting package.delivery_booked events
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+One of
+object
+object
+packages
+(any or null) or Array of objects
+book_return
+boolean
+Default:
+false
+callback_url
+string or null
+shipping_option_token
+required
+string
+delivery_request_id
+required
+string
+delivery request UUID
+external_order_id
+required
+string
+Order ID
+fulfillment_node_id
+required
+string
+shipping_address
+required
+object
+Responses
+202
+Delivery booking request accepted
+400
+Invalid request
+post
+/book_delivery
+/v0/d
+/book_delivery
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"fulfillment_request_id"
+:
+"string"
+,
+"packages"
+:
+{ }
+,
+"book_return"
+:
+false
+,
+"callback_url"
+:
+"string"
+}
+Book a Delivery
+asynchronously book a delivery by accepting the request and emitting package.delivery_booked events
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+fulfillment_request_id
+required
+string
+Fulfillment Request ID
+Request Body schema:
+application/json
+fulfillment_request_id
+required
+string
+non-empty
+packages
+(any or null) or Array of objects
+book_return
+boolean
+Default:
+false
+callback_url
+string or null
+Responses
+202
+Delivery booking request accepted
+400
+Invalid request
+post
+/book_delivery/{fulfillment_request_id}
+/v0/d
+/book_delivery/{fulfillment_request_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"fulfillment_request_id"
+:
+"string"
+,
+"packages"
+:
+{ }
+,
+"book_return"
+:
+false
+,
+"callback_url"
+:
+"string"
+}
+Create a Manifest
+regroup several packages under a manifest, or scanform, in order to ease handover to the carrier.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+external_package_ids
+required
+Array of
+strings
+>= 2 characters
+[ items
+non-empty
+]
+List of External Package IDs
+Responses
+200
+Manifest created
+400
+Invalid request
+post
+/manifests
+/v0/d
+/manifests
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"external_package_ids"
+:
+[
+"string"
+]
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"manifest"
+:
+{
+"id"
+:
+"string"
+,
+"carrier_id"
+:
+"string"
+,
+"carrier_code"
+:
+"string"
+,
+"document_url"
+:
+"string"
+}
+}
+Cancel Delivery for Delivery Request ID
+cancel delivery bookings for a delivery request id.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+delivery_request_id
+required
+string
+Delivery Request ID/UUID
+Responses
+200
+delivery has been cancelled successfully
+400
+cannot proceed
+404
+missing data such as Delivery required to process cancellation
+post
+/cancel/{delivery_request_id}
+/v0/d
+/cancel/{delivery_request_id}
+Tracking
+tracking
+Update shipment tracking details
+Updates the shipment tracking information.
+Only the information provided in the body is considered. No data is deleted if you do not use all the fields
+that the body allows.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+tracking_code
+required
+string
+The delivery tracking code provided when booking the shipment.
+Request Body schema:
+application/json
+coordinates
+object
+Latest coordinates of this package.
+courier
+object
+Information about the driver.
+vehicle
+object
+Information about the vehicle.
+updated_at
+required
+string
+<
+date-time
+>
+The datetime when the tracking data was collected.
+Responses
+200
+The shipment tracking information was updated.
+400
+Bad Request. Something went wrong with this request.
+404
+The tracking code was not found.
+post
+/shipments/{tracking_code}/package_tracking
+/v0/d
+/shipments/{tracking_code}/package_tracking
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"updated_at"
+:
+"2018-09-28T14:30:06.000Z"
+,
+"courier"
+:
+{
+"name"
+:
+"Jay DoubleYou"
+,
+"photo_url"
+:
+"
+http://www.photourl.com/jdoubleyou
+"
+,
+"phone"
+:
+"+55 55 5555 5555"
+}
+,
+"vehicle"
+:
+{
+"license_plate"
+:
+"CYG 1222"
+}
+,
+"coordinates"
+:
+{
+"longitude"
+:
+"2.3653740882873535"
+,
+"latitude"
+:
+"48.90086364746094"
+}
+}
+Set shipment status
+Notifies NewStore of an updated status for shipment tracking.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+tracking_code
+required
+string
+The delivery tracking code provided when booking the shipment.
+Request Body schema:
+application/json
+status
+required
+string
+Enum
+:
+"assigned"
+"canceled"
+"delivered"
+"in_transit"
+"out_for_delivery"
+"returned"
+The updated status of a given delivery.
+reason
+string or null
+Represents additional information of the status.
+updated_at
+required
+string
+<
+date-time
+>
+The timestamp of when the event happened.
+Responses
+200
+The shipment status was updated.
+400
+Something went wrong with the request.
+404
+The shipment was not found.
+409
+Conflicting shipment status.
+post
+/shipments/{tracking_code}/delivery_status
+/v0/d
+/shipments/{tracking_code}/delivery_status
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"status"
+:
+"delivered"
+,
+"reason"
+:
+"delivered"
+,
+"updated_at"
+:
+"2018-09-29T15:30:06.000Z"
+}
+Support endpoints
+Get booking status
+Retrieves the shipment booking status along with history of possible errors and retries.
+Please note that this endpoint is meant for human review only: it is strictly reserved to help
+support and integrators to get information about what is the status of a booking along with error messages as
+we get them from adapters for example.
+We are still working on this endpoint and others that will help you to understand what is happening in case
+there is an issue with booking.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+sales_order_uuid
+required
+string
+Unique ID of the order.
+Responses
+200
+Contains a list of all shipments and their booking statuses.
+404
+Order not found.
+500
+An internal server error happened.
+get
+/_/v0/support/orders/{sales_order_uuid}/booking_status
+/v0/d
+/_/v0/support/orders/{sales_order_uuid}/booking_status
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"booking_status"
+:
+[
+{
+"fulfillment_request_id"
+:
+"76ba2c90-c413-438e-8040-a3585a2db770"
+,
+"status"
+:
+"pending"
+}
+,
+{
+"fulfillment_request_id"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"status"
+:
+"booked"
+}
+,
+{
+"fulfillment_request_id"
+:
+"27a39710-4b2d-43fd-b636-5f7aed3073a2"
+,
+"status"
+:
+"failed"
+,
+"error_type"
+:
+"not_booked"
+}
+]
+}
+Previous
+NewStore SFCC Integration API
+Next
+Shipping rules API
+Copyright © 2025 NewStore, Inc.

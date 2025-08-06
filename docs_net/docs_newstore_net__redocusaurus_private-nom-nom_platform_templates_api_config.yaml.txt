@@ -1,0 +1,385 @@
+openapi: 3.0.0
+info:
+  title: Templates API
+  version: v0
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+paths:
+  /templates/templates:
+    get:
+      responses:
+        '200':
+          description: The templates IDs are returned.
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                example:
+                  data:
+                    - id: in_store_pickup_ready_email_subject
+                    - id: in_store_pickup_ready_email
+                    - id: sales_receipt
+                    - id: invoice
+                    - id: shipment_label
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                      required:
+                        - id
+      description: |
+        Returns a list of IDs of the available templates.
+
+        **Related methods:**
+        - [Get template](#/localization/{locale}-get-template)
+        - [Preview document](#/preview-preview-document)
+        - [List styles](#/templates-list-templates)
+      operationId: List_templates
+      summary: List_templates
+  /templates/templates/{template}/sample_data:
+    get:
+      responses:
+        '200':
+          description: Contains a JSON snippet that can be used to feed the template.
+          content:
+            application/json:
+              schema:
+                title: Get sample data response
+                example:
+                  locale: en_US
+                  store_address:
+                    name: Mystore
+                    country_name: United States
+                    country_code: US
+                    city: Boston
+                    zip_code: W1F 9RF
+                    state: ''
+                    address: 36 Beak St
+                  store_phone_number: +1 123 456 7890
+                  order_number: GA0000000001
+                  external_id: GA-000-00000001
+                  currency_code: US
+                  payment_method_label: Credit Card
+                  amounts:
+                    shipping_and_handling: 10
+                    taxes: 10
+                    grand_total: 90
+                    sub_total: 70
+                  billing_address:
+                    name: Dr Mr John Christopher Doe Jr
+                    country_name: Great Britain
+                    country_code: GB
+                    city: London
+                    zip_code: FFF AAA
+                    address: 745 Atlantic Ave
+                    state: ''
+                    email: jdoe@example.com
+                  instruments:
+                    - instrument_id: 2efc6043-89fb-45bd-2e19-7ee558b5d316
+                      payment_provider: stripe
+                      payment_method: credit_card
+                      currency_code: USD
+                      metadata:
+                        instrument_details:
+                          brand: MasterCard
+                      amount: 60
+                type: object
+                properties:
+                  output:
+                    description: The sample data.
+                    type: object
+                required:
+                  - output
+      description: Returns the sample data matching the template's data definition.
+      operationId: Get_sample_data
+      summary: Get_sample_data
+    parameters:
+      - name: template
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The ID of the template. To retrieve the ID, use the
+          [List templates method](#/templates-list-templates).
+  /templates/templates/{template}/documentation:
+    get:
+      responses:
+        '200':
+          description: The documentation as an HTML table.
+          content:
+            application/xhtml+xml:
+              schema:
+                example:
+                  output: >-
+from_address
+name
+string
+country_name
+Full country
+                    name
+string
+country_code
+Country
+                    code
+string
+city
+['string', 'null']
+zip_code
+['string',
+                    'null']
+state
+['string',
+                    'null']
+address_line_1
+['string',
+                    'null']
+country_name
+Full country
+                    name
+string
+country_code
+Country
+                    code
+string
+state
+['string', 'null']
+address_line_1
+shipping_type_name
+Name displayed on the Document
+                    for the shipping type from the carrier e.g
+                    Overnight.
+string
+extended_attributes
+Attributes set by the tenant to
+                    be carried over to the export APIs without affecting the
+                    business logic of the NewStore
+                    platform.
+array
+tax_exempt
+If true, the order is tax
+                    exempt.
+boolean
+content_type: html
+                type: object
+        '500':
+          description: The requested template could not be found.
+      description: >
+        Returns the template's data definition as an HTML table. The HTML table
+        contains
+
+        3 columns: the name of the field, its description, and its type.
+
+
+        **Related methods:**
+
+        - [Preview document](#/preview-preview-document)
+
+        - [Get template](#/localization/{locale}-get-template)
+      operationId: Get_sample_data_documentation
+      summary: Get_sample_data_documentation
+    parameters:
+      - name: template
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The ID of the template. To retrieve the ID, use the
+          [List templates method](#/templates-list-templates).
+  /templates/templates/{template}/preview:
+    post:
+      responses:
+        '200':
+          description: Contains the rendered template.
+          content:
+            application/xhtml+xml:
+              schema:
+                example: >-
+Name:John Doe,
+                  Phone:202-555-0109
+'400':
+          description: Unknown content type.
+      description: >
+        Renders the template with the provided data and style and returns the
+        output. Use it to test your
+
+        template during development.
+      operationId: Preview_document
+      summary: Preview_document
+      requestBody:
+        content:
+          application/json:
+            example:
+              template: >-
+Name:{{name_var}},
+                Phone:{{phonenum_var}}
+data:
+                name_var: John Doe
+                phonenum_var: 202-555-0109
+              locale: en_US
+              content_type: html
+            schema:
+              title: Preview a template.
+              required:
+                - template
+                - data
+              description: Request to preview a template.
+              type: object
+              properties:
+                template:
+                  minLength: 1
+                  description: The template document.
+                  type: string
+                data:
+                  description: The data to feed to the template.
+                  type: object
+                style:
+                  description: >-
+                    An optional stylesheet to render the template with. This
+                    overrides the stylesheet specified in the template.
+                  type: string
+                locale:
+                  description: >-
+                    The locale used to select the template according to language
+                    and region. Example: en_DE, de_DE, english, EN etc.
+                  type: string
+                content_type:
+                  default: text
+                  description: The format of the generated content.
+                  enum:
+                    - html
+                    - text
+                    - pdf
+                  type: string
+        required: true
+    parameters:
+      - name: template
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The ID of the template. To retrieve the ID, use the
+          [List templates method](#/templates-list-templates).
+  /templates/templates/{template}/localization/{locale}:
+    get:
+      responses:
+        '200':
+          description: Contains the template body.
+          content:
+            text/plain:
+              schema:
+                example:
+{% with paginated_items = paginate(flat_items, 6) %}{% for items in paginated_items %}
+{% if billing_address != None or shipping_address != None %}
+Billing Address: >-
+{{ billing_address.name }}
+{{
+                    billing_address.address_line_1 }}{{
+                    billing_address.address_line_2 }}
+{{
+                    billing_address.city }}{{'' if billing_address.state == None
+                    or billing_address.state == '' else ','}}{{
+                    billing_address.state}}{{ billing_address.zip_code if
+                    billing_address.zip_code != None else ''}}
+{{
+                    billing_address.country_name }}
+{% endif
+                    %}
+'500':
+          description: No template found with the name
+      description: >
+        Returns the template. The format of the response depends on the template
+        you used.
+
+        Document and email templates return text/html content. Push notification
+        template return JSON content.
+      operationId: Get_template
+      summary: Get_template
+    put:
+      responses:
+        default:
+          description: ''
+      description: Updates the template.
+      operationId: Update_template
+      summary: Update_template
+    parameters:
+      - name: locale
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The accepted language|locale.
+      - name: template
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The ID of the template. To retrieve the ID, use the
+          [List templates method](#/templates-list-templates).
+  /templates/styles:
+    get:
+      responses:
+        '200':
+          description: Contains the available styles.
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                      required:
+                        - id
+      description: Gets the list of available styles.
+      operationId: List_styles
+      summary: List_styles
+  /templates/styles/{style}:
+    get:
+      responses:
+        '200':
+          description: Contains the stylesheet body.
+        '404':
+          description: The provided style name could not be found.
+      description: Returns the CSS code of the style.
+      operationId: Get_style
+      summary: Get_style
+    put:
+      responses:
+        default:
+          description: ''
+      description: Updates the style.
+      operationId: Update_style
+      summary: Update_style
+    parameters:
+      - name: style
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The name of a style representing a CSS file.
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}

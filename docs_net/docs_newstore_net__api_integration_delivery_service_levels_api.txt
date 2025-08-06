@@ -1,0 +1,583 @@
+Service levels API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Delivery API
+Shipping rules API
+Fulfillment config history API
+Capacity-based Routing
+Routing insights API
+Routing ruleset API
+Service levels API
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+List service levels
+put
+Set service levels
+patch
+Patch service levels
+get
+Get service level
+API docs by Redocly
+Service levels API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Represents service levels for routing configuration at NewStore.
+Important:
+This endpoint should be used once you have initialized the new version of the configuration 
+through the
+Routing Ruleset API
+.
+List service levels
+Retrieves all the service levels configurations for your business.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Get list of all shipping levels for the tenant.
+404
+Not found.
+500
+Internal server error.
+get
+/service_levels
+/v0
+/service_levels
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"2_DAY"
+:
+{
+"currency_code"
+:
+"USD"
+,
+"delivery_time"
+:
+"2-3 business days"
+,
+"delivery_time_after_cutoff_hour"
+:
+""
+,
+"display_name"
+:
+"Standard"
+,
+"price"
+:
+22
+,
+"remorse_period"
+:
+30
+,
+"tax_code"
+:
+""
+}
+,
+"GROUND"
+:
+{
+"currency_code"
+:
+"USD"
+,
+"delivery_time"
+:
+"3-7 business days"
+,
+"delivery_time_after_cutoff_hour"
+:
+""
+,
+"display_name"
+:
+"Ground - 5 minute remorse period"
+,
+"price"
+:
+5
+,
+"remorse_period"
+:
+350
+,
+"tax_code"
+:
+""
+}
+}
+Set service levels
+Updates all the service levels configurations for your business.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+.*
+pattern property
+object
+(
+Service level
+)
+Service level config
+currency_code
+required
+string
+= 3 characters
+Currency in the ISO 4217 Alpha-3-character format
+https://www.iso.org/iso-4217-currency-codes.html
+.
+delivery_time
+required
+string
+User friendly description of amount of time needed to deliver.
+delivery_time_after_cutoff_hour
+required
+string
+User friendly description of amount of time needed to deliver.
+display_name
+required
+string
+Customer-facing name of the service level (known as 'shipping option' to the consumer). This value is displayed in the NewStore Apps.
+price
+required
+number
+>= 0
+Value charged to deliver.
+remorse_period
+required
+number
+[ 2 .. 3000 ]
+The number of seconds the order will stay in on-hold state before it is processed further by the fulfillment part. This is a period during which the order can be manually cancelled.
+tax_code
+required
+string
+The identifier for the tax applied.
+Responses
+200
+List of all shipping levels for the tenant with the new revision.
+400
+Bad Request.
+500
+Internal server error.
+put
+/service_levels
+/v0
+/service_levels
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"2_DAY"
+:
+{
+"currency_code"
+:
+"USD"
+,
+"delivery_time"
+:
+"2-3 business days"
+,
+"delivery_time_after_cutoff_hour"
+:
+""
+,
+"display_name"
+:
+"Standard"
+,
+"price"
+:
+22
+,
+"remorse_period"
+:
+30
+,
+"tax_code"
+:
+""
+}
+,
+"GROUND"
+:
+{
+"currency_code"
+:
+"USD"
+,
+"delivery_time"
+:
+"3-7 business days"
+,
+"delivery_time_after_cutoff_hour"
+:
+""
+,
+"display_name"
+:
+"Ground - 5 minute remorse period"
+,
+"price"
+:
+5
+,
+"remorse_period"
+:
+350
+,
+"tax_code"
+:
+""
+}
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"fulfillment_config_uri"
+:
+"fulfillment_config/revisions/1"
+,
+"service_levels"
+:
+{
+"2_DAY"
+:
+{
+"currency_code"
+:
+"USD"
+,
+"delivery_time"
+:
+"2-3 business days"
+,
+"delivery_time_after_cutoff_hour"
+:
+""
+,
+"display_name"
+:
+"Standard"
+,
+"price"
+:
+22
+,
+"remorse_period"
+:
+30
+,
+"tax_code"
+:
+""
+}
+,
+"GROUND"
+:
+{
+"currency_code"
+:
+"USD"
+,
+"delivery_time"
+:
+"3-7 business days"
+,
+"delivery_time_after_cutoff_hour"
+:
+""
+,
+"display_name"
+:
+"Ground - 5 minute remorse period"
+,
+"price"
+:
+5
+,
+"remorse_period"
+:
+350
+,
+"tax_code"
+:
+""
+}
+}
+}
+Patch service levels
+Patch list of shipping levels configurations for your business with the given
+JSONPatch
+.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+Array
+One of
+object
+object
+object
+path
+required
+string
+A JSON Pointer path.
+op
+required
+string
+Enum
+:
+"add"
+"replace"
+"test"
+The operation to perform.
+value
+required
+any
+The value to add, replace or test.
+Responses
+200
+List of all shipping levels for the tenant with the new revision.
+400
+Bad Request.
+404
+Not found.
+500
+Internal error.
+patch
+/service_levels
+/v0
+/service_levels
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"op"
+:
+"remove"
+,
+"path"
+:
+"/2_DAY"
+}
+,
+{
+"op"
+:
+"replace"
+,
+"path"
+:
+"/GROUND/price"
+,
+"value"
+:
+10
+}
+]
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"fulfillment_config_uri"
+:
+"fulfillment_config/revisions/1"
+,
+"service_levels"
+:
+{
+"2_DAY"
+:
+{
+"currency_code"
+:
+"USD"
+,
+"delivery_time"
+:
+"2-3 business days"
+,
+"delivery_time_after_cutoff_hour"
+:
+""
+,
+"display_name"
+:
+"Standard"
+,
+"price"
+:
+22
+,
+"remorse_period"
+:
+30
+,
+"tax_code"
+:
+""
+}
+,
+"GROUND"
+:
+{
+"currency_code"
+:
+"USD"
+,
+"delivery_time"
+:
+"3-7 business days"
+,
+"delivery_time_after_cutoff_hour"
+:
+""
+,
+"display_name"
+:
+"Ground - 5 minute remorse period"
+,
+"price"
+:
+5
+,
+"remorse_period"
+:
+350
+,
+"tax_code"
+:
+""
+}
+}
+}
+Get service level
+Retrieves the service level by its identifier.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The ID of the service level. To retrieve the ID, use the
+List service levels
+method.
+Responses
+200
+The service level was successfully returned.
+404
+Not found.
+500
+Internal error.
+get
+/service_levels/{id}
+/v0
+/service_levels/{id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"2_DAY"
+:
+{
+"currency_code"
+:
+"USD"
+,
+"delivery_time"
+:
+"2-3 business days"
+,
+"delivery_time_after_cutoff_hour"
+:
+""
+,
+"display_name"
+:
+"Standard"
+,
+"price"
+:
+22
+,
+"remorse_period"
+:
+30
+,
+"tax_code"
+:
+""
+}
+}
+Previous
+Routing ruleset API
+Next
+Availabilities Export API
+Copyright © 2025 NewStore, Inc.

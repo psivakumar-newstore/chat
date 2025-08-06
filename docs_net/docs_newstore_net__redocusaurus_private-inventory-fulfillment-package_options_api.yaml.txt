@@ -1,0 +1,182 @@
+openapi: 3.0.1
+info:
+  title: Package Options
+  contact:
+    name: Team Store Fulfillment
+    url: https://apidocs.newstore.io
+    email: team-store-fulfillment@newstore.com
+  description: API responsible for handling package options for stores.
+  version: '0.1'
+  license:
+    name: Proprietary. All rights reserved.
+    url: https://newstore.com/
+tags:
+  - name: Package Options
+    description: |
+      Use this resource to manage package options for each store.
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+paths:
+  /configuration/stores:
+    get:
+      tags:
+        - Get store configuration
+      summary: Get relation between stores and package_options
+      operationId: getStorePackageOptionsConfiguration
+      description: >
+        Use this method to get relation between stores and package_options for a
+        tenant.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/storeConfiguration'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - Update store configuration
+      summary: Set relation between stores and package_options
+      operationId: setStorePackageOptionsConfiguration
+      description: >
+        Use this method to set relation between stores and package_options for a
+        tenant.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/storeConfiguration'
+      responses:
+        '200':
+          description: The request for configuring stores is successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/storeConfiguration'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /configuration/packages:
+    get:
+      tags:
+        - Get packages configuration
+      summary: Get package options
+      operationId: getPackagesConfiguration
+      description: |
+        Use this method to get package options for a tenant.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/packagesConfiguration'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - Update packages configuration
+      summary: Set package options
+      operationId: setPackagesConfiguration
+      description: |
+        Use this method to set package options for a tenant.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/packagesConfiguration'
+      responses:
+        '200':
+          description: The request for configuring packages is successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/packagesConfiguration'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+components:
+  schemas:
+    storeConfiguration:
+      title: Store configuration format
+      type: object
+      properties:
+        stores:
+          type: array
+          items:
+            type: object
+            properties:
+              store_id:
+                type: string
+                description: ID of the store
+              package_options:
+                type: array
+                description: Package option IDs of the store
+                items:
+                  type: string
+              default_package:
+                type: string
+                description: ID of the default package option
+    packagesConfiguration:
+      title: package configuration format
+      type: object
+      properties:
+        packages:
+          type: array
+          items:
+            type: object
+            properties:
+              uuid:
+                type: string
+                description: uuid of the package
+                example: uuid1
+              name:
+                type: string
+                description: name of the package
+                example: L
+              weight:
+                type: number
+                description: weight of the package
+                example: 1.74
+              weight_unit:
+                type: string
+                description: weight_unit of the package
+                example: lb
+              length:
+                type: number
+                description: length of the package
+                example: 42.55
+              width:
+                type: number
+                description: width of the package
+                example: 53.34
+              height:
+                type: number
+                description: height of the package
+                example: 19.91
+              length_unit:
+                type: string
+                description: length_unit of the package
+                example: cm
+    error:
+      title: General error format.
+      properties:
+        error:
+          type: string
+          description: Error description which gives you more details about the error.

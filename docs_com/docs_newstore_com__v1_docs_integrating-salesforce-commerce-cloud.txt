@@ -1,0 +1,534 @@
+Integrating Salesforce Commerce Cloud
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Integrating Salesforce Commerce Cloud
+Updated on
+Jan 8, 2025
+Published on Oct 1, 2024
+11 minute(s) read
+Export PDF
+Print
+Prev
+Next
+NewStore provides a cartridge
+int_newstore
+to help you create an integration that connects your shopfront in Salesforce Commerce Cloud to NewStore Omnichannel Cloud.
+Use the following tutorials to understand business scenarios on mapping Salesforce Commerce Cloud (SFCC) data with NewStore data.
+Importing catalog from Salesforce Commerce Cloud
+Importing pricebook from Salesforce Commerce Cloud
+Importing orders using a custom mapping script
+Exporting availabilities to Salesforce Commerce Cloud
+Catalog Mapping
+Pricebook Mapping
+Order Mapping
+Availabilities Mapping
+Importing catalog from Salesforce Commerce Cloud
+Importing Salesforce Commerce Cloud (SFCC) Catalog into the NewStore platform is a multi-step process and involves integrators from both sides; SFCC and NewStore.
+SFCC NewStore integration contains the following components:
+SFCC cartridge
+SFCC connector
+The NewStore platform
+Amazon Web Service (AWS) S3 bucket in NewStore
+Third-party applications such as
+Camaro
+and
+Ditto
+Note
+For the general product import information, see
+the multi-locale mapping example
+.
+Step 1: Importing the catalog XML file
+The process of transforming the new Catalog XML file into a NewStore-compatible JSON file is automated by the SFCC cartridge that performs the following operations:
+Requests an access token from NewStore for the tenant, SFCC.
+Checks the mapping configuration file uploaded by the NewStore integrator.
+Receives an XML-upload URL from NewStore.
+Uploads the new Catalog XML file to the NewStore S3 bucket.
+The communication between SFCC cartridge and the NewStore platform happens only via SFCC connector.
+Interactions between SFCC cartridge and SFCC connector
+The SFCC cartridge creates a new catalog export job using
+NewStore SFCC Integration API
+.
+After receiving the upload URL from NewStore, the SFCC cartridge uploads XML file to the S3 bucket in NewStore. The uploaded XML remains in queue.
+The SFCC connector receives a message that file is uploaded to the S3 bucket. It allows the NewStore integrator to convert the XML file into a NewStore-compatible JSON file using the third-party apps.
+Then the SFCC connector imports data from SFCC to NewStore using
+Import data API
+.
+Step 2: Creating a mapping configuration file
+NewStore integrator performs the following operations:
+Requests a new Catalog XML file from SFCC.
+Example:
+<images>
+  <image-group view-type="large">
+      <image path="large/PG.33330DAN84Q.CHARCWL.PZ.jpg"/>
+      <image path="large/PG.33330DAN84Q.CHARCWL.BZ.jpg"/>
+  </image-group>
+  <image-group view-type="large" variation-value="CHARCWL">
+      <image path="large/PG.33330DAN84Q.CHARCWL.PZ.jpg"/>
+      <image path="large/PG.33330DAN84Q.CHARCWL.BZ.jpg"/>
+  </image-group>
+  <image-group view-type="large" variation-value="RED">
+      <image path="large/PG.10255090.JJ1SAXX.PZ.jpg"/>
+      <image path="large/PG.10255090.JJ1SAXX.PZ.jpg"/>
+  </image-group>
+  <image-group view-type="medium">
+      <image path="medium/PG.33330DAN84Q.CHARCWL.PZ.jpg"/>
+      <image path="medium/PG.33330DAN84Q.CHARCWL.BZ.jpg"/>
+  </image-group>
+  <image-group view-type="medium" variation-value="CHARCWL">
+      <image path="medium/PG.33330DAN84Q.CHARCWL.PZ.jpg"/>
+      <image path="medium/PG.33330DAN84Q.CHARCWL.BZ.jpg"/>
+  </image-group>
+  <image-group view-type="small">
+      <image path="small/PG.33330DAN84Q.CHARCWL.PZ.jpg"/>
+      <image path="small/PG.33330DAN84Q.CHARCWL.BZ.jpg"/>
+  </image-group>
+  <image-group view-type="small" variation-value="CHARCWL">
+      <image path="small/PG.33330DAN84Q.CHARCWL.PZ.jpg"/>
+      <image path="small/PG.33330DAN84Q.CHARCWL.BZ.jpg"/>
+  </image-group>
+  <image-group view-type="swatch" variation-value="CHARCWL">
+      <image path="swatch/PG.33330DAN84Q.CHARCWL.CP.jpg"/>
+  </image-group>
+</images>
+Checks with NewStore for any custom attributes for mapping.
+Creates a mapping configuration file and uploads it to the S3 bucket using
+Mapping Configuration API
+.
+Example:
+"images": {
+    "include": [
+        "small",
+        "large",
+        "swatch"
+    ],
+    "is_swatch_view_type": "swatch",
+    "pathTemplate": "https://zzko-005.sandbox.us01.dx.commercecloud.salesforce.com/on/demandware.static/-/Sites-apparel-m-catalog/default/dwe9c9a85f/images/{{.}}",
+    "placeHolder": {
+        "is_color_swatch": false,
+        "is_main": false,
+        "url": "http://via.placeholder.com/640x360"
+    }
+},
+Performs the data mapping and import.
+Step 3: Catalog mapping
+At this step, both, NewStore and SFCC integrators communicate and check the mappings.
+Map the Catalog XML file with the mapping configuration file.
+Note
+Transformation of the XML file into the NewStore-compatible JSON file happens through the third-party apps such as:
+Camaro to convert SFCC XML file to SFCC JSON file.
+Ditto to map SFCC JSON schema with the NewStore mapping configuration JSON schema.
+Perform the mappings for all other attributes. For example, see the NewStore-compatible image mapping JSON file as shown below:
+"images": [
+{
+   "is_color_swatch": false,
+   "is_main": false,
+   "url": "https://zzko-005.sandbox.us01.dx.commercecloud.salesforce.com/on/demandware.static/-/>Sites-apparel-m-catalog/default/dwe9c9a85f/images/large/PG.33330DAN84Q.CHARCWL.PZ.jpg"
+},
+{
+   "is_color_swatch": false,
+   "is_main": false,
+   "url": "https://zzko-005.sandbox.us01.dx.commercecloud.salesforce.com/on/demandware.static/-/>Sites-apparel-m-catalog/default/dwe9c9a85f/images/large/PG.33330DAN84Q.CHARCWL.BZ.jpg"
+},
+{
+"is_color_swatch": false,
+"is_main": false,
+      "url": "https://zzko-005.sandbox.us01.dx.commercecloud.salesforce.com/on/demandware.static/-/>Sites-apparel-m-catalog/default/dwe9c9a85f/images/small/PG.33330DAN84Q.CHARCWL.PZ.jpg"
+},
+{
+"is_color_swatch": false,
+"is_main": false,
+      "url": "https://zzko-005.sandbox.us01.dx.commercecloud.salesforce.com/on/demandware.static/-/>Sites-apparel-m-catalog/default/dwe9c9a85f/images/small/PG.33330DAN84Q.CHARCWL.BZ.jpg"
+},
+{
+"is_color_swatch": false,
+"is_main": false,
+      "url": "https://zzko-005.sandbox.us01.dx.commercecloud.salesforce.com/on/demandware.static/-/>Sites-apparel-m-catalog/default/dwe9c9a85f/images/swatch/PG.33330DAN84Q.CHARCWL.CP.jpg"
+}
+],
+Step 4: Catalog import
+You can check the catalog import happening in the NewStore platform performed by SFCC connector.
+To check the status of SFCC import job, see
+SFCC connector job
+.
+To check the status of NewStore import job, go to
+Catalog
+>
+Imports
+>
+Catalog Imports
+page in Omnichannel Manager.
+For more information on importing the NewStore-compatible JSON file into the NewStore platform, see
+this
+tutorial.
+Importing pricebook from Salesforce Commerce Cloud
+The process for pricebook mapping is almost same as of catalog mapping. For more information, read
+the Catalog Mapping
+tutorial.
+You have to provide the pricebook mapping for SFCC only once.
+Create a mapping configuration file and upload it to NewStore S3 bucket using the
+Mapping Configuration API
+Use case
+The following is an example of the mapping configuration file for the SFCC pricebook. You can provide mappings for multiple pricebooks simultaneously.
+{
+    "config": {
+        "pricebook-sfra-apparel-catalog-en-eur": {
+            "catalog": "sfra-apparel-catalog-en-test",
+            "pricebook": "default",
+            "shop": "storefront-catalog-en",
+            "traits": []
+        },
+        "pricebook-sfra-apparel-catalog-en-usd": {
+            "catalog": "sfra-apparel-catalog-en-test",
+            "pricebook": "pricebook-sfra-apparel-catalog-en-usd",
+            "shop": "storefront-catalog-en",
+            "traits": []
+        }
+    }
+}
+The currency is used from a specific SFCC pricebook.
+For instance, USD will be used from the
+pricebook-sfra-apparel-catalog-en-usd
+.
+The following is an example of the XML file for SFCC USD pricebook.
+<pricebook>
+        <header pricebook-id="pricebook-sfra-apparel-catalog-en-usd">
+            <currency>USD</currency>
+            <display-name xml:lang="x-default">Prices USD</display-name>
+            <online-flag>true</online-flag>
+        </header>
+        <price-tables>
+            <price-table product-id="640188016716M">
+                <amount quantity="1">299.99</amount>
+            </price-table>
+            <price-table product-id="640188017003M">
+                <amount quantity="1">39.99</amount>
+            </price-table>
+        </price-tables>
+    </pricebook>
+The following is an example of the JSON file for NewStore-compatible USD pricebook.
+{
+  "head": {
+    "currency": "USD",
+    "pricebook": "pricebook-sfra-apparel-catalog-en-usd",
+    "shop": "storefront-catalog-en",
+    "catalog": "sfra-apparel-catalog-en-test",
+    "traits": []
+  },
+  "items": [
+    {
+      "product_id": "640188016716M",
+      "value": 299.99
+    },
+    {
+      "product_id": "640188017003M",
+      "value": 39.99
+    }
+  ]
+  }
+Importing orders using a custom mapping script
+A custom mapping script is a single, plain script in JavaScript that accepts data in SalesForce format and publishes the data as output in NewStore format.
+Use the script to map specific Salesforce Commerce Cloud attributes to extended attributes within NewStore.
+Currently, NewStore supports using a custom mapping script to import
+orders
+.
+Step 1: Importing the order XML file
+Request an access token from NewStore.
+Receive an upload URL using the
+NewStore SFCC Integration API
+.
+Upload the Order XML file to the NewStore's S3 bucket.
+Step 2: Transforming SFCC XML file to NewStore JSON file
+Download the Order XML file.
+Using JavaScript mapping, convert the SFCC XML file to the NewStore-compatible JSON file through an intermediary JSON file.
+Step 3: Order mapping using a custom mapping script
+The script runs on a virtual machine and it uses the intermediary JSON file as an input to convert that into a NewStore-compatible JSON file.
+The following is an example of a custom mapping script to import orders.
+/**
+ * Define and call your own functions
+ */
+function formatLanguageForNewstore(sfLocale) {
+  if (!sfLocale) {
+    return 'en';
+  }
+
+  if (!sfLocale.match(/^[a-z]{2}\_[A-Z]{2}$/)) {
+    throw new Error('Locale string does not match pattern xx_XX');
+  }
+
+  return sfLocale.split('_')[0];
+};
+
+/**
+ * This is the main function
+ */
+function transform(sfOrder) {
+
+    const placedAt = formatDateForNewstore(String(sfOrder['order-date']))
+
+    const transformedOrder = {
+        external_id: sfOrder['order-no'],
+        placed_at: placedAt,
+        shop: 'storefront-catalog-en',
+        channel_type: 'web',
+        channel_name: 'Salesforce Commerce Cloud',
+        currency: sfOrder?.currency ?? 'USD',
+        customer_name: sfOrder?.customer?.['customer-name'],
+        customer_email: sfOrder?.customer?.['customer-email'],
+        /* ... */
+    }
+
+    return transformedOrder;
+}
+For additional information, you can read the
+Boardriders use case
+.
+Step 4: Order import through APIs
+SFCC connector triggers the order import using
+Order Injection API
+.
+Exporting availabilities to Salesforce Commerce Cloud
+The SFCC cartridge imports availabilities from NewStore that helps in updating corresponding inventory lists in SFCC. This data import also includes inventory lists which may be used for stores in SFCC.
+Process overview
+The SFCC cartridge runs a job that starts the export process in Newstore as follows:
+Starts the
+POST: /availabilities/bulk/{group_name}
+export.
+SFCC provides
+inventory_list_id
+and
+ocapi_callback_url
+so that NewStore can execute the import job in SFCC later.
+Fetches the file
+GET: /availabilities/bulk/{availability_export_id}
+.
+Performs the file transformation from NewStore JSON to SFCC XML.
+Uploads the SFCC XML file to the NewStore's S3 bucket.
+Runs a job in SFCC using OCAPI to process the uploaded file and import it.
+During this process, the following attributes are sent to SFCC.
+InventoryUrl: The url to download the inventory.xml from.
+InventoryListID: The SFCC Inventory listID. This is sent back to NewStore in the next step 6.
+LastUpdatedAt: Used for providing deltas from NewStore to SFCC. This value isn’t used by SFCC, only sent back to NewStore when the inventory was successfully imported, so that it can be store and used on the subsequent inventory export processes.
+SFCC Notifies NewStore about sending
+LastUpdatedAt
+and
+InventoryListID
+information.
+Step 1: Mapping between SFCC inventory list and NewStore group names
+An inventory list is an aggregated Newstore availability from multiple fulfillment nodes.
+Every inventory list present in SFCC, which needs to be updated with availability data from NewStore, corresponds to an availability group name in NewStore.
+Use case 1: SFCC Storefront Reference Architecture (SFRA)
+The SFRA contains the
+inventory_m
+inventory list by default. So you can update the inventory list using the following endpoint to specify a group name and which fulfillment nodes will be part of that aggregated availability group.
+POST: /availabilities/groups
+Body:
+{
+  "group_name": "inventory_list_sfcc",
+  "fulfillment_nodes": [
+    "FulfillmentNode01",
+    "FulfillmentNode02"
+  ]
+}
+Use case 2: Store inventory lists
+Each inventory list used by stores corresponds to a group name in NewStore.
+However, for stores, you can have only one fulfillment node per group, which is the store itself.
+POST: /availabilities/groups
+Body:
+{
+  "group_name": "store_1",
+  "fulfillment_nodes": [
+    "FulfillmentNodeStore01"
+  ]
+}
+You can also create a store group name with multiple stores. However, this is not a valid business case.
+Step 2: Updating fulfilment location groups
+For example, a customer opens a new store and wants to have it added to the main aggregated inventory list.
+PUT: /availabilities/groups/{group_name}
+Body:
+Specify the new list of fulfilment locations, including the new store:
+{
+  "group_name": "inventory_list_sfcc",
+  "fulfillment_nodes": [
+    "FulfillmentNode01",
+    "FulfillmentNode02",
+    "FulfillmentNode03Store2"
+  ]
+}
+Also, if the customer creates an inventory list in SFCC, you have to create a new corresponding group within Newstore. For more information, see
+Step 1: Mapping between SFCC inventory list and NewStore group names
+.
+Step 3: Adding tenant-specific mapping configuration
+For example, each customer may have a different extended attribute to identify the SFCC productID in NewStore.
+POST: /availabilities/bulk
+generates an availabilities file that can be retrieved and looks like:
+"atps": [
+        {
+            "atp": 19991,
+            "external_identifiers": [
+                {
+                    "catalog": "storefront-catalog-en",
+                    "identifiers": {
+                        "sku": "640188016624M",
+                        "upc": "640188016624"
+                    },
+                    "locale": "en-us"
+                },
+                {
+                    "catalog": "sfra-apparel-catalog-en",
+                    "identifiers": {
+                        "sku": "640188016624M"
+                    },
+                    "locale": "en-us"
+                }
+            ],
+            "future_atp": 0,
+            "present_atp": 19991,
+            "product_id": "640188016624M"
+        },
+        ...
+Any of the external identifiers can be used as a SFCC productID, so that when the inventory XML file is generated, the external identifier being used, matches with the productID in SFCC.
+Note
+If the
+external_identifiers
+attribute is not present in the generated
+/availabilities/bulk
+file, then
+product_id
+will be used as a default mapping attribute.
+Hence, a mapping configuration for each inventory list needs to be provided as follows:
+POST: {{SFCC_CONNECTOR_ENDPOINT}}/sfcc-api/v1/mapping_config/availability
+{
+  "inventory_list_id": "inventory_m",
+  "config": {
+    "catalog":"storefront-catalog-en-test",
+    "locale":"en-us",
+    "external_id":"upc",
+    "handling":"preorder"
+  }
+}
+This configuration specifies that for inventory list
+inventory_m
+and for catalog
+storefront-catalog-en-test
+, the external id
+upc
+should be used as a SFCC productID identifier, which generates a file, located at
+v.sfcc.newstore.transformation.data/inventory/team-sfcc/
+.
+Step 4: SFCC callback to NewStore
+The last step in this process to confirm the successful import in SFCC, is an asynchronous call from SFCC to the SFCC NewStore connector. This updates the
+last_updated_at
+field, allowing delta exports to be sent for the specified inventory list.
+POST: {{SFCC_CONNECTOR_ENDPOINT}}/sfcc-api/v1/inventory/callback
+{
+    "cartridge_version":"20.1.0",
+    "execution_id":"NewStoreConnectorOrdersExport",
+    "job_id":"54564654",
+    "site_id":"RefArch",
+    "custom":{
+        last_updated_at: 123456;
+        inventory_list_id: inventory_m;
+    }
+}
+Authentication
+Because NewStore calls the SFCC cartridge using OCAPI, you have to perform the following to allow the authentication:
+POST: {{SFCC_CONNECTOR_ENDPOINT}}/sfcc-api/v1/ocapi_credentials
+{
+  "client_id": "client id provided by SFCC implementation partner",
+  "client_secret": "URL ENCODED client secret id provided by SFCC implementation partner"
+}
+Note
+Remember to URL Encode the password before posting it, otherwise it may not always work.
+Step 5: Managing future inventory
+In the mapping configuration specified previously, the
+handling
+attribute was also provided with the value
+preorder
+. Possible values for this attribute are as follows:
+preorder
+backorder
+This attribute will be used to populate the
+preorder-backorder-handling
+SFCC attribute.
+Note
+Currently, NewStore manages future availability for Distribution Centers only. Stores don't support future availability.
+Related topics
+Importing orders
+Integrating a fulfillment provider
+Importing data
+Managing inventory updates with Salesforce Commerce Cloud
+Salesforce Commerce Cloud (SFCC) data import FAQs
+Was this article helpful?
+Yes
+No
+Tags
+api
+catalog
+data import
+integration
+inventory
+order management
+platform
+pricebook
+product import
+SFCC
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

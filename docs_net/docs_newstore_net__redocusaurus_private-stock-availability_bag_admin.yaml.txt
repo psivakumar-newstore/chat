@@ -1,0 +1,633 @@
+openapi: 3.1.0
+info:
+  title: Bag Availability Admin API
+  version: 0.1.0
+  x-audience: internal-company
+  x-api-id: availability-admin-062023
+  description: >
+    This internal API provides access to bag
+    [availability](https://docs.newstore.com/docs/glossary#available-to-promise)
+    values in the platform.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /availability/bag:
+    post:
+      summary: Get bag availability
+      operationId: createBagAvailability
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/get_bag_availability_request'
+            example:
+              bag:
+                - product_id: GD10000
+                  quantity: 5
+              location_filter:
+                geo:
+                  latitude: 45
+                  longitude: 90
+                radius: 10
+              only_in_store_pickup: true
+              only_stores: false
+              ignore_atps: true
+              limit: 100
+      responses:
+        '200':
+          description: >-
+            Returns a list of fulfillment nodes that have enough inventory for a
+            bag of products.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_bag_availability_response'
+              example:
+                fulfillment_nodes:
+                  - fulfillment_node_id: US01
+                    store:
+                      address:
+                        address_line_1: 121 Spring Street
+                        city: New York
+                        country_code: US
+                        latitude: 40.7235439
+                        longitude: -74.0023732
+                        state: NY
+                        zip_code: '10012'
+                      business_hours:
+                        - from_time: '09:00'
+                          to_time: '21:00'
+                          weekday: 0
+                      label: New York Spring Street
+                      phone_number: 1-212-929-0700
+                      store_id: US01
+                      timezone: America/New_York
+                    has_atps: false
+                    distance: 10
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        default:
+          description: Unexpected Error
+      description: >-
+        Retrieves a list of fulfillment nodes that have enough inventory for a
+        bag of products.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    location:
+      description: >-
+        Represents parameters to search stores by location. Limits the results
+        to only fulfillment nodes that are within a certain radius from the
+        provided geo location.
+
+        If a geo location is set, the results would be sorted by their distance
+        from that location.
+
+        Set the radius to zero if you just want to sort by distance, but do not
+        want any filtering to be applied.
+
+
+        IMPORTANT: If this was used, fulfillment nodes that are not associated
+        with a geo tagged store will not be filtered out.
+      required:
+        - geo
+      title: Location filter
+      type: object
+      properties:
+        geo:
+          type: object
+          title: Geo position
+          description: Represents a geo position with latitude and longitude.
+          required:
+            - latitude
+            - longitude
+          properties:
+            latitude:
+              type: number
+              minimum: -90
+              maximum: 90
+            longitude:
+              type: number
+              minimum: -180
+              maximum: 180
+        radius:
+          type: number
+          title: Search radius
+          description: >-
+            Search for stores within the given radius only(in KM). Set this
+            property to '0' to remove radius filtering.
+          minimum: 0
+    get_bag_availability_request:
+      title: Get bag availability request
+      type: object
+      required:
+        - bag
+      properties:
+        bag:
+          type: array
+          description: >-
+            The list of (product_id/quantity) used to find the fulfillment
+            nodes.
+          minItems: 1
+          items:
+            type: object
+            required:
+              - product_id
+              - quantity
+            properties:
+              product_id:
+                type: string
+              quantity:
+                type: number
+        location_filter:
+          $ref: '#/components/schemas/location'
+        only_in_store_pickup:
+          type: boolean
+          default: false
+          description: Set to true to get only stores with in_store_pickup set.
+        only_stores:
+          type: boolean
+          default: false
+          description: >-
+            Set to true to get only fulfillment nodes that are associated with a
+            store.
+        ignore_atps:
+          type: boolean
+          default: false
+          description: >-
+            Set to true to get all the fulfillment nodes, regardless of whether
+            they have atps for all the products provided in the bag or not.
+
+            Fulfillment nodes that do not have enough products to cover the bag
+            will have a field has_atps set to false.
+        limit:
+          type: number
+          default: 100
+          description: >-
+            Use to limit the number of results returned by GetBagAvailability
+            end point.
+
+
+            IMPORTANT: If this is not provided a default of 100 will be used to
+            limit the results.
+    business_hour:
+      type: object
+      description: Represents store business hours information
+      required:
+        - from_time
+        - to_time
+        - weekday
+      properties:
+        from_time:
+          type: string
+          pattern: ^\d{2}:\d{2}$
+          description: >-
+            The time of the day when the store opens, time should be in the
+            'HH:mm' format.
+        to_time:
+          type: string
+          pattern: ^\d{2}:\d{2}$
+          description: >-
+            The time of the day when the store closes, time should be in the
+            'HH:mm' format.
+        weekday:
+          type: integer
+          description: A value representing the day of the week, '0' being Monday.
+          minimum: 0
+          maximum: 6
+        earliest_pick_up:
+          type:
+            - string
+            - 'null'
+          pattern: ^\d{2}:\d{2}$
+          description: >-
+            The time of the day when packages can be picked up, time should be
+            in the 'HH:mm' format.
+        latest_pick_up:
+          type:
+            - string
+            - 'null'
+          pattern: ^\d{2}:\d{2}$
+          description: >-
+            The time of the day when packages picking up stop, time should be in
+            the 'HH:mm' format.
+    store_address:
+      description: Represents an address
+      required:
+        - address_line_1
+        - country_code
+      title: Address
+      type: object
+      properties:
+        address_line_1:
+          type: string
+          description: First address line.
+        address_line_2:
+          type:
+            - string
+            - 'null'
+          description: Second address line.
+        province:
+          type:
+            - string
+            - 'null'
+          description: Province.
+        state:
+          type:
+            - string
+            - 'null'
+          description: State.
+        zip_code:
+          maxLength: 256
+          type:
+            - string
+            - 'null'
+          description: Postal code.
+        city:
+          maxLength: 256
+          type:
+            - string
+            - 'null'
+          description: City.
+        country_code:
+          description: >-
+            Country code for this address. Must be
+ISO-3166
+            reference
+type: string
+          enum:
+            - AD
+            - AE
+            - AF
+            - AG
+            - AI
+            - AL
+            - AM
+            - AO
+            - AQ
+            - AR
+            - AS
+            - AT
+            - AU
+            - AW
+            - AX
+            - AZ
+            - BA
+            - BB
+            - BD
+            - BE
+            - BF
+            - BG
+            - BH
+            - BI
+            - BJ
+            - BL
+            - BM
+            - BN
+            - BO
+            - BQ
+            - BR
+            - BS
+            - BT
+            - BV
+            - BW
+            - BY
+            - BZ
+            - CA
+            - CC
+            - CD
+            - CF
+            - CG
+            - CH
+            - CI
+            - CK
+            - CL
+            - CM
+            - CN
+            - CO
+            - CR
+            - CU
+            - CV
+            - CW
+            - CX
+            - CY
+            - CZ
+            - DE
+            - DJ
+            - DK
+            - DM
+            - DO
+            - DZ
+            - EC
+            - EE
+            - EG
+            - EH
+            - ER
+            - ES
+            - ET
+            - FI
+            - FJ
+            - FK
+            - FM
+            - FO
+            - FR
+            - GA
+            - GB
+            - GD
+            - GE
+            - GF
+            - GG
+            - GH
+            - GI
+            - GL
+            - GM
+            - GN
+            - GP
+            - GQ
+            - GR
+            - GS
+            - GT
+            - GU
+            - GW
+            - GY
+            - HK
+            - HM
+            - HN
+            - HR
+            - HT
+            - HU
+            - ID
+            - IE
+            - IL
+            - IM
+            - IN
+            - IO
+            - IQ
+            - IR
+            - IS
+            - IT
+            - JE
+            - JM
+            - JO
+            - JP
+            - KE
+            - KG
+            - KH
+            - KI
+            - KM
+            - KN
+            - KP
+            - KR
+            - KW
+            - KY
+            - KZ
+            - LA
+            - LB
+            - LC
+            - LI
+            - LK
+            - LR
+            - LS
+            - LT
+            - LU
+            - LV
+            - LY
+            - MA
+            - MC
+            - MD
+            - ME
+            - MF
+            - MG
+            - MH
+            - MK
+            - ML
+            - MM
+            - MN
+            - MO
+            - MP
+            - MQ
+            - MR
+            - MS
+            - MT
+            - MU
+            - MV
+            - MW
+            - MX
+            - MY
+            - MZ
+            - NA
+            - NC
+            - NE
+            - NF
+            - NG
+            - NI
+            - NL
+            - 'NO'
+            - NP
+            - NR
+            - NU
+            - NZ
+            - OM
+            - PA
+            - PE
+            - PF
+            - PG
+            - PH
+            - PK
+            - PL
+            - PM
+            - PN
+            - PR
+            - PS
+            - PT
+            - PW
+            - PY
+            - QA
+            - RE
+            - RO
+            - RS
+            - RU
+            - RW
+            - SA
+            - SB
+            - SC
+            - SD
+            - SE
+            - SG
+            - SH
+            - SI
+            - SJ
+            - SK
+            - SL
+            - SM
+            - SN
+            - SO
+            - SR
+            - SS
+            - ST
+            - SV
+            - SX
+            - SY
+            - SZ
+            - TC
+            - TD
+            - TF
+            - TG
+            - TH
+            - TJ
+            - TK
+            - TL
+            - TM
+            - TN
+            - TO
+            - TR
+            - TT
+            - TV
+            - TW
+            - TZ
+            - UA
+            - UG
+            - UM
+            - US
+            - UY
+            - UZ
+            - VA
+            - VC
+            - VE
+            - VG
+            - VI
+            - VN
+            - VU
+            - WF
+            - WS
+            - YE
+            - YT
+            - ZA
+            - ZM
+            - ZW
+        latitude:
+          type:
+            - number
+            - 'null'
+          description: Geographic latitude.
+        longitude:
+          type:
+            - number
+            - 'null'
+          description: Geographic longitude.
+    store:
+      type: object
+      properties:
+        label:
+          type:
+            - string
+            - 'null'
+          description: The customer-facing name of the store. Appears in the HQ app.
+        business_hours:
+          type:
+            - array
+            - 'null'
+          items:
+            $ref: '#/components/schemas/business_hour'
+        timezone:
+          type: string
+          description: >-
+            The time zone of the store in the format of the Time Zone Database.
+            For example, "UTC", "America/New_York", "Europe/Berlin".
+        address:
+          oneOf:
+            - type: 'null'
+              description: Use 'null' to remove an existing physical address.
+            - $ref: '#/components/schemas/store_address'
+        store_id:
+          minLength: 1
+          maxLength: 256
+          type:
+            - string
+            - 'null'
+          description: The identifier of a store.
+        phone_number:
+          type:
+            - string
+            - 'null'
+          description: Phone number of a store.
+        image_url:
+          type:
+            - string
+            - 'null'
+          description: An URL for a store image.
+        in_store_pickup_available:
+          type:
+            - boolean
+            - 'null'
+          description: A flag that states if the store supports in-store pickup.
+    get_bag_availability_response:
+      title: Get bag availability response
+      type: object
+      required:
+        - fulfillment_nodes
+      properties:
+        fulfillment_nodes:
+          type: array
+          items:
+            type: object
+            required:
+              - fulfillment_node_id
+              - store
+              - has_atps
+              - distance
+            properties:
+              fulfillment_node_id:
+                type: string
+              store:
+                $ref: '#/components/schemas/store'
+              has_atps:
+                type: boolean
+                description: >-
+                  If set to true it means that this fulfillment node has enough
+                  inventory to fulfill the bag provided.
+              distance:
+                type: number
+                format: double
+                description: >-
+                  If location_filter is not provided in the request, the
+                  distance is set to 0.
+    error_response:
+      description: The error response.
+      type: object
+      required:
+        - error_code
+        - message
+        - request_id
+      properties:
+        error_code:
+          type: string
+          minLength: 1
+          description: The specific code of the error.
+        message:
+          type: string
+          minLength: 1
+          description: A message explaining the error.
+        request_id:
+          type: string
+          minLength: 1
+          description: The identifier of the request, which can be used for tracing.

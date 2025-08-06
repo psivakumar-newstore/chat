@@ -1,0 +1,674 @@
+Configuring customizations in NewStore Associate App
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Configuring customizations in NewStore Associate App
+Updated on
+Nov 12, 2024
+Published on Oct 1, 2024
+13 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+To configure the following customizations components in NewStore Associate App, use the NewStore Associate App
+Configuration API
+.
+Use the
+Get app configuration
+method to retrieve the current configuration for Associate App in your business.
+Printing in-store hang tags using additional pricebooks
+When you enable this customization, NewStore uses the
+hangtag
+template to allow associates to print hang tags for in-store items via Associate App.
+To enable Associate App to print hang tags:
+Set
+release_toggles
+>
+new_hang_tag_template
+to
+true
+. This allows you to start using the
+hangtag
+templates in the platform to print hang tags for in-store items.
+Use the
+Update app configuration
+method.
+Set
+customizations
+>
+hang_tag_printing_enabled
+to
+true
+.
+Set
+customizations
+>
+hang_tag_pricebooks
+to:
+["pricebookNameA" ,"pricebookNameB"]
+or
+["catalogName.pricebookName1" ,"catalogName.pricebookName2"]
+where
+catalogName
+is the name of the catalog, and
+pricebookNameX
+is the name of the specific pricebook. For such combinations of catalogs and pricebooks, see the business examples here:
+store-front-catalog-en.regular
+and
+store-front-catalog-en.discounted
+, where
+store-front-catalog-en
+is the name of the catalog, and
+regular
+is the name of the specific pricebook for regular prices
+store-front-catalog-en
+is the name of the catalog, and
+discounted
+is the name of the specific pricebook for discounted prices
+Note
+If you specify a value for
+pricebookName
+and none for the catalog, prices are fetched from the pricebook of the default catalog configured for the store. However, if you specify a value for
+catalogName.pricebookName
+, prices are fetched from this specific pricebook of the specified catalog. If no custom prices from additional pricebooks are required,
+do not
+specify a value for the property. The platform then uses the default store pricebook prices automatically.
+Example payloads for hang tag templates
+If the
+customizations
+>
+hang_tag_pricebooks
+are configured as [
+storefront-catalog-gb.regular
+,
+storefront-catalog-gb.outlet
+], you can expect the following sample payload (price, pricebooks, product, store) from Associate App sent to the template service:
+Payload response example
+{
+  "content_type": "text",
+  "locale": "en-gb",
+  "data": {
+    "product": {
+      "brand": "",
+      "caption": "",
+      "categories": [
+        { "fullPath": "All", "path": ["All"], "position": null },
+        {
+          "fullPath": "All > Jackets",
+          "path": ["All", "Jackets"],
+          "position": null
+        }
+      ],
+      "colorSwatch": {
+        "altText": "",
+        "aspectRatio": 0,
+        "dominantColor": "",
+        "height": 0,
+        "title": "",
+        "url": "",
+        "width": 0
+      },
+      "countryOfOrigin": null,
+      "currencyCode": "GBP",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque facilisis.",
+      "extendedAttributes": [
+        { "name": "product_created_at", "value": "2024-01-13T10:44:49-08:00" },
+        { "name": "variant_created_at", "value": "2024-01-13T10:44:49-08:00" },
+        { "name": "product_updated_at", "value": "2024-07-01T11:53:13-07:00" },
+        { "name": "variant_updated_at", "value": "2024-07-01T11:53:13-07:00" },
+        { "name": "handle", "value": "x-blazer-navy" },
+        { "name": "published_at", "value": "2024-01-13T10:44:49-08:00" },
+        { "name": "published_scope", "value": "web" },
+        { "name": "fulfillment_service", "value": "manual" },
+        { "name": "final_sale", "value": "false" },
+        { "name": "smart_sku", "value": "A-01-234-567-S" }
+      ],
+      "externalIdentifiers": {
+        "ean13": "198871193558",
+        "isbn": "198871193558",
+        "sku": "A-01-234-567-S",
+        "upc": "198871193558"
+      },
+      "gtin": "",
+      "images": [
+        {
+          "altText": "Dodici X Blazer - Navy",
+          "aspectRatio": 0.1234567,
+          "dominantColor": "#000080",
+          "height": 1481,
+          "identifier": "p/dodici/1a2b3c4d5e6f7g",
+          "isMain": true,
+          "title": "",
+          "url": "https://some.url/dodici/1a2b3c4d5e6f7g.jpg",
+          "width": 985
+        }
+      ],
+      "inventoryTracked": true,
+      "isAvailable": true,
+      "isPreorder": false,
+      "keywords": ["blazer", "blazers", "jacket", "clothing", "color-navy"],
+      "mainCategoryFullPath": "All > Jackets",
+      "mainCategoryPath": ["All", "Jackets"],
+      "mainCategoryPosition": null,
+      "markdownPrice": null,
+      "material": "",
+      "onlineFrom": null,
+      "onlineTo": null,
+      "preorderStart": null,
+      "price": 130,
+      "productHtsNumber": "",
+      "productId": "12345",
+      "scheduleB": "",
+      "serializedInventory": false,
+      "shippingDimensionHeight": 1,
+      "shippingDimensionLength": 1,
+      "shippingDimensionUnit": "cm",
+      "shippingDimensionWidth": 1,
+      "shippingWeightUnit": "lb",
+      "shippingWeightValue": 0,
+      "sku": "A-01-234-567-S",
+      "taxClassId": "PC012345",
+      "templateId": "",
+      "title": "X Blazer - Navy S",
+      "variablePricing": false,
+      "variantGroupId": "12334567890",
+      "variationAdditional1Name": "fit",
+      "variationAdditional1Value": "",
+      "variationAdditional2Name": "",
+      "variationAdditional2Value": "",
+      "variationAttributes": {
+        "variationAdditional1Name": "fit",
+        "variationAdditional1Values": null,
+        "variationAdditional2Name": "",
+        "variationAdditional2Values": null,
+        "variationColorSwatches": {},
+        "variationColorValues": null,
+        "variationSizeValues": ["S", "M"]
+      },
+      "variationColorValue": "",
+      "variationSizeGender": "",
+      "variationSizeSystem": "",
+      "variationSizeType": "",
+      "variationSizeValue": "S",
+      "variations": [
+        {
+          "colorSwatch": {
+            "altText": "",
+            "aspectRatio": 0,
+            "dominantColor": "",
+            "height": 0,
+            "title": "",
+            "url": "",
+            "width": 0
+          },
+          "currencyCode": "GBP",
+          "isAvailable": true,
+          "price": 130,
+          "productId": "12345",
+          "variationAdditional1Name": "fit",
+          "variationAdditional1Value": "",
+          "variationAdditional2Name": "",
+          "variationAdditional2Value": "",
+          "variationColorValue": "",
+          "variationSizeGender": "",
+          "variationSizeSystem": "",
+          "variationSizeType": "",
+          "variationSizeValue": "S"
+        },
+        {
+          "colorSwatch": {
+            "altText": "",
+            "aspectRatio": 0,
+            "dominantColor": "",
+            "height": 0,
+            "title": "",
+            "url": "",
+            "width": 0
+          },
+          "currencyCode": "GBP",
+          "isAvailable": true,
+          "price": 130,
+          "productId": "12346",
+          "variationAdditional1Name": "fit",
+          "variationAdditional1Value": "",
+          "variationAdditional2Name": "",
+          "variationAdditional2Value": "",
+          "variationColorValue": "",
+          "variationSizeGender": "",
+          "variationSizeSystem": "",
+          "variationSizeType": "",
+          "variationSizeValue": "M"
+        }
+      ]
+    },
+    "price": {
+      "currencyCode": "GBP",
+      "productId": "12345",
+      "traits": [""],
+      "value": 72.5
+    },
+    "store": {
+      "storeId": "012",
+      "label": "012_Some_Store",
+      "catalog": "storefront-catalog-gb",
+      "locale": "en-gb",
+      "timezone": "Europe/London",
+      "deliveryZipCodes": [],
+      "physicalAddress": {
+        "addressLine1": "Some address",
+        "countryCode": "GB",
+        "addressLine2": "",
+        "province": null,
+        "state": "Some State in GB",
+        "zipCode": "1234 AB",
+        "city": "City in GB",
+        "latitude": 12.34567,
+        "longitude": -1.23456
+      },
+      "displayPriceUnitType": "net",
+      "taxIncluded": true,
+      "revision": 4,
+      "activeStatus": true,
+      "businessHours": [
+        {
+          "fromTime": "10:00",
+          "toTime": "20:00",
+          "weekday": 0,
+          "earliestPickUp": null,
+          "latestPickUp": null
+        },
+        {
+          "fromTime": "10:00",
+          "toTime": "20:00",
+          "weekday": 1,
+          "earliestPickUp": null,
+          "latestPickUp": null
+        },
+        {
+          "fromTime": "10:00",
+          "toTime": "20:00",
+          "weekday": 2,
+          "earliestPickUp": null,
+          "latestPickUp": null
+        },
+        {
+          "fromTime": "10:00",
+          "toTime": "20:00",
+          "weekday": 3,
+          "earliestPickUp": null,
+          "latestPickUp": null
+        },
+        {
+          "fromTime": "10:00",
+          "toTime": "20:00",
+          "weekday": 4,
+          "earliestPickUp": null,
+          "latestPickUp": null
+        },
+        {
+          "fromTime": "10:00",
+          "toTime": "20:00",
+          "weekday": 5,
+          "earliestPickUp": null,
+          "latestPickUp": null
+        },
+        {
+          "fromTime": "10:00",
+          "toTime": "20:00",
+          "weekday": 6,
+          "earliestPickUp": null,
+          "latestPickUp": null
+        }
+      ],
+      "shippingProviderInfo": {},
+      "pricebook": "outlet",
+      "updatedAt": "2024-01-13T10:44:49-08:00",
+      "createdAt": "2024-01-13T10:44:49-08:00",
+      "queuePrioritization": [
+        {
+          "priority": 1,
+          "shippingType": "in_store_pick_up",
+          "displayPriorityType": "priority"
+        }
+      ],
+      "shippingAddress": {
+        "addressLine1": "Shipping address one",
+        "countryCode": "GB",
+        "addressLine2": "",
+        "province": null,
+        "state": "State one",
+        "zipCode": "Zip code one",
+        "city": "City one",
+        "latitude": 12.34567,
+        "longitude": -1.23456
+      },
+      "managerId": null,
+      "imageUrl": null,
+      "phoneNumber": "+44 (1234) 567890",
+      "divisionName": null,
+      "taxId": null,
+      "giftWrapping": false,
+      "supportedShippingMethods": ["traditional_carrier", "in_store_pick_up"]
+    },
+    "pricebooks": {
+      "storefront-catalog-gb.outlet": {
+        "currencyCode": "GBP",
+        "productId": "12345",
+        "traits": [""],
+        "value": 82.5
+      },
+      "storefront-catalog-gb.regular": {
+        "currencyCode": "GBP",
+        "productId": "12345",
+        "traits": [""],
+        "value": 199
+      }
+    }
+  }
+}
+With this payload,
+hangtag
+templates can be customized and the template service will return the customized template output to Associate App.
+A sample customization template example with product label, size,
+productId
+, struck out regular price, outlet price, and a product barcode is provided here:
+Customization template example
+{%- import 'tenant' as tenant -%}
+{%- set strings = {
+    'en_US': { 'color': 'Color', 'size': 'Size', 'sku': 'sku', 'price': 'Price', 'outlet_price': 'Outlet Price' },
+    'en_GB': { 'color': 'Color', 'size': 'Size', 'sku': 'sku', 'price': 'Price', 'outlet_price': 'Outlet Price' }
+} -%}
+{%- set currency_symbol_map = {
+    'AUD': 'A$',
+    'USD': '$',
+    'CAD': '$',
+    'EUR': '€',
+    'GBP': '£',
+    'JPY': '¥',
+    'DKK': 'Kr.',
+    'SEK': 'kr',
+} -%}
+
+^XA
+^CI28
+^CF0,18
+
+^FB200,2,,
+^FO56,20^FD{{product.title}}^FS
+{%- set y_position = 40 %}
+
+{%- if product.title | length > 28 -%}
+    {%- set y_position = y_position + 20 %}
+{%- endif -%}
+
+^FO55,{{ y_position }}^FD{{product.externalIdentifiers.sku}}^FS
+{%- set y_position = y_position + 20 %}
+
+{%- if product.variationColorValue -%}
+    ^FO56,{{ y_position }}^FD{{ strings[locale].color }}: {{ product.variationColorValue | upper }}^FS
+    {%- set y_position = y_position + 20 %}
+{%- endif -%}
+
+{%- set y_position = y_position + 5 %}
+
+{%- if store.label in tenant.outlet_store_labels -%}
+    ^FO56,{{ y_position }}^FD{{strings[locale].price}}: {{ currency_symbol_map[pricebooks['storefront-catalog-en.regular'].currencyCode] }}{{ "{:.2f}".format(pricebooks['storefront-catalog-en.regular'].value) }}^FS
+    {%- set static_text_length = strings[locale].price | length %}
+    {%- set currency_symbol_length = currency_symbol_map[pricebooks['storefront-catalog-en.regular'].currencyCode] | length %}
+    {%- set formatted_price_length = "{:.2f}".format(pricebooks['storefront-catalog-en.regular'].value) | length %}
+    {%- set price_length = (static_text_length + currency_symbol_length) * 0.75 + formatted_price_length * 8 %}
+    ^FO105,{{ y_position + 7 }}^GB{{ price_length }},2,2^FS
+    ^FO56,{{ y_position + 20 }}^FD{{strings[locale].outlet_price}}: {{ currency_symbol_map[pricebooks['storefront-catalog-en.outlet'].currencyCode] }}{{ "{:.2f}".format(pricebooks['storefront-catalog-en.outlet'].value) }}^FS
+{% endif %}
+
+{%- if store.label not in tenant.outlet_store_labels -%}
+    ^FO55,{{ y_position }}^FD{{strings[locale].price}}: ^FS
+    ^FO102,{{ y_position }}^FD{{currency_symbol_map[price.currencyCode]}}{{price.value}}^FS
+{% endif %}
+^FO55,{{ y_position + 45 }}
+^BY2
+^BUN,60,Y,N,Y
+^FD{{product.externalIdentifiers.upc}}^FS
+
+^XZ
+For more information on customizing a
+hangtag
+template, see
+Customizing a template
+.
+Enabling priority orders in store fulfillment
+When you enable this feature, NewStore allows the store associates to see any priority orders waiting to be fulfilled.
+To enable Associate App to show priority orders:
+Use the
+Update app configuration
+method.
+Set
+release_toggles
+>
+priority_orders_enabled
+to
+true
+.
+Printing gift receipts
+To enable associates in the store to print receipts for gifts in an order via Associate App:
+Use the
+Update app configuration
+method.
+Set
+customizations
+>
+gift_receipt_printing_enabled
+to
+true
+.
+Note
+Gift receipts include the address of the store where the order was placed and not the store where the gift receipt was printed.
+Configuring a PIN for gift cards
+When a customer pays with a gift card, you can configure Associate App to ask associates to enter a PIN for the gift card to complete the checkout process. See
+Choosing a payment option
+.
+Important
+When you enable this customization, gift card payments are
+not
+allowed without entering a PIN for the card.
+Use the
+Update app configuration
+method.
+Set
+customizations
+>
+gift_card_pin
+to
+true
+.
+When customers pay with a gift card, associates in the store now must enter the PIN for the card before checkout can be completed in Associate App.
+Configuring gift messages
+If required for your business, you can enable associates to add the option to add a gift message for items in an order.
+To add a gift message:
+In the
+Cart
+screen for the order, tap
+More
+>
+Gift Message
+.
+In the dialog box that appears, add a gift message that will be applied to all items in the current order or cart.
+Important
+If you don't see the option available in the menu, the plugin may not have been enabled yet. To enable the plugin, see
+the cart management plugins
+.
+Enabling switching to test mode
+To enable the associates to switch from a live environment to
+test mode
+in Associate App and back:
+Use the
+Update app configuration
+method.
+Set
+customizations
+>
+stage_switch_enabled
+to
+true
+.
+Important
+Additionally, the associate must also have the
+Allow switch to Test Mode
+permission enabled via NewStore Omnichannel Manager. See
+Permissions for NewStore Associate App
+.
+Configuring cart management plugins
+Use this configuration to manage plugins that control options available to associates in Associate App, in the
+More
+>
+Manage Cart
+screen. For example, you can remove
+coupon
+from the list of plugins to remove the
+Redeem Coupon
+option from the
+Manage Cart
+screen in Associate App.
+To manage cart management plugins in Associate App:
+Use the
+Update app configuration
+method.
+In
+customizations
+>
+cart_management
+, specify the plugins you want to use in the app, in the form of an array. Possible values are:
+orderDiscount
+itemDiscount
+coupon
+addDelivery
+automaticDiscount
+addGiftMessage
+For example, see this example for specifying cart management plugins:
+{
+ "cart_management":
+    [
+      "orderDiscount",
+      "itemDiscount",
+      "coupon",
+      "addDelivery",
+      "automaticDiscount",
+      "addGiftMessage"
+    ]
+ }
+Disabling contact options
+Use this configuration to disable the options available to associates in Associate App to contact customers in your business. After this configuration has been set up, the buttons to contact a customer via phone, email, or SMS in Associate App is disabled in the customer profile screen in
+Customers
+.
+To disable contact options in Associate App:
+Use the
+Update app configuration
+method.
+In
+customizations
+>
+disabled_contact_buttons
+, specify the contact options you want to disable in the app, in the form of an array. Possible values are:
+CALL
+SMS
+MAIL
+Important
+The values you specify in the array are case-sensitive.
+For example, see this payload to disable the options for associates to contact the customer via phone or SMS:
+{
+ "disabled_contact_buttons":
+    [
+      "CALL",
+      "SMS",
+    ]
+ }
+Note
+In this example, associates can still contact the customer via email.
+Related topics
+Integrating a gift card provider
+Configuring documents for print in a store or warehouse
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+Associate App configuration
+cart
+config api
+configuration
+customer
+customize associate app
+gift card
+hang tags
+offline mode
+order
+pricebook
+receipts
+receipts
+selling
+selling experience
+template
+test mode
+tutorial
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

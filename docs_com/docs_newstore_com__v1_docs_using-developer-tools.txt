@@ -1,0 +1,287 @@
+Using developer tools
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Using developer tools
+Updated on
+Mar 18, 2025
+Published on Oct 1, 2024
+7 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Permission required
+This action can be performed by users with the View tools permission.
+NewStore enables you to keep track of integration and development metrics and logs, such as the
+Event Stream
+logs, to be able to identify the status of certain events or errors that have occurred in an integration or tenant environment.
+Monitoring Event Stream logs
+You can use the
+Event Stream
+page in NOM to identify the status of a specific event for relevant webhooks and S3 integrations with the platform.
+Click
+Tools
+>
+Event Stream
+to view all active, and paused integrations by their temporary or permanent status.
+After finding the relevant integration, select:
+Actions
+>
+View Events
+to see a list of recent events
+Actions
+>
+View Rejected Events
+to find events that were rejected and not retried
+Actions
+>
+View Logs
+to see errors that occurred, or
+Actions
+>
+Edit Integration Details
+to modify an existing Integration.
+Finding a specific event to understand what occurred and when
+Find the integration that the Event belongs to in the
+Event Stream
+page. From the
+Actions
+drop-down menu, and select
+View Events
+.
+If there is already a known Domain Entity ID, paste that into the
+Domain Entity ID
+filter. Otherwise, search the day that the event was likely triggered using the
+From
+and
+To
+dates.
+The
+View Events
+page has the following information:
+Filters
+Domain Entity ID
+: The unique identifier of a specific event which was sent.
+Status
+: Displays if the event that was sent was successful or failed.
+From
+: A day in which to pull events starting at and not inclusive of.
+To
+: A day in which to pull events up to this date and not inclusive of.
+Columns
+Event
+: The main identifier for an event. For example, for order related events, the
+Entity ID
+is the
+order ID
+, and for fulfillment related events such as fulfillment requests, the
+Entity ID
+is the
+Fulfillment request
+ID
+.
+Domain Entity
+: The domain in which the individual event exists. For example, the
+order.completed
+event is part of the Order Domain.
+Status
+: The status of the event, which signifies if the event was successfully published or not. Can be either
+Success
+or
+Failure
+. A failed event is retried. However, a rejected event is not retried.
+Attempted At
+: Time and date in UTC when the attempt was made to publish the event to the integration.
+Troubleshooting a specific rejected that was not retried
+Find the integration that the event belongs to in the
+Event Stream
+page. From the
+Actions
+drop-down menu, and select
+View Rejected Events
+. Rejected events are particularly interesting because when the origin responds with a rejection (all http 4xx webhook response codes are treated as immediate rejection by the Event Stream), NewStore does not retry to send that event. It is important to proactively look for subscriber rejections of a given event in order to determine if the subscriber is refusing events.
+The rejected events page will display a list of rejected events. If this page has more than 0 rejected events, this is worth investigating further.
+To retry a rejected event, the api endpoint
+/api/v1/org/integrations/eventstream/{integration_id}/rejected_events/{event_id}/_retry
+where event_id can be taken from the first column in the list may be called.
+Looking for systematic issues with an integration
+To find issues with an integration that are causing intermittent failures or delays in receiving events, find the integration that the Event belongs to in the
+Event Stream
+page.  From the
+Actions
+drop-down menu, and select
+View Logs
+. This will display a list of failures and the reason for the failure.
+Monitoring audit logs
+You can use audit logs in Omnichannel Manager to view details of user input or to troubleshoot or investigate issues caused by a specific user input or user action.
+Select
+Tools
+>
+Audit Log
+to view the logs and relevant details for audit log events.
+The following columns are available:
+Target
+: The entity ID, such as the ID of a template that was modified in the context of the
+template
+domain.
+Occurred on
+: Time and date in UTC of when an event has occurred in the platform.
+Domain
+: The internal domain name that is relevant to the incident or event. For example,
+mobile-platform
+or
+twp
+.
+Description
+: The description for the event or incident.
+You can also click the
+Target
+ID to view the relevant details of the event along with the
+Payload
+of the event to investigate further. The screen also displays all the changes made by a user to the specific
+Target
+or entity.
+Monitoring GraphQL reports
+You can use
+GraphQL Reports
+in Omnichannel Manager to explore performance metrics of GraphQL queries, and to troubleshoot slow queries. The page helps reduce the number of intermittent GraphQL query failures due to query timeouts by being able to proactively monitor slow queries. Especially as data sets grow over time, impacting query times.
+You can also view GraphQL query details and proactively adjust slow queries to ensure integration continuity. GraphQL queries can time out (over 10 seconds) when queries become too complex. For example, querying over too long a period of time or joining too many data contexts together.
+Note
+As the timeout period for a GraphQL query is
+10
+seconds
+, we recommend that you adjust a GraphQL query if it approaches 7 seconds. This allows room for unforeseen load events, such as BFCM (Black Friday Cyber Monday) orders, or unusually high order volumes.
+Select
+Tools
+>
+GraphQL Reports
+to view the logs and relevant details for Event Stream events. The queries are grouped by similar requests.
+The following columns are available:
+Query
+: A short snippet describing the respective query group. Click a relevant group to view individual queries.
+Count
+: The number of individual queries in that query group.
+Last Run
+: The date and time when the most recent query in the group was triggered.
+Average Duration
+: The average duration of queries in that group.
+Maximum Duration
+: The duration of the longest query in that group.
+Important
+Ensure that you investigate queries that have a max duration highlighted in yellow or red, as these have potential of timing out.
+Clicking on a specific query opens a page showing all invocations of the particular group of queries and their respective performance statistics. At the top some aggregate statistics and performance graphs allow to get an overview of the general behavior of the query.
+Query groups are computed from the query structure exclusive parameters. Often times a query group relates directly to all invocations created by a script like an event-stream integration that uses GraphQL to augment the event data.
+Finding problematic patterns in an integration
+Looking at the performance of queries, we recommend to look for the following patterns that we have found across the platform to be the most problematic:
+1) Queries that have general bad performance:
+If each instance of a query is running slowly (has a runtime above 5 seconds), we recommend to review the query structure and check for deep nesting levels or large datasets. Often times these problems occur when running large data extraction jobs (such as all orders of a given week or similar). We strongly advise against this use of GraphQL. GraphQL is intended for point lookups to augment data while processing and not for data extraction on the NewStore platform.
+2) Queries that slowly increase in runtime over time:
+Most likely this is due to the increase in order volume on the platform. We often see this pattern for tenants testing queries with little data at the beginning of their NewStore journey or while adopting new platform capabilities. Over time, with more data being processed by the platform, the non-optimal nature of the query-structure becomes apparent and necessitates action. In general, we recommend a similar approach as defined under point 1 as the causes are often similar.
+3) Spiky behavior of queries:
+In cases where the majority of queries performs well and only a few instances have performance problems, we recommend, as a first step, to understand whether this happens on a regular basis and to investigate common factors across bad instances of the query to find patterns that could lead to the bad behavior. Most times, performance improvements can then be achieved by mitigating the circumstances that cause the query to perform below expectations.
+Improving performance of an integration
+In general, when looking at query performance, a few strategies have shown to help improving performance:
+1) Favor lookups by ID over range queries:
+For instance, instead of querying
+orders(first: 100)
+try to use direct queries for
+order_id
+:
+order(id: <…>, tenant: <…>)
+.
+2) Avoid deep nesting of queries:
+Deep query nesting requires the processing of large mergers of the de-normalized data on the platform. We recommend to keep nesting to a minimum. Often, queries can be restructured to reduce the nesting level. A typical example would be to query an order, it’s items and then to augment each item with more general order data. In this case, the data from the deepest nesting can be moved up to the first order level and an increase in performance can be achieved.
+3) Break complex queries into several small requests:
+If a multitude of data has to be queried, consider to make several requests instead of one big query.
+4) GraphQL is not intended for large data dumps:
+GraphQL is optimized for small on the fly lookups across data domains to augment data processing. Data extraction should not and cannot be done reliably via the GraphQL API.
+If unsure about the causes of bad query performance, please raise a support request and include the query id shown at the top of the page.
+Related topics
+Managing templates
+Receiving real-time data
+A request sent to the
+Fulfillment location
+. This request is generated in the following cases:
+DC
+fulfillment
+store fulfillment
+in-store purchase
+See
+Integrating a fulfillment provider
+.
+Was this article helpful?
+Yes
+No
+Tags
+audit log
+developer
+documents
+fiscal regulations
+internationalization
+omnichannel manager
+order
+order management
+receipts
+template
+user guide
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

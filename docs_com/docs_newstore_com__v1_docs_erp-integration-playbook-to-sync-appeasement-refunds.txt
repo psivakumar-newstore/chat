@@ -1,0 +1,179 @@
+ERP integration playbook to sync appeasement refunds
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+ERP integration playbook to sync appeasement refunds
+Updated on
+Dec 17, 2024
+Published on Oct 1, 2024
+2 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+NewStore allows you to create financial transactions in an ERP system and sync them with the NewStore platform for all
+appeasements
+.
+This integration playbook helps you integrate an ERP system used in your business with the NewStore platform, to sync all appeasement refunds. The integration is achieved via the
+Event Stream
+.
+To understand how appeasement refunds work at NewStore, see
+Refunding orders or items in an order
+.
+Important
+For countries where fiscal regulations apply, NewStore does not support appeasement refunds for in-store orders.
+Process overview
+The following sequence diagram represents a typical integration of appeasements in the NewStore platform with an ERP:
+In this playbook:
+NewStore sends the
+refund_request.issued
+event when the refund has been completed.
+The integration fetches all necessary details via
+GraphQL API
+.
+The integration creates the appeasement refund transaction (in the form of a gift card or cash) in the ERP by calling the ERP's API.
+Exceptions
+ERP unavailable
+The integration returns a 500 error, and the
+Event stream
+retries sending the macro event.
+Payment details unavailable
+In some cases, it takes more than a few seconds until payment processing at the
+PSP
+has been completed and the payment details become available in the platform. The integration moves the event into an internal queue (for example, SQS) for to reprocess later, and returns
+200
+.
+Sample GraphQL Query
+Here is an example
+GraphQL
+query to retrieve all the information required to create an appeasement refund transaction, in the form of a gift card or cash, in the ERP.
+query MyQuery {
+  order(id: "012345Ab-CdEf-GhIj-KlMn-OpQrStUvWxYz", tenant: "dodici") {
+    externalId
+    placedAt
+    demandLocationId
+    currency
+    channel
+    channelType
+    paymentAccount {
+      instruments {
+        edges {
+          node {
+            paymentMethod
+            paymentOrigin
+            paymentProvider
+            paymentAccountTransactions {
+              edges {
+                node {
+                  amount
+                  currency
+                  transactionType
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    items {
+      edges {
+        node {
+          productId
+          quantity
+          pricebookPrice
+          itemDiscounts
+          orderDiscounts
+          tax
+          shippingServiceLevel
+          fulfillmentLocationId
+        }
+      }
+    }
+  }
+}
+ERP integration example with NetSuite
+For integrations with NetSuite as an ERP system for appeasements, see this
+example
+.
+Related topics
+ERP integration playbook to sync in-store purchases
+ERP integration playbook to sync endless-aisle orders
+ERP integration playbook for synchronizing cancellations
+ERP integration playbook to sync returns
+ERP integration example with NetSuite for appeasement refunds
+Integrating a payment service provider
+GraphQL API
+Was this article helpful?
+Yes
+No
+Tags
+api
+appeasement
+developer
+ERP integration
+event stream
+events
+integration
+newstore platform
+platform
+refund
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

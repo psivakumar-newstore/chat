@@ -1,0 +1,300 @@
+Gift Card API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Cash Drawer API
+Cash Drawer Reports API
+Cash settings
+Payment Provider Asynchronous API
+Gift Card API
+NewStore Checkout API
+NewStore Checkout Secrets API
+Payment Accounts API
+Payment Options API
+Payment troubleshoot API
+Adyen credentials API
+Refund API (order level, deprecated)
+Refund API (item level)
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+post
+Activate gift card
+post
+Deactivate gift card
+post
+Get balance
+API docs by Redocly
+Gift Card API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Use this API to manage
+gift card
+operations, such as
+checking the balance on a card and activating cards.
+Activate gift card
+Activates an existing gift card.
+Before they can be activated, cards are issued with the
+Issue gift card method
+.
+Note:
+The activation process might also be called
+registration
+, depending on the provider.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+card_number
+required
+string
+Identifier of the card to receive the specified amount and customer description.
+amount
+required
+object
+(
+A monetary amount consisting of value and currency.
+)
+Initial amount assigned to the gift card.
+customer
+required
+object
+(
+Customer identifying information
+)
+Customer information to add to the card.
+metadata
+object
+Provider-specific metadata. For example, this property can contain custom business information related to the activation of the gift card. The field 'original_operation' = 'activation' is always provided. This data can also be exposed to the customer if needed. Talk to your contact point at NewStore for more information.
+idempotence_key
+string
+Identifier of the request to make sure the request is not performed twice when retried in case of network issues. The response should always be the same for all requests containing the same key, regardless of parameter changes.
+Responses
+200
+Returns the activated card information, including the PIN if required by the retailer and/or provider.
+400
+The card could not be activated or the card was not found in the provider's registry.
+500
+An internal error occurred.
+post
+/gift_card/activate
+/v0/c
+/gift_card/activate
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"card_number"
+:
+"5h78k5367h09q34n22"
+,
+"amount"
+:
+{
+"value"
+:
+100
+,
+"currency"
+:
+"USD"
+}
+,
+"customer"
+:
+{
+"id"
+:
+"64810476"
+,
+"email"
+:
+"jay_doubleyou@example.com"
+,
+"name"
+:
+"Jay Doubleyou"
+}
+,
+"idempotence_key"
+:
+"6234h6k263bb589v0bnv3"
+}
+Response samples
+200
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"identifier"
+:
+{
+"number"
+:
+"5h78k5367h09q34n22"
+,
+"pin"
+:
+"4125"
+}
+}
+Deactivate gift card
+Deactivates an existing gift card, invalidating all the remaining balance.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+card_number
+required
+string
+Identifier of the card to receive the specified amount and customer description.
+pin
+string
+The pin associated with the gift card.
+store_id
+string
+Identifier of the store where the card is being deactivated.
+idempotence_key
+string
+Identifier of the request to make sure the request is not performed twice when retried in case of network issues. The response should always be the same for all requests containing the same key, regardless of parameter changes.
+Responses
+200
+Card was deactivated successfully.
+400
+The card could not be deactivated or the card was not found in the provider's registry.
+500
+An internal error occurred.
+post
+/gift_card/deactivate
+/v0/c
+/gift_card/deactivate
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"card_number"
+:
+"5h78k5367h09q34n22"
+,
+"pin"
+:
+"1042"
+}
+Response samples
+400
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Get balance
+Returns the balance of a gift card identified by the passed ID.
+Request Body schema:
+application/json
+number
+string
+Number of the card
+pin
+string
+Personal Identification Number to be sent to the customer for usage.
+metadata
+object
+Provider-specific metadata. For example, this property can contain custom business information related to the activation of the gift card. The field 'original_operation' = 'activation' is always provided. This data can also be exposed to the customer if needed. Talk to your contact point at NewStore for more information.
+Responses
+200
+Returns the balance of the gift card.
+400
+The card could not be activated or the card was not found in the provider's registry.
+500
+An internal error occurred.
+post
+/gift_card/balance
+/v0/c
+/gift_card/balance
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"number"
+:
+"5h78k5367h09q34n22"
+,
+"pin"
+:
+"4125"
+,
+"metadata"
+:
+{
+"store_id"
+:
+"some-store-identifier"
+}
+}
+Response samples
+200
+400
+Content type
+application/json
+Copy
+{
+"value"
+:
+100
+,
+"currency"
+:
+"USD"
+}
+Previous
+Payment Provider Asynchronous API
+Next
+NewStore Checkout API
+Copyright © 2025 NewStore, Inc.

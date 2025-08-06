@@ -1,0 +1,426 @@
+Managing products
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Managing products
+Updated on
+Jun 13, 2025
+Published on Oct 1, 2024
+10 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Products are a central entity in the NewStore platform. Most of the business flows depend on it.
+For a product to appear in the platform or in the apps, it needs at least:
+Some product information in the catalog
+A price for the specific
+shop
+and
+locale
+Identifying products
+The attribute
+product_id
+is the universal identifier of a product inside a
+shop
+and
+locale
+in NewStore. It is the only identifier that is used in all API calls to identify the product in NewStore Omnichannel Cloud.
+If you have other identifiers for your products, such as SKU or EAN in your business, import them in the
+external_identifiers
+property. They must be unique to properly identify product ID.
+You can query and scan a product by using its exact
+product_id
+or any identifier defined in
+external_identifiers
+. If you want to be able to search for a specific external identifier,
+see here
+.
+Important
+We do not recommend using special characters when specifying a value for the
+product_id
+or
+external_identifiers
+property. However, NewStore supports special characters (reserved, unreserved, and escaped characters) based on the
+RFC guidelines
+, except
+=
+(the equal symbol) and
+%
+(the percentage symbol). For more information, see Section 2.1 in the RFC guidelines.
+Master locale
+The
+master locale
+is a way to define default field values (e.g. SKUs or extended attributes) that other locales in the same catalog inherit when you import them. In every catalog there can be only one master locale.
+To set a locale as master locale in a catalog, set the
+is_master
+property in the import file's header to
+true
+. This will set all the products in that import file as
+master products
+. That means that if you import the same product to another locale, and it does not have all the properties filled in, the import will fill in the missing properties with those of the master product.
+For example, let's take three imports with the following locales and master settings:
+catalog
+:
+storefront-en
+,
+locale
+:
+en-us
+,
+product_id
+:
+product1
+,
+is_master
+:
+true
+catalog
+:
+storefront-en
+,
+locale
+:
+en-uk
+,
+product_id
+:
+product1
+,
+is_master
+:
+false
+catalog
+:
+storefront-en
+,
+locale
+:
+en-au
+,
+product_id
+:
+product1
+,
+is_master
+:
+false
+In this case, data of
+product1
+will be copied from the master locale
+en-us
+to non-master locales
+en-uk
+and
+en-au
+.
+Important
+After importing the master locale for the first time, in every consecutive imports to the same locale you have to set the
+is_master
+property to
+true
+. If you set the
+is_master
+property in the header to
+false
+, the import marks the products in that specific import as non-master products within your master locale, and hence their data won't be copied to other locales.
+If you do an import to the master locale with changes in the products, those changes won't be automatically propagated to non-master locales. To update products in non-master locales, reimport the products to the non-master locale.
+To change the master locale of a catalog, do an import with the new master locale in the header and set the
+is_master
+property to
+true
+.
+Important
+If the
+is_master
+property is not specified in the head of an import file, NewStore considers the import to be a master locale, and consecutive imports to other locales will copy product data from this import.
+However, if you set the
+is_master
+property to
+false
+in
+every
+import, then there is no master locale and no data will be inherited during imports.
+Controlling visibility of products in NewStore
+For a product to appear in Omnichannel Manager, in Associate App, and in Shopping App, set the attribute
+show_in_listing
+of the product to
+true
+. When this is set to
+false
+for a product, the only way to retrieve this product is via the
+Get product details method
+in the Customer API.
+To control season-specific products, set the attributes
+online_from
+and
+online_to
+to the appropriate date. Leave this empty if the product is always available to be sold and is not limited to specific dates. To indicate when the product is available to be sold for a specific period, provide either the start date, the end date or both. This also determines if the product is returned in Associate App depending on the current date. Keep this in mind when you test your import. To see how to use these attributes in combination with pre-orders,
+see here
+.
+Searching and filtering
+By default products can be searched by title, description, color, size, and caption.
+To enable search and filtering in additional fields, use the
+head
+section of your product import.
+You can
+enable filtering
+using the
+filterable_attributes
+property. It uses
+JSONPath
+.
+You can
+enable searching
+using the
+searchable_attributes
+property. It uses
+JSONPath
+. You can set the
+weight
+property to specify the importance of each attribute compared to other searchable attributes.
+To validate JSONPath, use a
+JSONPath validator
+.
+Important
+If you change (add/delete) searchable or filterable attributes in the head of your product import, ensure to reimport all products with the changed head. Otherwise, the changes are only applied to the products imported along with the changed head attributes.
+Tutorial to configure filter and search attributes
+Follow the
+product import tutorial
+, but use this payload as
+products.json
+instead.
+{
+    "head": {
+        "shop": "storefront-catalog-en",
+        "locale": "en-US",
+        "is_master": true,
+        "filterable_attributes": [
+            {
+                "name": "material",
+                "path": "$.material"
+            },
+            {
+                "name": "fit",
+                "path": "$.extended_attributes[?(@.name == 'fit')].value"
+            }
+        ],
+        "searchable_attributes": [
+            {
+                "name": "product_id",
+                "path": "$.product_id",
+                "weight": 10
+            },
+            {
+                "name": "ean13",
+                "path": "$.external_identifiers[?(@.type == 'ean13')].value",
+                "weight": 5
+            }
+        ]
+    },
+    "items": [
+        {
+            "product_id": "1000101",
+            "variant_group_id": "variant_group_10001",
+            "title": "Bohemian Print Cutout Chiffon Maxi Dress",
+            "caption": "Our summer-ready chiffon dress features a bohemian print and beaded cut-outs for a textural twist to maxi styles. Full of creativity on every level, it offers delicate transparencies with a pleated hem for extra swish as you move through the summer heat.",
+            "description": "Bohemian Print Chiffon Gathered Waist Silk Dress",
+            "show_in_listing": true,
+            "images": [
+                {
+                    "url": "https://mycompany/hoster/images/default/products/SU16/10001_014_Multi_OFR-1.jpg",
+                    "internal_dimension_height": 2000,
+                    "internal_dimension_width": 1414,
+                    "internal_dominant_color": "#F4F2F4",
+                    "is_main": true
+                }
+            ],
+            "tax_class_id": "standard",
+            "categories": [
+                {
+                    "path": "Shop > Dresses",
+                    "position": 10,
+                    "is_main": true
+                }
+            ],
+            "material": "LADIES' 100% SILK WOVEN DRESS",
+            "variation_color_value": "Grace Sweater Beige",
+            "variation_size_value": "4",
+            "variation_size_gender": "unisex",
+            "variation_size_type": "regular",
+            "variation_size_system": "US",
+            "external_identifiers": [
+                {
+                    "type": "ean13",
+                    "value": "1000101000007"
+                }
+            ],
+            "extended_attributes": [
+                {
+                    "name": "fit",
+                    "value": "1000101 Tight"
+                }
+            ]
+        }
+    ]
+}
+Follow the rest of the tutorial as explained. After this import is done, the products included in the import will be searchable and filterable by the newly configured attributes.
+Product images
+A product can have multiple images. To define a main image, set the attribute
+is_main
+of the image to
+true
+.
+By default, NewStore downloads all the images that are imported and uses its own image processing service to make them available in different sizes and formats for consumption in the apps.
+To use your own image hosting service, set the property
+internal_disable_image_processing
+to
+true
+in the
+head
+element of your product import. Make sure your image hosting service can handle the expected amount of requests. In this case, you also need to specify
+internal_dimension_height
+,
+internal_dimension_width
+and
+internal_dominant_color
+for each image you provide.
+Use case: Pre-orders
+To enable pre-orders for a product, ensure that you specify a date for the
+online_from
+property. NewStore starts fulfilling pre-ordered products from the date you provide in the
+online_from
+property.
+NewStore checks periodically every 2 hours if there are pre-order products for which the
+online_from
+date has been reached, and makes them available for routing.
+If your product can be pre-ordered, specify a date in the
+preorder_start
+attribute to indicate from when the product will be available for pre-orders. Specify an earlier date than the date you have specified in the
+online_from
+property.
+Both these attributes are needed for pre-orders to be enabled for the product.
+See
+here the more thorough guide about pre-orders
+.
+General product-related FAQs
+Why isn’t my product(s) showing up in Omnichannel Manager or in Associate App?
+Some of the possible reasons of your product not showing up in the catalog are:
+The product is missing in the catalog.
+The product didn't have a default price specified during the import process.
+How do I delete products or categories from the catalog?
+We do not support a direct way to delete a certain product because we want to ensure the continuity of business flows, such as a customer returning a product that is no longer sold, as well as data integrity - keeping product information of all existing orders.
+The easiest and safest way to hide a product is to set its
+online_to
+property to a past date. This way, the product will not be shown while browsing the Associate App, but other functionalities such as
+returns
+If you need to delete all products, such as when a mistake is made when setting up the tenant in a sandbox or staging environment, use the
+full import
+functionality.
+To delete all products and categories from the catalog, perform a
+full import
+. This is an action with high impact and consequences, we recommend
+not
+using this method for tenants running in production.
+Important
+Be aware that a full import
+deletes ALL
+of the currently stored data. Only the data freshly imported via the new import job is retained, and this may affect other operations or functionalities in the platform.
+We
+do not
+recommend using full imports in your production environment.
+Performing a full import with multiple catalog/locale combinations in the same zip file can lead to unexpected behavior, and can result in complete loss of data of the affected entities. If you only want to hide specific products or categories, the easiest way is to set their
+online_to
+property to a past date.
+When you delete or deprecate a product,
+ensure that you remove (change to 0) ALL inventory for the specific product.
+Failing to do so may leave remnants of inventory data in the system, which may cause inaccuracies in stock data and cycle counts.
+See
+Importing data
+for more details on performing a full import.
+Related topics
+Tutorial: Importing products
+Running the import
+Import jobs API
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+catalog
+data import
+filter
+fulfillment
+integration
+inventory
+newstore platform
+platform
+preorder
+product
+product import
+search
+SFCC
+stock
+stock on hand
+store
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

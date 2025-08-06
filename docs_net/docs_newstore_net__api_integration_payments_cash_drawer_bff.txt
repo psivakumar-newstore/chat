@@ -1,0 +1,1993 @@
+Cash Drawer API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Cash Drawer API
+Cash Drawer Reports API
+Cash settings
+Payment Provider Asynchronous API
+Gift Card API
+NewStore Checkout API
+NewStore Checkout Secrets API
+Payment Accounts API
+Payment Options API
+Payment troubleshoot API
+Adyen credentials API
+Refund API (order level, deprecated)
+Refund API (item level)
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+put
+Add or update cash drawer configuration
+get
+Get cash drawer configuration
+get
+List transaction types
+get
+List cash drawers
+post
+Add cash drawer
+patch
+Update cash drawer
+get
+Get cash drawer
+del
+Decommission cash drawer
+post
+Start cash sale or return transaction
+post
+Start non-sale transaction
+post
+Perform a cash count
+post
+Track cash drawer activity
+post
+Activate cash drawer
+post
+Deactivate cash drawer
+get
+List daily cash reports
+post
+Finish cash sale or exchange transaction
+patch
+Record a cash count
+post
+Set cash count action
+get
+Report of cash transactions per store
+API docs by Redocly
+Cash Drawer API
+(
+0
+)
+Download OpenAPI specification
+:
+Download
+Use this API to record sale transactions using a cash drawer, or track the opening and closing
+of a cash drawer in the store.
+Add or update cash drawer configuration
+Adds or updates the cash drawer configuration for the store.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+store_id
+required
+string
+The identifier for the store. To retrieve the store ID, use the
+List stores
+method.
+Request Body schema:
+application/json
+cash_drawer_type
+required
+string
+Enum
+:
+"integrated"
+"non_integrated"
+The kind of cash drawer used by the store, whether integrated or not.
+cash_management_enabled
+required
+boolean
+Defines if the cash management feature will be enabled or not in the store.
+Responses
+200
+The store's cash drawer config was successfully updated.
+400
+Something was wrong with the request.
+403
+User is not allowed to change the store config.
+404
+Store not found.
+409
+Store config cannot be updated.
+Error codes
+missing_configured_drawer
+: Returned when the user tries to enable the cash feature but there's no configured drawer available.
+active_cash_drawer_found
+: Returned when the user tries to change the integration type or disable the feature and at least one cash drawer is still active.
+put
+/cash_drawer_config/stores/{store_id}
+/_/v0
+/cash_drawer_config/stores/{store_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"cash_drawer_type"
+:
+"integrated"
+,
+"cash_management_enabled"
+:
+true
+}
+Response samples
+400
+403
+404
+409
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Get cash drawer configuration
+Get the cash drawer configuration for the store.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+store_id
+required
+string
+The identifier for the store. To retrieve the store ID, use the
+List stores
+method.
+Responses
+200
+The store's cash drawer config was successfully retrieved.
+400
+Something was wrong with the request.
+404
+Store not found.
+get
+/cash_drawer_config/stores/{store_id}
+/_/v0
+/cash_drawer_config/stores/{store_id}
+Response samples
+200
+400
+404
+Content type
+application/json
+Copy
+{
+"cash_drawer_type"
+:
+"integrated"
+,
+"cash_management_enabled"
+:
+true
+}
+List transaction types
+Returns all possible transaction types together with the corresponding list of reasons.
+The list includes both configured and not configured transaction types.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+The list of transaction types with the corresponding reasons.
+get
+/cash_drawer_config/transaction_types
+/_/v0
+/cash_drawer_config/transaction_types
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"transaction_types"
+:
+{
+"adjustment_out"
+:
+{
+"status"
+:
+"not_allowed"
+}
+,
+"no_sale"
+:
+{
+"status"
+:
+"configured"
+,
+"configuration"
+:
+{
+"balance_modification"
+:
+"cash_in"
+,
+"reasons"
+:
+[
+{
+"code"
+:
+"post_office"
+,
+"label"
+:
+"Post office"
+}
+,
+{
+"code"
+:
+"food"
+,
+"label"
+:
+"Buy snacks"
+}
+]
+}
+}
+}
+}
+List cash drawers
+Returns the cash drawers assigned to the store.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+store_id
+required
+string
+The search term to filter cash drawers by store ID.
+Responses
+200
+The cash drawer list was successfully fetched.
+400
+Something was wrong with the request.
+500
+Internal server error.
+get
+/cash_drawers
+/_/v0
+/cash_drawers
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"cash_drawers"
+:
+[
+{
+"cash_drawer_id"
+:
+"us70517a"
+,
+"name"
+:
+"Kesha"
+,
+"currency"
+:
+"USD"
+,
+"float"
+:
+200
+,
+"status"
+:
+"active"
+,
+"type"
+:
+"integrated"
+}
+,
+{
+"cash_drawer_id"
+:
+"de70517b"
+,
+"name"
+:
+"Kesha2"
+,
+"currency"
+:
+"EUR"
+,
+"float"
+:
+250
+,
+"status"
+:
+"inactive"
+,
+"type"
+:
+"integrated"
+}
+]
+}
+Add cash drawer
+Creates a new cash drawer assigned to a store.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+cash_drawer_id
+required
+string
+non-empty
+The external ID of the cash drawer. For example it can be a barcode for integrated cash drawers or a generated ID for non-integrated ones.
+name
+required
+string
+non-empty
+The human readable name of the cash drawer.
+currency
+required
+string
+= 3 characters
+The default currency of the cash drawer, using ISO-4217 Currency Code.
+float
+required
+number
+non-empty
+decimal places <= 2
+The default float amount for the cash drawer.
+store_id
+required
+string
+[ 1 .. 256 ] characters
+The store ID where the drawer is installed.
+type
+required
+string
+Enum
+:
+"integrated"
+"non_integrated"
+The kind of cash drawer, whether it is integrated or not.
+Responses
+200
+The cash drawer was successfully created.
+400
+Something was wrong with the request.
+403
+Associate is not allowed to add a cash drawer to the store.
+404
+Store does not exist.
+409
+Cash drawer already exists.
+post
+/cash_drawers
+/_/v0
+/cash_drawers
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"cash_drawer_id"
+:
+"4G9OZ"
+,
+"name"
+:
+"Not a shoe box"
+,
+"currency"
+:
+"USD"
+,
+"float"
+:
+250
+,
+"store_id"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"type"
+:
+"integrated"
+}
+Response samples
+400
+403
+404
+409
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Update cash drawer
+Update the cash drawer configuration.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Request Body schema:
+application/json
+name
+required
+string
+non-empty
+The human readable name of the cash drawer.
+float
+required
+number
+non-empty
+decimal places <= 2
+The default float amount for the cash drawer.
+Responses
+200
+The cash drawer was successfully updated.
+400
+Something was wrong with the request.
+403
+Associate is not allowed to modify the cash drawer.
+404
+Cash drawer or store not found.
+Error codes
+cash_drawer_not_found
+: Cash Drawer does not exist.
+store_not_found
+: Store does not exist.
+409
+Cash drawer cannot be updated.
+Error codes
+decommissioned_cash_drawer
+: A decommissioned cash drawer can not be updated.
+patch
+/cash_drawers/{drawer_id}
+/_/v0
+/cash_drawers/{drawer_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"name"
+:
+"Not a shoe box"
+,
+"float"
+:
+250
+}
+Response samples
+400
+403
+404
+409
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Get cash drawer
+Returns the cash drawer configuration.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Responses
+200
+The cash drawer was successfully retrieved.
+404
+Cash drawer not found.
+Error code
+cash_drawer_not_found
+: Cash drawer does not exist."
+500
+Internal server error.
+get
+/cash_drawers/{drawer_id}
+/_/v0
+/cash_drawers/{drawer_id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+{
+"cash_drawer_id"
+:
+"de70517a"
+,
+"name"
+:
+"Kesha"
+,
+"currency"
+:
+"USD"
+,
+"float"
+:
+200
+,
+"status"
+:
+"active"
+,
+"type"
+:
+"integrated"
+}
+Decommission cash drawer
+Decommission a cash drawer from a store.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Responses
+200
+The cash drawer was successfully decommissioned.
+400
+Something was wrong with the request.
+403
+Associate is not allowed to decommission the cash drawer.
+404
+Cash drawer not found.
+Error code
+cash_drawer_not_found
+: Cash drawer does not exist.
+409
+Cash drawer cannot be decommissioned.
+Error codes
+no_commissioned_cash_drawer_remaining
+: |
+The cash management feature is enabled so at least one cash drawer needs to remain commissioned.
+active_cash_drawer
+: Can not decommission an active drawer.
+decommissioned_cash_drawer
+: The cash drawer is already decommissioned.
+delete
+/cash_drawers/{drawer_id}
+/_/v0
+/cash_drawers/{drawer_id}
+Response samples
+400
+403
+404
+409
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Start cash sale or return transaction
+Creates a draft cash transaction.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Request Body schema:
+application/json
+order_id
+required
+string
+non-empty
+The order ID for which the cash transaction is initiated.
+amount
+required
+object
+(
+Monetary amount object.
+)
+The amount expected to be cashed in. A negative amount can be specified in case of a return.
+given
+required
+object
+(
+Monetary amount object.
+)
+The amount actually handed over by the customer to the store associate.
+Responses
+200
+The transaction was successfully initiated.
+400
+Something was wrong with the request.
+Error codes
+invalid_amount_error
+: Returned when the given amount is smaller than
+the sale amount
+403
+Associate is not allowed to perform this operation.
+Error code
+permission_error
+404
+Cash drawer not found
+Error code
+cash_drawer_not_found
+: Cash drawer does not exist.
+409
+The transaction cannot be initiated.
+Error codes
+inactive_cash_drawer
+: Can not perform this operation on an inactive drawer
+currency_mismatch
+: Returned when the currency of the transaction does not match the currency of the drawer.
+post
+/cash_drawers/{drawer_id}/_sale
+/_/v0
+/cash_drawers/{drawer_id}/_sale
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"order_id"
+:
+"9533082b-aaca-487b-95c6-d97ad8581bee"
+,
+"amount"
+:
+{
+"value"
+:
+45
+,
+"currency"
+:
+"USD"
+}
+,
+"given"
+:
+{
+"value"
+:
+50
+,
+"currency"
+:
+"USD"
+}
+}
+Response samples
+200
+400
+403
+404
+409
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"transaction_id"
+:
+"11a96e22-0275-418d-9035-7c5ad4b6050e"
+,
+"change"
+:
+{
+"value"
+:
+5
+,
+"currency"
+:
+"USD"
+}
+}
+Start non-sale transaction
+Creates a draft cash transaction, such as to adjust the float or bill exchange.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Request Body schema:
+application/json
+Any of
+Create a draft cash transaction.
+Create a draft cash transaction.
+transaction_type
+required
+string
+Enum
+:
+"add_to_float"
+"add_petty_cash"
+"transfer_in"
+"adjustment_in"
+"remove_petty_cash"
+"cash_pull"
+"transfer_out"
+"adjustment_out"
+"no_sale"
+"gift_card_cash_out"
+The type of the non-sale transaction.
+reason_code
+string
+non-empty
+The reason code of the non-sale transaction.
+amount_in
+required
+object
+(
+Monetary amount object.
+)
+The amount that will be added to the cash drawer.
+amount_out
+object
+(
+Monetary amount object.
+)
+The amount that will be removed from the cash drawer.
+Responses
+200
+The transaction was successfully initiated.
+400
+Something was wrong with the request.
+403
+Associate is not allowed to perform this operation.
+Error code
+permission_error
+404
+Cash drawer not found.
+Error code
+cash_drawer_not_found
+: Cash drawer does not exist.
+409
+The transaction cannot be initiated.
+Error codes
+inactive_cash_drawer
+: Can not perform this operation on an inactive drawer
+currency_mismatch
+: Returned when the currency of the transaction does not match the currency of the drawer.
+post
+/cash_drawers/{drawer_id}/_non_sale
+/_/v0
+/cash_drawers/{drawer_id}/_non_sale
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"transaction_type"
+:
+"remove_petty_cash"
+,
+"reason_code"
+:
+"post_office"
+,
+"amount_out"
+:
+{
+"value"
+:
+50
+,
+"currency"
+:
+"USD"
+}
+}
+Response samples
+200
+400
+403
+404
+409
+Content type
+application/json
+Copy
+{
+"transaction_id"
+:
+"11a96e22-0275-418d-9035-7c5ad4b6050e"
+}
+Perform a cash count
+Initiates the process of counting the cash in a cash drawer.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Request Body schema:
+application/json
+reason
+required
+string
+Enum
+:
+"intra_day_balance"
+"end_of_day_balance"
+The reason why the associate is performing the cash count.
+Responses
+200
+The cash count process was accepted.
+400
+Something was wrong with the request.
+403
+Associate is not allowed to perform this operation.
+Error code
+permission_error
+404
+Cash drawer not found.
+Error Code
+cash_drawer_not_found
+: Cash drawer does not exist.
+409
+Invalid cash drawer state.
+Error codes
+inactive_cash_drawer
+: Can not perform this operation on an inactive drawer
+500
+Internal server error.
+Error codes
+invalid_transactions_stored
+: Invalid transactions stored in the database.
+post
+/cash_drawers/{drawer_id}/_count
+/_/v0
+/cash_drawers/{drawer_id}/_count
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"reason"
+:
+"end_of_day_balance"
+}
+Response samples
+200
+400
+403
+404
+409
+500
+Content type
+application/json
+Copy
+{
+"count_id"
+:
+"fbe79ca6-3801-47e9-bd1a-f20de995c5f6"
+}
+Track cash drawer activity
+Register a change in the cash drawer state.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Request Body schema:
+application/json
+timestamp
+required
+string
+<
+date-time
+>
+The time when this activity happened.
+event
+required
+string
+Enum
+:
+"open"
+"close"
+The event on the cash drawer.
+correlation
+required
+string
+Enum
+:
+"transaction"
+"count"
+The reason for the event.
+correlation_id
+required
+string
+non-empty
+The ID of the related count or transaction operation.
+Responses
+200
+The transaction was successfully registered.
+400
+Something was wrong with the request.
+403
+Associate is not allowed to use the cash drawer.
+404
+Cash drawer not found.
+Error code
+cash_drawer_not_found
+: Cash drawer does not exist.
+post
+/cash_drawers/{drawer_id}/_track_activity
+/_/v0
+/cash_drawers/{drawer_id}/_track_activity
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"timestamp"
+:
+"2019-10-11T10:11:17Z"
+,
+"event"
+:
+"open"
+,
+"correlation"
+:
+"transaction"
+,
+"correlation_id"
+:
+"11a96e22-0275-418d-9035-7c5ad4b6050e"
+}
+Response samples
+200
+400
+403
+404
+Content type
+application/json
+Copy
+{
+"event_id"
+:
+"11a96e22-0275-418d-9035-7c5ad4b6050e"
+}
+Activate cash drawer
+Enables the specified cash drawer for daily usage.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Request Body schema:
+application/json
+float_amount
+required
+object
+(
+Monetary amount object.
+)
+The float amount that will be inserted into the drawer.
+value
+required
+number
+non-empty
+decimal places <= 2
+currency
+required
+string
+= 3 characters
+The currency for the transaction, using ISO-4217 Currency Code.
+Responses
+200
+The cash drawer was successfully activated.
+400
+Something was wrong with the request.
+403
+Associate is not allowed to perform this operation.
+Error code
+permission_error
+404
+Cash drawer not found.
+Error Code
+cash_drawer_not_found
+: Cash drawer does not exist.
+409
+Cash drawer is already active.
+Error code
+active_cash_drawer
+: The cash drawer is already active.
+post
+/cash_drawers/{drawer_id}/_activate
+/_/v0
+/cash_drawers/{drawer_id}/_activate
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"float_amount"
+:
+{
+"value"
+:
+49.99
+,
+"currency"
+:
+"USD"
+}
+}
+Response samples
+400
+403
+404
+409
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Deactivate cash drawer
+Disables the specified cash drawer for daily usage.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Request Body schema:
+application/json
+count_id
+required
+string
+non-empty
+The ID of the related end of day count operation
+Responses
+200
+The cash drawer was successfully deactivated.
+400
+Something was wrong with the request.
+Error code
+count_not_found
+: Could not find a completed count.
+403
+Associate is not allowed to perform this operation.
+Error code
+permission_error
+404
+Cash drawer or completed count not found.
+Error code
+cash_drawer_not_found
+: Cash drawer does not exist.
+409
+Cash drawer cannot be deactivated.
+Error code
+inactive_cash_drawer
+: The cash drawer is already inactive.
+invalid_count_reason
+: The count reason is invalid.
+post
+/cash_drawers/{drawer_id}/_deactivate
+/_/v0
+/cash_drawers/{drawer_id}/_deactivate
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"count_id"
+:
+"3533082b-aaca-487b-95c6-d97ad8581bee"
+}
+Response samples
+400
+403
+404
+409
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+List daily cash reports
+Represents all cash reports generated for the cash drawer.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Responses
+200
+The list of daily reports.
+400
+Something was wrong with the request.
+404
+Cash drawer not found.
+Error code
+cash_drawer_not_found
+: Cash drawer does not exist.
+500
+An error occurred on the server.
+get
+/cash_drawers/{drawer_id}/daily_reports
+/_/v0
+/cash_drawers/{drawer_id}/daily_reports
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"reports"
+:
+[
+{
+"activation_timestamp"
+:
+"2020-01-24T09:00:22.656Z"
+,
+"open_float"
+:
+{
+"value"
+:
+300
+,
+"currency"
+:
+"USD"
+}
+,
+"net_cash_in"
+:
+{
+"value"
+:
+200
+,
+"currency"
+:
+"USD"
+}
+,
+"net_cash_out"
+:
+{
+"value"
+:
+100
+,
+"currency"
+:
+"USD"
+}
+,
+"net_non_sale_cash_in"
+:
+{
+"value"
+:
+100
+,
+"currency"
+:
+"USD"
+}
+,
+"net_non_sale_cash_out"
+:
+{
+"value"
+:
+100
+,
+"currency"
+:
+"USD"
+}
+,
+"net_sales"
+:
+{
+"value"
+:
+200
+,
+"currency"
+:
+"USD"
+}
+,
+"net_returns"
+:
+{
+"value"
+:
+100
+,
+"currency"
+:
+"USD"
+}
+,
+"variance_total"
+:
+{
+"value"
+:
+100
+,
+"currency"
+:
+"USD"
+}
+,
+"end_of_day_count"
+:
+{
+"value"
+:
+500
+,
+"currency"
+:
+"USD"
+}
+,
+"deposit_total"
+:
+{
+"value"
+:
+-200.49
+,
+"currency"
+:
+"USD"
+}
+,
+"deactivation_timestamp"
+:
+"2020-01-24T18:00:00.656Z"
+}
+]
+,
+"pagination_info"
+:
+{
+"count"
+:
+1
+,
+"total"
+:
+20
+,
+"offset"
+:
+1
+}
+}
+Finish cash sale or exchange transaction
+Concludes a sale or exchange transaction, either by completing or canceling it.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+transaction_id
+required
+string
+The identifier for the transaction.
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Request Body schema:
+application/json
+status
+required
+string
+Enum
+:
+"completed"
+"canceled"
+The desired final status of the transaction.
+Responses
+200
+The transaction was successfully concluded.
+400
+Something was wrong with the request.
+403
+Associate is not allowed to perform this operation.
+Error code
+permission_error
+404
+Cash drawer or transaction not found.
+Error code
+cash_drawer_not_found
+: Cash drawer does not exist.
+not_found_error
+: Transaction was not found.
+409
+Conflict.
+Error codes
+inactive_cash_drawer
+: Can not perform this operation on an inactive cash drawer.
+invalid_transaction_state
+: The transaction is not in a draft state.
+post
+/cash_drawers/{drawer_id}/transactions/{transaction_id}
+/_/v0
+/cash_drawers/{drawer_id}/transactions/{transaction_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"status"
+:
+"completed"
+}
+Response samples
+400
+403
+404
+409
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Record a cash count
+Update a cash count with the counted amount.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+count_id
+required
+string
+The identifier for the cash count.
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Request Body schema:
+application/json
+counted_amount
+required
+object
+(
+Monetary amount object.
+)
+The amount that was counted by the associate.
+value
+required
+number
+non-empty
+decimal places <= 2
+currency
+required
+string
+= 3 characters
+The currency for the transaction, using ISO-4217 Currency Code.
+Responses
+200
+The cash count was successfully updated.
+400
+Something was wrong with the request.
+403
+Associate is not allowed to perform this operation.
+Error code
+permission_error
+404
+Cash drawer or count not found.
+Error codes
+cash_drawer_not_found
+: Cash drawer does not exist.
+not_found_error
+: Count was not found.
+409
+The cash count can not be updated.
+Error codes
+new_transactions_added
+: New transactions were added since count started.
+currency_mismatch
+: Draft count has a different currency.
+inactive_cash_drawer
+: Can not perform this operation on an inactive cash drawer.
+patch
+/cash_drawers/{drawer_id}/counts/{count_id}
+/_/v0
+/cash_drawers/{drawer_id}/counts/{count_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"counted_amount"
+:
+{
+"value"
+:
+99.99
+,
+"currency"
+:
+"USD"
+}
+}
+Response samples
+200
+400
+403
+404
+409
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"discrepancy"
+:
+true
+,
+"expected_amount"
+:
+{
+"value"
+:
+101.99
+,
+"currency"
+:
+"USD"
+}
+,
+"discrepancy_amount"
+:
+{
+"value"
+:
+-1.99
+,
+"currency"
+:
+"USD"
+}
+}
+Set cash count action
+Initiates a recount, submits the final count, or cancels the cash count.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+action
+required
+string
+Enum
+:
+"_recount"
+"_submit"
+"_cancel"
+The specific cash count action to perform.
+count_id
+required
+string
+The identifier for the cash count.
+drawer_id
+required
+string
+The identifier for the cash drawer. To retrieve the ID of the cash drawer assigned
+to the store, use the
+List cash drawers
+method.
+Responses
+200
+The action was accepted.
+400
+Something was wrong with the request.
+403
+Associate is not allowed to perform this operation.
+Error code
+permission_error
+404
+Cash drawer or count not found.
+Error codes
+cash_drawer_not_found
+: Cash drawer does not exist.
+not_found_error
+: Count was not found.
+409
+The cash count can not be submitted/canceled/recounted.
+Error codes
+invalid_state_error
+: The count is not in the expected state.
+  If the action is _recount, then the count is expected to be in state counted.
+  If the action is _submit, then the count is expected to be in state counted.
+  If the action is _cancel, then the count is expected to be in state draft or counted.
+new_transactions_added
+: New transactions were added since the count started.
+inactive_cash_drawer
+: Can not perform this operation on an inactive cash drawer.
+post
+/cash_drawers/{drawer_id}/counts/{count_id}/{action}
+/_/v0
+/cash_drawers/{drawer_id}/counts/{count_id}/{action}
+Response samples
+400
+403
+404
+409
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Report of cash transactions per store
+Returns a report of cash transactions per store
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+store-id
+required
+string
+The search term to filter cash transactions by store ID.
+start-time
+required
+string
+Example:
+start-time=2022-01-01T00:00:00Z
+RFC3339 formatted time string to define cash transaction time-period start.
+end-time
+required
+string
+Example:
+end-time=2022-01-01T23:59:59Z
+RFC3339 formatted time string to define cash transaction time-period end.
+offset
+required
+number
+Example:
+offset=0
+Pagination offset.
+limit
+required
+number
+Example:
+limit=10
+Amount of items taken after offset, max 100.
+transaction-type
+string
+Enum
+:
+"sale"
+"float_adjustment"
+"reconciliation"
+"end_of_day_withdrawal"
+"add_to_float"
+"add_petty_cash"
+"transfer_in"
+"adjustment_in"
+"remove_petty_cash"
+"cash_pull"
+"transfer_out"
+"adjustment_out"
+"no_sale"
+"gift_card_cash_out"
+The transaction type by which we should filter transaction types.
+Responses
+200
+The cash transaction report was successfully fetched.
+400
+Something was wrong with the request.
+500
+Internal server error.
+get
+/cash_reports/transaction_report
+/_/v0
+/cash_reports/transaction_report
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"transactionReport"
+:
+[
+{
+"cashDrawerStatus"
+:
+"active"
+,
+"cashDrawerName"
+:
+"Drawer_1"
+,
+"cashDrawerId"
+:
+"fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1"
+,
+"currency"
+:
+"USD"
+,
+"createdAt"
+:
+"2022-09-01T08:10:01.665654Z"
+,
+"transactionType"
+:
+"float_adjustment"
+,
+"associateId"
+:
+"fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1"
+,
+"associateName"
+:
+"Bob McMuffin"
+,
+"orderId"
+:
+""
+,
+"externalOrderId"
+:
+""
+,
+"reasonCode"
+:
+"1080"
+,
+"amountBalance"
+:
+100
+,
+"storeId"
+:
+"adc335d0-9902-47f7-bc8e-216ddcfd4d11"
+}
+,
+{
+"cashDrawerStatus"
+:
+"active"
+,
+"cashDrawerName"
+:
+"Drawer_1"
+,
+"cashDrawerId"
+:
+"fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1"
+,
+"currency"
+:
+"USD"
+,
+"createdAt"
+:
+"2022-09-01T08:10:01.665654Z"
+,
+"transactionType"
+:
+"sale"
+,
+"associateId"
+:
+"fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1"
+,
+"associateName"
+:
+"Bob McMuffin"
+,
+"orderId"
+:
+"4d7d3ec4-ae2e-4321-8f9d-686c44806642"
+,
+"externalOrderId"
+:
+"AB000001234"
+,
+"reasonCode"
+:
+"1080"
+,
+"amountBalance"
+:
+100
+,
+"storeId"
+:
+"adc335d0-9902-47f7-bc8e-216ddcfd4d11"
+}
+,
+{
+"cashDrawerStatus"
+:
+"inactive"
+,
+"cashDrawerName"
+:
+"Drawer_1"
+,
+"cashDrawerId"
+:
+"fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1"
+,
+"currency"
+:
+"USD"
+,
+"createdAt"
+:
+"2022-09-01T21:10:01.665654Z"
+,
+"transactionType"
+:
+"end_of_day_withdrawal"
+,
+"associateId"
+:
+"fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1"
+,
+"associateName"
+:
+"Bob McMuffin"
+,
+"orderId"
+:
+""
+,
+"externalOrderId"
+:
+""
+,
+"reasonCode"
+:
+"1082"
+,
+"amountBalance"
+:
+100
+,
+"storeId"
+:
+"adc335d0-9902-47f7-bc8e-216ddcfd4d11"
+}
+]
+,
+"total"
+:
+100
+}
+Previous
+Stock insights API
+Next
+Cash Drawer Reports API
+Copyright © 2025 NewStore, Inc.

@@ -1,0 +1,310 @@
+Configuring shipping settings
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Configuring shipping settings
+Updated on
+Dec 6, 2024
+Published on Oct 1, 2024
+4 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Here's a list of settings that you can configure for your business, to customize shipping solutions.
+Adding shipping providers
+To add shipping providers that your business wants to integrate with:
+Use the
+Get carrier config
+method to retrieve the shipping providers that you already have set up.
+Use the
+Update carrier config
+method to add a new shipping provider to your configuration:
+In the
+value
+key, specify the name of the shipping provider as the new key. For example,
+FEDEX
+.
+In
+booking_includes_return
+, specify
+true
+if the return delivery will be booked in the same API call as the shipping delivery.
+In
+api_base_url
+, specify the shipping provider adapter URL where the requests from NewStore Omnichannel Cloud can be posted.
+In
+integration_type
+, map the service that should be called. This can be one of these two values:
+generic
+(for generic adapter API calls) or
+traditional_carrier
+(shipment API calls).
+In
+return_deliveries_should_be_canceled
+, specify
+true
+if return shipping needs to be canceled.
+Configuring EasyPost for shipping
+Creating an EasyPost shipping configuration
+To configure
+EasyPost
+for shipping, create an EasyPost shipping configuration that is integrated with the EasyPost adapter. For help with this integration, contact the
+support team
+.
+Configuring EasyPost
+After you have created the EasyPost shipping configuration, follow the same steps as
+Adding shipping providers
+, with one difference:
+In
+value
+>
+<carrier_name>
+>
+api_base_url
+, provide the adapter URL for EasyPost for each shipping provider.
+Important
+To process electronic commercial invoices via EasyPost, ensure that electronic or paperless invoicing has been pre-approved by shipping provider. Approval processes typically take up to 24 hours.
+For example, if you are using
+UPS
+as your shipping provider, follow these steps to request for paperless commercial invoicing approval:
+Log into your UPS account.
+Select
+Enroll Paperless invoicing
+and select the types of paperless invoicing you plan to use.
+Upload a letterhead and signature to be associated with all shipments.
+Wait for approval.
+Configuring the shipping adapter URL
+Updating the EasyPost configuration
+To update an existing EasyPost configuration, follow these steps:
+Retrieve the current configuration via the
+GET Config
+method.
+Copy existing config and paste the entire JSON in the “Body” of the PUT Config request
+Use the
+Replace EasyPost adapter config
+method to update configuration.
+Possible configuration keys are listed below:
+easypost_api_key
+base_customization_url
+ignore_customization_failure_on_booking
+newstore_username
+newstore_password
+newstore_url
+shipment_creation_options
+(This is a key/value dictionary based on
+https://www.easypost.com/docs/api#options
+)
+carrier_accounts
+where,
+You must set
+newstore_url
+to:
+https://<tenant>.p.newstore.net/v0/
+, for example:
+https://dodici.p.newstore.net/v0/
+See the example for
+shipment_creation_options
+:
+"shipment_creation_options": {
+    "fedex": {
+        "delivery_confirmation": "SIGNATURE"
+    }
+}
+See an example for
+carrier_accounts
+, where
+US01
+is a fulfillment location (
+fulfillment_node_id
+)
+"carrier_accounts": {
+    "fedex": {
+        "US01": "ca_abc...",
+    }
+}
+Important
+If an EasyPost account has a large number of
+carrier_accounts
+, map a warehouse or DC (
+fulfillment_node_id
+) to a carrier account. Failing to do so will result in requesting shipping options for orders to time out after 30 seconds.
+Enabling customizable provider rates
+To customize provider rates:
+Use the
+Set customization adapter config
+method and in
+value
+>
+base_url
+, specify the URL of the customization adapter used to retrieve the list of supported provider rates for the order.
+Use the
+Set config for customizable provider rates
+method.
+Set
+value
+to
+true
+.
+To retrieve the current configuration, use the
+Get config for customizable provider rates
+method.
+To retrieve the current configuration of customization adapter for provider rates, use the
+Get customization adapter config
+method.
+Customizing the shipping configuration
+Your shipping configuration contains provider rates, return shipping provider rates, service levels, service-level priorities, and routes that are required to offer shipping options.
+At NewStore, the fulfillment configuration contains the shipping configuration. To include shipping provider settings, update the
+fulfillment configuration
+for your business. See
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+.
+To update service levels for inventory transfers, update the
+transfer order delivery configuration
+for your business. For an example of the configuration, see
+Shipping transfer orders
+.
+If configured, NewStore does not update shipping offers for orders routed to warehouses or DCs for fulfillment. To enable this configuration, use the
+Skip shipping offer updates for DC orders
+method and set
+value
+to
+true
+.
+Note
+We recommend skipping shipping offers for orders routed to warehouses or DCs in your business.
+Exclude DC rates when injecting orders
+When injecting orders into NewStore, shipping options are generated by calling shipping carriers. This configuration allows retailers to avoid calling shipping carriers for DC rates. If
+use_as_customer_facing_cost
+property is set to
+true
+in the
+provider rate API
+, the shipping carrier will still be called to retrieve shipping costs.
+To enable this configuration, in the
+API
+, set the config
+generate_static_option_for_dc
+to:
+{
+    "value": true
+}
+Important
+Ensure that any active customizations for the shipping adapter are not impacted by the exclusion of calling DC rates from shipping carriers.
+We recommend excluding DC rates during the order injection phase, right when shipping options and provider rates are being created.
+Note
+We recommend excluding DC rates at Order Injection.
+Customizing the shipping price for split orders
+For split orders, update this configuration to charge the customer the highest shipping price across all the service-levels offered for the order, and ignore the rest of the shipping prices. This is irrespective of the number of shipments the order was split into. For more information, see
+Shipping split orders
+.
+To charge the customer only the shipping price for the most expensive shipment in the split order:
+Use the
+Set shipping price config for split orders
+method.
+Set
+value
+to
+true
+.
+To retrieve the current configuration, use the
+Get shipping price config for split orders
+method.
+For examples on how the shipping price is customized when you use this key, see
+Shipping price for split orders
+.
+For more information on the service level price, see
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+.
+Customizing shipment limits for orders
+You can use NewStore Omnichannel Manager to specify the maximum number of shipments for orders that have high shipping costs or are split between multiple fulfillment locations. See
+Managing shipment limits
+.
+Configuring international shipping
+A retailer can ship orders internationally for their business using the EasyPost adapter. To enable international shipments,
+read this article
+.
+Related topics
+Integrating a shipping provider
+Retrieving custom shipping options
+Retrieving custom shipping prices for orders
+Managing shipment limits
+Configuring distribution centers
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+Shipping transfer orders
+Was this article helpful?
+Yes
+No
+Tags
+api
+config api
+dellivery
+Easypost
+international shipping
+platform
+provider rates
+routing
+shipping
+split order
+warehouse
+warehouse fulfillment
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

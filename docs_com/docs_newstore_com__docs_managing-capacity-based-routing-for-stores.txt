@@ -1,0 +1,287 @@
+Managing capacity-based routing for stores
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Managing capacity-based routing for stores
+Updated
+Updated on
+Jul 22, 2025
+Published on Oct 1, 2024
+8 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Capacity-based routing allows you to specify how many items will be routed and processed at a set number of locations, based on how many items each store has processed over a certain period of time.
+Important
+Store capacity limits are not applied when using
+prerouting
+, such as for BOPIS orders.
+You can create
+capacity-based routing policies
+for specified hours for each day of the week, using the
+ISO 8601: "Date and time format"
+.
+For example, you can set up the following policy for all your stores in the US:
+Route a maximum of 10 items from 8:00 AM to 8:00 PM on weekdays, and from 10:00 AM to 2:00 PM on weekends.
+Note
+The time periods specified for daily capacity limits must be set in complete hours. Defining minute values is not supported. For example from 8:00 AM to 8:00 PM on Sunday, and not from 8:20 AM to 5:30 PM.
+How capacity-based routing works
+The following steps describe how daily capacity is calculated and used by the routing process:
+Identifying active time frames
+NewStore determines the operational time frame (time during which an order might be routed to a location) for each store or fulfillment node based on the current time. Times are converted to and stored in UTC format to avoid timezone-related inconsistencies.
+For example, if an order arrives at 3:30 PM (GMT), the system identifies the set of rules applicable for stores from 3:00 PM to 4:00 PM.
+Matching stores to policies
+Stores are matched to policies using pattern matching based on store identifiers. For example, a pattern like "downtown" would match stores with 'downtown' in their identifier. Thus, any capacity configuration linked to this pattern would automatically apply to these stores. You can use a wildcard
+*
+to specify all stores within the working hours policy.
+Calculating used capacities
+NewStore calculates how many items a store has fulfilled and how many items it still able to fulfill based on its daily quota.
+For example, if a store's total capacity is 100 items per day, and it has already processed 70 items, when the order is routed NewStore calculates the remaining capacity as 30 items.
+You can query the available capacity in JSON format using the
+get remaining store capacity
+method.
+Compiling results for order routing
+This data is compiled into an actionable format for order routing decisions. When deciding on the best fulfillment location for the order at the time of routing, NewStore considers only stores with available capacity.
+Important
+NewStore does not consider the count of remaining item capacity when determining the fulfillment location to which the order items should be routed. If the number of order items in routing exceeds the count of remaining item capacity, this may lead to over-utilization. Any subsequent routing attempt would, however, not be able to route to this location once the capacity is met.
+Known issues
+There are some common issues you should be mindful of when setting up and using capacity-based routing:
+Identifying active time frames: If you have stores operating in multiple time zones, time zone discrepancies may lead to mismatches for up to an hour in capacity calculations.
+Calculating used and remaining capacities: There's a slight delay in updating the system's availability data, which can affect the precision of capacity calculations during peak hours.
+Determining available capacity: During high-demand periods, the system may not always accurately predict future capacity needs, which can lead to either under- or over-utilization of certain stores.
+Compiling results for order routing: The final compiled data for order routing sometimes does not account for sudden changes in store capacities, such as unexpected closures or extended working hours, after fetching the initial data.
+UI discrepancies: Outside of a store's operational hours, the Routing Locations UI does not show the stores used and remaining capacity. However, this is a display issue only and has no impact on the routing engine logic which accesses that data directly.
+Configuring the time of the daily capacity reset
+The capacity limits will apply for each day of the week. You can optionally configure the daily capacity reset in 3 ways by defining opening hours per store or across regions:
+Set both a start time and finish time, e.g. from 09:00 to 13:00 The daily quota is refreshed at the start time, in this example at 09:00. NewStore stops sending fulfilment requests to the store either when the store is over capacity or if it is outside of the 09:00 to 13:00 window.
+Set only a start time, e.g. 09:00 The daily quota is refreshed at the start time, in this example at 09:00. NewStore stops sending fulfilment requests to the store when the store is over capacity.
+Do not set a time The daily quota is refreshed at 00:00 UTC. NewStore stops sending fulfilment requests to the store when the store is over capacity.
+When capacity resets, any pending orders will no longer use up capacity. For instance, if a store has a daily capacity of 10 items and, by the end of the day, there are 5 orders left to fulfill, when the daily capacity resets, it will go back to 10 in full, and those 5 remaining orders won't count towards the new day's capacity.
+Setting up capacity-based routing for a store
+Note
+If a lot of orders are routed in parallel, for example via automatic rerouting, the number of orders routed to the location can exceed the capacity specified for the store.
+This guide uses a POSIX shell, and
+curl
+, which should be installed by default on all GNU/Linux and MacOS systems, and
+can be installed for Windows or other operating systems
+.
+Acquire an authorization token
+.
+Set these variables accordingly:
+TOKEN=my-auth-token
+TENANT=my-newstore-retailer-slug
+ENV=p
+URL="https://${TENANT}.${ENV}.newstore.net"
+Verify that the feature is enabled for your business by using the
+Get capacity based routing status
+method.
+If not enabled for your business, enable capacity-based routing using the
+Enable capacity based routing
+method
+Set up a minimal configuration for all stores in your business. See the example here:
+{
+    "*": {
+        "limit": 10,
+        "hours": {
+            "*": [8, 20],
+            "saturday": [10, 2],
+            "sunday": [10, 2]
+        }
+    }
+}
+where,
+*
+signifies that this configuration is set for all stores.
+Note
+A component of the
+path
+may be an operator with a predicate applied to location names, or days of the week. This means less duplication in and across policies.
+The precedence, or how a given pattern is chosen over others, is
+longer = more specific
+. When searching through all
+operator
+keys from a specified path, NewStore starts by the longest length, and stops after one match:
+locations/US-*
+has a higher priority than
+locations/*
+, OR
+locations/*/hours/saturday
+has a higher priority than
+locations/*/hours/*
+For example, see the table below:
+Patterns
+Location
+Match
+US*
+US01
+US*
+US*
+,
+US-*
+US01
+US-\*
+limit
+signifies the maximum number of items to be processed each day.
+hours
+contains properties for each calendar day of the week, with their values that contain a starting hour, and optionally an ending hour, both specified in UTC.
+For example, the value
+[8, 20]
+specifies that the orders can be routed to the store for fulfillment starting at 0800 UTC, and ending at 2000 UTC, which allows for a total of 12 hours of routing activation. In the hours outside of these 12 hours, the store will be excluded from routing.
+The value
+[8]
+specifies that order routing starts at 0800 UTC, and ends the next day at 0759 UTC. As the routing interval is for a 24 hour period, the store will only be excluded from routing if the capacity for fulfillment has been exhausted.
+Important
+The operating hours are specified with a starting and ending hour to support locations that do not fall within the same UTC calendar day.
+For example, for Japanese Standard Time (
+JST
+), which is
+UTC+9
+, to specify a 12 hour 0800 am till 0800 pm in this locale, the value for the
+hours
+property must be
+[23, 11]
+.
+This spans across more than 1
+calendar day
+, but NewStore supports values for the
+hours
+property that is consistent with
+all single intervals within a 24-hour period
+.
+Once the API has been called with minimal configuration, the capacity-based routing feature is enabled and live in the platform.
+Let's take a look at the final payload sample for a
+POST
+method API call:
+curl -i \
+         -H "Authorization: Bearer $TOKEN" \
+         -H 'Content-type: application/json' \
+         -XPOST "${URL}/v0/store_capacity" \
+         -d'
+    {
+      "policy": {
+        "*": {
+          "limit": 1,
+          "hours": {
+            "monday": [8, 20],
+            "saturday": [10, 2],
+            "sunday": [10, 2]
+          }
+        }
+      }
+    }'
+Note
+The live capacity data is available immediately, as it is derived from regular transactional routing data. NewStore always considers the number of orders or items already routed for fulfillment before capacity-based routing was enabled in the store.
+Checking store capacity for specific locations
+To check the store capacity availability for all stores in your business, use the
+Get capacity
+method.
+To check the capacity for specific stores, use the query parameter
+locations
+, using a comma-delimited list of patterns, such as
+?locations=US*
+or
+?locations=DE*
+to check the capacity in stores across the US or Germany.
+Note
+If no stores or warehouses (DCs) are available during the routing process, the order is placed
+On Hold
+so that it can be manually routed. To manage
+On Hold
+orders via NOM, see
+this guide
+.
+Updating the routing capacity for stores
+If you want to update the routing interval or limits for stores across your business, use the
+Update capacity-based routing limits
+method.
+for example, if you want to keep the store closed on Sunday and not route any orders to the store for fulfillment, use the following payload to update the store capacity:
+curl -H "Authorization: Bearer ${TOKEN}" \
+         -XPATCH "${URL}/v0/store_capacity" \
+         -d'
+    [
+      { "op": "replace", "path": "/*/hours/sunday", "value": null }
+    ]'
+FAQ
+Why are more items routed to my location than its available capacity?
+When multiple orders are routed in parallel, each routing attempt is considering the point-in-time capacity, and does not currently consider the impact of the in-progress parallel routes. As a result, a location may receive more items total than its capacity.
+Why was the order not routed to an expected store which
+has
+capacity?
+The routing engine also takes into consideration the available stock (ATP). When routing from a store, it tries first to route a location that was determined during order creation; if that location has insufficient stock it will try the next available location.
+Was this article helpful?
+Yes
+No
+Tags
+api
+capacity based routing
+configuration
+integration
+NewStore OMS
+newstore platform
+order fulfillment
+order management
+platform
+routing
+routing rules
+shipping
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

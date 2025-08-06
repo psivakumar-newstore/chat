@@ -1,0 +1,138 @@
+Integrating an external app with Associate App to retrieve data
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Integrating an external app with Associate App to retrieve data
+Updated on
+Nov 13, 2024
+Published on Oct 1, 2024
+1 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+If your business needs to retrieve data from an external mobile app or web application, such as customer data or loyalty reward coupons, NewStore allows you to integrate these applications with NewStore Associate App to fetch such data via deeplink URLs.
+To set up NewStore Associate App to retrieve data from an external application or system, NewStore Associate App must be able to communicate with the external app via deeplink URLs. In this setup, NewStore sends required data via a deeplink URL, then waits for a response from the external application via another deeplink URL.
+NewStore has a set of integration points that your external application can communicate with to receive and send back data. These integration points are specified in the NewStore Associate App
+configuration API
+, within the
+external_integration
+property.
+For example, you can specify that loyalty reward points can be accessed in NewStore Associate App via a deeplink URL that retrieves data from your external loyalty system.
+Schema for integration points and deeplink URL
+These integration points can send and retrieve required data via the following mechanism:
+Integration point
+Data sent
+Callback action
+Query parameters
+Available in app version
+cart.more.loyaltyProgram
+Cart details
+applyCoupons
+coupons[]
+cartId
+v1.13.0 and later
+When setting up the deeplink URL for your external application in NewStore Associate App, follow this URL schema to ensure that NewStore Associate App can send and retrieve data correctly:
+Protocol
+:
+com.newstore.associate-one://
+Domain
+: Name of the integration point, such as
+cart.more.loyaltyProgram
+Path
+: Callback action, based on the integration point, such as
+applyCoupons
+QueryParams
+: Based on the integration point and the associated action. For example, for
+cart.more.loyaltyProgram/applyCoupons
+, the value can be
+coupons[]=first_code&coupons[]=second_code.....
+NewStore also assigns a 32-bit security token for each deeplink URL for authentication purposes. The external app must pass this token back as part of the
+queryParams
+segment in the URL.
+See the following example for the complete format for a callback URL:
+com.newstore.associate-one://cart.more.loyaltyProgram/applyCoupons?coupons[]=couponID-1&coupons[]=couponID-2&cartId=123456&token=abcdef
+Important
+After you have set up the configuration to retrieve data from the external application(s), in the request payload for the
+Update App configuration
+method, use the
+external_integration
+property to specify the required details to enable NewStore Associate App to retrieve the data.
+Currently, NewStore only supports retrieving loyalty reward data from an external system. For more information, see
+Configuring loyalty rewards on Associate App
+.
+Related topics
+Managing order approvals
+Using NewStore Associate App
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+Associate App configuration
+developer
+external app
+integration
+newstore platform
+platform
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

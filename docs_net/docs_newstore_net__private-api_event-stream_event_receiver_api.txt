@@ -1,0 +1,145 @@
+Event Gateway API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Event Gateway API
+Event stream configuration API
+Event-Stream Webhooks
+Webhook API
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+post
+Publish a domain event.
+API docs by Redocly
+Event Gateway API
+(
+1.0
+)
+Download OpenAPI specification
+:
+Download
+The Event Gateway API can be used by NewStore engineering teams to publish their domain events
+via Event Stream. The API is internal and can only used by services running in the shared Kubernetes cluster.
+Publish a domain event.
+Publish a domain event via event stream. Once submitted, the event can immediately be received by Event Stream
+consumers.
+header
+Parameters
+team
+required
+string
+Example:
+team-inventory
+Name of the team who publishes the event.
+service
+required
+string
+Example:
+inventory-manager
+Name of the service which calls this API.
+entity-id
+required
+string
+Example:
+000816c3-e9b2-440b-8d27-dfaa4cae00ef
+Identifier of the event's main entity (for example an order ID).
+tenant
+required
+string
+Example:
+dodici
+The tenant name.
+idempotency-key
+required
+string
+Example:
+123816c3-e9b2-440b-8d27-dfaa4cae0bbc
+The idempotency key for the event.
+correlation-ids
+required
+string
+Example:
+'{
+    "order_id": "000816c3-e9b2-440b-8d27-dfaa4cae00ef", 
+    "customer_id": "000816c3-e9b2-440b-8d27-dfaa4cae00ef"
+}'
+The correlation-ids relevant for this event. This should be the id of the main aggregate the event belongs 
+to. If unsure, it is probably an order. Currently two correlation-id types are supported:
+order_id
+customer_id
+You may define as many correlation-ids as make sense to your context and event. Correlation-ids are mainly
+used for debugging and observability purposes, to be able to list all events belonging to a certain 
+aggregate and to eg trace all events of an order.
+The correlation ids need to be passed in form of a json string of type 
+'{"<idtype>": "<value>", ...}', see the example below.
+Moving forward the header is required. For a grace period the endpoint defaults to '{}' if the header is not 
+specified to maintain backward compatibility.
+Request Body schema:
+application/json
+object
+(
+Event payload
+)
+The event payload.
+Responses
+201
+The event was published to EventStream correctly.
+400
+The request was not correct, eg missing some required headers or a payload.
+403
+The request was not allowed to be run by the caller.
+500
+An internal problem occurred, for example if the event was not persisted to kafka
+post
+/events/{event_name}
+/events/{event_name}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{ }
+Response samples
+400
+403
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"status"
+:
+"string"
+,
+"message"
+:
+"string"
+,
+"details"
+:
+[ ]
+}
+Previous
+Shipment notification configuration API
+Next
+Event stream configuration API
+Copyright © 2025 NewStore, Inc.

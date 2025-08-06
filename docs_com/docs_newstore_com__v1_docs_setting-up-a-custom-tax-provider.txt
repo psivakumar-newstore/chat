@@ -1,0 +1,411 @@
+Setting up a custom tax provider
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Setting up a custom tax provider
+Updated on
+Jan 10, 2025
+Published on Oct 1, 2024
+10 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+NewStore collaborates with Avalara and Vertex, highly recommending the adoption of either of these tax providers due to the rapid evolution of tax compliance, driven by new and updated regulations worldwide. In the event that Avalara and Vertex are not utilized in the retail business, our custom tax provider empowers the retailer to calculate taxes and seamlessly communicate the information back to NewStore during the checkout process.
+Developing your custom API
+Note
+In this guide, the code snippets contain
+{tenant}
+{env}
+or
+{token}
+properties.
+Use the target tenant for the
+{tenant}
+property.
+Use the target environment for the
+{env}
+property.
+Use your NewStore token taken from the Omnichannel Manager console for the
+token
+property.
+Prerequisites
+The API that performs the custom tax calculation for the retailer can be written in any coding language of your choice with the following conditions:
+The API must follow the request and response schemas defined in the
+Custom Tax Provider API v1
+.
+The API has to expose the required endpoints defined in the
+Custom Tax Provider API v1
+.
+The API can be hosted on your desired infrastructure and is publicly exposing the required endpoints.
+The API can respond to HTTP requests in less than 5 seconds.
+Optionally, you may use this
+Custom Tax Provider API v1
+to automatically generate the boilerplate code needed for your API in the coding language of your choice using a server generator tool such as
+OpenAPI generator
+.
+Creating your custom tax calculation formula
+The custom tax provider gives you full control over your tax amounts via the custom tax calculation formula.
+A custom tax calculation formula propagates the items' data from the NewStore platform to the webhook to determine appropriate tax rates for your business-specific scenarios. For example, it can support a different tax rate per item category or handle country-specific tax exemption cases.
+Note
+The custom API response will be validated in the NewStore platform and in case of invalid responses the custom tax provider response will be ignored and instead, the
+fallback calculation
+will be used.
+For example, the following sample JavaScript code adds a fixed amount of
+1
+tax unit to all items in the cart regardless of the item's type and then returns the required payload. Additionally, it also sets the
+gross_amount
+and the
+net_amount
+of the item based on the item's
+tax_method
+to either add or subtract
+1
+unit tax to/from the relevant field.
+const response = {
+    document_id: 'doc-code-1',
+    items: requestBody.items.map((item, index) => {
+        const isItemTaxExcluded = item.tax_method === 'vat_excluded';
+        return {
+            index,
+            gross_amount: isItemTaxExcluded ? item.item_price + 1 : item.item_price,
+            net_amount: isItemTaxExcluded ? item.item_price : item.item_price - 1,
+            tax_amount: 1,
+            tax_rates: [
+                {
+                    rate: 0,    // Because the amount is fixed and not a percentage of the original item price
+                    country_code: 'DE',
+                    amount: 1,
+                    tax_name: 'fixed amount custom tax'
+                }
+            ]
+        };
+    }),
+};
+res.setHeader('Content-Type', 'application/json');
+res.writeHead(201);
+res.end(JSON.stringify(response));
+Note
+There are other optional fields that can be available in the response depending on the use case. For the list of all the possible fields, see the
+Custom Tax Provider API v1
+.
+The logic above is a sample tax quotation formula that would be triggered while the associate is creating the cart for a customer. During this flow, the NewStore platform will communicate with the configured custom tax API URL using the
+quotation
+endpoint defined in the
+Custom Tax Provider API v1
+to get the taxes of each item in the cart.
+The JavaScript code given above should result in a response that is deemed valid by the NewStore platform under the following conditions:
+The number of
+items
+in the response matches the number of
+items
+in the request.
+The response items'
+index
+match the order of the sent
+items
+in the request to ensure proper tax mapping.
+Each item contains the required fields mentioned in the
+Custom Tax Provider API v1
+.
+Setting your custom tax configurations
+Note
+Securing your API
+Your API can be secured on the public network using one of the
+securitySchemes
+defined in the
+Custom Tax Provider API v1
+.
+After you host the custom tax API on your desired infrastructure and it is publicly accessible on the internet, you can start configuring your tenant or stores in NewStore to leverage your custom tax API.
+Tenant configuration
+Using the NewStore
+Taxes Configuration API v1
+you can set up your tenant configuration as follows:
+curl --location 'https://{tenant}.{env}.newstore.net/taxes/config' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {token}' \
+--data '{
+  "tax_calculation_strategy": "custom",
+  "custom": {
+    "api_version": "v1",
+    "base_url": "https://my-custom-tax-url.com",
+    "authentication": {
+      "method": "Basic",
+      "username": "my-username",
+      "password": "my-password"
+    }
+  },
+  "fixed_rate": {
+    "tax_name": "Standard VAT rate for my tenant",
+    "tax_rate": 0.2
+  }
+}'
+Store configuration
+Using the NewStore
+Taxes Configuration API v1
+you can set up your store configuration as follows:
+curl --location 'https://{tenant}.{env}.newstore.net/taxes/config/stores' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {token}' \
+--data '{
+  "store_id": "{store ID}",
+  "country_code": "DE",
+  "tax_calculation_strategy": "custom",
+  "custom": {
+    "api_version": "v1",
+    "base_url": "https://my-custom-tax-url.com",
+    "authentication": {
+      "method": "Basic",
+      "username": "my-username",
+      "password": "my-password"
+    }
+  }
+}'
+Note
+The
+base_url
+should only point to the domain of your server and any route prefix to the defined endpoints in the
+Custom Tax Provider API v1
+. The endpoints' names should not be present in the
+base_url
+and will be automatically added by the NewStore platform.
+For example,
+A valid
+base_url
+is:
+"https://custom.taxprovider.com/api/"
+An invalid
+base_url
+is:
+"https://custom.taxprovider.com/api/quotation"
+Testing your API
+Validating your custom tax API integration with the NewStore platform is critical to ensure that your setup is working as expected before moving your integration to production. The initial testing can be done through the
+Tax transaction preview API endpoint
+, where requests to the
+/previews/transactions
+API triggers the configured tax provider in the same way in which Associate App works during a standard checkout operation in the store.
+Validating your custom tax integration
+To test the custom tax integration through the NewStore platform, send the following sample payload to the
+Tax transaction preview API endpoint
+:
+curl --location 'https://{tenant}.{env}.newstore.net/taxes/previews/transactions' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {token}' \
+--data '{
+  "tax_exempt": false,
+  "transaction_type": "SALE",
+  "order_id": "56bb9975-f43a-4eee-8fb2-200957eb0624",
+  "items": [
+    {
+      "tax_class": "AAA000",
+      "tax_method": "vat_included",
+      "item_price": 200,
+      "quantity": 1,
+      "shipping_address": {
+        "address_line_1": "Potsdamer Str. 7, 10785 Berlin",
+        "zip_code": "10785",
+        "city": "Berlin",
+        "country_code": "DE"
+      },
+      "shipping_origin": {
+        "address_line_1": "Potsdamer Str. 7, 10785 Berlin",
+        "zip_code": "10785",
+        "city": "Berlin",
+        "country_code": "DE"
+      },
+      "type": "product",
+      "currency_consumer": "EUR",
+      "product_name": "Metallica shirt"
+    }
+  ]
+}'
+Using the response of this API, you can verify that your custom integration is working as expected by checking the
+totals.tax_strategy
+value in the response:
+{
+    "tax_exempt": false,
+    "transaction_type": "SALE",
+    "items": [
+        {
+            "tax_class": "AAA000",
+            "tax_method": "vat_included",
+            "item_price": 200,
+            "quantity": 1,
+            "shipping_address": {
+                "address_line_1": "Potsdamer Str. 7, 10785 Berlin",
+                "zip_code": "10785",
+                "city": "Berlin",
+                "country_code": "DE"
+            },
+            "shipping_origin": {
+                "address_line_1": "Potsdamer Str. 7, 10785 Berlin",
+                "zip_code": "10785",
+                "city": "Berlin",
+                "country_code": "DE"
+            },
+            "type": "product",
+            "currency_consumer": "EUR",
+            "product_name": "Metallica shirt",
+            "price_net": 199,
+            "price_tax": 1,
+            "price_line_item": 200,
+            "tax_rates": [
+                {
+                    "rate": 0,
+                    "amount": 1,
+                    "tax_name": "fixed amount custom tax",
+                    "country_code": "DE"
+                }
+            ]
+        }
+    ],
+    "totals": {
+        "subtotal": 200,
+        "grand_total": 200,
+        "tax_total": 1,
+        "shipping_total": 0,
+        "shipping_tax_amount": 0,
+        "tax_strategy": "custom",
+        "discount_total": 0
+    },
+}
+The
+totals.tax_strategy
+should be set to
+custom
+, which indicates that the NewStore platform was able to use the configured custom integration to calculate the taxes for this request. Getting a different strategy other than
+custom
+indicates that the custom integration setup is not working as expected and a fallback calculation strategy was used instead.
+Troubleshooting errors
+You can identify the failure scenarios by checking the
+fallback_error
+object in the response that would only be present when the original tax provider calculation fails and a fallback is needed to calculate the totals of the cart.
+An error sample is as follows:
+{
+   ...,
+    "totals": {
+       ...,
+        "tax_strategy": "fixedrate"
+    },
+    "fallback_error": {
+        "error_code": "taxes_provider_error_response",
+        "message": "CustomV1 request failed.",
+        "original_tax_provider": "custom"
+    }
+}
+The above
+fallback_error
+indicates that the NewStore platform faced an issue getting a response from the configured custom tax provider based on the example
+"error_code" : "taxes_provider_error_response"
+. You can use the
+error_code
+to get a high-level understanding of the problem with your custom integration because different values indicate different problems with the integration.
+Following are the possible values of the
+error_code
+and their meanings:
+Error Code:
+taxes_provider_invalid_credentials
+means that the underlying request to the custom API failed with a 401 response indicating that an authentication issue occurred due to invalid credentials. You can troubleshoot this issue by ensuring that your configurations contain the correct credentials needed to access your custom API.
+Error Code:
+taxes_provider_client_error_response
+means that the underlying request to the custom API failed with a 4XX response indicating that the custom API expects more data or that some of the data sent by the NewStore platform is deemed invalid by the API. You can troubleshoot this issue by adjusting your API to expect defined payloads in the
+Custom Tax Provider API v1
+.
+Error Code:
+taxes_provider_invalid_response
+means that the response returned by the custom API didn't pass the validations performed by the NewStore platform to ensure that the response contains the expected data defined in the
+Custom Tax Provider API v1
+. Such responses are ignored and the NewStore platform instead opts for triggering the fallback calculator. You can troubleshoot this issue by reviewing the
+Custom Tax Provider API v1
+and making sure that responses to the custom API are matching the expected response schema.
+Error Code:
+taxes_provider_error_response
+means that a generic network issue occurred, such as timeouts, bad gateway responses, or non-reachable URL. You can troubleshoot this issue by checking the logs to explore the root cause and address the issue.
+Logs
+In the cases where the
+error_code
+is not enough to determine the root cause of the issue, check the NewStore logs using the
+fallback_error.message
+key value. Use the
+fallback_error.message
+key value in your tests as a filter in your search to narrow down the logs. The logs have a detailed description of the underlying issue that occurred and would help you receive an in-depth understanding of the problem.
+It is recommended to check the logs in the following cases:
+To find out which fields of your custom API responses are not passing the NewStore validations
+To find out the root cause of the
+"error_code": "taxes_provider_error_response"
+response
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+Avalara
+configuration
+integration
+platform
+tax exemption
+tax provider
+tax rate
+taxes
+Vertex
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

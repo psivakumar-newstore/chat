@@ -1,0 +1,220 @@
+openapi: 3.0.3
+info:
+  title: Email Service
+  version: '1.0'
+  description: HTTP API for sending emails. It is only accessible from the shared VPCs.
+  contact:
+    name: Team Web Platform
+    email: team-web-platform@newstore.com
+    url: https://backstage.p.newstore.io/catalog/default/group/team-web-platform
+  x-audience: internal-company
+  x-api-id: a42788ea-d193-4eb7-bf2a-ba2c649b3f2e
+  x-domain-gateway-integration:
+    serviceName: E-mail Service
+servers:
+  - description: staging
+    url: http://email.web-platform.c.s.newstore.net
+  - description: production
+    url: http://email.web-platform.c.p.newstore.net
+tags:
+  - name: send-email
+    description: Endpoint for sending emails.
+  - name: validate-credentials
+    description: Endpoint for validation the credentials defined in config-api.
+paths:
+  /:
+    post:
+      summary: Sends an email
+      description: |
+        The email service creates an email out of the given request and
+        sends it via the tenant specific configured email provider.
+      operationId: createEmail
+      tags:
+        - send-email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/send-email-request'
+      parameters:
+        - in: header
+          required: true
+          name: Tenant
+          schema:
+            title: tenant
+            type: string
+        - in: header
+          required: false
+          name: Request ID
+          schema:
+            title: request_id
+            type: string
+      responses:
+        '200':
+          description: >
+            The email was either sent, the email feature is not activated
+
+            for the given tenant or sending was skipped due to an example email
+            address.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/responseMessage'
+                  - $ref: '#/components/schemas/responseMessageAndLog'
+        '400':
+          description: Bad request, missing recipient, subject or message.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseString'
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/responseMessage'
+                  - $ref: '#/components/schemas/responseString'
+        '502':
+          description: >
+            Bad gateway. The downstream email server returned an error. This
+            could indicate an issue
+
+            with the tenant's email configuration, or with the recipient's email
+            address or inbox.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '504':
+          description: >
+            Gateway timeout. Connection to the downstream email server timed
+            out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+  /validate-credentials:
+    post:
+      summary: Validate credentials
+      description: |
+        The email service validates the credentials given in the request.
+      operationId: createValidateCredentials
+      tags:
+        - validate-credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/validate-credentials-request'
+      parameters:
+        - in: header
+          required: true
+          name: Tenant
+          schema:
+            title: tenant
+            type: string
+        - in: header
+          required: false
+          name: Request ID
+          schema:
+            title: request_id
+            type: string
+      responses:
+        '200':
+          description: >
+            The credentials given could be tested and the result contains an
+            indicator
+
+            for success and possibly a message.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/responseSuccessAndMessage'
+        '400':
+          description: Bad request. Missing host or port.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseString'
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/responseMessage'
+                  - $ref: '#/components/schemas/responseString'
+components:
+  schemas:
+    responseMessage:
+      type: object
+      properties:
+        message:
+          type: string
+    responseMessageAndLog:
+      type: object
+      properties:
+        message:
+          type: string
+        logs:
+          type: object
+    responseString:
+      type: string
+    responseSuccessAndMessage:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+    send-email-request:
+      title: sendEmailRequest
+      type: object
+      properties:
+        subject:
+          type: string
+          description: The subject of the email. PII Token is accepted.
+          pattern: ^(NS-EU-[0-9A-Z]+-[0-9A-Z]+|.+)$
+        recipient:
+          type: string
+          description: The recipient of the email. PII Token is accepted
+          pattern: ^(NS-EU-[0-9A-Z]+-[0-9A-Z]+|.+)$
+        message:
+          type: string
+          description: The content or body of the email. PII Token is accepted
+          pattern: ^(NS-EU-[0-9A-Z]+-[0-9A-Z]+|.+)$
+        attachments:
+          type: array
+          description: >-
+            A list of URLs to download the attachements of the email from. PII
+            Token is accepted
+          items:
+            type: string
+            pattern: ^(NS-EU-[0-9A-Z]+-[0-9A-Z]+|.+)$
+    validate-credentials-request:
+      title: validateCredentialsRequest
+      type: object
+      required:
+        - smtp_host
+        - smtp_port
+      properties:
+        smtp_host:
+          type: string
+          description: SMTP hostname
+        smtp_port:
+          type: string
+          description: SMTP port
+          pattern: ^([0-9]+)$
+        smtp_user:
+          type: string
+          description: SMTP username
+        smtp_pass:
+          type: string
+          description: SMTP password

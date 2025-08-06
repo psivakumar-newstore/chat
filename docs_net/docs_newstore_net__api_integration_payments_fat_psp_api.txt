@@ -1,0 +1,386 @@
+Payment Provider Asynchronous API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Cash Drawer API
+Cash Drawer Reports API
+Cash settings
+Payment Provider Asynchronous API
+Gift Card API
+NewStore Checkout API
+NewStore Checkout Secrets API
+Payment Accounts API
+Payment Options API
+Payment troubleshoot API
+Adyen credentials API
+Refund API (order level, deprecated)
+Refund API (item level)
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+post
+Notify success
+post
+Notify failure
+API docs by Redocly
+Payment Provider Asynchronous API
+(
+0
+)
+Download OpenAPI specification
+:
+Download
+Allows integration adapters for asynchronuous
+PSPs
+to notify NewStore of updates for requested payment operations.
+Represents a submitted payment operation status that your payment provider updated.
+Use this resource if you are working with asynchronous payment providers, or providers that take a
+long time to respond, to notify NewStore about the completion of payment operations.
+Note:
+Payment provider integration is done using the
+Payment Provider Webhooks
+.
+For more information about the terminology, the integration procedure and use cases,
+refer to the
+integration guide
+.
+Important:
+All these requests contain an idempotency key. Make sure that you send the
+same
+response
+every time you receive a request with a given idempotency key.
+For example, if you receive 3 requests containing the idempotency key
+abcd
+, whether the request body
+has changed or not, you must give the same response to these 3 requests.
+Note:
+The defined baseUri is for illustration purposes only, edit it as needed.
+Notify success
+Notifies NewStore of a successful asynchronous call.
+path
+Parameters
+provider_name
+required
+string
+(
+Provider Name
+)
+The name of the payment provider.
+correlation_id
+required
+string
+(
+Correlation ID
+)
+The correlation id is the idempotency key (
+idempotency_key
+) provided in the initial call to the
+Payment Provider Webhooks
+.
+instrument_id
+required
+string
+(
+Instrument ID
+)
+The identifier of the instrument (
+identifier
+) provided in the initial call to the
+Payment Provider Webhooks
+.
+Request Body schema:
+application/json
+transactions
+Array of
+objects
+(
+A financial instrument transaction
+)
+A list of transactions that resulted from a successful operation. If the operation is asynchronous, this list is empty. To complete the request, use the Payment Provider Asynchronous API to notify NewStore of the outcome of the request.
+Array
+transaction_id
+required
+string
+non-empty
+The unique identifier of the transaction. It is recommended to assign a PSP-generated reference to this field instead of generating you own ID. This facilitates log analyses as the value directly corresponds to the PSP-owned transaction.
+instrument_id
+required
+string
+non-empty
+The integrator-owned identifier of the financial instrument.
+capture_amount
+number
+decimal places <= 2
+Default:
+0
+The
+change
+on the available-for-capture amount.
+refund_amount
+number
+decimal places <= 2
+Default:
+0
+The
+change
+on the available-to-refund amount.
+currency
+required
+string
+= 3 characters
+Currency in the ISO-4217-Alpha-3 character format
+https://www.iso.org/iso-4217-currency-codes.html
+.
+reason
+string
+Enum
+:
+"authorization"
+"revoke"
+"refund"
+"capture"
+The action that triggered this transaction.
+metadata
+object
+Extra information related to this transaction. As an integrator, you own this information. This field is treated as an opaque object by the NewStore platform but must follow the PCI-compliance guidelines. For example, you can use this field to store a Shopify order ID, an Adyen psp reference or non-sensitive information that should be displayed in NOM.
+payment_method
+string
+The payment method used for the transaction. The default possible values are: 'cash', 'credit_card', 'gift_card'. This value is a free field as it is ultimately the PSP's responsibility to define the available values.
+payment_wallet
+string
+The payment walled used for the transaction. For example, Apple Pay, Android Pay.
+created_at
+string
+<
+date-time
+>
+The timestamp when the transaction was created.
+processed_at
+string
+<
+date-time
+>
+The timestamp when the transaction was processed.
+Responses
+204
+The operation was successful.
+400
+Bad request. The request syntax/semantics is invalid. This is a non-retriable error.
+500
+Internal server error. The request failed but retrying with the same data may work.
+post
+/payment_providers/_success/{provider_name}/{correlation_id}/{instrument_id}
+/v0/d
+/payment_providers/_success/{provider_name}/{correlation_id}/{instrument_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"transactions"
+:
+[
+{
+"transaction_id"
+:
+"string"
+,
+"instrument_id"
+:
+"string"
+,
+"capture_amount"
+:
+0
+,
+"refund_amount"
+:
+0
+,
+"currency"
+:
+"str"
+,
+"reason"
+:
+"authorization"
+,
+"metadata"
+:
+{ }
+,
+"payment_method"
+:
+"string"
+,
+"payment_wallet"
+:
+"string"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"processed_at"
+:
+"2019-08-24T14:15:22Z"
+}
+]
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"error_code"
+:
+"internal_error"
+,
+"message"
+:
+"string"
+,
+"details"
+:
+{ }
+}
+Notify failure
+Notifies NewStore of a failed asynchronous operation.
+path
+Parameters
+provider_name
+required
+string
+(
+Provider Name
+)
+The name of the payment provider. This is the name that is configured as "name" in the Configuration Editor.
+correlation_id
+required
+string
+(
+Correlation ID
+)
+The correlation id is the idempotency key (
+idempotency_key
+) provided in the initial call to the
+Payment Provider Webhooks
+.
+instrument_id
+required
+string
+(
+Instrument ID
+)
+The identifier of the instrument (
+identifier
+) provided in the initial call to the
+Payment Provider Webhooks
+.
+Request Body schema:
+application/json
+error_code
+required
+string
+non-empty
+Enum
+:
+"internal_error"
+"retry_error"
+"instrument_error"
+"fraud_error"
+"rate_limit"
+"failed_command"
+"psp_api_error"
+An error type. You can use it to aggregate classes of errors.
+message
+required
+string
+non-empty
+Human readable message explaining the error.
+details
+object
+Metadata information that might be useful for debugging an error.
+Responses
+204
+The operation was successful.
+400
+Bad request. The request syntax/semantics is invalid. This is a non-retriable error.
+500
+Internal server error. The request failed but retrying with the same data may work.
+post
+/payment_providers/_failure/{provider_name}/{correlation_id}/{instrument_id}
+/v0/d
+/payment_providers/_failure/{provider_name}/{correlation_id}/{instrument_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"error_code"
+:
+"internal_error"
+,
+"message"
+:
+"string"
+,
+"details"
+:
+{ }
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"error_code"
+:
+"internal_error"
+,
+"message"
+:
+"string"
+,
+"details"
+:
+{ }
+}
+Previous
+Cash settings
+Next
+Gift Card API
+Copyright © 2025 NewStore, Inc.

@@ -1,0 +1,381 @@
+Event Stream Observability API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Event Stream Observability API
+Data provisioning Graphql query API
+Event stream configuration API
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+Get information about published events.
+API docs by Redocly
+Event Stream Observability API
+(
+1.0
+)
+Download OpenAPI specification
+:
+Download
+The Event Stream Observability API can be used to monitor existing event stream webhooks and S3 integrations.
+Use the
+Event stream configuration API
+to setup 
+and manage your event stream integrations.
+Get information about published events.
+Get information about published events or events that failed to be published to a tenant's event stream integrations.
+query
+Parameters
+from
+string
+<
+date-time
+>
+Example:
+from=2022-12-31T23:59:59Z
+Only return events which were attempted to be published after this date.
+to
+string
+<
+date-time
+>
+Example:
+to=2023-02-01T09:12:23Z
+Only return events which were attempted to be published before this date.
+event_name
+string
+Example:
+event_name=order.created
+The name of an event stream event.
+integration_id
+string
+Example:
+integration_id=my-integration-12345
+The ID of event stream integration.
+status
+string
+Example:
+status=success
+The status of the publishing attempt (either 'success' or 'failure').
+domain_entity_id
+string
+Example:
+domain_entity_id=f47ac10b-58cc-4372-a567-0e02b2c3d479
+The ID of a domain entity, for example an order ID.
+domain_entity_type
+string
+Example:
+domain_entity_type=order
+The name of a domain entity, for example 'order' or 'payment_account'.
+Responses
+200
+A list of events published to a tenant's event stream integration.
+get
+/published-events
+/api/v1/org/integrations
+/published-events
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"integration_id"
+:
+"example-integration-123"
+,
+"integration_type"
+:
+"permanent"
+,
+"target"
+:
+"webhook"
+,
+"status"
+:
+"SUCCESS"
+,
+"attempted_at"
+:
+"2023-01-13T00:59:59.718Z"
+,
+"retries_remaining"
+:
+10
+,
+"entity_id"
+:
+"c01234c4-6543-4ea0-8900-63e26b4faf12"
+,
+"domain_entity_id"
+:
+"e01234c4-6543-4ea0-0001-63e26b4faf45"
+,
+"domain_entity_type"
+:
+"order"
+,
+"event_name"
+:
+"fulfillment_request.assigned"
+,
+"url"
+:
+"
+https://example.com/eventstream
+"
+,
+"response_time_ms"
+:
+123
+}
+,
+{
+"integration_id"
+:
+"example-integration-123"
+,
+"integration_type"
+:
+"permanent"
+,
+"target"
+:
+"webhook"
+,
+"status"
+:
+"FAILURE"
+,
+"attempted_at"
+:
+"2023-01-15T01:59:59.756Z"
+,
+"retries_remaining"
+:
+9
+,
+"entity_id"
+:
+"e01234c4-6543-4ea0-0001-63e26b4faf45"
+,
+"domain_entity_id"
+:
+"e01234c4-6543-4ea0-0001-63e26b4faf45"
+,
+"domain_entity_type"
+:
+"order"
+,
+"event_name"
+:
+"order.created"
+,
+"url"
+:
+"
+https://example.com/eventstream
+"
+,
+"response"
+:
+{
+"body"
+:
+"Temporary unavailable due to maintenance."
+,
+"code"
+:
+503
+}
+,
+"response_time_ms"
+:
+123
+}
+,
+{
+"integration_id"
+:
+"s3-export-001"
+,
+"integration_type"
+:
+"permanent"
+,
+"target"
+:
+"s3"
+,
+"status"
+:
+"FAILURE"
+,
+"attempted_at"
+:
+"2023-01-15T01:59:59.618Z"
+,
+"retries_remaining"
+:
+0
+,
+"entity_id"
+:
+"d21234c4-6543-4ea0-1234-63e26b4faf13"
+,
+"domain_entity_id"
+:
+"e01234c4-6543-4ea0-0001-63e26b4faf45"
+,
+"domain_entity_type"
+:
+"order"
+,
+"event_name"
+:
+"invoice.created"
+,
+"filename"
+:
+"/tmp/dodici-demo_s3-export-0015033518640050790148/1773479406750-data-1234a.export"
+,
+"response"
+:
+{
+"body"
+:
+"Invalid access credentials."
+,
+"code"
+:
+403
+}
+}
+,
+{
+"integration_id"
+:
+"s3-export-002-temp"
+,
+"integration_type"
+:
+"temporary"
+,
+"target"
+:
+"s3"
+,
+"status"
+:
+"SUCCESS"
+,
+"attempted_at"
+:
+"2023-02-07T10:19:53.214Z"
+,
+"retries_remaining"
+:
+10
+,
+"entity_id"
+:
+"b01234c4-6543-4ea0-5678-63e26b4faf14"
+,
+"domain_entity_id"
+:
+"b01234c4-6543-4ea0-5678-63e26b4faf14"
+,
+"domain_entity_type"
+:
+"order"
+,
+"event_name"
+:
+"payment_account.amount_captured"
+,
+"filename"
+:
+"/tmp/dodici-demo_s3-export-002-temp7033518640050790148/1773479406751-data-4567b.export"
+}
+,
+{
+"integration_id"
+:
+"example-integration-234"
+,
+"integration_type"
+:
+"permanent"
+,
+"target"
+:
+"webhook"
+,
+"status"
+:
+"SUCCESS"
+,
+"attempted_at"
+:
+"2023-08-16T00:59:59.718Z"
+,
+"retries_remaining"
+:
+10
+,
+"entity_id"
+:
+"d01234e4-6543-4ea0-1234-63e26b4faf88"
+,
+"domain_entity_id"
+:
+"d01234e4-6543-4ea0-1234-63e26b4faf88"
+,
+"domain_entity_type"
+:
+"customer"
+,
+"event_name"
+:
+"customer.created"
+,
+"url"
+:
+"
+https://example.com/eventstream
+"
+,
+"response_time_ms"
+:
+99
+}
+]
+Previous
+Store operations
+Next
+Data provisioning Graphql query API
+Copyright © 2025 NewStore, Inc.

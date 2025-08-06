@@ -1,0 +1,1877 @@
+openapi: 3.0.0
+info:
+  title: Associate App API
+  version: '0'
+  description: BFF for the Associate App
+servers:
+  - url: https://dodici.x.newstore.net/v0/c
+paths:
+  /customer_orders:
+    get:
+      description: List orders.
+      summary: List orders.
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: Lists all orders, including their respective payment history.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_customer_orders_res'
+        '500':
+          description: Internal Server Error.
+      operationId: ListOrders
+  /customer_orders/{id}:
+    get:
+      description: Get an order.
+      summary: Get an order.
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: The requested order, including its related payment history.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_customer_order_by_id_res'
+        '400':
+          description: Something was wrong with the request.
+        '404':
+          description: No customer order was found with the given sales order ID.
+        '500':
+          description: Internal Server Error.
+      operationId: GetOrder
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: A sales order ID.
+  /user_configuration:
+    get:
+      description: Gets the configuration of the current user.
+      summary: Gets the configuration of the current user.
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: >-
+            Returns the data and permissions of the associate itself, its
+            associated store and the tenants returns configuration.
+          content:
+            application/json:
+              example:
+                associate:
+                  id: 4vpg8bG5iilWGkyCkUpwb0
+                  first_name: Jay
+                  last_name: DoubleYou
+                  email: jay.doubleyou@example.com
+                  telephone_number: 202-111-2367
+                  store_id: 5vpg8bG5iilWGkyCkUpwb0
+                  permissions:
+                    - cash_management_settings
+                    - cash_management_operations
+                store:
+                  label: US01
+                  name: Boston
+                capabilities:
+                  mixedCart: false
+                  cashManagement: false
+                  offlineMode: false
+                  CashForEndlessAisleOrdersEnabled: false
+                printer_location:
+                  uuid: d7afddc6-a03f-466f-97f5-bf22291a9244
+                  name: Default printing location
+                return_process_configuration:
+                  return_reasons:
+                    - code: 1
+                      reason: Too small
+                      reasons:
+                        en: Too small
+                        fr: Too small (fr)
+                    - code: 2
+                      reason: Poor quality
+                      reasons:
+                        en: Too small
+                        fr: Too small (fr)
+                  quality_inspection_options:
+                    - code: 5
+                      option: Obvious stains
+                  blind_return_enabled: true
+                manager_approval_configuration:
+                  restricted_payment_methods:
+                    - cash
+                    - manual_credit_card
+                commerce_components:
+                  template_render_lambda_url: https://abc.execute-api.us-east-1.amazonaws.com/env
+                  gift_card_product_id: GC-NEWSTORE
+                  gift_card_regexp: ^(((?!UT-|210000|1934).)\\d{11,14})$
+                  barcode_types:
+                    - Code128
+                    - Code39
+                    - QR
+                    - UPCA
+                  document_printer_types:
+                    sales_receipt: labelPrinter
+                    refund_note: labelPrinter
+                    shipping_label: labelPrinter
+                    packing_slip: labelPrinter
+                    invoice: labelPrinter
+                    exchange_receipt: labelPrinter
+                    return_receipt: labelPrinter
+                    default: labelPrinter
+                ui_configurations:
+                  display_product_identifier: product_id
+                  show_preorders_filter: false
+                  suggested_email_domains:
+                    - gmail.com
+                    - yahoo.com
+                    - hotmail.com
+                    - aol.com
+                  tax_exemption_enabled: false
+                  seconds_until_logout_on_inactivity: 300
+              schema:
+                $ref: '#/components/schemas/get_user_configuration_resp'
+        '400':
+          description: >
+            Bad request - Request data is invalid.
+
+            Use the error codes for error handling. The error messages should
+            never
+
+            be used for error handling as they can change at any time.
+
+
+            **Error codes**
+
+
+            * `missing_store_assignment`
+
+            * `call_validation_error`
+        '404':
+          description: |
+            No associate or store information was found.
+
+            **Error codes**
+
+            * `employee_not_found`
+            * `store_not_found`
+        '500':
+          description: Internal Server Error.
+      operationId: GetConfiguration
+      parameters:
+        - name: locale
+          in: query
+          description: >
+            A language-region pair in form of
+
+            <2 letter language code name from ISO 639-1>-<2 letter country
+            subdivision code from ISO 3166-2>
+
+            identifier used to differentiate translated content in API
+            responses.
+          schema:
+            type: string
+  /user_configuration/_set_printer_location:
+    post:
+      description: Sets the default printer location of the associate.
+      summary: Sets the default printer location of the associate.
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: OK - The location is set.
+          content:
+            application/json:
+              example:
+                printer_location:
+                  uuid: d7afddc6-a03f-466f-97f5-bf22291a9244
+                  name: Default Printing Station
+              schema:
+                $ref: '#/components/schemas/post_set_printer_location_res'
+        '400':
+          description: Bad request - Request data is invalid.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: Temporarily not available - service not available, try again later.
+      operationId: SetPrinterLocation
+      requestBody:
+        content:
+          application/json:
+            example:
+              printer_location_id: d7afddc6-a03f-466f-97f5-bf22291a9244
+            schema:
+              $ref: '#/components/schemas/post_set_printer_location_req'
+        required: true
+  /identity_configuration:
+    get:
+      description: Get identity configuration
+      summary: >
+        Retrieves the identity configuration of the tenant. It contains the
+        information required to
+
+        allow the Associate App to login the users.
+      responses:
+        '200':
+          description: Returns the identity provider and its configuration.
+          content:
+            application/json:
+              example:
+                config:
+                  issuer: https://id.t.newstore.net/auth/realms/dodici
+                  third_party_providers:
+                    - alias: newstore-auth0
+                      provider: auth0
+                    - alias: newstore-ad
+                      provider: microsoft-azure-ad
+                provider: keycloak
+              schema:
+                $ref: '#/components/schemas/get_identity_configuration_resp'
+        '500':
+          description: Internal Server Error.
+        '503':
+          description: Temporarily not available - service not available, try again later.
+      operationId: GetIdentityConfiguration
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    customer_address:
+      type: object
+      title: Customer address
+      properties:
+        title:
+          description: e.g. Dr., Prof., Pres., ...
+          type: string
+        suffix:
+          description: e.g. Jr., Sr., III, ...
+          type: string
+        salutation:
+          description: e.g. Mr., Ms., Mrs., ...
+          type: string
+        first_name:
+          type: string
+        second_name:
+          type: string
+        last_name:
+          type: string
+        address_line_1:
+          type: string
+        address_line_2:
+          type: string
+        province:
+          type: string
+        state:
+          type: string
+        zip_code:
+          type: string
+          maxLength: 32
+        city:
+          type: string
+        country_code:
+          description: >-
+            Country code for this address. Must be
+ISO-3166
+            reference
+type: string
+          enum:
+            - AD
+            - AE
+            - AF
+            - AG
+            - AI
+            - AL
+            - AM
+            - AO
+            - AQ
+            - AR
+            - AS
+            - AT
+            - AU
+            - AW
+            - AX
+            - AZ
+            - BA
+            - BB
+            - BD
+            - BE
+            - BF
+            - BG
+            - BH
+            - BI
+            - BJ
+            - BL
+            - BM
+            - BN
+            - BO
+            - BQ
+            - BR
+            - BS
+            - BT
+            - BV
+            - BW
+            - BY
+            - BZ
+            - CA
+            - CC
+            - CD
+            - CF
+            - CG
+            - CH
+            - CI
+            - CK
+            - CL
+            - CM
+            - CN
+            - CO
+            - CR
+            - CU
+            - CV
+            - CW
+            - CX
+            - CY
+            - CZ
+            - DE
+            - DJ
+            - DK
+            - DM
+            - DO
+            - DZ
+            - EC
+            - EE
+            - EG
+            - EH
+            - ER
+            - ES
+            - ET
+            - FI
+            - FJ
+            - FK
+            - FM
+            - FO
+            - FR
+            - GA
+            - GB
+            - GD
+            - GE
+            - GF
+            - GG
+            - GH
+            - GI
+            - GL
+            - GM
+            - GN
+            - GP
+            - GQ
+            - GR
+            - GS
+            - GT
+            - GU
+            - GW
+            - GY
+            - HK
+            - HM
+            - HN
+            - HR
+            - HT
+            - HU
+            - ID
+            - IE
+            - IL
+            - IM
+            - IN
+            - IO
+            - IQ
+            - IR
+            - IS
+            - IT
+            - JE
+            - JM
+            - JO
+            - JP
+            - KE
+            - KG
+            - KH
+            - KI
+            - KM
+            - KN
+            - KP
+            - KR
+            - KW
+            - KY
+            - KZ
+            - LA
+            - LB
+            - LC
+            - LI
+            - LK
+            - LR
+            - LS
+            - LT
+            - LU
+            - LV
+            - LY
+            - MA
+            - MC
+            - MD
+            - ME
+            - MF
+            - MG
+            - MH
+            - MK
+            - ML
+            - MM
+            - MN
+            - MO
+            - MP
+            - MQ
+            - MR
+            - MS
+            - MT
+            - MU
+            - MV
+            - MW
+            - MX
+            - MY
+            - MZ
+            - NA
+            - NC
+            - NE
+            - NF
+            - NG
+            - NI
+            - NL
+            - 'NO'
+            - NP
+            - NR
+            - NU
+            - NZ
+            - OM
+            - PA
+            - PE
+            - PF
+            - PG
+            - PH
+            - PK
+            - PL
+            - PM
+            - PN
+            - PR
+            - PS
+            - PT
+            - PW
+            - PY
+            - QA
+            - RE
+            - RO
+            - RS
+            - RU
+            - RW
+            - SA
+            - SB
+            - SC
+            - SD
+            - SE
+            - SG
+            - SH
+            - SI
+            - SJ
+            - SK
+            - SL
+            - SM
+            - SN
+            - SO
+            - SR
+            - SS
+            - ST
+            - SV
+            - SX
+            - SY
+            - SZ
+            - TC
+            - TD
+            - TF
+            - TG
+            - TH
+            - TJ
+            - TK
+            - TL
+            - TM
+            - TN
+            - TO
+            - TR
+            - TT
+            - TV
+            - TW
+            - TZ
+            - UA
+            - UG
+            - UM
+            - US
+            - UY
+            - UZ
+            - VA
+            - VC
+            - VE
+            - VG
+            - VI
+            - VN
+            - VU
+            - WF
+            - WS
+            - YE
+            - YT
+            - ZA
+            - ZM
+            - ZW
+        phone:
+          type: string
+    customer_order:
+      title: Customer order
+      type: object
+      properties:
+        sales_order_id:
+          description: Sales order identifier used internally.
+          type: string
+        sales_order_external_id:
+          description: Sales order identifier used in external system.
+          type: string
+        status:
+          description: Status of the order.
+          type: string
+          enum:
+            - pending
+            - routing
+            - picking
+            - mispick
+            - packing
+            - mispack
+            - labeling
+            - ready
+            - shipped
+            - in_transit
+            - out_for_delivery
+            - delivered
+            - returned
+            - canceled
+            - partial_returned
+            - complete
+            - failed
+            - accepted
+            - partially_shipped
+            - rejected
+            - partially_rejected
+        billing_address:
+          description: Customer's billing address.
+          $ref: '#/components/schemas/customer_address'
+        shipping_address:
+          description: Customer's shipping address.
+          $ref: '#/components/schemas/customer_address'
+        channel_type:
+          description: Type of the channel the order was placed in.
+          type: string
+          enum:
+            - ''
+            - web
+            - mobile
+            - mobile_ios
+            - mobile_android
+            - store
+        placement_location:
+          type: object
+          description: Contains the data of the store where the order was placed.
+          properties:
+            id:
+              description: Identifier of the store where the order was placed.
+              type: string
+            label:
+              description: Label of the store where the order was placed.
+              type: string
+        consumer:
+          type: object
+          properties:
+            email:
+              description: Email of the customer who placed this order.
+              type: string
+            language:
+              description: Language code to be used in communication with the customer.
+              maxLength: 2
+              type: string
+            name:
+              description: Name of the customer who placed this order.
+              type: string
+            phone_number:
+              description: Phone number of the customer who placed this order.
+              type: string
+            id:
+              type: string
+              description: Identifier used to identify a customer.
+        currency_code:
+          description: Currency code shown and billed to the customer.
+          maxLength: 3
+          type: string
+        placed_at:
+          description: The time the sales order was placed in NewStore system.
+          format: date-time
+          type: string
+        totals:
+          description: The total prices related to this order.
+          type: object
+          properties:
+            subtotal:
+              type: number
+            subtotal_gross:
+              type: number
+            subtotal_net:
+              type: number
+            shipping_and_handling:
+              type: number
+            taxes:
+              type: number
+            grand_total:
+              type: number
+            discount:
+              type: number
+        refunds:
+          description: Contains all refunds to this order.
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              status:
+                type: string
+                enum:
+                  - pending
+                  - refunded
+                  - failed
+              total_amount:
+                type: number
+                description: Total amount refunded including all shipping and taxes.
+              shipping_price:
+                type: number
+                description: The net shipping price that was refunded with that refund.
+              shipping_tax:
+                type: number
+                description: The shipping tax that was refunded with that refund.
+              shipping_is_refunded:
+                description: >-
+                  Indicates whether the shipping costs associated to this items
+                  were refunded.
+                type: boolean
+              return_fee:
+                type: number
+                description: The return fee that was refunded with that refund.
+        products:
+          description: Products information parts of this order flattened.
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                description: Unique identifier of the product.
+                type: string
+              sales_order_item_uuid:
+                description: The UUID of the Sales Order Item
+                type: string
+                minLength: 36
+                maxLength: 36
+              name:
+                description: Human-readable name of the product.
+                type: string
+              image_url:
+                description: URL of the main image of the product.
+                type: string
+              epc:
+                description: Electronic Product Code.
+                type: string
+              price_net:
+                description: >-
+                  Net price for total quantity of the product, after applying
+                  all discounts.
+                type: number
+              price_gross:
+                description: >-
+                  Gross price for total quantity of the product, after applying
+                  all discounts.
+                type: number
+              price_tax:
+                description: Tax price.
+                type: number
+              price_catalog:
+                description: Original price as stored in the product catalog.
+                type: number
+              shipping_cost:
+                description: Shipping price of this product.
+                type: number
+              color:
+                type: string
+                description: The color of the product.
+              size:
+                type: string
+                description: The size of the product.
+              variation_attribute_1_value:
+                type: string
+              variation_attribute_2_value:
+                type: string
+              shipment_id:
+                description: Unique identifier of the shipment.
+                type: string
+              fulfillment_location:
+                type: string
+                description: The location from where the product was fulfilled.
+              fulfillment_type:
+                type: string
+                description: The type of fulfillment.
+                enum:
+                  - same_day_delivery
+                  - traditional_carrier
+                  - in_store_pick_up
+                  - in_store_handover
+                  - ''
+              refund:
+                type: object
+                description: Contains information if a product was refunded.
+                properties:
+                  price:
+                    type: number
+                    description: >-
+                      The net price that was refunded for all quantities of this
+                      item.
+                  tax:
+                    type: number
+                    description: The tax that was refunded for all quantities of this item.
+                  shipping_price:
+                    type: number
+                    description: >-
+                      The shipping price that was refunded for all quantities of
+                      this item.
+                  shipping_tax:
+                    type: number
+                    description: >-
+                      The shipping tax that was refunded for all quantities of
+                      this item.
+              status:
+                description: Overall processing and delivery status of this product.
+                type: string
+                enum:
+                  - pending
+                  - routing
+                  - picking
+                  - mispick
+                  - packing
+                  - mispack
+                  - labeling
+                  - ready
+                  - shipped
+                  - cannot_fulfill
+                  - refused
+                  - in_transit
+                  - out_for_delivery
+                  - delivered
+                  - returned
+                  - canceled
+                  - accepted
+              activities:
+                description: Product's status activities.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    created_at:
+                      description: >-
+                        The time the activity was recorded, this can be null in
+                        case of canceled activity.
+                      format: date-time
+                      type: string
+                      nullable: true
+                    name:
+                      description: The name of the activity.
+                      type: string
+                      enum:
+                        - pending
+                        - item_swapped
+                        - new
+                        - routing
+                        - picking
+                        - mispick
+                        - packing
+                        - mispack
+                        - cannot_fulfill
+                        - refused
+                        - labeling
+                        - ready
+                        - shipped
+                        - delivered
+                        - rejected
+                        - notification
+                        - returned
+                        - pending_declined
+                        - pending_timeout
+                        - canceled
+                        - accepted
+                    metadata:
+                      type: object
+                      properties:
+                        consumer_name:
+                          description: The name of the customer that placed the order.
+                          type: string
+                        associate_name:
+                          description: The name of the store associate.
+                          type: string
+                        associate_id:
+                          description: The ID of the store associate
+                          type: string
+                        notification_title:
+                          description: The notification title sent to customer.
+                          type: string
+                        notification_message:
+                          description: The notification message sent to customer.
+                          type: string
+                        cancellation_reason_type:
+                          type: string
+                          description: The type of cancellation.
+                          enum:
+                            - manual_cancellation
+                            - error
+                            - insufficient_stock
+                        cancellation_reason:
+                          description: >-
+                            The cancellation reason in case this is a
+                            cancellation activity.
+                          type: string
+                        cancellation_notes:
+                          description: >-
+                            The cancellation notes in case this is a
+                            cancellation activity.
+                          type: string
+                        return_code:
+                          description: Return code related to the return reason.
+                          type: integer
+                        return_reason:
+                          description: >-
+                            The return reason of the product, in case it was
+                            returned.
+                          type: string
+                        return_store_id:
+                          description: >-
+                            The id of the store where product was returned, in
+                            case it was returned.
+                          type: string
+                        distribution_location:
+                          description: The distribution location the order was routed to.
+                          type: string
+                        placement_location:
+                          type: object
+                          description: >-
+                            Contains the data of the store where the order was
+                            placed.
+                          properties:
+                            id:
+                              description: >-
+                                Identifier of the store where the order was
+                                placed.
+                              type: string
+                            label:
+                              description: Label of the store where the order was placed.
+                              type: string
+              discounts:
+                description: All discounts and promotions assigned for this product.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    price_adjustment:
+                      description: Monetary value that is subtracted from item price.
+                      type: number
+                    type:
+                      description: Type of the discount.
+                      type: string
+                      enum:
+                        - fixed
+                        - percentage
+                    value:
+                      description: >-
+                        Value which was subtracted, can be either monetary or
+                        percent value.
+                      type: number
+                    coupon_code:
+                      description: Coupon code which was used for discount.
+                      type: string
+                      nullable: true
+                      maxLength: 256
+                    reason:
+                      description: Description of the promotion that was applied.
+                      type: string
+                      maxLength: 256
+                    level:
+                      description: >-
+                        Indicates which level the discount was applied to.
+                        Discounts can be applied either on this specific 'item'
+                        only, on the total value of the 'order', or on the
+                        'shipping' rate.
+                      type: string
+                      enum:
+                        - item
+                        - order
+                        - shipping
+              extended_attributes:
+                description: >-
+                  Tenant defined collection of key/values for extended
+                  information of this item.
+                type: array
+                items:
+                  type: object
+                  required:
+                    - name
+                    - value
+                  maxProperties: 2
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+        shipments:
+          description: Shipments Information
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              carrier:
+                description: Shipping carrier selected at order placement (e.g. 'FedEx')
+                type: string
+              method:
+                description: Shipping method selected at order placement.
+                type: string
+                enum:
+                  - traditional_carrier
+                  - same_day_delivery
+                  - in_store_pick_up
+                  - in_store_handover
+              status:
+                description: Delivery status of the `Shipment` for this `Order`.
+                type: string
+                enum:
+                  - in_progress
+                  - in_transit
+                  - delivered
+                  - rejected
+              tracking_code:
+                description: Tracking code received from external carrier API.
+                type: string
+              subtotal:
+                type: number
+              taxes:
+                type: number
+              grand_total:
+                type: number
+              fulfillment_location:
+                description: >-
+                  Identifier of the fulfillment location this shipment is
+                  related to.
+                type: string
+              activities:
+                description: Shipment's status activities
+                type: array
+                items:
+                  type: object
+                  properties:
+                    created_at:
+                      description: The time the activity was recorded.
+                      format: date-time
+                      type: string
+                    name:
+                      description: The name of the activity.
+                      type: string
+                      enum:
+                        - pending
+                        - awaiting_pickup
+                        - in_transit
+                        - out_for_delivery
+                        - delivered
+                        - delivery_failed
+                        - rejected
+                        - pending_created
+                    metadata:
+                      type: object
+                      properties:
+                        associate_name:
+                          description: The name of the store associate.
+                          type: string
+              documents:
+                type: array
+                description: >-
+                  An array of document objects containing all documents
+                  belonging to an shipment of a customer order.
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum:
+                        - invoice
+                        - return_form
+                        - return_label
+                        - packing_slip
+                        - shipping_label
+                        - commercial_invoice
+                        - commercial_return_invoice
+                        - exchange_receipt
+                    permalink:
+                      type: string
+                  required:
+                    - type
+        payments:
+          type: array
+          items:
+            type: object
+            description: >-
+              Contains the payment information. Can be used for multiple
+              payments against multiple credit sources (i.e. store credit + CC)
+            properties:
+              activities:
+                type: array
+                description: >-
+                  A list of activities. For example authorization-pending,
+                  authorization-authorized, capture-captured...
+                items:
+                  type: object
+                  properties:
+                    created_at:
+                      description: >-
+                        The time the activity was recorded, this can be null in
+                        case canceled activity.
+                      format: date-time
+                      type: string
+                      nullable: true
+                    name:
+                      type: string
+                      description: The name of the activity.
+                      enum:
+                        - authorization-pending
+                        - authorization-authorized
+                        - authorization-failed
+                        - capture-pending
+                        - capture-captured
+                        - capture-failed
+                        - refund-pending
+                        - refund-refunded
+                        - refund-failed
+                    metadata:
+                      type: object
+                      properties:
+                        amount:
+                          type: number
+                          description: The monetary value of the activity.
+                        currency:
+                          type: string
+                          description: Currency code shown and billed to the consumer.
+                          maxLength: 3
+                        transaction_id:
+                          type: string
+                          nullable: true
+                          description: >-
+                            The external identifier of the transaction generated
+                            by the payment provider, if available.
+                        error_message:
+                          description: >-
+                            Details the error that happened during the payment,
+                            if any. This message is displayed in Omnichannel
+                            Manager. Is filled only in *-failed cases.
+                          type: string
+                          nullable: true
+                        error_code:
+                          description: >-
+                            The external code of the error. Is filled only in
+                            *-failed cases.
+                          type: string
+                          nullable: true
+              id:
+                type: string
+                description: An identifier of the payment.
+              amount:
+                type: number
+                description: The monetary value of the payment.
+              status:
+                type: string
+                description: The status of the last activity on the Payment.
+                enum:
+                  - authorization-pending
+                  - authorization-authorized
+                  - authorization-failed
+                  - capture-pending
+                  - capture-captured
+                  - capture-failed
+                  - refund-pending
+                  - refund-refunded
+                  - refund-failed
+              currency:
+                description: >-
+                  The currency of the amount as 3 character ISO-4217 code.
+                  Example USD, EUR.
+                maxLength: 3
+                type: string
+              category:
+                type: string
+                description: >-
+                  Describes if it is a Payment (authorization or capture) or
+                  Refund.
+              date:
+                description: The time the last activity was made on the Payment.
+                format: date-time
+                type: string
+              psp:
+                type: string
+                description: >-
+                  The payment service provider (PSP). For example, stripe,
+                  vzero, braintree.
+              method:
+                description: >-
+                  The method customer paid for the order. For example,
+                  CreditCard/PayPal/ApplePay.
+                type: string
+              payment_information:
+                type: string
+                nullable: true
+                description: >-
+                  Some normalized payment information. For example, the last 4
+                  digits of the card number. Note: The content and structure of
+                  this property is not final and might change.
+        documents:
+          oneOf:
+            - type: string
+              nullable: true
+              description: >-
+                An array of document objects containing all documents belonging
+                to an customer order.
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum:
+                      - refund_note
+                      - sales_receipt
+                      - shipping_label
+                      - packing_slip
+                      - invoice
+                      - exchange_receipt
+                  permalink:
+                    type: string
+                required:
+                  - type
+        is_net:
+          description: Flag to distinguish between gross or net priced orders.
+          type: boolean
+          default: true
+        discounted:
+          description: Identifies if this order is a discounted order.
+          type: boolean
+          default: false
+        is_shipping_address_overwritten:
+          description: Identifies if the shipping address is overwritten for this order.
+          type: boolean
+          default: false
+        exchanged_for:
+          description: >-
+            The related order id of the order which this order was exchanged
+            for.
+          type: array
+          items:
+            type: object
+            properties:
+              sales_order_uuid:
+                type: string
+                minLength: 36
+                maxLength: 36
+              external_id:
+                type: string
+        exchanged_from:
+          description: >-
+            The related order id of the order which this order was exchanged
+            from.
+          type: object
+          properties:
+            sales_order_uuid:
+              type: string
+              minLength: 36
+              maxLength: 36
+            external_id:
+              type: string
+        extended_attributes:
+          description: >-
+            Tenant defined collection of key/values for extended information of
+            this order.
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - value
+            maxProperties: 2
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+    payment_history:
+      title: Payment history
+      type: object
+      properties:
+        payments:
+          type: array
+          items:
+            type: object
+            description: >-
+              Contains the payment information. Can be used for multiple
+              payments against multiple credit sources (i.e. store credit + CC)
+            properties:
+              activities:
+                type: array
+                description: >-
+                  A list of activities. For example authorization-pending,
+                  authorization-authorized, capture-captured...
+                items:
+                  type: object
+                  properties:
+                    correlation_id:
+                      type: string
+                      description: >-
+                        A unique key that is used for an operation to match
+                        activities together.
+                    created_at:
+                      description: >-
+                        The time the activity was recorded, this can be null in
+                        case canceled activity.
+                      format: date-time
+                      type: string
+                      nullable: true
+                    name:
+                      type: string
+                      description: The name of the activity.
+                      enum:
+                        - authorization-pending
+                        - authorization-authorized
+                        - authorization-failed
+                        - capture-pending
+                        - capture-captured
+                        - capture-failed
+                        - refund-pending
+                        - refund-refunded
+                        - refund-failed
+                        - credit-issued
+                        - credit-voided
+                        - voiding-pending
+                        - voiding-failed
+                    metadata:
+                      type: object
+                      properties:
+                        amount:
+                          type: number
+                          description: The monetary value of the activity.
+                        currency:
+                          type: string
+                          description: Currency code shown and billed to the consumer.
+                          maxLength: 3
+                        transaction_id:
+                          type: string
+                          nullable: true
+                          description: >-
+                            The external identifier of the transaction generated
+                            by the payment provider, if available.
+                        error_message:
+                          description: >-
+                            Details the error that happened during the payment,
+                            if any. This message is displayed in Omnichannel
+                            Manager. Is filled only in *-failed cases.
+                          type: string
+                          nullable: true
+                        error_code:
+                          description: >-
+                            The external code of the error. Is filled only in
+                            *-failed cases.
+                          type: string
+                          nullable: true
+              id:
+                type: string
+                description: An identifier of the payment.
+              amount:
+                type: number
+                description: The monetary value of the payment.
+              status:
+                type: string
+                description: The status of the last activity on the Payment.
+                enum:
+                  - authorization-pending
+                  - authorization-authorized
+                  - authorization-failed
+                  - capture-pending
+                  - capture-captured
+                  - capture-failed
+                  - refund-pending
+                  - refund-refunded
+                  - refund-failed
+              currency:
+                description: >-
+                  The currency of the amount as 3 character ISO-4217 code.
+                  Example USD, EUR.
+                maxLength: 3
+                type: string
+              category:
+                type: string
+                description: >-
+                  Describes if it is a Payment (authorization or capture) or
+                  Refund.
+              date:
+                description: The time the last activity was made on the Payment.
+                format: date-time
+                type: string
+              psp:
+                type: string
+                description: >-
+                  The payment service provider (PSP). For example, stripe,
+                  vzero, braintree.
+              method:
+                description: >-
+                  The method customer paid for the order. For example,
+                  CreditCard/PayPal/ApplePay.
+                type: string
+              payment_information:
+                type: string
+                nullable: true
+                description: >-
+                  Any payment information related to the payment method used.
+                  For example, the last 4 digits of the credit card number.
+    paginated_res:
+      type: object
+      description: Contains default fields for paginatable APIs.
+      required:
+        - count
+        - total
+        - offset
+        - prev_url
+        - next_url
+      properties:
+        count:
+          description: Contains the count of the contained array.
+          type: integer
+        total:
+          description: >-
+            Contains the total count of documents. Will be null if the API is
+            not able to determin a total count.
+          type: integer
+          nullable: true
+        offset:
+          description: Contains the current offset.
+          type: integer
+        prev_url:
+          description: >-
+            An URI that can be used to get the previous page. Will be null if
+            the current page is the first page.
+          type: string
+          format: uri
+          nullable: true
+        next_url:
+          description: >-
+            An URI that can be used to get the next page. Will be null if the
+            current page is the last page.
+          type: string
+          format: uri
+          nullable: true
+    get_customer_orders_res:
+      title: Customer orders including payment history
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/customer_order'
+              - $ref: '#/components/schemas/payment_history'
+        pagination_info:
+          $ref: '#/components/schemas/paginated_res'
+        field_ranges:
+          type: object
+          properties:
+            placed_at:
+              type: object
+              properties:
+                min:
+                  type: number
+                max:
+                  type: number
+                type:
+                  type: string
+            totals.grand_total:
+              type: object
+              properties:
+                min:
+                  type: number
+                max:
+                  type: number
+                type:
+                  type: string
+            status:
+              type: object
+              properties:
+                values:
+                  type: array
+                  items:
+                    type: string
+                type:
+                  type: string
+            channel_type:
+              type: object
+              properties:
+                values:
+                  type: array
+                  items:
+                    type: string
+                type:
+                  type: string
+            shipments.fulfillment_location.raw:
+              type: object
+              properties:
+                values:
+                  type: array
+                  items:
+                    type: string
+                type:
+                  type: string
+            discounted:
+              type: object
+              properties:
+                values:
+                  type: array
+                  items:
+                    type: string
+                type:
+                  type: string
+    get_customer_order_by_id_res:
+      title: Customer order including payment history
+      description: Customer order including payment history
+      type: object
+      properties:
+        customer_order:
+          allOf:
+            - $ref: '#/components/schemas/customer_order'
+            - $ref: '#/components/schemas/payment_history'
+    business_hour:
+      type: object
+      description: Represents store business hours information
+      required:
+        - from_time
+        - to_time
+        - weekday
+      properties:
+        from_time:
+          type: string
+          pattern: ^\d{2}:\d{2}$
+          description: >-
+            The time of the day when the store opens, time should be in the
+            'HH:mm' format.
+        to_time:
+          type: string
+          pattern: ^\d{2}:\d{2}$
+          description: >-
+            The time of the day when the store closes, time should be in the
+            'HH:mm' format.
+        weekday:
+          type: integer
+          description: A value representing the day of the week, '0' being Monday.
+          minimum: 0
+          maximum: 6
+    get_user_configuration_resp:
+      title: Setup data for mobile application response
+      description: Setup data for mobile application response
+      type: object
+      properties:
+        associate:
+          type: object
+          properties:
+            id:
+              type: string
+              minLength: 1
+              maxLength: 256
+              description: The referencing user id from our SSO service
+            first_name:
+              type: string
+              maxLength: 256
+              minLength: 1
+            last_name:
+              type: string
+              maxLength: 256
+              minLength: 1
+            email:
+              type: string
+              maxLength: 100
+              minLength: 1
+            store_id:
+              type: string
+              minLength: 1
+              maxLength: 256
+            image_url:
+              type: string
+            telephone_number:
+              type: string
+              maxLength: 32
+            permissions:
+              type: array
+              items:
+                type: string
+        printer_location:
+          type: object
+          properties:
+            uuid:
+              type: string
+              minLength: 36
+              maxLength: 36
+              description: The UUID of the printing location.
+            name:
+              type: string
+              maxLength: 256
+              minLength: 1
+              description: The name of the printing location
+        store:
+          type: object
+          description: >-
+            The internal representation of the retailer's store in the NewStore
+            platform.
+          properties:
+            label:
+              maxLength: 256
+              type: string
+            physical_address:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                second_name:
+                  type: string
+                last_name:
+                  type: string
+                address_line_1:
+                  type: string
+                address_line_2:
+                  type: string
+                province:
+                  type: string
+                state:
+                  type: string
+                zip_code:
+                  type: string
+                city:
+                  type: string
+                country_code:
+                  description: >-
+                    Country code for this address. Must be
+ISO-3166reference
+type: string
+                phone:
+                  type: string
+            shipping_address:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                second_name:
+                  type: string
+                last_name:
+                  type: string
+                address_line_1:
+                  type: string
+                address_line_2:
+                  type: string
+                province:
+                  type: string
+                state:
+                  type: string
+                zip_code:
+                  type: string
+                city:
+                  type: string
+                country_code:
+                  description: >-
+                    Country code for this address. Must be
+ISO-3166reference
+type: string
+                phone:
+                  type: string
+            store_id:
+              minLength: 1
+              maxLength: 256
+              type: string
+              description: The identifier for the store in NewStore.
+            manager_id:
+              maxLength: 32
+              type: string
+            image_url:
+              type: string
+            active_status:
+              type: boolean
+            tax_included:
+              type: boolean
+              description: If true, the prices associated with this store include tax.
+            timezone:
+              type: string
+              maxLength: 256
+            pricebook:
+              type: string
+              maxLength: 256
+              description: >-
+                Identifier of a pricebook which should be used for this store. A
+                pricebook defines a set of prices which can differ from the
+                default pricebook.
+            payment_provider_store:
+              type: string
+              description: >-
+                The identifier of the store for the payment provider that the
+                payment device is associated with.
+            phone_number:
+              type: string
+              nullable: true
+              description: The telephone number at which the store can be reached.
+            business_hours:
+              description: Hours the store is operating, processing orders.
+              type: array
+              items:
+                $ref: '#/components/schemas/business_hour'
+            catalog:
+              type: string
+              nullable: true
+              maxLength: 256
+              description: >-
+                The name of the catalog containing the list of products that can
+                be sold at this store.
+            locale:
+              type: string
+              nullable: true
+              maxLength: 32
+              description: >-
+                The locale of the catalog assigned to the store. The product
+                data in the catalog is displayed based on the locale specified
+                here.
+        return_process_configuration:
+          type: object
+          required:
+            - return_reasons
+          description: Return process specific configuration used by the NewStoreApps
+          properties:
+            return_reasons:
+              type: array
+              description: A list of reasons and codes used during the return process.
+              items:
+                type: object
+                required:
+                  - code
+                  - reason
+                  - reasons
+                properties:
+                  code:
+                    type: integer
+                    description: The code associated with this reason.
+                  reason:
+                    type: string
+                    description: The displayed reason as string.
+                  reasons:
+                    description: A dictionary of language codes to reason texts.
+                    type: object
+            quality_inspection_options:
+              type: array
+              description: >-
+                A list of quality inspection options and codes used during the
+                return process.
+              items:
+                type: object
+                required:
+                  - code
+                  - option
+                properties:
+                  code:
+                    type: integer
+                    description: The code associated with this option.
+                  option:
+                    type: string
+                    description: The displayed option as string.
+            blind_return_enabled:
+              type: boolean
+              description: The flag to enable/disable blind returns.
+        commerce_components:
+          type: object
+          description: Sales configuration for Associate APP.
+          properties:
+            template_render_lambda_url:
+              type: string
+              description: The URL to render gift receipts for print.
+            gift_card_product_id:
+              type: string
+              description: Gift card product identifier.
+            gift_card_regexp:
+              type: string
+              description: Matching regular expression for gift card.
+            barcode_types:
+              type: array
+              description: Supported bar code types when scanning.
+            document_printer_types:
+              type: object
+              description: Map of printer types for various documents.
+              properties:
+                sales_receipt:
+                  type: string
+                  description: Printer type for sales receipt.
+                refund_note:
+                  type: string
+                  description: Printer type for refund note.
+                shipping_label:
+                  type: string
+                  description: Printer type for shipping label.
+                packing_slip:
+                  type: string
+                  description: Printer type for packing slip.
+                invoice:
+                  type: string
+                  description: Printer type for invoice.
+                exchange_receipt:
+                  type: string
+                  description: Printer type for exchange receipt.
+                return_receipt:
+                  type: string
+                  description: Printer type for return receipt.
+                default:
+                  type: string
+                  description: Default printer type for the documents.
+        ui_configurations:
+          type: object
+          description: Configurable associate app UI identifiers.
+          properties:
+            display_product_identifier:
+              type: string
+              enum:
+                - sku
+                - product_id
+              description: The type of product identifier to display in the Associate App.
+              default: sku
+            show_preorders_filter:
+              type: boolean
+              description: Enable/disable to show the preorder products filter in catalog.
+              default: false
+            suggested_email_domains:
+              type: array
+              items:
+                type: string
+              description: Suggested email domains for email auto completion.
+            tax_exemption_enabled:
+              type: boolean
+              description: Enable/disable to show the tax exemption for the order.
+              default: false
+            seconds_until_logout_on_inactivity:
+              type: integer
+              description: >-
+                Specifies the amount of time (in seconds) that NewStore
+                Associate App can be in the background or inactive, after which
+                the associate is automatically logged out from the app.
+              default: 0
+        capabilities:
+          type: object
+          description: Switches to enable/disable capabilities of the associate app.
+          properties:
+            mixed_cart:
+              type: boolean
+              description: >-
+                Enables/disables the mixed cart feature. Warning! Make sure that
+                the integration with external systems (especially ERP) supports
+                mixed orders before enabling this feature.
+            cash_management:
+              type: boolean
+              description: Enables/disables the cash management feature.
+              default: false
+            offline_mode:
+              type: boolean
+              description: Enables/disables the offline mode feature.
+              default: false
+            cash_for_endless_aisle_orders_enabled:
+              type: boolean
+              description: Enable/disable the cash payment for endless aisle orders.
+              default: false
+    post_set_printer_location_req:
+      title: Update User
+      description: Set printer location.
+      type: object
+      required:
+        - printer_location_id
+      properties:
+        printer_location_id:
+          minLength: 1
+          maxLength: 256
+          type: string
+    post_set_printer_location_res:
+      title: Printer location
+      description: The printing location of the current associate.
+      type: object
+      properties:
+        printer_location:
+          type: object
+          properties:
+            uuid:
+              type: string
+              minLength: 36
+              maxLength: 36
+              description: The UUID of the printing location.
+            name:
+              type: string
+              maxLength: 256
+              minLength: 1
+              description: The name of the printing location
+    get_identity_configuration_resp:
+      type: object
+      title: Identity configuration
+      description: Identity configuration for the mobile apps
+      properties:
+        provider:
+          description: 'The identity provider used, one of: ''auth0'', ''keycloak''.'
+          type: string
+          enum:
+            - auth0
+            - keycloak
+        config:
+          type: object
+          description: >-
+            The identity provider config. Only set if the identity provider is
+            'keycloak'.
+          properties:
+            issuer:
+              description: >-
+                The URI of the issuer, for example:
+                'https://id.s.newstore.net/auth/realms/dodici'.
+              type: string
+            third_party_providers:
+              description: >-
+                A list of all third-party identity providers which are
+                configured for this tenant.
+              type: array
+              items:
+                type: object
+                properties:
+                  provider:
+                    description: 'The provider, one of: ''microsoft-azure-ad'', ''auth0''.'
+                    type: string
+                    enum:
+                      - microsoft-azure-ad
+                      - auth0
+                  alias:
+                    description: The alias as specified in Keycloak.
+                    type: string
+          required:
+            - issuer
+            - third_party_providers
+      required:
+        - provider

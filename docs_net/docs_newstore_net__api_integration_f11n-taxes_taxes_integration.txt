@@ -1,0 +1,1713 @@
+Taxes Integration API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Taxes Integration API
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+Tax transactions
+post
+Create a preview tax transaction by calculating the total amounts of cart items without storing the transaction.
+get
+Get tax transaction for an order
+patch
+Update tax transaction for an order
+get
+Get tax transaction for a return
+API docs by Redocly
+Taxes Integration API
+(
+1.0.0
+)
+Download OpenAPI specification
+:
+Download
+Use this API to create/retrieve tax transactions.
+This API uses
+OAuth 2.0 Client Credentials Grant
+, and your application must obtain an authorized access token before it can execute an endpoint call. For more details, please refer to the
+NewStore Public API Authorization guide
+.
+Tax transactions
+Calculate the total taxes for orders in your business and retrieve tax transactions.
+Create a preview tax transaction by calculating the total amounts of cart items without storing the transaction.
+Creates a preview tax transaction by calculating the total amounts of cart items using the configured tax strategy without storing the transaction. Intended to be used for testing and validation purposes.
+Authorizations:
+oauth2
+header
+Parameters
+x-request-id
+string
+Request identifier.
+store-id
+string
+Store identifier.
+Request Body schema:
+application/json
+tax_exempt
+boolean
+Default:
+false
+Defines the tax exemption status of the transaction.
+transaction_type
+string
+Enum
+:
+"SALE"
+"RETURN"
+Type of the transaction.
+order_id
+required
+string
+The order ID that will be used as a reference to link the order to the created tax transaction in the tax provider records.
+In case the order ID is not provided then a randomly generated identifier will be used instead.
+The tax transaction will be stored by using the given value.
+return_id
+string
+The return ID that will be used as a reference to link the order to the created tax transaction in the tax provider records.
+The tax transaction for returns will be stored by using the given value.
+If the value is not set, the return transaction will not be stored.
+exemption_number
+string
+The number of the customer's exemption certificate.
+The given value can be verified by the auditors in the event of a tax audit.
+items
+required
+Array of
+objects or objects
+A list of the items sold/returned in the transaction.
+The type
+ReverseCalculationTransactionItemDto
+should be used when the
+calculation_mode
+is set to
+REVERSE
+.
+The type
+TransactionItemDto
+should be used When the
+calculation_mode
+is not sent or set to
+STANDARD
+.
+exemption_class
+string
+Enum
+:
+"FEDERAL_GOVERNMENT"
+"STATE_GOVERNMENT"
+"TRIBAL_GOVERNMENT"
+"LOCAL_GOVERNMENT"
+"FOREIGN_DIPLOMAT"
+"CHARITY_ORGANIZATION"
+"RELIGIOUS_ORGANIZATION"
+"EDUCATIONAL_ORGANIZATION"
+"RESALE"
+"DIRECT_PAY_PERMIT"
+"OTHER"
+"NON_RESIDENT"
+"FIRST_NATION_CITIZEN"
+"CUSTOM_*"
+The tax exemption class that identifies the customer's group/organization that accredited them with the tax exemption status.
+For custom tax exemption classes, the
+CUSTOM_
+prefix with a UPPER_SNAKE_CASE key can be used. Example:
+CUSTOM_CANADA
+tax_date
+string
+<
+date-time
+>
+Date of the transaction (in UTC timezone) that'll be used in committing taxes.
+calculation_mode
+string
+Enum
+:
+"STANDARD"
+"REVERSE"
+Type of the tax calculation
+STANDARD
+: Standard tax calculation (default).
+Taxes will be calculated for each line from
+item_price * quantity
+respecting the
+tax_method
+(tax incl./excl.).
+REVERSE
+: Reverse calculation of taxes from the total amount paid by customer (e.g. for injected offline or e-comm orders).
+Taxes will be calculated from
+price_line_item
+(total gross amount for given quantity) regardless of
+tax_method
+(tax incl./excl.).
+Responses
+200
+Tax transaction.
+400
+Bad request.
+401
+Unauthorized.
+403
+Forbidden.
+default
+Unexpected error.
+post
+/previews/transactions
+NewStore Tax Service
+/taxes
+/previews/transactions
+Local development server
+/previews/transactions
+Request samples
+Payload
+Content type
+application/json
+Example
+Order with tax inclusive items
+Order with tax exclusive items
+Order with shipping
+Order with gift wrapping
+Order with return items
+Order with tax exemption
+Reverse calculation order with tax inclusive items
+Reverse calculation order with tax exclusive items
+Order with tax inclusive items
+Example transaction with tax inclusive items.
+Copy
+Expand all
+Collapse all
+{
+"tax_exempt"
+:
+false
+,
+"transaction_type"
+:
+"SALE"
+,
+"order_id"
+:
+"56bb9975-f43a-4eee-8fb2-200957eb0624"
+,
+"items"
+:
+[
+{
+"tax_class"
+:
+"AAA000"
+,
+"tax_method"
+:
+"vat_included"
+,
+"item_price"
+:
+200
+,
+"quantity"
+:
+1
+,
+"shipping_address"
+:
+{
+"address_line_1"
+:
+"Potsdamer Str. 7, 10785 Berlin"
+,
+"zip_code"
+:
+"10785"
+,
+"city"
+:
+"Berlin"
+,
+"country_code"
+:
+"DE"
+}
+,
+"shipping_origin"
+:
+{
+"address_line_1"
+:
+"Potsdamer Str. 7, 10785 Berlin"
+,
+"zip_code"
+:
+"10785"
+,
+"city"
+:
+"Berlin"
+,
+"country_code"
+:
+"DE"
+}
+,
+"type"
+:
+"product"
+,
+"currency_consumer"
+:
+"EUR"
+,
+"product_name"
+:
+"Metallica shirt"
+,
+"product_sku"
+:
+"AIk-0790"
+,
+"product_id"
+:
+"123"
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"size"
+,
+"value"
+:
+"L"
+}
+]
+,
+"id"
+:
+"123"
+}
+]
+}
+Response samples
+200
+400
+401
+403
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"price_line_item"
+:
+200
+,
+"price_net"
+:
+180
+,
+"price_tax"
+:
+20
+,
+"tax_rates"
+:
+[
+{
+"rate"
+:
+0.19
+,
+"amount"
+:
+10
+,
+"tax_name"
+:
+"Colorado retail delivery fee"
+,
+"country_code"
+:
+"US"
+,
+"taxable_amount"
+:
+10
+,
+"exempt_amount"
+:
+10
+,
+"tax_status"
+:
+"EXEMPT"
+}
+]
+,
+"tax_class"
+:
+"AAA000"
+,
+"tax_method"
+:
+"vat_excluded"
+,
+"item_price"
+:
+200
+,
+"quantity"
+:
+1
+,
+"shipping_address"
+:
+{
+"store_id"
+:
+"Munich-store"
+,
+"address_line_1"
+:
+"81 Elk Rd Little"
+,
+"address_line_2"
+:
+"string"
+,
+"province"
+:
+"New York"
+,
+"state"
+:
+"New York"
+,
+"zip_code"
+:
+"12207"
+,
+"city"
+:
+"Albany"
+,
+"country_code"
+:
+"DE"
+}
+,
+"shipping_origin"
+:
+{
+"store_id"
+:
+"Munich-store"
+,
+"address_line_1"
+:
+"81 Elk Rd Little"
+,
+"address_line_2"
+:
+"string"
+,
+"province"
+:
+"New York"
+,
+"state"
+:
+"New York"
+,
+"zip_code"
+:
+"12207"
+,
+"city"
+:
+"Albany"
+,
+"country_code"
+:
+"DE"
+}
+,
+"type"
+:
+"product"
+,
+"currency_consumer"
+:
+"USD"
+,
+"consumer_uuid"
+:
+"string"
+,
+"product_name"
+:
+"Metallica shirt"
+,
+"product_sku"
+:
+"AIk-0790"
+,
+"product_id"
+:
+"123"
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"size"
+,
+"value"
+:
+"36"
+}
+]
+,
+"id"
+:
+"123"
+,
+"handling_charges"
+:
+10
+}
+]
+,
+"document_id"
+:
+"123"
+,
+"totals"
+:
+{
+"net_total"
+:
+180
+,
+"subtotal"
+:
+180
+,
+"grand_total"
+:
+200
+,
+"tax_total"
+:
+20
+,
+"shipping_total"
+:
+5
+,
+"shipping_tax_amount"
+:
+5
+,
+"discount_total"
+:
+5
+,
+"tax_strategy"
+:
+"fixedrate"
+,
+"tax_rates_summary"
+:
+[
+{
+"rate"
+:
+0.19
+,
+"amount"
+:
+10
+,
+"tax_name"
+:
+"Colorado retail delivery fee"
+,
+"country_code"
+:
+"US"
+,
+"taxable_amount"
+:
+10
+,
+"exempt_amount"
+:
+10
+,
+"tax_status"
+:
+"EXEMPT"
+}
+]
+}
+,
+"tax_exempt"
+:
+false
+,
+"transaction_type"
+:
+"SALE"
+,
+"order_id"
+:
+"56bb9975-f43a-4eee-8fb2-200957eb0624"
+,
+"return_id"
+:
+"4fbcc8b3-8511-4ad1-8c9f-96b7c08db664"
+,
+"exemption_number"
+:
+"string"
+,
+"fallback_error"
+:
+{
+"error_code"
+:
+"taxes_address_validation_failed"
+,
+"message"
+:
+"Avalara request returned an incomplete or invalid address error"
+,
+"original_tax_provider"
+:
+"fixedrate"
+}
+,
+"exemption_class"
+:
+"CHARITY_ORGANIZATION"
+,
+"calculation_mode"
+:
+"STANDARD"
+}
+Get tax transaction for an order
+Get tax transaction for the given order identifier.
+Authorizations:
+oauth2
+path
+Parameters
+orderId
+required
+string
+Order identifier.
+header
+Parameters
+x-request-id
+string
+Request identifier.
+store-id
+string
+Store identifier.
+Responses
+200
+Tax transaction.
+401
+Unauthorized.
+403
+Forbidden.
+404
+Tax transaction not found.
+default
+Unexpected error.
+get
+/transactions/{orderId}
+NewStore Tax Service
+/taxes
+/transactions/{orderId}
+Local development server
+/transactions/{orderId}
+Response samples
+200
+401
+403
+404
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"price_line_item"
+:
+200
+,
+"price_net"
+:
+180
+,
+"price_tax"
+:
+20
+,
+"tax_rates"
+:
+[
+{
+"rate"
+:
+0.19
+,
+"amount"
+:
+10
+,
+"tax_name"
+:
+"Colorado retail delivery fee"
+,
+"country_code"
+:
+"US"
+,
+"taxable_amount"
+:
+10
+,
+"exempt_amount"
+:
+10
+,
+"tax_status"
+:
+"EXEMPT"
+}
+]
+,
+"tax_class"
+:
+"AAA000"
+,
+"tax_method"
+:
+"vat_excluded"
+,
+"item_price"
+:
+200
+,
+"quantity"
+:
+1
+,
+"shipping_address"
+:
+{
+"store_id"
+:
+"Munich-store"
+,
+"address_line_1"
+:
+"81 Elk Rd Little"
+,
+"address_line_2"
+:
+"string"
+,
+"province"
+:
+"New York"
+,
+"state"
+:
+"New York"
+,
+"zip_code"
+:
+"12207"
+,
+"city"
+:
+"Albany"
+,
+"country_code"
+:
+"DE"
+}
+,
+"shipping_origin"
+:
+{
+"store_id"
+:
+"Munich-store"
+,
+"address_line_1"
+:
+"81 Elk Rd Little"
+,
+"address_line_2"
+:
+"string"
+,
+"province"
+:
+"New York"
+,
+"state"
+:
+"New York"
+,
+"zip_code"
+:
+"12207"
+,
+"city"
+:
+"Albany"
+,
+"country_code"
+:
+"DE"
+}
+,
+"type"
+:
+"product"
+,
+"currency_consumer"
+:
+"USD"
+,
+"consumer_uuid"
+:
+"string"
+,
+"product_name"
+:
+"Metallica shirt"
+,
+"product_sku"
+:
+"AIk-0790"
+,
+"product_id"
+:
+"123"
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"size"
+,
+"value"
+:
+"36"
+}
+]
+,
+"id"
+:
+"123"
+,
+"handling_charges"
+:
+10
+}
+]
+,
+"document_id"
+:
+"123"
+,
+"totals"
+:
+{
+"net_total"
+:
+180
+,
+"subtotal"
+:
+180
+,
+"grand_total"
+:
+200
+,
+"tax_total"
+:
+20
+,
+"shipping_total"
+:
+5
+,
+"shipping_tax_amount"
+:
+5
+,
+"discount_total"
+:
+5
+,
+"tax_strategy"
+:
+"fixedrate"
+,
+"tax_rates_summary"
+:
+[
+{
+"rate"
+:
+0.19
+,
+"amount"
+:
+10
+,
+"tax_name"
+:
+"Colorado retail delivery fee"
+,
+"country_code"
+:
+"US"
+,
+"taxable_amount"
+:
+10
+,
+"exempt_amount"
+:
+10
+,
+"tax_status"
+:
+"EXEMPT"
+}
+]
+}
+,
+"tax_exempt"
+:
+false
+,
+"transaction_type"
+:
+"SALE"
+,
+"order_id"
+:
+"56bb9975-f43a-4eee-8fb2-200957eb0624"
+,
+"return_id"
+:
+"4fbcc8b3-8511-4ad1-8c9f-96b7c08db664"
+,
+"exemption_number"
+:
+"string"
+,
+"fallback_error"
+:
+{
+"error_code"
+:
+"taxes_address_validation_failed"
+,
+"message"
+:
+"Avalara request returned an incomplete or invalid address error"
+,
+"original_tax_provider"
+:
+"fixedrate"
+}
+,
+"exemption_class"
+:
+"CHARITY_ORGANIZATION"
+,
+"calculation_mode"
+:
+"STANDARD"
+}
+Update tax transaction for an order
+Update tax transaction for the given order identifier.
+Authorizations:
+oauth2
+path
+Parameters
+orderId
+required
+string
+Order identifier.
+header
+Parameters
+x-request-id
+string
+Request identifier.
+store-id
+string
+Store identifier.
+Request Body schema:
+application/json
+order_id
+required
+string
+The order ID that will be used as a reference to link the order to the created tax transaction in the tax provider records.
+In case the order ID is not provided then a randomly generated identifier will be used instead.
+The tax transaction will be stored by using the given value.
+Responses
+200
+Tax transaction.
+400
+Bad request.
+401
+Unauthorized.
+403
+Forbidden.
+404
+Tax transaction not found.
+default
+Unexpected error.
+patch
+/transactions/{orderId}
+NewStore Tax Service
+/taxes
+/transactions/{orderId}
+Local development server
+/transactions/{orderId}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"order_id"
+:
+"56bb9975-f43a-4eee-8fb2-200957eb0624"
+}
+Response samples
+200
+400
+401
+403
+404
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"price_line_item"
+:
+200
+,
+"price_net"
+:
+180
+,
+"price_tax"
+:
+20
+,
+"tax_rates"
+:
+[
+{
+"rate"
+:
+0.19
+,
+"amount"
+:
+10
+,
+"tax_name"
+:
+"Colorado retail delivery fee"
+,
+"country_code"
+:
+"US"
+,
+"taxable_amount"
+:
+10
+,
+"exempt_amount"
+:
+10
+,
+"tax_status"
+:
+"EXEMPT"
+}
+]
+,
+"tax_class"
+:
+"AAA000"
+,
+"tax_method"
+:
+"vat_excluded"
+,
+"item_price"
+:
+200
+,
+"quantity"
+:
+1
+,
+"shipping_address"
+:
+{
+"store_id"
+:
+"Munich-store"
+,
+"address_line_1"
+:
+"81 Elk Rd Little"
+,
+"address_line_2"
+:
+"string"
+,
+"province"
+:
+"New York"
+,
+"state"
+:
+"New York"
+,
+"zip_code"
+:
+"12207"
+,
+"city"
+:
+"Albany"
+,
+"country_code"
+:
+"DE"
+}
+,
+"shipping_origin"
+:
+{
+"store_id"
+:
+"Munich-store"
+,
+"address_line_1"
+:
+"81 Elk Rd Little"
+,
+"address_line_2"
+:
+"string"
+,
+"province"
+:
+"New York"
+,
+"state"
+:
+"New York"
+,
+"zip_code"
+:
+"12207"
+,
+"city"
+:
+"Albany"
+,
+"country_code"
+:
+"DE"
+}
+,
+"type"
+:
+"product"
+,
+"currency_consumer"
+:
+"USD"
+,
+"consumer_uuid"
+:
+"string"
+,
+"product_name"
+:
+"Metallica shirt"
+,
+"product_sku"
+:
+"AIk-0790"
+,
+"product_id"
+:
+"123"
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"size"
+,
+"value"
+:
+"36"
+}
+]
+,
+"id"
+:
+"123"
+,
+"handling_charges"
+:
+10
+}
+]
+,
+"document_id"
+:
+"123"
+,
+"totals"
+:
+{
+"net_total"
+:
+180
+,
+"subtotal"
+:
+180
+,
+"grand_total"
+:
+200
+,
+"tax_total"
+:
+20
+,
+"shipping_total"
+:
+5
+,
+"shipping_tax_amount"
+:
+5
+,
+"discount_total"
+:
+5
+,
+"tax_strategy"
+:
+"fixedrate"
+,
+"tax_rates_summary"
+:
+[
+{
+"rate"
+:
+0.19
+,
+"amount"
+:
+10
+,
+"tax_name"
+:
+"Colorado retail delivery fee"
+,
+"country_code"
+:
+"US"
+,
+"taxable_amount"
+:
+10
+,
+"exempt_amount"
+:
+10
+,
+"tax_status"
+:
+"EXEMPT"
+}
+]
+}
+,
+"tax_exempt"
+:
+false
+,
+"transaction_type"
+:
+"SALE"
+,
+"order_id"
+:
+"56bb9975-f43a-4eee-8fb2-200957eb0624"
+,
+"return_id"
+:
+"4fbcc8b3-8511-4ad1-8c9f-96b7c08db664"
+,
+"exemption_number"
+:
+"string"
+,
+"fallback_error"
+:
+{
+"error_code"
+:
+"taxes_address_validation_failed"
+,
+"message"
+:
+"Avalara request returned an incomplete or invalid address error"
+,
+"original_tax_provider"
+:
+"fixedrate"
+}
+,
+"exemption_class"
+:
+"CHARITY_ORGANIZATION"
+,
+"calculation_mode"
+:
+"STANDARD"
+}
+Get tax transaction for a return
+Get tax transaction for the given return and order identifiers.
+Authorizations:
+oauth2
+path
+Parameters
+orderId
+required
+string
+Order identifier.
+returnId
+required
+string
+Return identifier.
+header
+Parameters
+x-request-id
+string
+Request identifier.
+store-id
+string
+Store identifier.
+Responses
+200
+Tax transaction.
+401
+Unauthorized.
+403
+Forbidden.
+404
+Tax transaction not found.
+default
+Unexpected error.
+get
+/transactions/{orderId}/returns/{returnId}
+NewStore Tax Service
+/taxes
+/transactions/{orderId}/returns/{returnId}
+Local development server
+/transactions/{orderId}/returns/{returnId}
+Response samples
+200
+401
+403
+404
+default
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"price_line_item"
+:
+200
+,
+"price_net"
+:
+180
+,
+"price_tax"
+:
+20
+,
+"tax_rates"
+:
+[
+{
+"rate"
+:
+0.19
+,
+"amount"
+:
+10
+,
+"tax_name"
+:
+"Colorado retail delivery fee"
+,
+"country_code"
+:
+"US"
+,
+"taxable_amount"
+:
+10
+,
+"exempt_amount"
+:
+10
+,
+"tax_status"
+:
+"EXEMPT"
+}
+]
+,
+"tax_class"
+:
+"AAA000"
+,
+"tax_method"
+:
+"vat_excluded"
+,
+"item_price"
+:
+200
+,
+"quantity"
+:
+1
+,
+"shipping_address"
+:
+{
+"store_id"
+:
+"Munich-store"
+,
+"address_line_1"
+:
+"81 Elk Rd Little"
+,
+"address_line_2"
+:
+"string"
+,
+"province"
+:
+"New York"
+,
+"state"
+:
+"New York"
+,
+"zip_code"
+:
+"12207"
+,
+"city"
+:
+"Albany"
+,
+"country_code"
+:
+"DE"
+}
+,
+"shipping_origin"
+:
+{
+"store_id"
+:
+"Munich-store"
+,
+"address_line_1"
+:
+"81 Elk Rd Little"
+,
+"address_line_2"
+:
+"string"
+,
+"province"
+:
+"New York"
+,
+"state"
+:
+"New York"
+,
+"zip_code"
+:
+"12207"
+,
+"city"
+:
+"Albany"
+,
+"country_code"
+:
+"DE"
+}
+,
+"type"
+:
+"product"
+,
+"currency_consumer"
+:
+"USD"
+,
+"consumer_uuid"
+:
+"string"
+,
+"product_name"
+:
+"Metallica shirt"
+,
+"product_sku"
+:
+"AIk-0790"
+,
+"product_id"
+:
+"123"
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"size"
+,
+"value"
+:
+"36"
+}
+]
+,
+"id"
+:
+"123"
+,
+"handling_charges"
+:
+10
+}
+]
+,
+"document_id"
+:
+"123"
+,
+"totals"
+:
+{
+"net_total"
+:
+180
+,
+"subtotal"
+:
+180
+,
+"grand_total"
+:
+200
+,
+"tax_total"
+:
+20
+,
+"shipping_total"
+:
+5
+,
+"shipping_tax_amount"
+:
+5
+,
+"discount_total"
+:
+5
+,
+"tax_strategy"
+:
+"fixedrate"
+,
+"tax_rates_summary"
+:
+[
+{
+"rate"
+:
+0.19
+,
+"amount"
+:
+10
+,
+"tax_name"
+:
+"Colorado retail delivery fee"
+,
+"country_code"
+:
+"US"
+,
+"taxable_amount"
+:
+10
+,
+"exempt_amount"
+:
+10
+,
+"tax_status"
+:
+"EXEMPT"
+}
+]
+}
+,
+"tax_exempt"
+:
+false
+,
+"transaction_type"
+:
+"SALE"
+,
+"order_id"
+:
+"56bb9975-f43a-4eee-8fb2-200957eb0624"
+,
+"return_id"
+:
+"4fbcc8b3-8511-4ad1-8c9f-96b7c08db664"
+,
+"exemption_number"
+:
+"string"
+,
+"fallback_error"
+:
+{
+"error_code"
+:
+"taxes_address_validation_failed"
+,
+"message"
+:
+"Avalara request returned an incomplete or invalid address error"
+,
+"original_tax_provider"
+:
+"fixedrate"
+}
+,
+"exemption_class"
+:
+"CHARITY_ORGANIZATION"
+,
+"calculation_mode"
+:
+"STANDARD"
+}
+Previous
+Refund API (item level)
+Next
+Documents Configuration
+Copyright © 2025 NewStore, Inc.

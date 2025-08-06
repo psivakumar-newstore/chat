@@ -1,0 +1,732 @@
+openapi: 3.1.0
+info:
+  title: Fulfillment config history API
+  description: |
+    Information on historical fulfillment configuration data
+  version: v0
+  contact:
+    name: Team Routing
+    email: team-routing@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /fulfillment_configuration/revisions:
+    get:
+      summary: Get all revisions
+      description: >
+        This endpoint can be used to get all revisions of the fulfillment config
+        for the given tenant
+      operationId: get-config-revisions
+      responses:
+        '200':
+          description: The revisions for this tenant could be retrieved successfully.
+          content:
+            application/json:
+              schema:
+                title: revisions-200-response
+                description: >-
+                  Response schema for /revisions endpoint upon 200 http status
+                  code
+                type: array
+                items: &ref_6
+                  title: Link revision
+                  description: Schema for return type of /revisions endpoint
+                  type: object
+                  properties: &ref_7
+                    revision:
+                      type: integer
+                    version:
+                      type: integer
+                    created_at:
+                      type: string
+                      format: date-time
+                    url:
+                      type: string
+                      format: uri
+                  required: &ref_8
+                    - revision
+                    - created_at
+                    - url
+              example:
+                - revision: 3
+                  version: 2
+                  created_at: '2023-05-12T19:13:17.068239Z'
+                  url: v0/fulfillment_configuration/revision/3
+                - revision: 2
+                  version: 2
+                  created_at: '2023-05-12T19:12:57.258273Z'
+                  url: v0/fulfillment_configuration/revision/2
+                - revision: 1
+                  version: 2
+                  created_at: '2023-05-12T19:12:42.238199Z'
+                  url: v0/fulfillment_configuration/revision/1
+        '400':
+          description: Bad value for the tenant header.
+          content:
+            application/json:
+              schema:
+                title: revisions-400-response
+                description: >-
+                  Response schema for /revisions endpoint upon 400 http status
+                  code
+                type: object
+                properties: &ref_2
+                  $ref:
+                    title: Problem.json
+                    description: Schema for problem.json REST API return type
+                    type: object
+                    properties: &ref_0
+                      title:
+                        type: string
+                      type:
+                        type: string
+                      detail:
+                        type: string
+                    required: &ref_1
+                      - title
+                      - type
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: Could not retrieve the revisions due to unknown error.
+          content:
+            application/json:
+              schema:
+                title: revisions-500-response
+                description: >-
+                  Response schema for /revisions endpoint upon 400 http status
+                  code
+                type: object
+                properties: &ref_3
+                  $ref:
+                    title: Problem.json
+                    description: Schema for problem.json REST API return type
+                    type: object
+                    properties: *ref_0
+                    required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+  /fulfillment_configuration/revision/{id}:
+    get:
+      summary: Get revision by id
+      description: >
+        This endpoint can be used to get a revision (with body) of the
+        fulfillment config for the given tenant
+      operationId: get-config-revision-by-id
+      parameters:
+        - name: id
+          in: path
+          description: ID of the revision to retrieve
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The revision for this tenant and id could be retrieved successfully.
+          content:
+            application/json:
+              schema:
+                title: revisions-200-response
+                description: >-
+                  Response schema for /revision/{id} endpoint upon 200 http
+                  status code
+                type: object
+                properties: &ref_4
+                  $ref:
+                    title: Revision body routing config.
+                    description: Schema for revisioned fulfillment config.
+                    required: &ref_11
+                      - revision
+                      - fulfillment_config
+                      - updated_by
+                      - created_at
+                      - tenant
+                    properties: &ref_12
+                      revision:
+                        type: integer
+                        description: Defines the revision of the uploaded config.
+                      fulfillment_config:
+                        title: Post fulfillment config.
+                        description: >-
+                          Schema for adding or updating fulfillment_config which
+                          is used for zip code based hard and soft routing.
+                        type: object
+                        required: &ref_9
+                          - provider_rates
+                        properties: &ref_10
+                          provider_rates:
+                            description: >-
+                              The list of supported provider rates. A provider
+                              rate identifies an integrated shipping provider
+                              and the rate it offers. The key represents the
+                              unique identifier of the provider rate and the
+                              value contains the specific provider rate
+                              definition.
+                            type: object
+                            additionalProperties:
+                              type: object
+                              required:
+                                - shipping_carrier_name
+                                - service_level
+                                - shipping_type
+                                - use_as_customer_facing_cost
+                              properties:
+                                shipping_carrier_name:
+                                  type: string
+                                  description: >-
+                                    The name of shipping provider associated
+                                    with this provider rate. Example:
+                                    FEDEX/UPS/USPS.
+                                service_level:
+                                  type: string
+                                  description: >-
+                                    The unique identifier for the service level
+                                    offered by the provider, for which this
+                                    provider rate should be valid. Define a
+                                    service level in the service_levels field.
+                                shipping_type:
+                                  description: >-
+                                    Required for backward compatibility
+                                    purposes. The value can be
+                                    traditional_carrier, same_day_delivery or
+                                    in_store_pick_up.
+                                  type: string
+                                use_as_customer_facing_cost:
+                                  type: boolean
+                                  description: >-
+                                    Flag to indicate if the shipping provider
+                                    cost is used instead of the service level
+                                    cost defined in the fulfillment
+                                    configuration. If set to true, the shipping
+                                    provider cost is also displayed to the
+                                    customer
+                                return_provider_rate:
+                                  type: string
+                                  description: >-
+                                    The identifier for the provider rate used
+                                    for the return shipment.
+                                carrier_defined_service_level:
+                                  type: string
+                                  description: >-
+                                    Carrier specific name that defines the
+                                    service level. When defining provider rates
+                                    with the same shipping provider, the value
+                                    you specify here must be unique and should
+                                    always match the name defined by the
+                                    shipping provider API. For example,
+                                    'NextDayAirSaver' for UPS and
+                                    'GROUND_HOME_DELIVERY' for FedEx. If no
+                                    value is provided, NewStore uses the unique
+                                    identifier of the provider rate as the
+                                    default value.
+                          service_levels:
+                            description: >-
+                              Contains a dictionary of rate information to
+                              display to the customer. The key represents the
+                              identifier of the service level in NewStore and
+                              the value contains the specific service level
+                              definition.
+                            type: object
+                            additionalProperties:
+                              type: object
+                              required:
+                                - display_name
+                                - delivery_time
+                                - delivery_time_after_cutoff_hour
+                                - price
+                                - currency_code
+                                - tax_code
+                              properties:
+                                display_name:
+                                  description: >-
+                                    The service level name as displayed to
+                                    customers. The service level is referred to
+                                    as a `shipping option` across NewStore
+                                    applications.
+                                  type: string
+                                delivery_time:
+                                  description: >-
+                                    The amount of time needed for delivery, when
+                                    this service level is chosen.
+                                  type: string
+                                delivery_time_after_cutoff_hour:
+                                  description: >-
+                                    The amount of time needed for delivery after
+                                    the cut-off time, when this service level is
+                                    chosen. NewStore calculates the cut-off time
+                                    using the 'earliest_pickup_time' and the
+                                    'latest_pickup_time' values set for the
+                                    store. See
+                                    https://docs.newstore.net/newstore-cloud/store_operations/store.html#operation/updateStore.
+                                    The 'packing_time_duration', if configured
+                                    for your business, is also used.
+                                  type: string
+                                price:
+                                  description: >-
+                                    The amount charged to the customer for
+                                    delivery.
+                                  type: number
+                                  minimum: 0
+                                currency_code:
+                                  description: >-
+                                    The currency used by the shipping provider,
+                                    as 3 character ISO-4217 code. Example USD,
+                                    EUR.
+                                  type: string
+                                tax_code:
+                                  description: The identifier for the tax applied.
+                                  type: string
+                                remorse_period:
+                                  description: >-
+                                    The number of seconds that the order will be
+                                    in on-hold state or in the grace period
+                                    before it is routed or processed further.
+                                    The value set here overrides the grace
+                                    period configured for the business as a
+                                    whole. The order or the item being shipped
+                                    with this service level can be canceled in
+                                    this period.
+                                  type: number
+                          routes:
+                            description: >-
+                              An array of routes. Each element in this array
+                              defines a configuration for a 'route'. A route
+                              specifies how order items can be fulfilled from
+                              fulfillment nodes to their destinations.
+                            type: array
+                            minItems: 1
+                            items:
+                              type: object
+                              required:
+                                - destination_region
+                                - fulfilled_by
+                              properties:
+                                destination_region:
+                                  type: object
+                                  description: >-
+                                    The geographic region in which to deliver
+                                    orders. This region is defined with a
+                                    combination of country codes and zip codes.
+                                  properties:
+                                    countries:
+                                      description: >-
+                                        The list of destination country codes (2
+                                        letter ISO-3166) supported by the route.
+                                      type: array
+                                      minItems: 1
+                                      items:
+                                        type: string
+                                        minLength: 2
+                                        maxLength: 2
+                                        description: >-
+                                          The supported country code (2 letter
+                                          ISO-3166) for this route.
+                                    zip_codes:
+                                      type: array
+                                      description: >-
+                                        The list of supported zip codes for a
+                                        route. To include all zip codes with a
+                                        specific zip code prefix, provide the
+                                        prefix of the zip code, suffixed with a
+                                        '*'. For example '11*' will include 
+                                        '1100', '115ACE', etc. To include all
+                                        zip codes for the countries in the
+                                        parent object, provide only a '*'.
+                                      minItems: 1
+                                      items:
+                                        type: string
+                                        minLength: 1
+                                        description: Zip code or zip code prefix.
+                                fulfilled_by:
+                                  description: >-
+                                    The list of prioritized fulfillment
+                                    locations that can deliver order items to a
+                                    corresponding destination region (in the
+                                    route entry) at a certain service level.
+                                    This information is specified as a map
+                                    object. The key of this object is the name
+                                    of the service level and the value is a list
+                                    of fulfillment locations that support this
+                                    service level.
+                                  type: object
+                                  additionalProperties:
+                                    description: >-
+                                      The list of supported fulfillment
+                                      locations for the defined service level.
+                                    type: array
+                                    minItems: 1
+                                    items:
+                                      type: object
+                                      anyOf:
+                                        - required:
+                                            - fulfillment_node_id
+                                          properties:
+                                            fulfillment_node_id:
+                                              type: string
+                                              minLength: 1
+                                            provider_rate:
+                                              type: string
+                                        - required:
+                                            - fulfillment_node_id
+                                            - provider_rate
+                                          properties:
+                                            fulfillment_node_id:
+                                              type: string
+                                              minLength: 1
+                                              description: >-
+                                                The identifier of the fulfillment
+                                                location that is able to ship with the
+                                                defined service level. The arrangement
+                                                of the fulfillment node IDs in this
+                                                array also defines their priority. The
+                                                lower the index, the higher the
+                                                priority. Fulfillment node ids are
+                                                defined during the first stock import.
+                                                See the Import API for more information.
+                                            provider_rate:
+                                              type: string
+                                              minLength: 1
+                                              description: >-
+                                                The provider rate applicable for this
+                                                route. The value you set for this
+                                                property must appear in the
+                                                'provider_rates' keys defined in the
+                                                'fulfillment_config' property.
+                          sl_levels_priority:
+                            type: array
+                            minItems: 1
+                            description: >-
+                              Defines the order in which service levels should
+                              be selected if fulfillment is not possible for the
+                              service level defined in the order. The lower the
+                              index, the higher the priority. The list is read
+                              from the lowest index to the highest. Reading
+                              starts from current service level. For example, if
+                              this list is ['same-day', '2-day', '4-day'], and
+                              the requested service level is '2-day', but no
+                              fulfillment node can satisfy this service level
+                              during routing, NewStore looks for fulfillment
+                              locations that can satisfy the '4-day' service
+                              level.
+                            items:
+                              description: The identifier for the service level.
+                              type: string
+                          provider_rates_priority:
+                            description: >-
+                              Priority of provider rates to be applied when
+                              routing an order based on the fulfillment node and
+                              service level. Key represents either the country
+                              where the fulfillment node is situated or the
+                              default configuration for all countries included
+                              in the configuration.
+                            type: object
+                            required:
+                              - '*'
+                            additionalProperties:
+                              description: >-
+                                Priority of provider rates to be applied when
+                                routing an order based on the fulfillment node
+                                and service level. Key represents either the
+                                country where the fulfillment node is situated
+                                or the default configuration for all other
+                                fulfilment nodes within the country.
+                              type: object
+                              required:
+                                - '*'
+                              additionalProperties:
+                                description: >-
+                                  Priority of provider rates to be applied when
+                                  routing an order based on the fulfillment node
+                                  and service level. Key represents the internal
+                                  service level being used in the NewStore
+                                  platform.
+                                type: object
+                                additionalProperties:
+                                  description: >-
+                                    Defines the order in which provider rates
+                                    should be selected for the given fulfilment
+                                    node and service level. The lower the index,
+                                    the higher the priority. The list is read
+                                    from the lowest index to the highest.
+                                  type: array
+                                  minItems: 1
+                                  items:
+                                    type: string
+                                    minLength: 1
+                                    description: >-
+                                      The internal fulfillment node ID in the
+                                      NewStore platform.
+                      updated_by:
+                        type: string
+                        description: >-
+                          Contains id of the user who performed the last update
+                          of the fulfillment_config.
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: Timestamp when this revision was created
+                      tenant:
+                        type: string
+                        description: tenant identifier
+              example:
+                revision: 2
+                fulfillment_config: &ref_5
+                  routes:
+                    - fulfilled_by:
+                        SAME_DAY_DELIVERY:
+                          - provider_rate: UPS_SAME_DAY_RATE
+                            fulfillment_node_id: store1_NYC
+                      destination_region:
+                        countries:
+                          - US
+                        zip_codes:
+                          - 10*
+                    - fulfilled_by:
+                        TRADITIONAL:
+                          - provider_rate: UPS_TRADITIONAL_RATE
+                            fulfillment_node_id: DC01
+                      destination_region:
+                        countries:
+                          - US
+                        zip_codes:
+                          - '*'
+                  provider_rates:
+                    UPS_SAME_DAY_RATE:
+                      service_level: SAME_DAY_DELIVERY
+                      shipping_type: same_day_delivery
+                      return_provider_rate: ''
+                      shipping_carrier_name: UPS
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: ExpressPlus
+                    FEDEX_SAME_DAY_RATE:
+                      service_level: SAME_DAY_DELIVERY
+                      shipping_type: same_day_delivery
+                      return_provider_rate: ''
+                      shipping_carrier_name: FedEx
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: PriorityService
+                    UPS_TRADITIONAL_RATE:
+                      service_level: TRADITIONAL
+                      shipping_type: same_day_delivery
+                      return_provider_rate: ''
+                      shipping_carrier_name: UPS
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: Ground
+                    FEDEX_TRADITIONAL_RATE:
+                      service_level: TRADITIONAL
+                      shipping_type: same_day_delivery
+                      return_provider_rate: ''
+                      shipping_carrier_name: FEDEX
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: FEDEX_GROUND
+                    USPS_TRADITIONAL_RATE:
+                      service_level: TRADITIONAL
+                      shipping_type: same_day_delivery
+                      return_provider_rate: ''
+                      shipping_carrier_name: USPS
+                      use_as_customer_facing_cost: false
+                      carrier_defined_service_level: First
+                  service_levels:
+                    SAME_DAY_DELIVERY:
+                      price: 15
+                      tax_code: ''
+                      display_name: Same day delivery
+                      currency_code: USD
+                      delivery_time: Today, if order is placed by 2 pm.
+                      remorse_period: 120
+                      delivery_time_after_cutoff_hour: Tomorrow
+                    TRADITIONAL:
+                      price: 0
+                      tax_code: ''
+                      display_name: Traditional delivery
+                      currency_code: USD
+                      delivery_time: 3-7 business days
+                      delivery_time_after_cutoff_hour: 4-8 business days
+                  sl_levels_priority:
+                    - SAME_DAY_DELIVERY
+                    - TRADITIONAL
+                  provider_rates_priority:
+                    '*':
+                      '*':
+                        SAME_DAY_DELIVERY:
+                          - UPS_SAME_DAY_RATE
+                          - FEDEX_SAME_DAY_RATE
+                        TRADITIONAL:
+                          - UPS_TRADITIONAL_RATE
+                          - FEDEX_TRADITIONAL_RATE
+                          - USPS_TRADITIONAL_RATE
+                    US:
+                      '*':
+                        SAME_DAY_DELIVERY:
+                          - FEDEX_SAME_DAY_RATE
+                          - UPS_SAME_DAY_RATE
+                        TRADITIONAL:
+                          - FEDEX_TRADITIONAL_RATE
+                          - UPS_TRADITIONAL_RATE
+                          - USPS_TRADITIONAL_RATE
+                      DC01:
+                        SAME_DAY_DELIVERY:
+                          - UPS_SAME_DAY_RATE
+                          - FEDEX_SAME_DAY_RATE
+                        TRADITIONAL:
+                          - USPS_TRADITIONAL_RATE
+                          - UPS_TRADITIONAL_RATE
+                          - FEDEX_TRADITIONAL_RATE
+                updated_by: user1
+                created_at: '2023-05-12T19:12:57.258273Z'
+                tenant: dodici
+        '400':
+          description: Bad value for the tenant header or id path param.
+          content:
+            application/json:
+              schema:
+                title: revisions-400-response
+                description: >-
+                  Response schema for /revisions endpoint upon 400 http status
+                  code
+                type: object
+                properties: *ref_2
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: Could not retrieve the revisions due to db issues.
+          content:
+            application/json:
+              schema:
+                title: revisions-500-response
+                description: >-
+                  Response schema for /revisions endpoint upon 400 http status
+                  code
+                type: object
+                properties: *ref_3
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+    put:
+      summary: Put revision by id
+      description: >
+        This endpoint can be used to set any previous revision of the
+        fulfillment configuration
+      operationId: put-config-revision-by-id
+      parameters:
+        - name: id
+          in: path
+          description: ID of the revision to set
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The revision for this tenant and id could be retrieved successfully.
+          content:
+            application/json:
+              schema:
+                title: revisions-200-response
+                description: >-
+                  Response schema for /revision/{id} endpoint upon 200 http
+                  status code
+                type: object
+                properties: *ref_4
+              example:
+                revision: 2
+                fulfillment_config: *ref_5
+                updated_by: user1
+                created_at: '2023-05-12T19:12:57.258273Z'
+                tenant: dodici
+        '400':
+          description: Bad value for the tenant header or id path param.
+          content:
+            application/json:
+              schema:
+                title: revisions-400-response
+                description: >-
+                  Response schema for /revisions endpoint upon 400 http status
+                  code
+                type: object
+                properties: *ref_2
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: Could not retrieve the revisions due to db issues.
+          content:
+            application/json:
+              schema:
+                title: revisions-500-response
+                description: >-
+                  Response schema for /revisions endpoint upon 400 http status
+                  code
+                type: object
+                properties: *ref_3
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    '200':
+      title: revisions-200-response
+      description: Response schema for /revisions endpoint upon 200 http status code
+      type: array
+      items: *ref_6
+    '400':
+      title: revisions-400-response
+      description: Response schema for /revisions endpoint upon 400 http status code
+      type: object
+      properties: *ref_2
+    '500':
+      title: revisions-500-response
+      description: Response schema for /revisions endpoint upon 400 http status code
+      type: object
+      properties: *ref_3
+    link_revision:
+      title: Link revision
+      description: Schema for return type of /revisions endpoint
+      type: object
+      properties: *ref_7
+      required: *ref_8
+    problem:
+      title: Problem.json
+      description: Schema for problem.json REST API return type
+      type: object
+      properties: *ref_0
+      required: *ref_1
+    fulfillment_config:
+      title: Post fulfillment config.
+      description: >-
+        Schema for adding or updating fulfillment_config which is used for zip
+        code based hard and soft routing.
+      type: object
+      required: *ref_9
+      properties: *ref_10
+    single_revision:
+      title: Revision body routing config.
+      description: Schema for revisioned fulfillment config.
+      required: *ref_11
+      properties: *ref_12
+    200-2:
+      title: revisions-200-response
+      description: Response schema for /revision/{id} endpoint upon 200 http status code
+      type: object
+      properties: *ref_4

@@ -1,0 +1,1703 @@
+NOM API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Audit Log API
+Email Service
+NOM API
+Permalink Service
+Templates Admin API
+Templates API
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+get
+List_coupon_definitions
+post
+Create_coupon_definition
+get
+Get_coupon_definition
+get
+List_coupons
+post
+Create_coupon
+put
+Update_coupon
+get
+Get_coupon
+get
+Get_payment_history
+post
+Retry_operation
+get
+List_inventory_transactions
+get
+Get_inventory_transaction
+get
+List_ASNs
+get
+Get_ASN
+get
+List_inventory_stock_on_hand
+API docs by Redocly
+NOM API
+(
+0.1
+)
+Download OpenAPI specification
+:
+Download
+NewStore HQ BFF, mirror service for the NewStore HQ providing HTTP endpoints.
+List_coupon_definitions
+Retrieves a list of all coupon definitions.
+query
+Parameters
+filter
+string
+The field to filter and its filter value(s). The field is specified in subscript notation and its
+values are comma separated. To filter by range of values, separate the boundaries by the pipe character (
+|
+).
+Note:
+When using the
+placed_at
+field, you must use a range notation even when you only need one date. See the example.
+Note:
+You can use this parameter several times in one query to create an
+AND
+operation.
+offset
+integer
+>= 0
+Default:
+0
+The page offset.
+count
+integer
+>= 1
+Default:
+10
+The number of requested documents.
+sort
+string
+Sorts the returned values. Takes 3 values separated by the pipe character (
+|
+), the field to sort, the sort order and sort mode for multi-valued fields.
+q
+string
+The term to filter on. A partial match is considered as a match.
+Responses
+200
+List all coupon definitions.
+500
+Internal server error.
+get
+/coupon_definitions
+/_/v0/hq
+/coupon_definitions
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"label"
+:
+"string"
+,
+"pattern"
+:
+"string"
+,
+"validation_rules"
+:
+[
+{
+"label"
+:
+"valid_from"
+,
+"values"
+:
+{
+"valid_from"
+:
+"2019-08-24T14:15:22Z"
+}
+}
+]
+,
+"discount_rule_id"
+:
+"string"
+,
+"channel_types"
+:
+[
+"web"
+]
+,
+"max_redemptions"
+:
+1
+,
+"id"
+:
+"string"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+}
+]
+}
+Create_coupon_definition
+Creates a coupon definition from a
+discount rule
+. The coupon definition can be used to create a
+coupon
+.
+Request Body schema:
+application/json
+label
+required
+string
+non-empty
+Label to identify the coupon definition by. Must be unique, second call with the same label will fail.
+pattern
+required
+string
+non-empty
+RegEx pattern to generate the coupon code with.
+validation_rules
+Array of
+strings
+A list of validation rules applied by default to the coupons created with this coupon definition.
+discount_rule_id
+required
+string
+non-empty
+Unique identifier of the discount rule applied by default to the coupons.
+channel_types
+Array of
+strings
+<= 5 items
+Items
+Enum
+:
+"web"
+"mobile"
+"mobile_ios"
+"mobile_android"
+"store"
+max_redemptions
+integer
+>= 1
+TThe maximum number of times a coupon based on this definition can be redeemed.
+Responses
+200
+Successfully created the definition.
+404
+No discount rule found with the given ID.
+409
+The given coupon definition label already exists.
+500
+Internal server error.
+post
+/coupon_definitions
+/_/v0/hq
+/coupon_definitions
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"label"
+:
+"string"
+,
+"pattern"
+:
+"string"
+,
+"validation_rules"
+:
+[
+"string"
+]
+,
+"discount_rule_id"
+:
+"string"
+,
+"channel_types"
+:
+[
+"web"
+]
+,
+"max_redemptions"
+:
+1
+}
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"id"
+:
+"8E168C319380714DC78D399005105202FC8F"
+,
+"label"
+:
+"discount_christmas"
+}
+Get_coupon_definition
+Retrieves the coupon definition with the provided ID.
+path
+Parameters
+id
+required
+string
+The ID of a coupon definition.
+Responses
+200
+The requested coupon definition.
+404
+No coupon definition found with the requested ID.
+500
+Internal server error.
+get
+/coupon_definitions/{id}
+/_/v0/hq
+/coupon_definitions/{id}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"label"
+:
+"string"
+,
+"pattern"
+:
+"string"
+,
+"validation_rules"
+:
+[
+{
+"label"
+:
+"valid_from"
+,
+"values"
+:
+{
+"valid_from"
+:
+"2019-08-24T14:15:22Z"
+}
+}
+]
+,
+"discount_rule_id"
+:
+"string"
+,
+"channel_types"
+:
+[
+"web"
+]
+,
+"max_redemptions"
+:
+1
+,
+"id"
+:
+"string"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+}
+List_coupons
+not provided
+query
+Parameters
+filter
+string
+The field to filter and its filter value(s). The field is specified in subscript notation and its
+values are comma separated. To filter by range of values, separate the boundaries by the pipe character (
+|
+).
+Note:
+When using the
+placed_at
+field, you must use a range notation even when you only need one date. See the example.
+Note:
+You can use this parameter several times in one query to create an
+AND
+operation.
+offset
+integer
+>= 0
+Default:
+0
+The page offset.
+count
+integer
+>= 1
+Default:
+10
+The number of requested documents.
+sort
+string
+Sorts the returned values. Takes 3 values separated by the pipe character (
+|
+), the field to sort, the sort order and sort mode for multi-valued fields.
+q
+string
+The term to filter on. A partial match is considered as a match.
+Responses
+200
+List all coupons.
+500
+Internal server error.
+get
+/coupons
+/_/v0/hq
+/coupons
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"id"
+:
+"8E168C319380714DC78D399005105202FC8F"
+,
+"code"
+:
+"XMAS2018-20"
+,
+"label"
+:
+"xmas-2018-20pt-order"
+}
+,
+{
+"id"
+:
+"3729C78D3945234455202FB8F32714D90050"
+,
+"code"
+:
+"XMAS2018-30"
+,
+"label"
+:
+"xmas-2018-30pt-order"
+}
+]
+}
+Create_coupon
+Creates a coupon using the given definition.
+Request Body schema:
+application/json
+label
+string
+Optional label to apply to the coupon.
+template_label
+required
+string
+non-empty
+Coupon template label to create coupon by. Multiple coupons can be created using the same label.
+validation_rules
+Array of
+strings
+OPTIONAL: A list of validation rules to be applied to the coupon. The list provided here is intersected with the one coupon template provides, and validation rules from this list override the ones from coupon template's list on conflict
+Responses
+201
+Successfully created the coupon.
+400
+Something was wrong with the request.
+404
+Discount rule or template label could not be found.
+412
+No more coupon codes available.
+500
+Something was wrong with the request.
+post
+/coupons
+/_/v0/hq
+/coupons
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"label"
+:
+"string"
+,
+"template_label"
+:
+"string"
+,
+"validation_rules"
+:
+[
+"string"
+]
+}
+Response samples
+201
+Content type
+application/json
+Copy
+{
+"id"
+:
+"8E168C319380714DC78D399005105202FC8F"
+,
+"code"
+:
+"XMAS2018"
+,
+"label"
+:
+"discount_christmas"
+,
+"is_enabled"
+:
+true
+}
+Update_coupon
+Updates a coupon.
+path
+Parameters
+id
+required
+string
+The ID of a coupon.
+Request Body schema:
+application/json
+id
+required
+string
+= 36 characters
+Unique identifier of the coupon (currently, uuid)
+is_enabled
+required
+boolean
+If true, the coupon is enabled (active). If false, the coupon is disabled (inactive)
+Responses
+200
+Successfully updated the coupon.
+404
+No coupon found with this ID.
+500
+Something was wrong with the request.
+put
+/coupons/{id}
+/_/v0/hq
+/coupons/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"id"
+:
+"stringstringstringstringstringstring"
+,
+"is_enabled"
+:
+true
+}
+Get_coupon
+Retrieves the coupon with the provided ID.
+path
+Parameters
+id
+required
+string
+The ID of a coupon.
+Responses
+200
+The requested coupon.
+404
+No coupon found with the requested ID.
+500
+Internal server error.
+get
+/coupons/{id}
+/_/v0/hq
+/coupons/{id}
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"id"
+:
+"stringstringstringstringstringstring"
+,
+"code"
+:
+"string"
+,
+"label"
+:
+"string"
+,
+"is_enabled"
+:
+true
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+}
+Get_payment_history
+Returns the payment history of the specified account.
+path
+Parameters
+account_id
+required
+string
+The identifier of an account that contains all payments on an order.
+The value of this parameter must be the internal ID (
+UUID
+) of a sales order.
+Responses
+200
+The payment history of the given account ID.
+400
+Missing input parameter.
+404
+No payment history with the given account ID found.
+get
+/payments/{account_id}
+/_/v0/hq
+/payments/{account_id}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"payments"
+:
+[
+{
+"activities"
+:
+[
+{
+"correlation_id"
+:
+"string"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"processed_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"name"
+:
+"string"
+,
+"metadata"
+:
+{
+"amount"
+:
+0
+,
+"currency"
+:
+"str"
+,
+"transaction_id"
+:
+"string"
+,
+"error_message"
+:
+"string"
+,
+"error_code"
+:
+"string"
+}
+}
+]
+,
+"id"
+:
+"string"
+,
+"amount"
+:
+0
+,
+"status"
+:
+"string"
+,
+"currency"
+:
+"str"
+,
+"date"
+:
+"2019-08-24T14:15:22Z"
+,
+"psp"
+:
+"string"
+,
+"method"
+:
+"string"
+,
+"wallet"
+:
+"string"
+,
+"origin"
+:
+"string"
+,
+"payment_information"
+:
+"string"
+,
+"category"
+:
+"string"
+}
+]
+}
+Retry_operation
+Retries the financial operation (authorization, capture or refund) identified by the provided correlation identifier.
+To get an operation's correlation identifier,
+use the Get payments endpoint.
+path
+Parameters
+account_id
+required
+string
+The identifier of an account that contains all payments on an order.
+The value of this parameter must be the internal ID (
+UUID
+) of a sales order.
+Request Body schema:
+application/json
+correlation_id
+required
+string
+non-empty
+Identifier of the request that should be retried. Only authorizations, captures and refunds are supported.
+Responses
+202
+The requested retry was accepted.
+400
+Malformed request.
+404
+Requested command not found.
+409
+Request is conflicting with internal state.
+This error typically happens when the correlation_id identifies an operation that is not an
+authorization or a capture or a refund or if the operation is a refund that uses several financial instruments.
+500
+Internal Server Error.
+post
+/payments/{account_id}/_retry
+/_/v0/hq
+/payments/{account_id}/_retry
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"correlation_id"
+:
+"45143100-0922-11e9-b568-0800200c9a66"
+}
+Response samples
+202
+400
+404
+409
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+,
+"error_code"
+:
+"string"
+}
+List_inventory_transactions
+Retrieves a list of all inventory transactions completed using NewStore Fulfillment App,
+along with the details of the associates who performed these transactions.
+Note:
+The inventory transactions that are still in progress are not returned.
+query
+Parameters
+filter
+string
+The field to filter and its filter value(s). The field is specified in subscript notation and its
+values are comma separated. To filter by range of values, separate the boundaries by the pipe character (
+|
+).
+Note:
+When using the
+placed_at
+field, you must use a range notation even when you only need one date. See the example.
+Note:
+You can use this parameter several times in one query to create an
+AND
+operation.
+offset
+integer
+>= 0
+Default:
+0
+The page offset.
+count
+integer
+>= 1
+Default:
+10
+The number of requested documents.
+sort
+string
+Sorts the returned values. Takes 3 values separated by the pipe character (
+|
+), the field to sort, the sort order and sort mode for multi-valued fields.
+q
+string
+The term to filter on. A partial match is considered as a match.
+Responses
+200
+List completed inventory transactions.
+500
+Internal server error.
+get
+/inventory_transactions
+/_/v0/hq
+/inventory_transactions
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"inventory_transaction_id"
+:
+"e4dc79a3-a970-47eb-9e78-befaa6afe0cc"
+,
+"transaction_type"
+:
+"adjustment"
+,
+"adjustment_type"
+:
+"Damage Out"
+,
+"adjustment_reason"
+:
+"Broken"
+,
+"completed_date"
+:
+"2020-04-14T14:28:54.943613Z"
+,
+"from_location"
+:
+"US01"
+,
+"from_location_label"
+:
+"New York store"
+,
+"to_location"
+:
+"US01"
+,
+"to_location_label"
+:
+"Ney York store"
+,
+"associate_name"
+:
+"Jane Smith"
+,
+"associate_email"
+:
+"jsmith@company.com"
+,
+"status"
+:
+"closed"
+,
+"reference"
+:
+null
+,
+"from_stock_location"
+:
+"main"
+,
+"to_stock_location"
+:
+"damaged"
+}
+,
+{
+"inventory_transaction_id"
+:
+"2d9c16d7-b359-4800-af61-4de0968e0e27"
+,
+"transaction_type"
+:
+"transfer"
+,
+"adjustment_type"
+:
+null
+,
+"adjustment_reason"
+:
+null
+,
+"completed_date"
+:
+"2020-04-15T14:20:54.943613Z"
+,
+"from_location"
+:
+"US01"
+,
+"from_location_label"
+:
+"New York store"
+,
+"to_location"
+:
+"US02"
+,
+"to_location_label"
+:
+"Los Angeles store"
+,
+"associate_name"
+:
+"John Doe"
+,
+"associate_email"
+:
+"jdoe@company.com"
+,
+"status"
+:
+"closed"
+,
+"reference"
+:
+null
+,
+"from_stock_location"
+:
+"main"
+,
+"to_stock_location"
+:
+null
+}
+]
+Get_inventory_transaction
+Retrieves the inventory transaction with the specified ID.
+path
+Parameters
+uuid
+required
+string
+The internal ID (
+UUID
+) of an inventory transaction. To retrieve the UUID, use the
+List inventory transactions
+method.
+Responses
+200
+The inventory transaction with the specified ID.
+400
+Something was wrong with the request.
+404
+No inventory transaction found with this ID.
+500
+Internal server error.
+get
+/inventory_transactions/{uuid}
+/_/v0/hq
+/inventory_transactions/{uuid}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"inventory_transaction_id"
+:
+"e4dc79a3-a970-47eb-9e78-befaa6afe0cc"
+,
+"transaction_type"
+:
+"adjustment"
+,
+"adjustment_type"
+:
+"Damage Out"
+,
+"adjustment_reason"
+:
+"Broken"
+,
+"completed_date"
+:
+"2020-04-14T14:28:54.943613Z"
+,
+"from_location"
+:
+"US01"
+,
+"from_location_label"
+:
+"New York store"
+,
+"to_location"
+:
+"US01"
+,
+"to_location_label"
+:
+"Ney York store"
+,
+"associate_name"
+:
+"Jane Smith"
+,
+"associate_email"
+:
+"jsmith@company.com"
+,
+"status"
+:
+"closed"
+,
+"reference"
+:
+null
+,
+"from_stock_location"
+:
+"main"
+,
+"to_stock_location"
+:
+"damaged"
+,
+"products"
+:
+[
+{
+"color"
+:
+"Black"
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"fit"
+,
+"value"
+:
+"Slim"
+}
+]
+,
+"external_identifiers"
+:
+[
+{
+"type"
+:
+"sku"
+,
+"value"
+:
+"PD0000342"
+}
+]
+,
+"id"
+:
+"PD0000342"
+,
+"quantity"
+:
+2
+,
+"image_url"
+:
+"www.image-store.com/PD0000342.png"
+,
+"name"
+:
+"Shirt Dress"
+,
+"price_catalog"
+:
+199
+,
+"size"
+:
+"8"
+,
+"variation_attribute_1_value"
+:
+null
+,
+"variation_attribute_2_value"
+:
+null
+}
+]
+}
+List_ASNs
+Retrieves a list of all ASNs in the platform, along with the details of the associated inventory
+operations and associate related to this ASN.
+query
+Parameters
+filter
+string
+The field to filter and its filter value(s). The field is specified in subscript notation and its
+values are comma separated. To filter by range of values, separate the boundaries by the pipe character (
+|
+).
+Note:
+When using the
+placed_at
+field, you must use a range notation even when you only need one date. See the example.
+Note:
+You can use this parameter several times in one query to create an
+AND
+operation.
+offset
+integer
+>= 0
+Default:
+0
+The page offset.
+count
+integer
+>= 1
+Default:
+10
+The number of requested documents.
+sort
+string
+Sorts the returned values. Takes 3 values separated by the pipe character (
+|
+), the field to sort, the sort order and sort mode for multi-valued fields.
+q
+string
+The term to filter on. A partial match is considered as a match.
+Responses
+200
+List ASNs.
+500
+Internal server error.
+get
+/asns
+/_/v0/hq
+/asns
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"products"
+:
+[
+{
+"transactions"
+:
+[
+{
+"associate_email"
+:
+"string"
+,
+"associate_name"
+:
+"string"
+,
+"completed_date"
+:
+"string"
+,
+"external_ref"
+:
+"string"
+,
+"quantity"
+:
+0
+,
+"status"
+:
+"string"
+}
+]
+,
+"color"
+:
+"string"
+,
+"id"
+:
+"string"
+,
+"image_url"
+:
+"
+http://example.com
+"
+,
+"name"
+:
+"string"
+,
+"price_catalog"
+:
+0
+,
+"quantity"
+:
+0
+,
+"size"
+:
+"string"
+,
+"variation_attribute_1_value"
+:
+"string"
+,
+"variation_attribute_2_value"
+:
+"string"
+,
+"external_identifiers"
+:
+[
+{
+"type"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+}
+]
+,
+"completed_date"
+:
+"string"
+,
+"from_location"
+:
+"string"
+,
+"from_location_label"
+:
+"string"
+,
+"inventory_asn_id"
+:
+"string"
+,
+"references"
+:
+{
+"shipment_ref"
+:
+"string"
+,
+"po_number"
+:
+"string"
+}
+,
+"status"
+:
+"string"
+,
+"to_location_label"
+:
+"string"
+,
+"to_location"
+:
+"string"
+,
+"shipment_date"
+:
+"2019-08-24T14:15:22Z"
+,
+"product_count_distinct"
+:
+0
+,
+"product_quantity_sum"
+:
+0
+}
+]
+}
+Get_ASN
+Retrieves the ASN with the specified ID.
+path
+Parameters
+uuid
+required
+string
+The internal ID of the ASN. To retrieve the UUID, use the
+List ASNs method
+.
+Responses
+200
+The ASN with the specified ID.
+400
+Something was wrong with the request.
+404
+No ASN found with this ID.
+500
+Internal server error.
+get
+/asns/{uuid}
+/_/v0/hq
+/asns/{uuid}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"products"
+:
+[
+{
+"transactions"
+:
+[
+{
+"associate_email"
+:
+"string"
+,
+"associate_name"
+:
+"string"
+,
+"completed_date"
+:
+"string"
+,
+"external_ref"
+:
+"string"
+,
+"quantity"
+:
+0
+,
+"status"
+:
+"string"
+}
+]
+,
+"color"
+:
+"string"
+,
+"id"
+:
+"string"
+,
+"image_url"
+:
+"
+http://example.com
+"
+,
+"name"
+:
+"string"
+,
+"price_catalog"
+:
+0
+,
+"quantity"
+:
+0
+,
+"size"
+:
+"string"
+,
+"variation_attribute_1_value"
+:
+"string"
+,
+"variation_attribute_2_value"
+:
+"string"
+,
+"external_identifiers"
+:
+[
+{
+"type"
+:
+"string"
+,
+"value"
+:
+"string"
+}
+]
+}
+]
+,
+"completed_date"
+:
+"string"
+,
+"from_location"
+:
+"string"
+,
+"from_location_label"
+:
+"string"
+,
+"inventory_asn_id"
+:
+"string"
+,
+"references"
+:
+{
+"shipment_ref"
+:
+"string"
+,
+"po_number"
+:
+"string"
+}
+,
+"status"
+:
+"string"
+,
+"to_location_label"
+:
+"string"
+,
+"to_location"
+:
+"string"
+,
+"shipment_date"
+:
+"2019-08-24T14:15:22Z"
+,
+"product_count_distinct"
+:
+0
+,
+"product_quantity_sum"
+:
+0
+}
+List_inventory_stock_on_hand
+Retrieves a list of all items in your stores, and associated details, including:
+Stock on hand
+Stock locations
+Inventory operations
+query
+Parameters
+filter
+string
+The field to filter and its filter value(s). The field is specified in subscript notation and its
+values are comma separated. To filter by range of values, separate the boundaries by the pipe character (
+|
+).
+Note:
+When using the
+placed_at
+field, you must use a range notation even when you only need one date. See the example.
+Note:
+You can use this parameter several times in one query to create an
+AND
+operation.
+offset
+integer
+>= 0
+Default:
+0
+The page offset.
+count
+integer
+>= 1
+Default:
+10
+The number of requested documents.
+sort
+string
+Sorts the returned values. Takes 3 values separated by the pipe character (
+|
+), the field to sort, the sort order and sort mode for multi-valued fields.
+q
+string
+The term to filter on. A partial match is considered as a match.
+Responses
+200
+The list of items, with their associated details, was successfully retrieved.
+500
+Internal server error.
+get
+/inventory_report
+/_/v0/hq
+/inventory_report
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"stock_report_id"
+:
+"e4dc79a3-a970-47eb-9e78-befaa6afe0cc"
+,
+"sku"
+:
+"PD0000342"
+,
+"product_id"
+:
+"PD0000342"
+,
+"title"
+:
+"Shirt"
+,
+"color"
+:
+"Black"
+,
+"size"
+:
+"XXL"
+,
+"price"
+:
+99.99
+,
+"currency"
+:
+"USD"
+,
+"fulfillment_node_id"
+:
+"US01"
+,
+"on_hand"
+:
+100
+,
+"updated_at"
+:
+"2020-04-14T14:28:54.943613Z"
+,
+"stock_location"
+:
+"main"
+,
+"store_name"
+:
+"5thAve"
+,
+"image_url"
+:
+"www.image-store.com/PD0000342.png"
+}
+,
+{
+"stock_report_id"
+:
+"2d9c16d7-b359-4800-af61-4de0968e0e27"
+,
+"sku"
+:
+"PD0000342"
+,
+"product_id"
+:
+"PD0000342"
+,
+"title"
+:
+"Shirt"
+,
+"color"
+:
+"Black"
+,
+"size"
+:
+"XXL"
+,
+"price"
+:
+99.99
+,
+"currency"
+:
+"USD"
+,
+"fulfillment_node_id"
+:
+"US01"
+,
+"on_hand"
+:
+1
+,
+"updated_at"
+:
+"2020-04-14T14:28:54.943613Z"
+,
+"stock_location"
+:
+"damaged"
+,
+"store_name"
+:
+"5thAve"
+,
+"image_url"
+:
+"www.image-store.com/PD0000342.png"
+}
+]
+Previous
+Email Service
+Next
+Permalink Service
+Copyright © 2025 NewStore, Inc.

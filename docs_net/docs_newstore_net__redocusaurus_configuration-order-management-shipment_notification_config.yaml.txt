@@ -1,0 +1,365 @@
+openapi: 3.0.0
+info:
+  title: Shipment notification configuration API
+  description: >
+    Use these APIs to manage notification options for your shipment related
+    events.
+
+
+    **Note**: NewStore sends a confirmation to the customer when **all** the
+    items in a
+
+    fulfillment request have been processed for shipment. For example, a
+    confirmation is sent to
+
+    the customer only when all items in the fulfillment request have been
+    dispatched for delivery,
+
+    or when all items have been delivered.
+Possible notifications are:
+
+
+    - `shipment_dispatched`: Sent when a shipment left the fulfillment location
+    and is on its way to the customer.
+
+    - `shipment_delayed`: Sent when a shipment is delayed because the
+    fulfillment takes longer than expected.
+
+    - `shipment_cancelled`: Sent when a shipment is canceled.
+
+    - `shipment_delivered`: Sent when a shipment is delivered to the customer.
+
+    - `shipping_option.estimate_changed`: Sent when the estimated time of
+    delivery has changed.
+
+    - `package.status_updated`: Sent when the status of a delivery has changed.
+
+    - `in_store.ready_for_pick_up`: Sent when an [in-store
+    pickup](/docs/glossary.html#term-BOPIS) order is ready to be picked up.
+  version: v0
+servers:
+  - url: https://dodici.x.newstore.net/v0
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /config/shipment_notification/notification_options:
+    get:
+      operationId: get-shipment-notification-options
+      summary: Get shipment notification options
+      description: >
+        Retrieves the current configuration for the retailer, which contains the
+        notification options
+
+        specified for shipments in their business.
+
+
+        See the [parent resource](#notifs) for possible options.
+      responses:
+        '200':
+          description: Successfully retrieved the config value
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    type: object
+                    required:
+                      - options
+                    properties:
+                      options:
+                        type: object
+                        description: >-
+                          A map of possible notifications that can be sent to
+                          the customer.
+                        properties:
+                          shipment_dispatched:
+                            type: array
+                            description: >-
+                              Sent when a shipment left the fulfillment location
+                              and is on its way to the customer.
+                            items:
+                              type: string
+                              description: Any supported notification type.
+                              enum:
+                                - email
+                                - push_notification
+                          shipment_delayed:
+                            type: array
+                            description: >-
+                              Sent when a shipment is delayed because the
+                              fulfillment takes longer than expected.
+                            items:
+                              type: string
+                              description: Any supported notification type.
+                              enum:
+                                - email
+                                - push_notification
+                          shipment_cancelled:
+                            type: array
+                            description: Sent when a shipment was canceled.
+                            items:
+                              type: string
+                              description: Any supported notification type.
+                              enum:
+                                - email
+                                - push_notification
+                          shipment_delivered:
+                            type: array
+                            description: >-
+                              Sent when a shipment was delivered to the
+                              customer.
+                            items:
+                              type: string
+                              description: Any supported notification type.
+                              enum:
+                                - email
+                                - push_notification
+                          shipping_option.estimate_changed:
+                            type: array
+                            description: >-
+                              Sent when the estimated time of delivery has
+                              changed.
+                            items:
+                              type: string
+                              description: Any supported notification type.
+                              enum:
+                                - email
+                                - push_notification
+                          package.status_updated:
+                            type: array
+                            description: Sent when the status of a delivery has changed.
+                            items:
+                              type: string
+                              description: Any supported notification type.
+                              enum:
+                                - email
+                                - push_notification
+                          in_store.ready_for_pick_up:
+                            type: array
+                            description: Sent when a BOPIS order is ready to be picked up.
+                            items:
+                              type: string
+                              description: Any supported notification type.
+                              enum:
+                                - email
+                                - push_notification
+                      push_notification_channel_type:
+                        description: >-
+                          Push notification need a channel (type of addressing)
+                          for where to send notifications. That can be the
+                          internal customer identifier or their email.
+                        type: string
+                        enum:
+                          - customer_uuid
+                          - email
+                      timezone:
+                        description: >-
+                          Defines the timezone times are rendered in for the
+                          'shipping_option.estimate_changed' notification. The
+                          string should conform to the IANA Time Zone database,
+                          like: 'America/New_York'.
+                        type: string
+                  updated_at:
+                    type: string
+                    description: >-
+                      Contains datetime in ISO8601 UTC when config updated last
+                      time. Can be null if config value wasn't set yet
+              example:
+                value:
+                  options:
+                    shipment_dispatched:
+                      - email
+                    shipment_delivered:
+                      - email
+                  timezone: UTC
+                updated_at: '2021-07-13T20:18:25Z'
+        '404':
+          description: >-
+            Config key doesn't exist (it is not a case when key exists but just
+            not set).
+        '500':
+          description: Internal server error.
+    post:
+      operationId: set-shipment-notification-options
+      summary: Set shipment notification options
+      description: >
+        Sets the configuration for the retailer that contains notification
+        options
+
+        specified for shipments in their business.
+
+
+        **Important**: Ensure that you provide all the options in the request,
+        as this method does
+
+        not allow you to make partial updates to shipment notifications.
+
+
+        See the [parent resource](#notifs) for possible options.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  type: object
+                  required:
+                    - options
+                  properties:
+                    options:
+                      type: object
+                      description: >-
+                        A map of possible notifications that can be sent to the
+                        customer.
+                      properties:
+                        shipment_dispatched:
+                          type: array
+                          description: >-
+                            Sent when a shipment left the fulfillment location
+                            and is on its way to the customer.
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                        shipment_delayed:
+                          type: array
+                          description: >-
+                            Sent when a shipment is delayed because the
+                            fulfillment takes longer than expected.
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                        shipment_cancelled:
+                          type: array
+                          description: Sent when a shipment was canceled.
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                        shipment_delivered:
+                          type: array
+                          description: Sent when a shipment was delivered to the customer.
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                        shipping_option.estimate_changed:
+                          type: array
+                          description: >-
+                            Sent when the estimated time of delivery has
+                            changed.
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                        package.status_updated:
+                          type: array
+                          description: Sent when the status of a delivery has changed.
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                        in_store.ready_for_pick_up:
+                          type: array
+                          description: Sent when a BOPIS order is ready to be picked up.
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                    push_notification_channel_type:
+                      description: >-
+                        Push notification need a channel (type of addressing)
+                        for where to send notifications. That can be the
+                        internal customer identifier or their email.
+                      type: string
+                      enum:
+                        - customer_uuid
+                        - email
+                    timezone:
+                      description: >-
+                        Defines the timezone times are rendered in for the
+                        'shipping_option.estimate_changed' notification. The
+                        string should conform to the IANA Time Zone database,
+                        like: 'America/New_York'.
+                      type: string
+            example:
+              value:
+                options:
+                  shipment_dispatched:
+                    - email
+                  shipment_delivered:
+                    - email
+                timezone: UTC
+      responses:
+        '200':
+          description: Successfully saved config value
+        '400':
+          description: |
+            Incorrect payload for config (validation failed).
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: |
+            Cannot update the configuration due to a race condition.
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string

@@ -1,0 +1,327 @@
+Tutorial: Setting up a store
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Tutorial: Setting up a store
+Updated
+Updated on
+Jul 21, 2025
+Published on Oct 1, 2024
+5 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Setting up a store consists of creating a store and adding employees to it.
+Important
+We assume that you have an authentication token stored in the
+AUTH_TOKEN
+variable. Retrieve one with the following call:
+export AUTH_TOKEN=$(curl -s <url>/v0/token -d \
+"grant_type=password&username=<myusername>&password=<mypassword>" | jq -r.access_token)
+Note
+To set up a warehouse for your business, see
+this tutorial
+.
+Creating a store
+This store is based in NYC. It's open all days of the week except Monday, and configured to serve
+BOPIS
+orders and same-day delivery orders on priority.
+To create a store, use the
+create store method
+.
+Important
+Once you create a store for your business in NewStore, you cannot delete it from the platform. However, if needed, you can use NewStore Omnichannel Manager to
+disable a store
+from fulfilling orders in your business.
+Save the following sample as
+data.json
+.
+{
+  "active_status": true,
+  "business_hours": [
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 0
+    },
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 2
+    },
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 3
+    },
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 4
+    },
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 5
+    },
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 6
+    }
+  ],
+  "catalog": "storefront-catalog-en",
+  "division_name": "US",
+  "gift_wrapping": false,
+  "label": "001_US_ABC_Street",
+  "locale": "en-US",
+  "tax_included": true,
+  "phone_number": "202-555-0138",
+  "physical_address": {
+    "address_line_1": "12 ABC Street",
+    "city": "New York",
+    "country_code": "US",
+    "latitude": 40.7256956,
+    "longitude": -74.0023217,
+    "state": "NY",
+    "zip_code": "10001"
+  },
+  "pricebook": "default",
+  "queue_prioritization": [
+    {
+      "display_priority_type": "priority",
+      "priority": 1,
+      "shipping_type": "same_day_delivery"
+    },
+    {
+      "display_priority_type": "priority",
+      "priority": 1,
+      "shipping_type": "in_store_pick_up"
+    }
+  ],
+  "shipping_address": {
+    "address_line_1": "12 ABC Street",
+    "city": "New York",
+    "country_code": "US",
+    "state": "NY",
+    "zip_code": "10002"
+  },
+  "store_id": "store1_NYC",
+  "timezone": "America/New_York",
+  "delivery_zip_codes": [],
+  "display_price_unit_type": "net"
+}
+Note
+Use the
+priority
+property to prioritize orders during fulfillment in your store. Higher numbers have higher priority over lower numbers.
+The
+timezone
+property only allows timezone values that comply with the
+tz database
+. For example, specify
+America/New_York
+instead of
+EST
+.
+The
+catalog
+property is the name of the catalog that contains products, categories and price books used in the store.
+The
+pricebook
+property is the identifier of the price book that will be used in the store. The price book you specify here must be included in the catalog that is configured in the
+catalog
+property. See how to create products, categories and price books in
+Tutorial: Importing products
+.
+The currency of the store is that of the price book defined in the
+pricebook
+property.
+For example, you can prioritize your orders to follow this sequence of priority for fulfillment in your store:
+same-day delivery
+>
+in-store pickup
+>
+traditional
+See the example below:
+{
+  "queue_prioritization": [
+    {
+      "display_priority_type": "normal",
+      "priority": 1,
+      "shipping_type": "traditional_carrier"
+    },
+    {
+      "display_priority_type": "priority",
+      "priority": 2,
+      "shipping_type": "in_store_pick_up"
+    },
+    {
+      "display_priority_type": "priority",
+      "priority": 3,
+      "shipping_type": "same_day_delivery"
+    }
+  ]
+}
+In-store pickup orders for your store appear in the
+Priority
+queue, while same-day delivery orders appear in the
+Regular
+queue.
+For more information on how order routing works, see
+About order routing
+.
+Run:
+curl -X POST -H "Authorization: Bearer $AUTH\_TOKEN" -d @data.json https://<tenant_url>/v0/i/stores
+Important
+The store is created but there is no stock data for it yet, which prevents any routing to be fulfilled by the store. Please see
+Creating stock data
+to enable routing.
+Import products, price books, and stock information for the store. See
+Tutorial: Importing products
+.
+Configure order ID parameters
+to enable unique IDs to be assigned to orders in NewStore Omnichannel Cloud.
+The geo coordinates of the store set in the request will be used to calculate distances from a reference address to retrieve the in-store pickup options. See
+Tutorial: Setting up an in-store pickup configuration
+.
+Adding employees to the store
+This step is done by the NewStore team. After employees are created and assigned to a store, you're ready to import stock into the store. See
+Creating stock data
+.
+The store is created but it must have at least one
+active
+associate to enable it to fulfill orders.
+A following optional step consists in creating one or more stock locations for the store to manage inventory.
+Fiscal activation of the store
+In countries where software fiscal regulations apply, a store must be fiscally activated before orders can be created via NewStore Associate app. For more details, see
+Fiscal activations
+.
+In countries where hardware fiscal regulations apply, a fiscal printer must be set up in the store. For more information, see
+(Optional) Setting up a fiscal printer
+.
+(Optional) Creating stock locations
+A stock location allows us to manage which items should be sold, and which should not. To see an overview of stock locations, see
+Stock locations
+.
+You need to have at least one salable location per store. Currently, the only one that supports it is
+main
+so you need to create it.
+Now, create a new stock location for damaged items that are unsalable.
+Create the stock location using the
+create stock location
+method.
+A stock location has a name to identify it and a
+salable
+property indicating if the stock that this location contains is salable.
+Define the
+salable
+property for this stock location as
+false
+to exclude the items it contains from the stock on hand and let's call the location
+damaged
+.
+Use the following as the body of the request:
+{
+  "name": "damaged",
+  "salable": false
+}
+Call the
+create stock location
+method:
+curl -X POST "https://dodici.x.newstore.net/v0/stock_locations" \
+     -H "Authorization: Bearer {string}" \
+     -d @request_body
+Note
+You can get a token using the call at the top of the page.
+The
+damaged
+stock location is now set up for your store. You can move damaged items from the
+main
+stock location to this stock location to remove them from stock on hand calculations by contacting the support team.
+Related topics
+Importing data
+Tutorial: Setting up an in-store pickup configuration
+Create stores
+Create employees
+Was this article helpful?
+Yes
+No
+Tags
+Adyen
+api
+Associate App
+checkout
+fiscalization
+integration
+inventory
+NewStore checkout
+onboarding
+payment
+payment device
+payment options
+platform
+stock location
+store fulfillment
+tutorial
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

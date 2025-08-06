@@ -1,0 +1,285 @@
+Integrating a third-party promotion engine
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Integrating a third-party promotion engine
+Updated on
+Dec 20, 2024
+Published on Oct 1, 2024
+7 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+NewStore uses its own native promotion engine by default to allow you to manage promotions and coupons for your business. However, if the promotions or coupon types available in the native engine does not satisfy your requirements, you can choose to use a a third-party promotion engine such as
+Talon.One
+to manage your promotions or coupons.
+In such cases, promotions and coupons would be created and managed entirely in the third-party promotion engine, and the resulting
+effects
+or consequences of the discounts will be applied to the order or cart in Associate App. For more information on
+effects
+, see the
+Output payload
+.
+Important
+You cannot use the native promotion engine at NewStore if you decide to use a third-party promotion engine to manage your coupons and promotions. However, manual discounts can still be applied in Associate App if enabled for your business.
+A high level overview of the integration layer architecture is provided below:
+For more information about the Integration API, refer to the
+API documentation
+.
+Follow these steps to integrate a third-party promotion engine:
+Notify NewStore so we can switch the promotion engine from the native one to your preferred promotion partner.
+Set up a configuration for the third-party promotion engine (the API endpoint and API token). You can perform this step yourself.
+Create an integration layer (such as a server or cloud function) that responds to requests according to the steps described in this guide. This integration must be hosted at the configured endpoint, and response payloads must align with the provided guidance.
+Note
+Some aspects of the guide uses entities from
+Talon.One
+as an example for the integration guidance, such as
+effects
+. We recommend reading the integration documentation for the third-party promotion engine you are using to successfully set up the integration.
+Entities such as stores, products, catalogs, and customers need to be synced with the third-party promotion engine if needed. However, the third-party promotion engine or the integrator is responsible for mapping the entities (such as a customer ID in NewStore or the product SKU) to the respective entities or effects on their side.
+Important
+If you also plan to use the same third-party engine to create an integration for a loyalty reward system, this must be done in the third-party engine and not in the NewStore platform. The loyalty coupons are therefore created in the third-party system based on the match it finds against the coupon code sent by NewStore.
+For more information on integrating a loyalty rewards provider, see
+Setting up a loyalty rewards system with NewStore
+.
+Setting up a configuration
+Setting up the configuration consists of setting up:
+A URL endpoint that the configuration is called with, and an updated
+customer session
+payload, which provides details on the cart or order
+An API token that can be used for the calls (a bearer token)
+The URL endpoint is a mandatory field when setting up the configuration, which must include the placeholder
+{customerSessionId}
+, which is replaced by the ID of the customer session from the third-party promotion engine, such as
+https://adaptor-qa.integrator.co/newstore/1ea8eb28-9c9d-4a4dc33b3d65/session/{customerSessionId}
+.
+To update a configuration, use the
+Update configuration
+method.
+Setting up an integration layer via the session update endpoint
+To link NewStore to a third party promotion engine, you need to create an endpoint that uses the session provided by NewStore as the input payload for a
+PUT
+request, processes it with the promotion engine of your choice (or your own business logic), and then sends the resulting
+effects
+in the output payload.
+Important
+The timeout for this call is 5 seconds, and after that, the cart will be processed without applying discounts. Make sure that the system handling the request can scale and provide prompt responses, even during a spike in requests.
+See the
+Integration configuration
+API for more information.
+Sample input and output payloads have been described below.
+Input payload
+The input looks like the following sample:
+{
+    "customerSession": {
+        "state": "open", // currently it's always returned as open
+        "profileId": "user-profile-id", // the ID of the user
+        "couponCodes": ["SUMMERPARTY2023", "50OFFSHIRTS"],
+        "attributes": {
+            "channelType": "shop",
+            "currency": "EUR",
+            "storeId": "store-01-de", // the ID of the physical store
+            "shopId": "storefront-catalog-de", // the ID of the catalog
+            "locale": "de-de"
+        },
+        "additionalCosts": {
+            "shipping": {
+                "price": "10.00",
+            }
+        },
+        "items": [{
+            "id": "2be42a7a-508d-11ee-be56-0242ac120002", // the unique ID of the item instance
+            "name": "Chloe Dress",
+            "sku": "1000101",
+            "price": "99.99",
+            "category": "shop > clothes > women > dresses",
+            "allowDiscount": true // This is set based on the configured global exclusion list in the NewStore platform
+        }]
+    }
+}
+Output payload
+The output NewStore expects is a list of
+effects
+in the following format:
+{
+    "effects": [{
+        "effectType": "setDiscountPerItem",
+        "triggeredByCoupon": "50OFFSHIRTS",
+        "props": {
+            "name": "50% off shirts",
+            "position": 5,
+            "value": "12.50",
+        }
+    }, {
+        "effectType": "setDiscount",
+        "triggeredByCoupon": "",
+        "props": {
+            "name": "Autumn promotion",
+            "value": "25.40",
+        }
+    }, {
+        "effectType": "rejectedCoupon",
+        "triggeredByCoupon": "",
+        "props": {
+            "value": "SUMMERPARTY2023",
+            "reason": "invalid coupon"
+        }
+    }]
+}
+Available effects for a third-party promotion integration
+setDiscountPerItem
+Sets a discount for a specific item.
+{
+    "effectType": "setDiscountPerItem",
+    "triggeredByCoupon": "50OFFSHIRTS", // the coupon that triggered the discount (if any)
+    "props": {
+        "name": "50% off shirts", // the name of the discount
+        "position": 5, // the position of the discounted item
+        "value": "12.50", // the discounted amount
+    }
+}
+setDiscount
+Sets a discount on the whole cart, which is then applied on a pro-rated basis to all the items in the cart.
+{
+    "effectType": "setDiscount",
+    "triggeredByCoupon": "", // the coupon that triggered the discount (if any)
+    "props": {
+        "name": "Autumn promotion", // the name of the discount
+        "value": "25.40", // the discounted amount
+    }
+}
+setFreeShipping
+Sets a 100% discount on the shipping costs.
+{
+    "effectType": "setFreeShipping",
+    "triggeredByCoupon": "", // the coupon that triggered the discount (if any)
+    "props": {
+        "name": "Autumn promotion", // the name of the discount
+    }
+}
+rejectCoupon
+Notifies the integration that a coupon has been rejected.
+{
+    "effectType": "rejectCoupon",
+    "triggeredByCoupon": "", // not considered in that case
+    "props": {
+        "value": "SUMMERPARTY2023", // the coupon that has been rejected
+        "reason": "invalid coupon" // the reason why the coupon has been rejected
+    }
+}
+Closing a session
+If you need to close an active session in the third-party promotion engine, to check the usage of the coupons or to compute promotion related budgets, listen to the
+order.created
+event emitted via the Event Stream. This event is emitted when the order is finalized in the platform. Note that the
+customer session ID
+is equivalent to the
+order ID
+entity in the NewStore platform.
+Returns or order cancellations must be handled via integration logic set up in the third-party promotion engine or via the integration layer. For example, the integration can listen to the
+order.cancelled
+event as a trigger to revert the usage of the coupon or promotion in the third-party promotion engine.
+For more information on the events that the integration can consume, see the
+Event Stream documentation
+.
+Rounding and prorating
+When adjusting prices, NewStore rounds them based on the currency. For instance, USD prices are rounded to 2 decimals, while JPY prices are rounded to the nearest whole number.
+For discounts that are prorated on the items, any extra cents from rounding are distributed among the discounted items.
+For example, if there's a
+10€
+discount on 3 items of equal price, each item gets a discount of
+3.33€
+, rounded to
+3.34€
+for the first item and
+3.33€
+for the remaining 2 items.
+Discounts, on the other hand, are rounded individually.
+For example if an item of price
+17.90€
+gets a
+15%
+discount, that will be calculated as
+2.685€
+and rounded up to
+2.69€
+.
+The additional
+0.005€
+that was added to reach an exact value will not be compensated for other discounts applied on the item.
+Related topics
+Setting up promotions
+API documentation
+Was this article helpful?
+Yes
+No
+Tags
+api
+automatic promotions
+configuration
+discounts
+integration
+newstore platform
+platform
+promotions
+third-party promotion engine
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

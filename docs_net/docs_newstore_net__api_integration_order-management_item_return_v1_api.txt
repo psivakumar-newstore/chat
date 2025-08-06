@@ -1,0 +1,285 @@
+Item Return API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Availabilities Export API
+Customer Profile Updates API
+Fulfillment Provider API
+Fulfillment Request API
+Historical order import API
+Item Return API
+Item Return API
+Location API
+Manager approval
+Fulfillment Configuration API
+Manager Approval Rules API
+Order API
+Order Injection API
+Order Notes API
+Order information retrieval API
+Safety Stock API
+Availabilities API
+Stock insights API
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+post
+Create return
+API docs by Redocly
+Item Return API
+(
+0.2
+)
+Download OpenAPI specification
+:
+Download
+Create return
+Initiates the return process for item(s) in an order.
+Imports a historical return into NewStore when
+is_historical
+is set to true.
+NewStore creates condition codes for your business.
+To retrieve the list of condition codes configured for your business, contact
+the support team.
+The refund amount is calculated by the platform, and
+cannot
+be provided in the payload:
+NewStore calculates the refund amount for each returned order line considering any pre-existing appeasements.
+If the config property
+refund_shipping_cost
+is set to
+True
+and all items in the
+order are returned, the amount refunded includes the sum of the item prices and the
+shipping costs.
+If the config property
+refund_shipping_cost
+is not set, or set to
+False
+,
+the sum of the item prices is refunded. Shipping costs are not included in this amount,
+and not refunded.
+If the config property
+return_fee
+is set, the amount refunded will have the return fee deducted from it.
+If the
+return_fee
+field is set in the return payload, the default tenant configuration
+return_fee
+is ignored.
+If multiple items with same product ID are provided, the item with minimum amount left will be refunded first.
+Example:
+Order
+An order is placed with multiple items of the same product IDs but different amounts left to be refunded.
+Product ID
+Price paid
+Remaining amount
+Notes
+Product 1
+$300
+$250
+$50 were appeased
+Product 1
+$300
+$275
+$25 were appeased
+Product 1
+$300
+$300
+No existing refunds
+Product 2
+$400
+$400
+No existing refunds
+Total
+$1300
+$1225
+Return
+A return is created for Product 1, Product 1 and Product 2.
+Product ID
+Refunded amount
+Notes
+Product 1
+$250
+Item with product ID
+Product 1
+and lowest price
+Product 1
+$275
+Item with product ID
+Product 1
+and second lowest price
+Product 2
+$400
+Total refund amount
+$925
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_id
+required
+string
+The identifier for the order.
+Request Body schema:
+application/json
+is_historical
+boolean
+Set to true, if the return is historical, i.e. it was processed by an external system.
+returned_at
+string or null
+<
+date-time
+>
+The time when the item was returned. If this property is not set in the request, it is set to the current time.
+returned_from
+required
+string
+non-empty
+The fulfillment_node_id of the location to which the item was returned.
+return_fee
+number or null
+>= 0
+The fee for the return. If this property is set, the tenant configuration
+return_fee
+is ignored.
+items
+required
+Array of
+objects
+non-empty
+extended_attributes
+Array of
+objects
+<= 100 items
+This is a list of read-only objects that can be used to display additional information.
+Responses
+201
+The return was successfully created.
+400
+The provided data is incorrect.
+404
+The order was not found or given product(s) is not a part of order.
+409
+Your return policy does not allow this return, or this return was already requested.
+422
+Validation of request payload failed.
+500
+Internal Server Error.
+post
+/orders/{order_id}/returns
+/v1/d
+/orders/{order_id}/returns
+Request samples
+Payload
+Content type
+application/json
+Example
+Regular return.
+Historical return.
+Return fee override.
+Regular return.
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"product_id"
+:
+"1000031"
+,
+"return_reason"
+:
+"Wrong size"
+,
+"return_code"
+:
+1
+,
+"item_condition"
+:
+"Resell"
+,
+"condition_code"
+:
+1
+}
+,
+{
+"product_id"
+:
+"1000032"
+}
+]
+,
+"returned_from"
+:
+"27a39710-4b2d-43fd-b636-5f7aed3073a2"
+}
+Response samples
+201
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"refunded_amount"
+:
+775.19
+,
+"return_id"
+:
+"1fc4d366-40ca-4e36-b38f-66393bda517a"
+,
+"returned_from"
+:
+"27a39710-4b2d-43fd-b636-5f7aed3073a2"
+,
+"currency"
+:
+"USD"
+,
+"return_items"
+:
+[
+{
+"product_id"
+:
+"1000031"
+}
+,
+{
+"product_id"
+:
+"1000032"
+}
+]
+}
+Previous
+Item Return API
+Next
+Location API
+Copyright © 2025 NewStore, Inc.

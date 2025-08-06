@@ -1,0 +1,262 @@
+openapi: 3.0.0
+info:
+  title: DC Fulfillment Node Config API
+  version: v0
+  description: >
+    Use this API to define and update URLs and API keys for warehouse
+    integrations.
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+paths:
+  /config/dc/{id}:
+    get:
+      summary: Get DC configuration
+      responses:
+        '200':
+          description: |
+            Successfully get config for DC fulfillment node.
+          content:
+            application/json:
+              schema:
+                title: DC Fulfillment Node Configuration
+                description: Schema of a DC fulfillment node configuration.
+                type: object
+                required:
+                  - api_config
+                properties:
+                  api_config:
+                    title: API Configuration of DC fulfillment node
+                    description: Schema for API configuration of DC fulfillment node
+                    type: object
+                    required:
+                      - url
+                      - api_key
+                      - allow_unsecured_http
+                    properties:
+                      url:
+                        type: string
+                      api_key:
+                        type: string
+                      allow_unsecured_http:
+                        type: boolean
+              example:
+                api_config:
+                  url: dc_fulfillment_node_url.com
+                  api_key: dc_provider_api_key
+                  allow_unsecured_http: false
+        '404':
+          description: The fulfillment node id was not found or does not have a config.
+          content:
+            application/json:
+              schema:
+                title: 400 Error Response
+                description: >-
+                  Error response on call to update dc fulfillment node
+                  configuration.
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    description: A list of fields that don't match request schema.
+                    items:
+                      type: string
+                      description: >-
+                        An explanation of fields that don't match schema
+                        definitions.
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+                  request_id:
+                    type: string
+                    description: The id for the failed request.
+              example:
+                message: DC configuration for
+not found
+                request_id: '123.4567'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal Error Response
+                description: Error response for an internal server error.
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+              example:
+                error_code: unexpected_error
+                message: Internal error has occurred.
+                request_id: '123.4567'
+      description: >
+        Retrieves the configuration for a [DC](/docs/glossary.html#term-DC) in
+        the NewStore platform.
+
+
+        **Note:** This only applies to warehouses that have a configuration
+        already set up.
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: DC Fulfillment Node Configuration
+              description: Schema of a DC fulfillment node configuration.
+              type: object
+              required:
+                - api_config
+              properties:
+                api_config:
+                  title: API Configuration of DC fulfillment node
+                  description: Schema for API configuration of DC fulfillment node
+                  type: object
+                  required:
+                    - url
+                    - api_key
+                    - allow_unsecured_http
+                  properties:
+                    url:
+                      type: string
+                    api_key:
+                      type: string
+                    allow_unsecured_http:
+                      type: boolean
+      responses:
+        '200':
+          description: |
+            Add or update DC configuration.
+          content:
+            application/json:
+              schema:
+                title: DC Fulfillment Node Configuration
+                description: Schema of a DC fulfillment node configuration.
+                type: object
+                required:
+                  - api_config
+                properties:
+                  api_config:
+                    title: API Configuration of DC fulfillment node
+                    description: Schema for API configuration of DC fulfillment node
+                    type: object
+                    required:
+                      - url
+                      - api_key
+                      - allow_unsecured_http
+                    properties:
+                      url:
+                        type: string
+                      api_key:
+                        type: string
+                      allow_unsecured_http:
+                        type: boolean
+              example:
+                api_config:
+                  url: dc_fulfillment_node_url.com
+                  api_key: dc_provider_api_key
+                  allow_unsecured_http: false
+        '400':
+          description: |
+            Cannot parse the request to add or update DC configuration.
+          content:
+            application/json:
+              schema:
+                title: 400 Error Response
+                description: >-
+                  Error response on call to update dc fulfillment node
+                  configuration.
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    description: A list of fields that don't match request schema.
+                    items:
+                      type: string
+                      description: >-
+                        An explanation of fields that don't match schema
+                        definitions.
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+                  request_id:
+                    type: string
+                    description: The id for the failed request.
+              example:
+                messages:
+                  - url is required
+                request_id: '123.4567'
+        '409':
+          description: |
+            Cannot update the configuration due to a race condition.
+          content:
+            application/json:
+              schema:
+                title: 400 Error Response
+                description: >-
+                  Error response on call to update dc fulfillment node
+                  configuration.
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    description: A list of fields that don't match request schema.
+                    items:
+                      type: string
+                      description: >-
+                        An explanation of fields that don't match schema
+                        definitions.
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+                  request_id:
+                    type: string
+                    description: The id for the failed request.
+              example:
+                message: Update failed because of a race condition
+                request_id: '123.4567'
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal Error Response
+                description: Error response for an internal server error.
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+              example:
+                error_code: unexpected_error
+                message: Internal error has occurred.
+                request_id: '123.4567'
+      summary: Update DC configuration
+      description: >
+        Adds or updates the configuration for a
+        [DC](/docs/glossary.html#term-DC) in the NewStore platform.
+
+
+        Use this method to add the configuration for a DC in your business for
+        fulfilling orders.
+
+
+        If a configuration for DC or store was not working correctly, you only
+        need to fix
+
+        the integration once. The platform automatically re-sends any
+        fulfillment requests that
+
+        were unsuccessful before due to the wrong configuration, once a day.
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID for a DC fulfillment node.
+components: {}

@@ -1,0 +1,390 @@
+Using the App Extension API
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Using the App Extension API
+Updated on
+Apr 14, 2025
+Published on Oct 1, 2024
+6 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Our App Extension feature allows you to display custom (web) content in your app. Using NewStore's App Extension API, your app extensions can leverage the native functionality of NewStore Shopping App.
+Availability
+Version supported from
+This feature is supported from iOS app version 3.13.x and Android app version 1.106.x or later.
+Most methods are available in all contexts and we aim to have all methods available on both platforms. However in some situations the feature that is responsible for exposing the method might not be available given the context. For example: in the context of the
+Scan & Learn
+mini app, the cart feature is not available, resulting in any  methods related to managing the cart being not available.
+Method availability also depends on the version of the app, which is documented in the API reference.
+We have introduced the
+isMethodAvailable
+method to query for method availability.
+Error handling
+Errors are raised using the
+Promises
+concept of JavaScript. All methods return a
+Promise
+that either contains the requested value or a an error detailing what went wrong. All errors raised by the bridge use the
+NCABridgeError
+type (for general errors). Methods can also raise more detailed errors by raising an error that is a subclass of
+NCABridgeError
+. See
+NCABridgeAddProductToCartError
+for an example.
+General error type -
+NCABridgeError
+Code
+Description
+unknown
+An unknown error occurred.
+bridgeCommunication
+Could not communicate with the native bridge, check if we are running on a supported platform.
+unexpectedRequest
+The native bridge could not parse the request.
+unexpectedResponse
+The native bridge returned an unexpected response.
+methodUnavailable
+This method is unavailable, use the
+isMethodAvailable
+method to check for availability.
+Setup
+// Instantiate a shared instance of the communication bridge
+const bridge = new NCABridge();
+Minimal example
+Storing and retrieving a local storage value
+​
+// Instantiate a shared instance of the communication bridge
+const bridge = new NCABridge();
+
+// Get the user's session ID from local storage
+async function getUserSession() {
+  return bridge.localStorageGet("user_session");
+}
+
+// Update the user's session ID in local storage
+async function updateUserSession(sessionId) {
+  return bridge.localStorageSet("user_session", sessionId);
+}
+
+// Remove the user's session ID from local storage
+async function removeUserSession() {
+  return bridge.localStorageSet("user_session", null);
+}
+Exhaustive example
+Adding a product to the native cart and handling related errors appropriately
+​
+// Instantiate a shared instance of the communication bridge
+const bridge = new NCABridge();
+
+async function addToCart() {
+  try {
+
+    // Add the product with the given configuration to the native card
+    await bridge.addProductToCart("1234", {
+      color: "red",
+      size: "L"
+    },
+    true, {
+      "text": "Happy!", 
+      "logo": "20th_anniversary" 
+    });
+
+  }
+  catch (error) {
+
+    // Handles specific errors related to the `addProductToCart` method
+    if (error instanceof NCABridgeAddProductToCartError) {
+
+      // Every subclass of `NCABridgeError` contains a `code` property which can be used to determine the type of the error programmatically
+      switch (error.code) {
+
+        case NCABridgeAddProductToCartError.Code.invalidProductId:
+          // The passed product id is invalid. It should be a non-empty String
+
+        case NCABridgeAddProductToCartError.Code.productNotFound:
+          // The product does not exist (or not returned from the Ecom API for another reason)
+
+        case NCABridgeAddProductToCartError.Code.configurationUnavailable:
+          // The configuration passed to the `addProductToCart` method is invalid or out of stock
+
+        case NCABridgeAddProductToCartError.Code.configurationIncomplete:
+          // The configuration passed to the `addProductToCart` method doesn't lead to a buyable product
+
+        default:
+          // Any other error
+      }
+    }
+    else if (error instanceof NCABridgeError) {
+
+      switch (error.code) {
+        case NCABridgeError.Code.bridgeCommunication:
+          // The connection with the native bridge could not be established
+        default:
+          // Any other error
+      }
+
+    }
+    else {
+      // Anything else
+    }
+  }
+}
+API Reference
+General
+isMethodAvailable
+isMethodAvailable(name: String) : Promise<Bool>
+Use this method in order to determine whether a method is available in the current context. Method availability could differ between the main app and mini apps, which only offer a subset of features from the main app.
+Parameters
+Parameter
+Type
+Required
+Description
+name
+String
+yes
+The name of the method to check availability for.
+Error type
+NCABridgeIsMethodAvailableError
+Code
+Description
+invalidMethodName
+The specified method name is invalid. Make sure the method name is a valid non-empty string.
+dismissAppExtension
+dismissAppExtension() : Promise<null>
+Dismisses the current active App Extension (screen).
+Local storage
+localStorageSet
+localStorageSet(key: String, value: String?) : Promise<null>
+Important
+The local storage is not intended for storing sensitive information. In theory, any values stored could be read by any content shown in any app extension.
+Note
+Logging in or out of your account in the app will clear the local storage database.
+Stores a value in the local storage using the given key. Values stored can be retrieved using the
+localStorageGet
+method
+Parameters
+Parameter
+Type
+Required
+Description
+key
+String
+yes
+The key to store the given value under.
+value
+String
+no
+The value to store for the given key. Passing
+null
+will delete the stored value.
+Error type
+NCABridgeLocalStorageSetError
+Code
+Description
+invalidKey
+The specified key is invalid. Make sure the key is a valid non-empty string.
+localStorageGet
+localStorageGet(key: String) : Promise<String?>
+Note
+Local storage values are pinned to the domain where the app extension is hosted. A local storage value saved by
+extensionA.website.com
+can not be read by an app extension hosted on
+extensionB.website.com
+.
+Returns the value that is stored in the local storage for the given key. Values stored in local storage using the
+localStorageSet
+method can be retrieved using this method.
+Parameters
+Parameter
+Type
+Required
+Description
+key
+String
+yes
+The key to retrieve the stored value for.
+Products
+addProductToCart
+addProductToCart(productId: String, configuration: Object?, showAnimation: Bool, customisation: Object?) : Promise<null>
+Adds a product to the native cart using its ID and the specified configuration.
+This method takes 4 input arguments: a product ID (either master or variant), an optional product configuration Object (required, when a master product ID is passed), a boolean value to indicate the app should perform an animation when adding a product to the cart and an optional customization Object.
+Parameters
+Parameter
+Type
+Required
+Description
+productId
+String
+yes
+The ID of the master product or product variant.
+configuration
+Object
+no
+An optional product configuration object containing the IDs and the values of the configurable attributes of the product. This parameter is required if a master product ID is passed for the
+productId
+parameter, since it requires a valid configuration to determine the resulting product variant. Example:
+{ color: "blue", size: "M" }
+.
+Note
+Both IDs and their respective values are case-sensitive.
+showAnimation
+Boolean
+no
+A parameter to enable or disable animation for the confirmation of app extension action. By default it is set to
+true
+.
+customisation
+Object
+no
+Any customization that is not part of the configuration attributes such as adding a custom logo or personal message to a product. Example:
+"id": "label", "name": "Newstore", "logo": "newstore_branding.jpg"
+. The contents of the customization object are dynamically read and as-is passed onto the ecommerce backend.
+Error type -
+NCABridgeAddProductToCartError
+Code
+Description
+invalidProductId
+The specified product ID is invalid. Ensure it is a valid non-empty string.
+productNotFound
+The product could not be found. Check the given product ID and make sure it exists.
+configurationUnavailable
+This product is not available in the given configuration.
+configurationIncomplete
+The specified configuration is incomplete. Ensure all configuration options are supplied and contain a non-empty value.
+addProductToFavorites
+addProductToFavorites(productId: String, showAnimation: Bool) : Promise<null>
+Adds a product to the native favorites feature by its ID.
+Parameters
+Parameter
+Type
+Required
+Description
+productId
+String
+yes
+The ID of the product variant.
+showAnimation
+Boolean
+no
+A parameter to enable or disable animation for the confirmation of app extension action. By default this is set to
+true
+.
+Error type
+NCABridgeAddProductToFavoritesError
+Code
+Description
+invalidProductId
+The specified product ID is invalid. Make sure it is a valid non-empty string.
+productNotFound
+The product could not be found. Check the specified product ID and make sure it exists.
+removeProductFromFavorites
+removeProductFromFavorites(productId: String) : Promise<null>
+Removes a product from the native favorites feature by its ID.
+Parameters
+Parameter
+Type
+Required
+Description
+productId
+String
+yes
+The ID of the product variant.
+Error type
+NCABridgeRemoveProductFromFavoritesError
+Code
+Description
+invalidProductId
+The specified product ID is invalid. Make sure it is a valid non-empty string.
+productIsNotFavorite
+The specified product ID could not be found on the current favorites list. No action performed.
+fetchFavorites
+fetchFavorites() : Promise<String?>
+Returns a comma-separated string with all product IDs that have been added to favorites.
+getProductConfiguration
+async getProductConfiguration() : Promise<Object>
+Returns the current product configuration. For example:
+{ "c_size": "m", "color": "464UD1" }
+updateProductConfiguration
+async updateProductConfiguration(configuration) : Promise<null>
+Updates the configuration of the product with the new attribute values provided in the configuration object.
+Parameters
+Parameter
+Type
+Required
+Description
+configuration
+Object
+yes
+Updates the configuration of a product with new attribute values provided in a configuration object. For example, if the updated configuration specifies
+{ "attr_size": "m" }
+, only the size attribute will be updated, while all other attributes will remain unchanged.
+Was this article helpful?
+Yes
+No
+Tags
+app customization
+app extensions
+Shopping App
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

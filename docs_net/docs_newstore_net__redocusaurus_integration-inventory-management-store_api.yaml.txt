@@ -1,0 +1,1480 @@
+openapi: 3.0.1
+tags:
+  - name: Employees
+    description: >
+      Employees represent the personnel that are employed at a store and contain
+      details such as contact
+
+      information and the associated
+      [store](/api/integration/inventory-management/store_api#tag/Stores).
+
+
+      Use it to create, update, and retrieve employees.
+  - name: Printer Locations
+    description: |
+      Groups printers in a physical location of the store.
+  - name: Printers
+    description: |
+      Represents a printer in the store.
+  - name: Stores
+    description: >
+      Represents a physical store in your business. It holds information on
+      street and postal addresses,
+
+      service hours, and delivery details.
+
+
+      Use it to create, update, and retrieve stores. Use the
+      queue_prioritization property to define the
+
+      priority for fulfillment requests on NewStore Fulfillment App. See
+
+      [About order fulfillment](/product/processes/about-ffment).
+info:
+  title: Store operations
+  contact:
+    name: Team Store Fulfillment
+    url: https://apidocs.newstore.io
+  description: API for managing stores and related entities, such as employees.
+  version: '0.1'
+servers:
+  - url: /v0/d
+  - url: /
+paths:
+  /employees:
+    x-pyramid-route-name: employees
+    get:
+      tags:
+        - Employees
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Get all stores Response
+                description: Response schema for getting all employees
+                type: object
+                properties:
+                  employees:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Employee'
+                required:
+                  - employees
+        '400':
+          description: Incorrect request.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: Temporarily not available - service not available, try again later.
+      description: >
+        Retrieves the list of employees.
+
+
+        **Related methods:**
+
+        - [Get
+        employee](/api/integration/inventory-management/store_api#tag/Employees/operation/getEmployee)
+
+        - [Update
+        employee](/api/integration/inventory-management/store_api#tag/Employees/operation/updateEmployee)
+      summary: List employees
+      operationId: listEmployees
+    post:
+      tags:
+        - Employees
+      responses:
+        '200':
+          description: |
+            The employee has been created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '409':
+          description: Conflict, requested employee identifier already exists.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: Temporarily not available - service not available, try again later.
+      description: >
+        Creates a new employee. Before using this method, ensure you have
+        [created a
+        store](/api/integration/inventory-management/store_api#tag/Stores/operation/createStore).
+
+
+        **Related methods:**
+
+        - [List
+        employees](/api/integration/inventory-management/store_api#tag/Employees/operation/listEmployees)
+
+        - [Get
+        employee](/api/integration/inventory-management/store_api#tag/Employees/operation/getEmployee)
+
+        - [Update
+        employee](/api/integration/inventory-management/store_api#tag/Employees/operation/updateEmployee)
+      summary: Create employee
+      operationId: createEmployee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+        required: true
+  /employees/{employee_id}:
+    x-pyramid-route-name: employee
+    get:
+      tags:
+        - Employees
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '404':
+          description: Employee not found.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: Temporarily not available - service not available, try again later.
+      description: |
+        Retrieves the employee"s details.
+      summary: Get employee
+      operationId: getEmployee
+    patch:
+      tags:
+        - Employees
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          description: Bad request - Request data is invalid.
+        '404':
+          description: Employee not found.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: Temporarily not available - service not available, try again later.
+      description: >
+        Updates the employee. Only attributes specified in the request are
+        changed.
+      summary: Update employee
+      operationId: updateEmployee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+        required: true
+    parameters:
+      - name: employee_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The unique identifier of an employee.
+  /stores:
+    x-pyramid-route-name: stores
+    post:
+      tags:
+        - Stores
+      responses:
+        '200':
+          description: |
+            The store has been created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+        '400':
+          description: Bad Request - Request data is invalid.
+        '404':
+          description: Required data, such as catalogs are not found.
+        '409':
+          description: Conflict, requested store identifier already exists.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: Temporarily not available - service not available, try again later.
+      description: >
+        Creates a store. See the [Setting up a store
+        tutorial](https://docs.newstore.com/docs/tutorial-setting-up-a-store).
+
+
+        After you have created a store, you can:
+
+
+        - [add employees to
+        it](/api/integration/inventory-management/store_api/#tag/Employees/operation/createEmployee)
+
+        - [import stock into
+        it](/api/integration/catalog-sfcc/import-api_api/#operation/stock).
+
+
+        Ensure that you have [imported a price
+        book](/api/integration/catalog-sfcc/import-api_api/#operation/price-books)
+
+        before you assign it to a store. See the [Importing master data
+        tutorial](https://docs.newstore.com/v1/docs/importing-data#integ-importdata).
+
+
+        To set up a shipping strategy for the store, including shipping methods,
+        provider rates, and routes,
+
+        [create a fulfillment
+        configuration](/api/integration/order-management/newstore_ff_config_api#operation/add-or-update-fulfillment-configuration).
+
+        See the [fulfillment config
+        tutorial](https://docs.newstore.com/v1/docs/tutorial-setting-up-a-fulfillment-configuration#tutorial_fulfillment-config-new).
+
+
+        By default a fulfillment location will also be created with the same id
+        as the store's id. If you are using custom fulfilment location IDs,
+
+        then you will need to: [create the fulfillment
+        location](https://docs.newstore.com/v1/docs/tutorial-importing-stock-information#optional-creating-a-fulfillment-location-with-a-custom-id)
+        with its custom ID so that Store Fulfillment
+
+        can work with your store after creating the Store.
+
+
+        **Related methods:**
+
+        - [Get
+        store](/api/integration/inventory-management/store_api#tag/Stores/operation/getStore)
+
+        - [List
+        stores](/api/integration/inventory-management/store_api#tag/Stores/operation/listStores)
+      summary: Create store
+      operationId: createStore
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Store'
+              required:
+                - label
+                - store_id
+                - timezone
+                - physical_address
+                - delivery_zip_codes
+                - display_price_unit_type
+                - tax_included
+        required: true
+    get:
+      tags:
+        - Stores
+      parameters:
+        - in: query
+          name: lat
+          schema:
+            type: number
+          required: false
+          description: >-
+            Used if you want to fetch nearby stores. You must provide both
+            latitude and longitude to query by location.
+        - in: query
+          name: long
+          schema:
+            type: number
+          required: false
+          description: >-
+            Used if you want to fetch nearby stores. You must provide both
+            latitude and longitude to query by location.
+        - in: query
+          name: radius
+          schema:
+            type: number
+          required: false
+          description: >-
+            Used if you want to fetch nearby stores. Given a set of coordinates,
+            only stores within this distance (in meters) will be returned.
+        - in: query
+          name: max_stores
+          schema:
+            type: number
+          required: false
+          description: >-
+            Used if you want to fetch nearby stores. Maximum number of stores
+            returned when fetching by location. Latitude and longitude
+            parameters are mandatory.
+      responses:
+        '200':
+          description: |
+            Successful response.
+          content:
+            application/json:
+              schema:
+                title: Get all stores Response
+                description: Response schema for getting all stores
+                type: object
+                properties:
+                  stores:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Store'
+                required:
+                  - stores
+        '400':
+          description: Bad Request - Request data is invalid.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: Temporarily not available - Service not available, try again later.
+      description: >
+        Retrieves the list of stores.
+
+
+        **Related methods:**
+
+        - [Get
+        store](/api/integration/inventory-management/store_api#tag/Stores/operation/getStore)
+
+        - [Update
+        store](/api/integration/inventory-management/store_api#tag/Stores/operation/updateStore)
+
+        - [Create
+        store](/api/integration/inventory-management/store_api#tag/Stores/operation/createStore)
+      summary: List stores
+      operationId: listStores
+  /stores/{store_id}:
+    x-pyramid-route-name: store
+    get:
+      tags:
+        - Stores
+      responses:
+        '200':
+          description: |
+            Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+        '400':
+          description: Request data is invalid.
+        '404':
+          description: Store not found.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: Temporarily not available - service not available, try again later.
+      description: |
+        Gets the store and all its detailed information.
+      summary: Get store
+      operationId: getStore
+    patch:
+      tags:
+        - Stores
+      responses:
+        '200':
+          description: |
+            The store has been updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+        '400':
+          description: Request data is invalid.
+        '404':
+          description: Store not found.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: Temporarily not available - service not available, try again later.
+      description: >
+        Updates the store. Only attributes supplied in the request are changed.
+
+
+        **Note**: When you deactivate a store, ensure that the store has no
+        employees assigned to it.
+
+        To prevent routing orders to deactivated stores, also [contact NewStore
+        support](https://support.newstore.com)
+
+        to ensure that:
+
+        - there is no stock left in the store.
+
+        - the fulfillment configuration is updated to remove the
+        `fulfillment_node_id` matching the store.
+
+
+        **Related methods:**
+
+        - [Create
+        store](/api/integration/inventory-management/store_api#tag/Stores/operation/createStore)
+      summary: Update store
+      operationId: updateStore
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Store'
+        required: true
+    parameters:
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The unique identifier of a store.
+  /stores/{store_id}/printer_locations/{uuid}:
+    get:
+      tags:
+        - Printer Locations
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer Location
+                type: object
+                properties:
+                  printer_location:
+                    $ref: '#/components/schemas/printerLocation'
+                required:
+                  - printer_location
+        '404':
+          description: The printer location was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Returns the printer location with the given ID.
+      summary: Get printer location
+      operationId: getPrinterLocation
+    put:
+      tags:
+        - Printer Locations
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer Location
+                type: object
+                properties:
+                  printer_location:
+                    $ref: '#/components/schemas/printerLocation'
+                required:
+                  - printer_location
+        '404':
+          description: The printer location was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Update existing printer location with the given UUID.
+      summary: Update printer location.
+      operationId: updatePrinterLocation
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              title: Schema for updating an existing Printer Location
+              type: object
+              properties:
+                name:
+                  minLength: 1
+                  type: string
+              required:
+                - name
+        required: true
+    delete:
+      tags:
+        - Printer Locations
+      responses:
+        '200':
+          description: The printer location was deleted successfully.
+        '404':
+          description: The printer location was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Remove the printer location with the given UUID.
+      summary: Delete printer location
+      operationId: deletePrinterLocation
+    parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the printer location.
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the store.
+  /stores/{store_id}/printers:
+    get:
+      tags:
+        - Printers
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer
+                type: object
+                properties:
+                  printers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/printer'
+                required:
+                  - printers
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Returns the list of printers set up in the store.
+      summary: List printers
+      operationId: listPrinters
+    post:
+      tags:
+        - Printers
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer
+                type: object
+                properties:
+                  printer:
+                    $ref: '#/components/schemas/printer'
+                required:
+                  - printer
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Creates a new printer.
+      summary: Create printer
+      operationId: createPrinter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Schema for creating a Printer
+              type: object
+              $ref: '#/components/schemas/printerData'
+        required: true
+    parameters:
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the store.
+  /stores/{store_id}/printers/{uuid}:
+    get:
+      tags:
+        - Printers
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                title: Printer
+                type: object
+                properties:
+                  printer:
+                    $ref: '#/components/schemas/printer'
+                required:
+                  - printer
+        '404':
+          description: The printer was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Returns the printer with the given ID.
+      summary: Get printer
+      operationId: getPrinter
+    put:
+      tags:
+        - Printers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                title: Printer
+                type: object
+                properties:
+                  printer:
+                    $ref: '#/components/schemas/printer'
+                required:
+                  - printer
+        '404':
+          description: The printer was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Updates existing printer with the given UUID.
+      operationId: updatePrinter
+      summary: Update printer
+      requestBody:
+        content:
+          appplication/json:
+            schema:
+              title: Schema for updating an existing Printer
+              type: object
+              $ref: '#/components/schemas/printerData'
+        required: true
+    delete:
+      tags:
+        - Printers
+      responses:
+        '200':
+          description: The printer was deleted successfully.
+        '404':
+          description: The printer was not found.
+        '422':
+          description: The request couldn't be processed with the provided payload.
+        '500':
+          description: An internal error occurred.
+      description: Removes the printer with the given UUID.
+      summary: Delete printer
+      operationId: deletePrinter
+    parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the printer.
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the store.
+  /stores/{store_id}/employees:
+    x-pyramid-route-name: store_employees
+    get:
+      tags:
+        - Employees
+      responses:
+        '200':
+          description: |
+            Successful response.
+          content:
+            application/json:
+              schema:
+                properties:
+                  employees:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Employee'
+        '400':
+          description: Request data is invalid.
+        '404':
+          description: Store not found.
+        '500':
+          description: An internal error occurred.
+        '503':
+          description: Temporarily not available - service not available, try again later.
+      description: |
+        Gets all employees belonging to a store.
+      summary: Get store employees
+      operationId: getStoreEmployees
+    parameters:
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier of the store.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    printer:
+      type: object
+      additionalProperties: false
+      allOf:
+        - $ref: '#/components/schemas/printerData'
+        - properties:
+            created_at:
+              description: The time when this printer was created.
+              type: string
+              format: date-time
+            revision:
+              description: >-
+                Revision of the printer. Starts with 1 and is incremented on
+                each update.
+              type: integer
+            tenant:
+              maxLength: 256
+              type: string
+            updated_at:
+              description: The time when this printer was last updated.
+              type: string
+              format: date-time
+            uuid:
+              maxLength: 36
+              minLength: 36
+              type: string
+          type: object
+    printerData:
+      type: object
+      additionalProperties: false
+      properties:
+        ipv4:
+          type: string
+          maxLength: 16
+        ipv6:
+          type: string
+          maxLength: 40
+        location:
+          maxLength: 100
+          type: string
+        mac_address:
+          maxLength: 32
+          minLength: 17
+          type: string
+        manufacturer:
+          enum:
+            - Virtual
+            - Star
+            - AirPrint
+            - Posnet
+            - Epson
+          type: string
+        model:
+          maxLength: 64
+          minLength: 3
+          type: string
+        name:
+          maxLength: 64
+          minLength: 3
+          type: string
+        paper_size:
+          nullable: true
+          type: string
+          maxLength: 32
+        printer_location_id:
+          type: string
+          maxLength: 36
+          minLength: 36
+        store_id:
+          maxLength: 256
+          minLength: 1
+          type: string
+        type:
+          enum:
+            - document_printer
+            - label_printer
+            - fiscal_printer
+          type: string
+        url:
+          maxLength: 256
+          type: string
+        port:
+          type: integer
+        serial_number:
+          maxLength: 256
+          minLength: 1
+          type: string
+      required:
+        - type
+        - store_id
+        - manufacturer
+        - name
+    printerLocation:
+      type: object
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        name:
+          type: string
+        printers:
+          type: array
+          items:
+            $ref: '#/components/schemas/printer'
+        revision:
+          type: integer
+        store_id:
+          maxLength: 256
+          minLength: 1
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+        uuid:
+          maxLength: 36
+          minLength: 36
+          type: string
+      required:
+        - uuid
+        - name
+        - store_id
+        - created_at
+        - updated_at
+        - revision
+    Employee:
+      title: Employee
+      description: Represents an employee - can be a store associate or a manager
+      required:
+        - email
+        - first_name
+        - last_name
+        - telephone_number
+      type: object
+      properties:
+        id:
+          type: string
+          maxLength: 36
+          example: 4vpg8bG5iilWGkyCkUpwb0
+        email:
+          maxLength: 256
+          type: string
+          example: jay.doubleyou@example.com
+        first_name:
+          maxLength: 256
+          type: string
+          example: Jay
+        last_name:
+          maxLength: 256
+          type: string
+          example: DoubleYou
+        telephone_number:
+          maxLength: 32
+          type: string
+          example: 202-111-2367
+        store_id:
+          minLength: 1
+          maxLength: 256
+          type: string
+          nullable: true
+          example: 78b4fc81-d4a2-5edd-84d9-149a84312400
+        image_url:
+          type: string
+          nullable: true
+          maxLength: 256
+          example: www.test-image-url.com
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        store:
+          type: object
+          nullable: true
+          properties:
+            label:
+              type: string
+              minLength: 1
+        printer_location:
+          type: object
+          nullable: true
+          properties:
+            uuid:
+              type: string
+              minLength: 36
+              maxLength: 36
+            name:
+              type: string
+              minLength: 1
+        is_active:
+          type: boolean
+          example: true
+    Store:
+      title: Store
+      description: Store entity.
+      type: object
+      properties:
+        label:
+          maxLength: 256
+          type: string
+          example: 001_US_ABC_Street
+        physical_address:
+          nullable: false
+          description: Represents an address
+          required:
+            - address_line_1
+            - country_code
+          title: Address
+          type: object
+          properties:
+            address_line_1:
+              type: string
+            address_line_2:
+              type: string
+              nullable: true
+            province:
+              type: string
+              nullable: true
+            state:
+              type: string
+              nullable: true
+            zip_code:
+              maxLength: 256
+              type: string
+              nullable: true
+            city:
+              maxLength: 256
+              type: string
+              nullable: true
+            country_code:
+              $ref: '#/components/schemas/CountryCode'
+            latitude:
+              type: number
+              nullable: true
+            longitude:
+              type: number
+              nullable: true
+          example:
+            address_line_1: 12 ABC Street
+            city: New York
+            country_code: US
+            latitude: 40.7256956
+            longitude: -74.0023217
+            state: NY
+            zip_code: '10001'
+        shipping_address:
+          nullable: true
+          description: Represents an address
+          required:
+            - address_line_1
+            - country_code
+          example:
+            address_line_1: 12 ABC Street
+            city: New York
+            country_code: US
+            state: NY
+            zip_code: '10002'
+          title: Address
+          type: object
+          properties:
+            address_line_1:
+              type: string
+            address_line_2:
+              type: string
+              nullable: true
+            province:
+              type: string
+              nullable: true
+            state:
+              type: string
+              nullable: true
+            zip_code:
+              maxLength: 256
+              type: string
+              nullable: true
+            city:
+              maxLength: 256
+              type: string
+              nullable: true
+            country_code:
+              $ref: '#/components/schemas/CountryCode'
+            latitude:
+              type: number
+              nullable: true
+            longitude:
+              type: number
+              nullable: true
+        division_name:
+          type: string
+          nullable: true
+          description: Division of the company this store belongs to.
+          example: US
+        manager_id:
+          maxLength: 36
+          type: string
+          nullable: true
+          example: 466ba016-42d4-47cb-a953-0b808c949b64
+        image_url:
+          type: string
+          nullable: true
+          example: www.image-url.com
+        phone_number:
+          type: string
+          nullable: true
+          description: The telephone number at which the store can be reached.
+          example: 202-555-0138
+        active_status:
+          type: boolean
+          example: true
+        supported_shipping_methods:
+          type: array
+          items:
+            enum:
+              - traditional_carrier
+              - same_day_delivery
+              - in_store_pick_up
+              - in_store_handover
+            type: string
+          example:
+            - in_store_pick_up
+        gift_wrapping:
+          type: boolean
+          example: false
+        pricebook:
+          type: string
+          nullable: true
+          description: >-
+            Identifier of a pricebook which should be used for this store. The
+            pricebook defines prices for all products sold in the store. If a
+            pricebook is not specified, a default pricebook will be used by the
+            store.
+          example: dodici-ca
+        delivery_zip_codes:
+          type: array
+          items:
+            type: string
+            minLength: 2
+            maxLength: 32
+          example:
+            - '10001'
+            - '10002'
+        shipping_provider_info:
+          type: object
+          description: >-
+            Shipping provider information containing all external provider (like
+            zip codes, the external store id and so on).
+        business_hours:
+          type: array
+          items:
+            type: object
+            description: Represents store business hours information
+            required:
+              - from_time
+              - to_time
+              - weekday
+            properties:
+              from_time:
+                type: string
+                pattern: ^\d{2}:\d{2}$
+              to_time:
+                type: string
+                pattern: ^\d{2}:\d{2}$
+              weekday:
+                type: integer
+                description: Value represents week day starting from Monday
+              earliest_pick_up:
+                type: string
+                nullable: true
+                pattern: ^\d{2}:\d{2}$
+              latest_pick_up:
+                type: string
+                nullable: true
+                pattern: ^\d{2}:\d{2}$
+          example:
+            - from_time: '09:00'
+              to_time: '21:00'
+              earliest_pick_up: '10:00'
+              latest_pick_up: '20:00'
+              weekday: 0
+            - from_time: '09:00'
+              to_time: '20:00'
+              earliest_pick_up: '10:00'
+              latest_pick_up: '20:00'
+              weekday: 1
+            - from_time: '09:00'
+              to_time: '20:00'
+              earliest_pick_up: '10:00'
+              latest_pick_up: '20:00'
+              weekday: 2
+            - from_time: '09:00'
+              to_time: '20:00'
+              earliest_pick_up: '10:00'
+              latest_pick_up: '20:00'
+              weekday: 3
+            - from_time: '09:00'
+              to_time: '20:00'
+              earliest_pick_up: '10:00'
+              latest_pick_up: '20:00'
+              weekday: 4
+            - from_time: '09:00'
+              to_time: '20:00'
+              earliest_pick_up: '10:00'
+              latest_pick_up: '20:00'
+              weekday: 5
+            - from_time: '09:00'
+              to_time: '20:00'
+              earliest_pick_up: '10:00'
+              latest_pick_up: '20:00'
+              weekday: 6
+        timezone:
+          type: string
+          maxLength: 256
+          description: >
+            Only allows timezone values that comply with the
+tz database
+.
+          example: America/New_York
+        tax_id:
+          type: string
+          nullable: true
+          minLength: 9
+          maxLength: 9
+          example: null
+        tax_included:
+          type: boolean
+          description: If true, the prices associated with this store include tax.
+          example: true
+        queue_prioritization:
+          type: array
+          example:
+            - display_priority_type: priority
+              priority: 3
+              shipping_type: same_day_delivery
+            - display_priority_type: priority
+              priority: 2
+              shipping_type: in_store_pick_up
+            - display_priority_type: normal
+              priority: 1
+              shipping_type: traditional_carrier
+          items:
+            type: object
+            required:
+              - priority
+              - shipping_type
+            properties:
+              priority:
+                type: integer
+                description: >-
+                  Specifies the priority of the order during fulfillment via
+                  NewStore Fulfillment App in your store. Higher numbers have
+                  higher priority over lower numbers. For example, you can
+                  prioritize same-day delivery orders over in-store pickup
+                  orders in your store.
+              shipping_type:
+                type: string
+                enum:
+                  - traditional_carrier
+                  - same_day_delivery
+                  - in_store_pick_up
+                  - DHL_PAKET
+              display_priority_type:
+                type: string
+                nullable: true
+                enum:
+                  - priority
+                  - normal
+                description: >-
+                  Determines how an unassigned order is displayed in NewStore
+                  Fulfillment App to give associates an overview on how many
+                  orders are left in the queue.
+        catalog:
+          type: string
+          nullable: true
+          maxLength: 256
+          description: >-
+            The name of the catalog containing the list of products that can be
+            sold at this store.
+          example: storefront-catalog-en
+        locale:
+          type: string
+          nullable: true
+          maxLength: 32
+          description: >-
+            The locale of the catalog assigned to the store. The product data in
+            the catalog is displayed based on the locale specified here.
+          example: en-US
+        store_id:
+          minLength: 1
+          maxLength: 256
+          type: string
+          example: 050_Mc_Avenue
+          pattern: ^[a-zA-Z0-9_-]*$
+          description: store id (only for store creation)
+        display_price_unit_type:
+          type: string
+          enum:
+            - net
+            - gross
+          example: gross
+        revision:
+          type: integer
+          example: 1
+          readOnly: true
+        updated_at:
+          format: date-time
+          readOnly: true
+        created_at:
+          format: date-time
+          readOnly: true
+    CountryCode:
+      description: >-
+        Country code for this address. Must be
+ISO-3166 reference
+.
+      type: string
+      example: US
+      enum:
+        - AD
+        - AE
+        - AF
+        - AG
+        - AI
+        - AL
+        - AM
+        - AO
+        - AQ
+        - AR
+        - AS
+        - AT
+        - AU
+        - AW
+        - AX
+        - AZ
+        - BA
+        - BB
+        - BD
+        - BE
+        - BF
+        - BG
+        - BH
+        - BI
+        - BJ
+        - BL
+        - BM
+        - BN
+        - BO
+        - BQ
+        - BR
+        - BS
+        - BT
+        - BV
+        - BW
+        - BY
+        - BZ
+        - CA
+        - CC
+        - CD
+        - CF
+        - CG
+        - CH
+        - CI
+        - CK
+        - CL
+        - CM
+        - CN
+        - CO
+        - CR
+        - CU
+        - CV
+        - CW
+        - CX
+        - CY
+        - CZ
+        - DE
+        - DJ
+        - DK
+        - DM
+        - DO
+        - DZ
+        - EC
+        - EE
+        - EG
+        - EH
+        - ER
+        - ES
+        - ET
+        - FI
+        - FJ
+        - FK
+        - FM
+        - FO
+        - FR
+        - GA
+        - GB
+        - GD
+        - GE
+        - GF
+        - GG
+        - GH
+        - GI
+        - GL
+        - GM
+        - GN
+        - GP
+        - GQ
+        - GR
+        - GS
+        - GT
+        - GU
+        - GW
+        - GY
+        - HK
+        - HM
+        - HN
+        - HR
+        - HT
+        - HU
+        - ID
+        - IE
+        - IL
+        - IM
+        - IN
+        - IO
+        - IQ
+        - IR
+        - IS
+        - IT
+        - JE
+        - JM
+        - JO
+        - JP
+        - KE
+        - KG
+        - KH
+        - KI
+        - KM
+        - KN
+        - KP
+        - KR
+        - KW
+        - KY
+        - KZ
+        - LA
+        - LB
+        - LC
+        - LI
+        - LK
+        - LR
+        - LS
+        - LT
+        - LU
+        - LV
+        - LY
+        - MA
+        - MC
+        - MD
+        - ME
+        - MF
+        - MG
+        - MH
+        - MK
+        - ML
+        - MM
+        - MN
+        - MO
+        - MP
+        - MQ
+        - MR
+        - MS
+        - MT
+        - MU
+        - MV
+        - MW
+        - MX
+        - MY
+        - MZ
+        - NA
+        - NC
+        - NE
+        - NF
+        - NG
+        - NI
+        - NL
+        - 'NO'
+        - NP
+        - NR
+        - NU
+        - NZ
+        - OM
+        - PA
+        - PE
+        - PF
+        - PG
+        - PH
+        - PK
+        - PL
+        - PM
+        - PN
+        - PR
+        - PS
+        - PT
+        - PW
+        - PY
+        - QA
+        - RE
+        - RO
+        - RS
+        - RU
+        - RW
+        - SA
+        - SB
+        - SC
+        - SD
+        - SE
+        - SG
+        - SH
+        - SI
+        - SJ
+        - SK
+        - SL
+        - SM
+        - SN
+        - SO
+        - SR
+        - SS
+        - ST
+        - SV
+        - SX
+        - SY
+        - SZ
+        - TC
+        - TD
+        - TF
+        - TG
+        - TH
+        - TJ
+        - TK
+        - TL
+        - TM
+        - TN
+        - TO
+        - TR
+        - TT
+        - TV
+        - TW
+        - TZ
+        - UA
+        - UG
+        - UM
+        - US
+        - UY
+        - UZ
+        - VA
+        - VC
+        - VE
+        - VG
+        - VI
+        - VN
+        - VU
+        - WF
+        - WS
+        - YE
+        - YT
+        - ZA
+        - ZM
+        - ZW
+x-annotation-crossOriginAllowed: true

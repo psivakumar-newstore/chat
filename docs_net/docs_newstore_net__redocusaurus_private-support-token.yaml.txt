@@ -1,0 +1,277 @@
+openapi: 3.0.0
+info:
+  title: Token API (Deprecated)
+  version: v0
+  description: >-
+    Use this API to issue tokens used for authentication to communicate with the
+    NewStore platform.
+**Warning:** This API version is **deprecated**
+    since **January 8th, 2024**.
+We recommend that all existing integrations use API Clients with the [Client
+    Credentials
+    Grant](https://docs.p.newstore.partners/#/http/getting-started/newstore-rest-api/getting-started/client-credentials-grant).
+
+    Please use the [migration
+    guide](https://docs.newstore.net/developers/troubleshooting/migration-token-api-v0)
+    to migrate to the API Clients.
+servers:
+  - url: https://dodici.x.newstore.net/v0
+paths:
+  /token:
+    post:
+      deprecated: true
+      responses:
+        '200':
+          description: OK - you are authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/post_token_response'
+              example:
+                refresh_token: Z4tuV3lC4EvMV1X5A3HsB_VUBxmtlj5JtmUbtfQtWI538
+                access_token: >-
+                  eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IlFQqTFSVEEwTVVSQ05qWXpNVGhFT0RZeE5UVTVSakl6TTBFd05qQkJNVGd4UVRnNE1VUkROQSJ9.eyJodHRwOi8vbmV3c3RvcmUvbmV3c3RvcmVfaWQiOiIzUzQwTXFrTnlNTGJPTE5HcUY2UnljIiwiaHR0cDovL25ld3N0b3JlL3JvbGVzIjpbIm5ld3N0b3JlX2FkbWluIl0sImlzcyI6Imh0dHBzOi8vZGV2LW5ld3N0b3JlLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1OTZjOGY5NTc5MDgzNzQ4OWY0YzE5MWMiLCJhdWQiOiJodHRwczovL2Rldi1uZXdzdG9yZS5hdXRoMC5jb20vYXBpL3YyLyIsImlhdCI6MTUxNTY1ODI2NCwiZXhwIjoxNTE1NzQ0NjY0LCJhenAiOiJ0d2xGVlp5VElZYng3Z0ZkdEdZYktBdkNHblpBdTRZdyIsInNjb3BlIjoicmVhZDpjdXJyZW50X3VzZXIgdXBkYXRlOmN1cnJlbnRfdXNlcl9tZXRhZGF0YSBkZWxldGU6Y3VycmVudF91c2VyX21ldGFkYXRhIGNyZWF0ZTpjdXJyZW50X3VzZXJfbWV0YWRhdGEgY3JlYXRlOmN1cnJlbnRfdXNlcl9kZXZpY2VfY3JlZGVudGlhbHMgZGVsZXRlOmN1cnJlbnRfdXNlcl9kZXZpY2VfY3JlZGVudGlhbHMgdXBkYXRlOmN1cnJlbnRfdXNlcl9pZGVudGl0aWVzIG9mZmxpbmVfYWNjZXNzIiwiZ3R5IjoicGFzc3dvcmQifQ.XmkWhs2ww6ptiZEEOx3jouFPLwTiG4hfGczy5cpLH7ogXE3ZM9pQGQL3oXqXn1iBMdXMF6Aq-fPI6WE8_PmwC5pKnFuw-lwQ0e3bdYJ3XkYErSju5LQY_Dmmugvv-cBRANgyc8suWF0-AQVLeZF8ktnnI5FFZGMBTOJExMkKDTlgnfITWsoBi4abXtB2NminHfmmwP7RKQMK1ABAaNklNaCX7bPEYaquBaaurXF6E-KoBx0fyk3dKv4y2E6LEcEFmAGxRE8bEcgSmVFSDFOgOF1AAfdH8OCwBS6-i9yT7T5IeVF7rREeVuOgxruD3unJxJYfCD9U3fWfGucRuMFWZA
+                token_type: Bearer
+                scope: >-
+                  read:current_user update:current_user_metadata
+                  delete:current_user_metadata create:current_user_metadata
+                  create:current_user_device_credentials
+                  delete:current_user_device_credentials
+                  update:current_user_identities offline_access
+                expires_in: 86400
+        '400':
+          description: >-
+            Bad Request - the request was syntactically incorrect or has
+            missing/empty fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+              examples:
+                default:
+                  value:
+                    status: 400
+                    message: Authentication failed
+                    request_id: 9287978a-6641-410e-b7db-102c22a4f392
+                password query parameter:
+                  value:
+                    message: query parameter password is not allowed.
+        '403':
+          description: >-
+            Forbidden - you are not allowed to access this resource, because
+            your credentials are invalid or you don't have the required
+            permissions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+              example:
+                status: 403
+                message: Authentication failed
+                request_id: 18bd4dd5-1312-48a4-b527-32604dc50eeb
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+              example:
+                status: 500
+                message: Internal Error
+                request_id: 8432ad85-7cf2-4325-8825-97529132a333
+      description: >-
+        Provides an access token when the provided credentials are valid.
+
+
+        ---
+**DEPRECATED**  
+
+        Deprecation date 08-01-2024
+
+        Please use API Clients with the [Client Credentials
+        Grant](https://docs.p.newstore.partners/#/http/getting-started/newstore-rest-api/getting-started/client-credentials-grant).
+summary: Get access token
+      operationId: GetAccessToken
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  default: password
+                  enum:
+                    - password
+                  description: |
+                    The type of credentials provided: 
+
+                      password - username and password are required to be successfully authenticated.
+                  example: password
+                username:
+                  type: string
+                  description: >-
+                    The username to be authenticated, can be an email. This is
+                    required if grant_type = 'password', ignored if not.
+                  example: myusername@example.com
+                password:
+                  type: string
+                  format: password
+                  description: >-
+                    The password corresponding to the user to be authenticated.
+                    This is required if grant_type = 'password', ignored if not.
+                  example: V3lC4EvMV1X5h3HsB_VU
+              required:
+                - grant_type
+                - username
+                - password
+  /refresh_token:
+    post:
+      deprecated: true
+      responses:
+        '200':
+          description: OK - you are authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/post_token_response'
+              example:
+                refresh_token: Z4tuV3lC4EvMV1X5A3HsB_VUBxmtlj5JtmUbtfQtWI538
+                access_token: >-
+                  eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IlFQqTFSVEEwTVVSQ05qWXpNVGhFT0RZeE5UVTVSakl6TTBFd05qQkJNVGd4UVRnNE1VUkROQSJ9.eyJodHRwOi8vbmV3c3RvcmUvbmV3c3RvcmVfaWQiOiIzUzQwTXFrTnlNTGJPTE5HcUY2UnljIiwiaHR0cDovL25ld3N0b3JlL3JvbGVzIjpbIm5ld3N0b3JlX2FkbWluIl0sImlzcyI6Imh0dHBzOi8vZGV2LW5ld3N0b3JlLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1OTZjOGY5NTc5MDgzNzQ4OWY0YzE5MWMiLCJhdWQiOiJodHRwczovL2Rldi1uZXdzdG9yZS5hdXRoMC5jb20vYXBpL3YyLyIsImlhdCI6MTUxNTY1ODI2NCwiZXhwIjoxNTE1NzQ0NjY0LCJhenAiOiJ0d2xGVlp5VElZYng3Z0ZkdEdZYktBdkNHblpBdTRZdyIsInNjb3BlIjoicmVhZDpjdXJyZW50X3VzZXIgdXBkYXRlOmN1cnJlbnRfdXNlcl9tZXRhZGF0YSBkZWxldGU6Y3VycmVudF91c2VyX21ldGFkYXRhIGNyZWF0ZTpjdXJyZW50X3VzZXJfbWV0YWRhdGEgY3JlYXRlOmN1cnJlbnRfdXNlcl9kZXZpY2VfY3JlZGVudGlhbHMgZGVsZXRlOmN1cnJlbnRfdXNlcl9kZXZpY2VfY3JlZGVudGlhbHMgdXBkYXRlOmN1cnJlbnRfdXNlcl9pZGVudGl0aWVzIG9mZmxpbmVfYWNjZXNzIiwiZ3R5IjoicGFzc3dvcmQifQ.XmkWhs2ww6ptiZEEOx3jouFPLwTiG4hfGczy5cpLH7ogXE3ZM9pQGQL3oXqXn1iBMdXMF6Aq-fPI6WE8_PmwC5pKnFuw-lwQ0e3bdYJ3XkYErSju5LQY_Dmmugvv-cBRANgyc8suWF0-AQVLeZF8ktnnI5FFZGMBTOJExMkKDTlgnfITWsoBi4abXtB2NminHfmmwP7RKQMK1ABAaNklNaCX7bPEYaquBaaurXF6E-KoBx0fyk3dKv4y2E6LEcEFmAGxRE8bEcgSmVFSDFOgOF1AAfdH8OCwBS6-i9yT7T5IeVF7rREeVuOgxruD3unJxJYfCD9U3fWfGucRuMFWZA
+                token_type: Bearer
+                scope: >-
+                  read:current_user update:current_user_metadata
+                  delete:current_user_metadata create:current_user_metadata
+                  create:current_user_device_credentials
+                  delete:current_user_device_credentials
+                  update:current_user_identities offline_access
+                expires_in: 86400
+        '400':
+          description: >-
+            Bad Request - the request was syntactically incorrect or has
+            missing/empty fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+              example:
+                message: query parameter password is not allowed.
+        '403':
+          description: >-
+            Forbidden - you are not allowed to access this resource, because
+            your credentials are invalid or you don't have the required
+            permissions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+              example:
+                status: 403
+                message: Authentication failed
+                request_id: 18bd4dd5-1312-48a4-b527-32604dc50eeb
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+              example:
+                status: 500
+                message: Internal Error
+                request_id: 8432ad85-7cf2-4325-8825-97529132a333
+      description: >-
+        Provides an access token when the provided refresh_token is valid/not
+        expired. See RFC 6749 Section 6 for details how to use refresh tokens.  
+
+
+        ---
+**DEPRECATED**  
+
+        Deprecation date 08-01-2024
+
+        Please use API Clients with the [Client Credentials
+        Grant](https://docs.p.newstore.partners/#/http/getting-started/newstore-rest-api/getting-started/client-credentials-grant).
+summary: Refresh access token
+      operationId: RefreshAccessToken
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  default: refresh_token
+                  enum:
+                    - refresh_token
+                  description: |
+                    The type of credentials provided: 
+
+                      refresh_token - provides a new access token for a valid refresh token.
+                  example: refresh_token
+                refresh_token:
+                  type: string
+                  description: >-
+                    The refresh token, as received by an authentication to
+                    /v0/token
+                  example: Z4tuV3lC4EvMV1X5A3HsB_VUBxmtlj5JtmUbtfQtWI538
+              required:
+                - grant_type
+                - refresh_token
+components:
+  schemas:
+    post_token_response:
+      type: object
+      title: Authentication Response
+      description: >
+        The access token is a proper OAuth 2.0 access token, as described in
+        [RFC 6479 Section 5.1].
+
+
+        [RFC 6479 Section 5.1]: https://tools.ietf.org/html/rfc6749#section-5.1
+      properties:
+        access_token:
+          type: string
+          description: >-
+            The access token granting access to the resources. Use this token as
+            a bearer token in an authorization header.
+        refresh_token:
+          type: string
+          description: >-
+            The refresh token that can be presented to the /v0/refresh_token
+            resource to renew the access token w/o knowing the credentials
+            again.
+        token_type:
+          type: string
+          description: >-
+            The type of token presented in the Authentication header with API
+            calls.
+        scope:
+          type: string
+          description: A list of OAuth 2.0 scopes granted with this token.
+        expires_in:
+          type: integer
+          description: >-
+            The duration this token is valid in seconds. For example, 86400
+            seconds = 24 h = 1 day.
+    error_response:
+      type: object
+      title: Error Response
+      description: >-
+        Error response, if a request to the token endpoint failed due to an
+        external or internal error.
+      properties:
+        status:
+          type: integer
+          description: The HTTP status code.
+        message:
+          type: string
+          description: A human-readable error message.
+        request_id:
+          type: string
+          description: >-
+            An identifier used by NewStore to support debugging in case of
+            failure. This ID is printed into all platform logs. If provided as
+            part of a support request, it will help the support team with the
+            investigation.

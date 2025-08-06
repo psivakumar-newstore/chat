@@ -1,0 +1,205 @@
+Configuring payment options
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Configuring payment options
+Updated on
+Jan 28, 2025
+Published on Oct 30, 2024
+5 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Retailers and partners can define which payment options should be available for store associates as part of the payment process during checkout. The available payment options can be configured for the business globally or for each store.
+Configuring payment options for a retailer
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+Use the
+Get payment options configuration
+method to retrieve the payment options available to store associates in your business, during checkout in NewStore Associate App.
+To update the list of payment options, use the
+payment_options
+key in the
+Update payment options configuration
+method to specify an updated list of payment options.
+As of Associate App v.1.51.0, the payment options available are:
+adyen_terminal
+- This payment option is available for retailers where NewStore is integrated with Adyen as the payment provider. The Associate App displays the payment option as "Credit Card Reader" and "Manual Credit Card Reader".
+cash
+- This payment option is available for retailers that accept cash as a form of payment. The Associate App displays the payment option as 'Cash'.
+gift_card
+- This payment option is available for retailers that accept gift cards as a form of payment. It does not impact issuance or sales of gift cards as products. The Associate App displays the payment option as "gift Card".
+adyen_pos
+- This payment option is available for retailers with Adyen as the payment provider, and Tap to Pay on iPhone is an approved Adyen feature. Contact Adyen to know about enabling Tap to Pay on iPhone for your tenant account. The Associate App displays the payment option as "Tap to Pay on iPhone".
+adyen_pay_by_link
+- This payment option is available for retailers using the NewStore Checkout option to accept in-store payments using a QR code via customer phone. The Associate App displays the payment option as "Customer Phone".
+worldline
+- This payment option is available for retailers integrated with Worldline as the payment provider. When this payment option is added to the payment options for a store, the Associate App will display the payment option as “Credit Card Reader”.
+non_integrated
+- This payment option is available for retailers with stores or locations where the payment systems are not integrated with NewStore. There may be a specific payment system, such as employee purchase plans, unique credit card processing systems, or geographies where no integrated payment option is available for NewStore. In these situations, retailers can leverage the non_integrated (external payment) option to use the NewStore Associate App to process orders and fulfill the payment transactions outside the NewStore platform. The Associate App displays the payment option as "External Payment".
+Note
+By default, retailers using NewStore Clienteling and Remote Selling use
+adyen_pay_by_link
+. Enabling the payment option for in-store payments will not impact clienteling.
+Configuring payment options globally
+To enable payment options within the NewStore Associate App globally for all stores:
+Go to the
+payment_options
+key in the
+Update payment options configuration
+method.
+Add the specific payment options from the list above to the list of payment options applicable for your business.
+This adds the specific payment option to the list of payment options in NewStore Associate App, and allows associates to accept specific payment options when completing the checkout process. For more information, see
+Choosing a payment option
+.
+Configuring payment options for a specific store
+To enable payment options for a specific store:
+Use the
+Get payment options configuration
+method to retrieve the payment options available to store associates in your business, for a specific store in your business.
+To update the list of payment options for the store (specified in
+store_id
+), use the
+store_mapping
+>
+payment_options
+key in the
+Update payment options configuration
+method to specify an updated list of payment options.
+For example, specify
+adyen_pos
+as one of the available payment options in
+payment_options
+for the store (specified in
+store_id
+), where the Tap to Pay on iPhone payment is to be enabled.
+Note
+When configured at a store level, the store level configuration overrides the global setting.
+Configuring and using granular external payment options
+Supported from
+This feature is supported from Associate App v1.51.0 and later.
+Note
+Prior to the release of Associate App 1.51.0, retailers using the non_integrated/External Payment option had only a single payment or refund option in the Associate App. After upgrading to Associate App version 1.51.0, retailers who do not want granular external payment options need not alter their existing configurations.
+Retailers who choose to use more granular external payment options as part of the Associate App, along with the ability to track these granular payment options, must make the following configuration changes to enhance their store associate experience and their back office reconciliation data and visibility.
+This added flexibility and granularity provides retailers with better reconciliation visibility and tracking within NewStore and their ERP platforms.
+To create granular payment methods for external payments, use the
+Update Payment Options Configuration
+and follow the steps below:
+Decide whether the configuration levels for non-integrated payment options will be global or store-specific.
+Add
+non_integrated
+to the list of payment options at the appropriate level.
+Define the
+non_integrated_methods_definition
+object, which will map custom granular payment methods to a key (used for event stream and payloads).
+Now, set up the
+non_integrated_methods
+list for each store you want to display granular external methods in, or on the global level if you want to display the same in every store. This list will reference the methods you created definitions for by key.
+This configuration adds the
+External Payment
+option to the NewStore Associate App's payment options list and enables the user to display and select from a listing of granular payment methods under the
+External Payment
+option.
+Visibility of external payment transactions
+Retailers can validate and monitor external payment transactions and the specific granular payment methods used in them. Transactional details are available via the NewStore Omnichannel Manager, event stream, payment APIs, and NewStore Insights.
+NewStore Omnichannel Manager visibility
+The NewStore Omnichannel Manager provides payment visibility on orders where external payments have been applied. For these transactions, the user is shown the specific external payment method selected and the amount processed per payment method.
+API usage and visibility
+Within the payment accounts API, the
+property name
+used in external payments is mapped to the
+method
+object and
+non_integrated
+is mapped to the
+PSP
+object.
+Event stream visibility
+As part of the NewStore event stream schema, external payment information can continue to be found under
+instruments
+>
+payment_method
+.
+NewStore insights visibility
+For reporting purposes in omnichannel insights, the "Payment Method" column reflects the "property name" used in external payments.
+Related topics
+Placing orders
+Integrating a payment service provider
+Integrating a gift card provider
+Integrating Adyen
+Was this article helpful?
+Yes
+No
+Tags
+Adyen
+cash drawer
+cash management
+config api
+configuration
+event stream
+external payment options
+gift card
+payment
+payment device
+payment options
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

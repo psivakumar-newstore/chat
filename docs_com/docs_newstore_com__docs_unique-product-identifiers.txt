@@ -1,0 +1,128 @@
+Unique product identifiers
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Unique product identifiers
+Published on Dec 11, 2024
+2 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Product item support two groups of identifiers:
+Product IDs - unique identifier of product
+per catalog and locale
+. It is checked by import system for uniqueness. No two different products with same product ID are allowed to be imported, e.g. A3473311516008
+External IDs - list of unique identifiers
+per catalog and locale
+, the uniqueness is checked by an integrator. e.g. upc=B44865529807066, isbn=1234A8978
+Important
+All product IDs and external IDs has to be unique per catalog and locale or issues mentioned bellow will happen. Make sure you prevent importing duplicated in external IDs.
+Issue: Duplication of external ID in multiple products.
+In case multiple products contain same external id, the outcome of get product by ID is undefined. System can:
+pick one of duplicated products by random
+We recommend:
+Download whole catalog CSV. Navigate to products page in NOM and download it.
+Analyze CSV file (we recommend using script). Check if external ID is pointing only to a single product. If not, it is not defined which product to picked.
+ProductID1:
+       sku: sku1 // wrong - duplicate
+
+    ProductID2:
+       sku: sku1 // wrong - duplicate
+Change external ID in your source of the truth for affected products and run import. e.g. Import
+ProductID2
+with changed / removed
+sku
+.
+System needs to write external ID again. Run import also for other products affected by duplication, e.g import again
+ProductID1
+.
+Check product export in NOM next day. (It is generated once a day)
+Issue: External ID is colliding with Product ID
+In case of external ID be same as productID system picks always product ID. Product has precedence over external ID. System can:
+pick product with product ID first
+pick none, if picked product is set to be not accessible (contains online_to pointing to past)
+We recommend:
+Download whole catalog CSV. Navigate to products page in NOM and download it.
+Analyze CSV file (we recommend using script). Check for external ID is colliding with other Product ID. In such situation product has precedence over external ID.
+ProductID1:
+       ean: A1234
+       upc: A456
+       sku: ProductID1 // ok - same product, product ID take precedence but external ID is pointing to same product
+       online_to: 2020-10-10 // product not accessible
+
+    ProductID2:
+       ean: B1234
+       upc: B456
+       sku: ProductID1 // wrong - collide with product ID ProductID1 that is not accessible
+3a. Remove external ID from
+ProductID2
+. Run an import of changed products, e.g. reimport
+ProductID2
+3b. If removal of external ID is not desired, but actually it is desired to reuse external ID for
+ProductID2
+, such request cannot be fulfilled with import but requires support ticket to manually delete products. Fill all products you want to delete in the support ticket.
+4. Check product export in NOM next day. (It is generated once a day)
+Was this article helpful?
+Yes
+No
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

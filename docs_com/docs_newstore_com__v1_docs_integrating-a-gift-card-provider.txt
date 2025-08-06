@@ -1,0 +1,221 @@
+Integrating a gift card provider
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Integrating a gift card provider
+Updated on
+Apr 25, 2025
+Published on Oct 1, 2024
+4 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Integrate
+gift card
+providers with NewStore Omnichannel Cloud, to accept payments via physical and virtual gift cards from your customers on NewStore Associate App and issue refunds as gift cards.
+To integrate with a gift card provider, develop an
+adapter
+that uses the
+Gift Card webhooks
+. An adapter serves as an intermediary or integration layer that communicates with NewStore Omnichannel Cloud on one side, and with the gift card provider you integrate with on the other side. Additionally, ensure that the gift card provider is added as a payment provider in NewStore. See
+Configuring gift cards as products
+and
+Configuring gift cards as a payment strategy
+for more information.
+Selling gift cards
+Gift cards exist as products in NewStore. However, all gift card denominations are identified by the same SKU. For example, if you sell gift cards for 300USD and 500USD, displaying these values as products in NewStore Associate App requires extra configuration.
+To sell gift cards:
+Import gift cards as products into NewStore Omnichannel Cloud. See
+Creating product data
+.
+To display different gift card denominations in NewStore Associate App, define an extended attribute
+pricebooks
+in the
+product data
+for the gift card. In the value for
+pricebooks
+add the price books for the gift card as a comma separated string. NewStore uses the prices for the gift card in the price books included here, to display the gift card values as a list in NewStore Associate App.
+~~~ json
+{
+  "extended_attributes": [
+    {
+      "name": "pricebooks",
+      "value": "gift-card-300,gift-card-500"
+    }
+  ]
+}
+~~~
+Import a price book for each gift card denomination you want to sell. See
+Creating price book data
+. For example, to sell gift cards for 300USD and 500USD, import two price books
+gift-card-300
+and
+gift-card-500
+, and add the gift card product ID to both price books with different prices.
+~~~ json
+{
+  "head": {
+  "pricebook": "gift-card-300",
+  "shop": "storefront-catalog-en",
+  "currency": "USD"
+  },
+    "items": [
+      {
+        "product_id": "GC-NEWSTORE",
+        "value": 300.00
+      }
+    ]
+}
+~~~
+In NewStore, ensure that your app is configured to identify the products that match gift cards in your catalog. See
+Configuring gift cards as products
+.
+Important
+The regular expression matching is
+NOT case-sensitive
+, which means
+^([a-z]*)$
+will be matched with both
+abc
+and
+ABC
+. Associates might type in lower or upper case letters when manually entering a gift card number. The integration must handle situations where the gift card provider requires the gift card number typed in a specific case.
+To correctly extract the gift card's serial from the scanned barcode, you need to provide a (capture group)[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Capturing_group]. You can capture the whole number or just part of it depending on your integration. An expression like
+^SVS_GC-(\\d{15})$
+will match all scanned codes that start with
+SVS_GC-
+but only extract the number following this pattern as the actual gift card number.
+To enable associates to sell gift cards, implement the
+Activate gift card webhook
+. NewStore Omnichannel Cloud calls this method on your adapter when the gift card is scanned as a product on NewStore Associate App, during a sale. Since the gift card number is already available during checkout, the gift card is already issued and only needs activation by the gift card provider.
+Here's how the integration works:
+To add the gift card number into the
+sales receipt
+or
+gift card receipt
+templates for your business, note that the gift card number is stored as
+serial_number
+in the
+external_identifier
+property for the item.
+Issuing gift cards as a refund
+If your business issues refunds via gift cards, NewStore Omnichannel Cloud triggers a request to issue either a physical gift card or an e-gift card, when the corresponding refund payment method is chosen on NewStore Associate App.
+Implement the
+Issue gift card webhook
+. NewStore Omnichannel Cloud calls this method when a gift card is selected as the refund method when requesting refunds on NewStore Associate App, or when refunding via gift cards is set as the default refund strategy in NewStore Omnichannel Cloud. The gift card number is not available in NewStore Omnichannel Cloud at this point, and must be requested from the gift card provider and returned to NewStore Omnichannel Cloud in the response to this request.
+Based on your gift card provider, when the gift card is issued it may already be activated. If it is not, implement the
+Activate gift card webhook
+.
+Enabling virtual gift card sales and refunds
+The steps to enable sales and refunds are the same for both virtual and physical gift cards. However, note that when virtual gift cards are issued or activated, details of the gift card are sent to the email address included in the
+Issue gift card webhook
+and
+Activate gift card webhook
+requests from NewStore Omnichannel Cloud.
+Ensure that the email templates for these notifications are customized for your business. Use the following templates to send email notifications to a customer when a gift card is issued and activated:
+gift_card_issued_email_body
+gift_card_issued_email_subject
+gift_card_issued_email_pn
+Accepting payments via gift cards
+To accept payment via a gift card during checkout, implement the
+Return balance webhook
+. At checkout, when a gift card is chosen as the payment method, NewStore Omnichannel Cloud calls this method in your implementation.
+Gift card payments are processed in the same way as payments made using other payment methods. Based on the balance returned, NewStore Omnichannel Cloud calls your
+PSP (payment service provider)
+integration to
+create a financial instrument
+for the amount and
+capture the payment
+. For more information on payment, capture and refund, also see
+Integrating a payment service provider
+.
+Idempotency guidelines
+The issue and activation requests contain idempotency keys to identify the request and enable automatic retries in case of processing failures or network errors. Ensure that you send the
+same response
+to each request you receive with a specific idempotency key. For example, if you receive 3 requests containing the
+idempotence_key
+property set to
+abc
+, whether the body has changed or not, send the same response to all 3 requests.
+Related topics
+Gift Card webhooks
+Payment Provider webhooks
+About payments
+Tutorial: Importing products
+Was this article helpful?
+Yes
+No
+Tags
+api
+exchange
+gift card
+integration
+newstore platform
+payment
+payment options
+platform
+pricebook
+product import
+refund
+selling experience
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

@@ -1,0 +1,544 @@
+External Order Webhook | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Configuration APIs
+Webhooks
+External Availability Webhook
+Custom Tax Provider Webhooks
+Fulfillment Provider Webhooks
+Shipping Provider Webhooks
+Shipping Options Webhooks
+Payment Provider Webhooks
+Gift Card Provider Webhooks
+External Order Webhook
+Event-Stream Webhooks
+New Generation APIs
+get
+Request purchase history details of a customer
+get
+Request order details
+API docs by Redocly
+External Order Webhook
+(
+0.1.0
+)
+Download OpenAPI specification
+:
+Download
+team-order-management
+:
+team-order-management@newstore.com
+Requests order information from an external order management system.
+Use this webhook when you use an external order management system as your primary OMS and
+NewStore is the secondary order management system in your business. This webhook retrieves the
+full purchase history of a customer or order details from orders placed outside of the NewStore
+platform.
+To use this webhook, first set up the
+external order webhook configuration
+.
+For more information, see the
+integration guide
+.
+Request purchase history details of a customer
+Retrieves the purchase history of a customer from an external system.
+This method returns a maximum of
+100
+orders, sorted from newest to oldest orders placed
+in the system. The NewStore platform will cut off everything over 100 orders.
+The retrieved orders are filtered by the email address of the customer.
+query
+Parameters
+consumer_email
+string
+The email of the customer.
+Responses
+200
+Contains the list with the last 100 orders of the customer.
+400
+The request to fetch customer history is malformed.
+403
+The request to fetch order details is unauthenticated or API Key is invalid.
+500
+Something went wrong on the server when requesting the purchase history of the customer.
+default
+Unexpected Error
+get
+/orders
+/newstore_api/v0
+/orders
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"orders"
+:
+[
+{
+"id"
+:
+"GD000001234"
+,
+"placed_at"
+:
+"2021-11-22T12:51:39.30Z"
+,
+"channel_type"
+:
+"web"
+,
+"origin"
+:
+"newstore"
+,
+"origin_id"
+:
+"6f38b75f-3fb3-4454-975d-af0cb412f8fa"
+,
+"status"
+:
+"in_fulfillment"
+,
+"currency"
+:
+"USD"
+,
+"fulfillment_type"
+:
+"traditional"
+,
+"items"
+:
+[
+{
+"id"
+:
+"product-agd6f4"
+,
+"origin_id"
+:
+"b9a144c2-3bd2-4066-983e-b2f2aa0c23ee"
+,
+"status"
+:
+"in_fulfillment"
+,
+"price"
+:
+{
+"net"
+:
+80
+,
+"tax"
+:
+8
+,
+"gross"
+:
+88
+,
+"discount"
+:
+0
+}
+,
+"product_attributes"
+:
+{
+"name"
+:
+"Kate Dress"
+,
+"size"
+:
+"M"
+,
+"color"
+:
+"red"
+,
+"image_url"
+:
+"
+https://image.com/dress.jpeg
+"
+}
+,
+"external_identifier"
+:
+{
+"sku"
+:
+"1000012"
+,
+"serial_number"
+:
+"7890"
+}
+}
+]
+}
+,
+{
+"id"
+:
+"GD000001235"
+,
+"placed_at"
+:
+"2021-11-20T08:11:39.30Z"
+,
+"channel_type"
+:
+"store"
+,
+"origin"
+:
+"external"
+,
+"origin_id"
+:
+"GD000001234"
+,
+"status"
+:
+"complete"
+,
+"currency"
+:
+"USD"
+,
+"fulfillment_type"
+:
+"in_store_purchase"
+,
+"items"
+:
+[
+{
+"id"
+:
+"product-df45g6"
+,
+"origin_id"
+:
+"b9a144c2-3bd2-4066-983e-b2f2aa07y65d"
+,
+"status"
+:
+"complete"
+,
+"price"
+:
+{
+"net"
+:
+90
+,
+"tax"
+:
+9
+,
+"gross"
+:
+99
+,
+"discount"
+:
+0
+}
+,
+"product_attributes"
+:
+{
+"name"
+:
+"Tote Bag"
+}
+}
+]
+}
+]
+}
+Request order details
+Requests details for the order with the given identifier from an external system.
+path
+Parameters
+id
+required
+string
+The identifier of the order.
+Responses
+200
+Contains all order details.
+400
+The request to fetch order details is malformed.
+403
+The request to fetch order details is unauthenticated or API Key is invalid.
+404
+The order with the given identifier couldn't be found.
+500
+Something went wrong on the server when requesting the order details.
+default
+Unexpected Error
+get
+/orders/{id}
+/newstore_api/v0
+/orders/{id}
+Response samples
+200
+Content type
+application/json
+Example
+Order originated in an external system.
+Order with originated in Newstore.
+Order with a customer associated.
+Order with tokenized customer PII.
+Order originated in an external system.
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"GD000001234"
+,
+"placed_at"
+:
+"2021-11-22T12:51:39.30Z"
+,
+"channel_type"
+:
+"web"
+,
+"origin"
+:
+"external"
+,
+"origin_id"
+:
+"GD000001234"
+,
+"status"
+:
+"in_fulfillment"
+,
+"currency"
+:
+"USD"
+,
+"fulfillment_type"
+:
+"traditional"
+,
+"customer"
+:
+{
+"id"
+:
+"e97f516a-8cce-447c-9757-8b54b84d8967"
+,
+"name"
+:
+"John Doe"
+,
+"email"
+:
+"johndoe@gmail.com"
+}
+,
+"items"
+:
+[
+{
+"id"
+:
+"394329361530903"
+,
+"origin_id"
+:
+"394329361530903"
+,
+"status"
+:
+"in_fulfillment"
+,
+"price"
+:
+{
+"net"
+:
+72
+,
+"tax"
+:
+7.2
+,
+"gross"
+:
+79.2
+,
+"discount"
+:
+10
+}
+,
+"product_attributes"
+:
+{
+"name"
+:
+"Kate Dress"
+,
+"size"
+:
+"M"
+,
+"color"
+:
+"red"
+,
+"image_url"
+:
+"
+https://image.com/dress.jpeg
+"
+,
+"additional_variant_1"
+:
+"Regular fit"
+,
+"additional_variant_2"
+:
+"Red with highlights"
+}
+,
+"external_identifier"
+:
+{
+"sku"
+:
+"1000016"
+,
+"serial_number"
+:
+"SE-1234"
+,
+"product_id"
+:
+"1000016"
+}
+,
+"discounts"
+:
+[
+{
+"level"
+:
+"item"
+,
+"value"
+:
+10
+,
+"price_adjustment"
+:
+10
+,
+"type"
+:
+"percentage"
+}
+]
+}
+]
+,
+"totals"
+:
+{
+"net"
+:
+72
+,
+"tax"
+:
+7.2
+,
+"gross"
+:
+79.2
+,
+"total"
+:
+84.2
+,
+"shipping"
+:
+5
+,
+"discount"
+:
+10
+}
+,
+"payment_history"
+:
+[
+{
+"category"
+:
+"refund"
+,
+"amount"
+:
+77.58
+,
+"currency"
+:
+"USD"
+,
+"method"
+:
+"cash"
+}
+,
+{
+"category"
+:
+"payment"
+,
+"amount"
+:
+84.2
+,
+"currency"
+:
+"USD"
+,
+"method"
+:
+"credit_card"
+,
+"payment_information"
+:
+"Visa (**** 1111)"
+}
+]
+}
+Previous
+Gift Card Provider Webhooks
+Next
+Event-Stream Webhooks
+Copyright © 2025 NewStore, Inc.

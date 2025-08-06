@@ -1,0 +1,428 @@
+Apply Promotions To Cart | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Coupons API
+Promotions configuration API
+Discount Rule API
+Apply Promotions To Cart
+Configuration
+Coupons
+Integration Configurations
+Automatic Promotions
+Manage loyalty programs
+Manage Stackable Coupons
+Stock
+Other support APIs
+post
+Apply Promotions To Cart
+API docs by Redocly
+Apply Promotions To Cart
+(
+1.0
+)
+Download OpenAPI specification
+:
+Download
+NewStore Support
+:
+support@newstore.com
+License:
+NewStore Private
+Use this method to apply existing promotions to a cart to view how pricing during checkout will be calculated based on these promotions. As a default the NewStore promotion engine is used, otherwise a third party promotion engine will be used if properly configured (see NewStore documentation about third party promotion engine).
+When using the NewStore promotions engine, this method is idempotent, and does not change the state of the cart or products added to the cart. When using a third party promotion engine the idempotency depends on the integration and third party promotion engine.
+This method returns a version of the cart (
+DiscountedCart
+) with all specified promotions applied to it. The order of the discounts in the array of discounts attached to each item in a
+DiscountedCart
+is important and should not be changed when being used in other services or contexts.
+Apply Promotions To Cart
+Use this method to apply existing promotions to a cart to view how pricing during checkout will be calculated based on these promotions.
+This method returns a version of the cart (
+DiscountedCart
+) with all specified promotions applied to it. This method is idempotent, and does not change the state of the cart or products added to the cart.
+The order of the discounts in the array of discounts attached to each item in a
+DiscountedCart
+is important and should not be changed when being used in other services or contexts.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+Request of apply promotions to the cart.
+channelType
+string
+Typically web or store.
+customerId
+string
+The customer ID.
+currency
+string
+The currency of the cart.
+couponCodes
+Array of
+strings
+The coupon codes to be applied.
+storeId
+string
+The store ID.
+shopId
+string
+The shop ID.
+locale
+string
+The locale.
+items
+Array of
+objects
+(
+Item
+)
+The individual items that the cart contains.
+Responses
+200
+The cart with promotions applied plus warnings stating what went wrong during the operation.
+400
+An error response.
+500
+An error response.
+post
+/cart
+The staging/production server
+/v0/promotions
+/cart
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"channelType"
+:
+"store"
+,
+"customerId"
+:
+"9deb5d3d-b40a-4c87-85c5-8a79d745b78a"
+,
+"currency"
+:
+"USD"
+,
+"couponCodes"
+:
+[
+"HAPPYVALENTINES"
+,
+"BLACKFRIDAY"
+]
+,
+"storeId"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"shopId"
+:
+"storefront-catalog-en"
+,
+"locale"
+:
+"en-us"
+,
+"items"
+:
+[
+{
+"id"
+:
+"d2c083d2-35f0-4471-a499-73ea9ecbe644"
+,
+"productId"
+:
+"1000501"
+,
+"price"
+:
+"100.00000"
+,
+"type"
+:
+"Product"
+,
+"discountForbidden"
+:
+false
+,
+"productCategories"
+:
+[
+[
+"Shop"
+,
+"Clothing"
+,
+"Dresses"
+]
+,
+[
+"Shop"
+,
+"Clothing"
+]
+]
+}
+]
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"channelType"
+:
+"store"
+,
+"customerId"
+:
+"9deb5d3d-b40a-4c87-85c5-8a79d745b78a"
+,
+"currency"
+:
+"USD"
+,
+"couponCodes"
+:
+[
+"HAPPYVALENTINES"
+,
+"BLACKFRIDAY"
+]
+,
+"storeId"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"shopId"
+:
+"storefront-catalog-en"
+,
+"locale"
+:
+"en-us"
+,
+"items"
+:
+[
+{
+"id"
+:
+"d2c083d2-35f0-4471-a499-73ea9ecbe644"
+,
+"productId"
+:
+"1000501"
+,
+"price"
+:
+"100.00000"
+,
+"adjustedPrice"
+:
+"65.00000"
+,
+"type"
+:
+"Product"
+,
+"discountForbidden"
+:
+false
+,
+"productCategories"
+:
+[
+[
+"Shop"
+,
+"Clothing"
+,
+"Dresses"
+]
+,
+[
+"Shop"
+,
+"Clothing"
+]
+]
+,
+"discounts"
+:
+[
+{
+"id"
+:
+"6215ff42-1b41-4000-8000-f0ca55bdc4da"
+,
+"name"
+:
+"Valentine's Day 20%"
+,
+"description"
+:
+"Discount of 20% for Valentine's Day"
+,
+"kind"
+:
+"ProductLevelPercentageCategory"
+,
+"promotionType"
+:
+"Product"
+,
+"discountSource"
+:
+"automatic"
+,
+"discount"
+:
+"20.00000"
+,
+"change"
+:
+"-20.00000"
+,
+"couponCode"
+:
+""
+}
+,
+{
+"id"
+:
+"62164750-1b41-4000-8000-f0ca55bdc743"
+,
+"name"
+:
+"Cart fixed 10"
+,
+"description"
+:
+"Cart fixed 10"
+,
+"kind"
+:
+"CartLevelFixedCategory"
+,
+"promotionType"
+:
+"Cart"
+,
+"discountSource"
+:
+"automatic"
+,
+"discount"
+:
+"10.00000"
+,
+"change"
+:
+"-10.00000"
+,
+"couponCode"
+:
+""
+}
+,
+{
+"id"
+:
+"0012e07d-534f-4cb9-8c1a-f9c25dcd07f8"
+,
+"name"
+:
+"Valentine's Day"
+,
+"description"
+:
+"5% Coupon for Valentine's Day"
+,
+"kind"
+:
+"CartLevelFixedCategory"
+,
+"promotionType"
+:
+"Cart"
+,
+"discountSource"
+:
+"coupon"
+,
+"discount"
+:
+"5.00000"
+,
+"change"
+:
+"-5.00000"
+,
+"couponCode"
+:
+"HAPPYVALENTINES"
+}
+]
+}
+]
+,
+"warnings"
+:
+[
+{
+"code"
+:
+"code_not_active"
+,
+"ref"
+:
+"BLACKFRIDAY"
+,
+"kind"
+:
+"coupon_code"
+,
+"message"
+:
+"code 'BLACKFRIDAY' is not active"
+}
+]
+}
+Previous
+Discount Rule API
+Next
+Configuration
+Copyright © 2025 NewStore, Inc.

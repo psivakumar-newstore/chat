@@ -1,0 +1,210 @@
+openapi: 3.1.0
+info:
+  title: Manage loyalty programs
+  description: >
+    Use this API to manage loyalty coupons and reward program coupon definitions
+    for your business.
+  termsOfService: https://www.newstore.com/terms-of-use/
+  license:
+    name: Open API Specification - OAS
+    url: https://spec.openapis.org/oas/v3.1.0
+  version: v1.0
+servers:
+  - url: http://localhost:8000/v0
+    description: The local development server
+  - url: https://dodici.x.newstore.net/v0/promotions
+paths:
+  /loyalty:
+    post:
+      security:
+        - newStoreAccessToken: []
+      summary: Create loyalty coupon
+      description: >
+        Use this method to create coupon codes on the fly to be used with a
+        loyalty program.
+
+
+        **Important**: Loyalty coupons are only valid for 15 minutes.
+
+
+        The type of coupons available for this functionality are of type cart
+        fixed and cart percentage discounts.
+      operationId: loyalty
+      requestBody:
+        description: a loyalty coupon
+        content:
+          application/json:
+            schema:
+              description: A loyalty request
+              type: object
+              properties: &ref_4
+                vouchers:
+                  type: array
+                  items:
+                    description: A voucher definition
+                    type: object
+                    properties: &ref_2
+                      name:
+                        type: string
+                        description: The name of the promotion.
+                      discount:
+                        type: number
+                        description: >-
+                          The value of the discount, either as fixed amount or
+                          percentage (between 0 and 100).
+                      type:
+                        type: string
+                        description: The type of discount. Can be 'Fixed' or 'Percentage'.
+                        enum:
+                          - Fixed
+                          - Percentage
+                      level:
+                        type: string
+                        description: >-
+                          The level at which the promotion applied. So far just
+                          'Cart' is supported.
+                        enum:
+                          - Cart
+                      currencies:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              format: /\w{3}/
+                              description: A ISO4217 currency code.
+                              example: EUR
+                            minimumCartValue:
+                              type: number
+                              example: 5215432
+                      voucherId:
+                        type: string
+                        description: The unique id on the other system.
+                    required: &ref_3
+                      - name
+                      - discount
+                      - type
+                      - level
+                      - voucherId
+            examples:
+              loyalty_request:
+                value: &ref_7
+                  vouchers:
+                    - name: fixed amount discount - 2000 points
+                      discount: 50
+                      type: Fixed
+                      level: Cart
+                      currencies:
+                        - code: USD
+                          minimumCartValue: 50
+                      voucherId: 37e6476f-a124-495d-acd7-3ba4e3b0a739
+      responses:
+        '201':
+          description: Loyalty coupon created successfully
+          content:
+            application/json:
+              schema:
+                description: A loyalty response
+                type: object
+                properties: &ref_6
+                  codes:
+                    type: array
+                    items:
+                      type: string
+                  warnings:
+                    type: array
+                    items:
+                      description: A warning stating want went wrong during the operation.
+                      type: object
+                      properties: &ref_5
+                        code:
+                          type: string
+                          description: A code related to the warning class.
+                        ref:
+                          type: string
+                          description: >-
+                            A reference to the object that caused the warning.
+                            Usually the ID.
+                        kind:
+                          type: string
+                          description: The kind of the resource that caused the warning.
+                        message:
+                          type: string
+                          description: A message describing what went wrong.
+              example:
+                codes:
+                  - CODE1
+                  - CODE2
+                  - CODE3
+                warnings:
+                  - code: voucher_mismatch
+                    ref: voucher-id-1
+                    kind: voucher
+                    message: >-
+                      there's a mismatch between the voucher ID and the name of
+                      the voucher
+        '400':
+          description: The payload was invalid and the coupon could not be created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: &ref_0
+                  - message
+                  - status
+                properties: &ref_1
+                  message:
+                    type: string
+                  status:
+                    type: integer
+                  causes:
+                    type: array
+                    items:
+                      type: string
+                  id:
+                    type: string
+                  type:
+                    type: string
+                  code:
+                    type: string
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_0
+                properties: *ref_1
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Voucher:
+      description: A voucher definition
+      type: object
+      properties: *ref_2
+      required: *ref_3
+    LoyaltyRequest:
+      description: A loyalty request
+      type: object
+      properties: *ref_4
+    Warning:
+      description: A warning stating want went wrong during the operation.
+      type: object
+      properties: *ref_5
+    LoyaltyResponse:
+      description: A loyalty response
+      type: object
+      properties: *ref_6
+    Error:
+      type: object
+      required: *ref_0
+      properties: *ref_1
+  examples:
+    loyalty_request:
+      value: *ref_7
+x-annotation-crossOriginAllowed: true

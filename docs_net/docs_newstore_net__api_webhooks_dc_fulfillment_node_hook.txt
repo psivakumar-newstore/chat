@@ -1,0 +1,241 @@
+Fulfillment Provider Webhooks | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Configuration APIs
+Webhooks
+External Availability Webhook
+Custom Tax Provider Webhooks
+Fulfillment Provider Webhooks
+Shipping Provider Webhooks
+Shipping Options Webhooks
+Payment Provider Webhooks
+Gift Card Provider Webhooks
+External Order Webhook
+Event-Stream Webhooks
+New Generation APIs
+post
+Create fulfillment request
+API docs by Redocly
+Fulfillment Provider Webhooks
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Represents the fulfillment requests that NewStore might send you, to fulfill using a
+fulfillment provider (WMS, OMS, 3PL).
+To integrate your fulfillment provider with NewStore, implement the method in this resource.
+Also see
+Fulfillment requests
+.
+For information about the integration process,
+see
+Integrating a fulfillment provider
+in our documentation.
+Note:
+The defined baseUri is for illustration purposes only, edit it as needed.
+Create fulfillment request
+Incoming call from NewStore which creates a new fulfillment request
+for your fulfillment provider to fulfill.
+If an API key was provided when setting up the webhook, every call to this method
+includes the line
+Authorization: Bearer <api_key>
+in its header.
+Request Body schema:
+application/json
+id
+required
+string
+Unique ID for this Fulfillment request
+order_id
+string
+The identifier of the order the fulfillment request is assigned to. Please mind that a single order can result in multiple fulfillment requests.
+billing_address
+required
+object
+(
+Fulfillment Provider Request Address.
+)
+shipping_address
+required
+object
+(
+Fulfillment Provider Request Address.
+)
+shipping_options
+required
+object
+created_at
+required
+string
+<
+date-time
+>
+Date and time when the order was created.
+items
+required
+Array of
+objects
+non-empty
+List containing items in the order; one list index equals one item.
+extended_attributes
+Array of
+objects
+<= 100 items
+[ items
+<= 2 properties
+]
+A set of custom attributes defined during the order creation.
+Responses
+200
+The fulfillment request was successfully accepted by the fulfillment provider.
+NewStore now expects an acknowledgement or rejection message from the fulfillment provider.
+See
+Fulfillment requests
+for more information.
+400
+The fulfillment request from NewStore is incorrectly formatted.
+The body contains a description of the error.
+401
+The fulfillment request from NewStore failed to be authenticated because of invalid credentials.
+500
+The fulfillment request from NewStore cannot be processed because of an internal
+error on the fulfillment provider's side.
+post
+/fulfillment_requests
+/newstore_api/v0
+/fulfillment_requests
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"4234r56j3k"
+,
+"order_id"
+:
+"1563362"
+,
+"billing_address"
+:
+{
+"country_code"
+:
+"USA"
+,
+"first_name"
+:
+"Jay"
+,
+"last_name"
+:
+"DoubleYou"
+,
+"address_line_1"
+:
+"3104 Doctors Drive"
+,
+"zip_code"
+:
+"90017"
+}
+,
+"shipping_address"
+:
+{
+"country_code"
+:
+"USA"
+,
+"first_name"
+:
+"Jay"
+,
+"last_name"
+:
+"DoubleYou"
+,
+"address_line_1"
+:
+"3104 Doctors Drive"
+,
+"zip_code"
+:
+"90017"
+}
+,
+"shipping_options"
+:
+{
+"carrier"
+:
+"D29201"
+,
+"service_level"
+:
+"express"
+,
+"carrier_service_level"
+:
+"Priority"
+}
+,
+"created_at"
+:
+"2017-10-27T12:24:17Z"
+,
+"items"
+:
+[
+{
+"product_id"
+:
+"487419h194b1l14568mn3"
+}
+,
+{
+"product_id"
+:
+"487419h194b1l14568mn1"
+}
+,
+{
+"product_id"
+:
+"487419h194b1l14568mn3"
+}
+]
+,
+"extended_attributes"
+:
+[
+{
+"name"
+:
+"inventory_item_id"
+,
+"value"
+:
+"24969370629"
+}
+]
+}
+Previous
+Custom Tax Provider Webhooks
+Next
+Shipping Provider Webhooks
+Copyright © 2025 NewStore, Inc.

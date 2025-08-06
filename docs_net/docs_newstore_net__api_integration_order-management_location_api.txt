@@ -1,0 +1,958 @@
+Location API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Availabilities Export API
+Customer Profile Updates API
+Fulfillment Provider API
+Fulfillment Request API
+Historical order import API
+Item Return API
+Item Return API
+Location API
+Manager approval
+Fulfillment Configuration API
+Manager Approval Rules API
+Order API
+Order Injection API
+Order Notes API
+Order information retrieval API
+Safety Stock API
+Availabilities API
+Stock insights API
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+List locations
+post
+Enable location as inventory master
+post
+Enable location
+post
+Disable location
+get
+Retrieve location
+put
+Update DC location
+get
+Retrieve location by store id
+API docs by Redocly
+Location API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+This API represents a physical location in NewStore, such as a DC or a store, that you can operate from.
+Important:
+Do not confuse this resource with the
+Stock locations
+resource, which represents
+virtual or physical stock locations
+.
+Use this resource to manage inventory or calculate stock on hand in your store, when NewStore
+is enabled as
+inventory master
+for the store.
+Locations are created during a
+stock import
+using the
+fulfillment_node_id
+property. For a guide on creating locations (such as stores),
+see this
+tutorial
+.
+Important:
+Location type(DC or Store), location ID, or location store_id can't be updated after location creation. 
+So, please ensure that the locations you are creating have the correct data.
+Note:
+When you create a location for your business, the main
+stock location
+is created for the location by default.
+When working with a store in your business, you can use this resource to enable NewStore as
+the inventory master for the store, instead of an ERP. To understand the difference between
+an ERP and NewStore as inventory master, see
+Choosing your inventory master
+.
+You can also choose to stop a location from
+fulfilling orders
+using this resource. See
+Disabling locations
+.
+Note:
+Only stores can use NewStore as inventory master, not DCs.
+List locations
+Retrieves a list of locations configured for your business. The maximum number of locations returned by this method is 2000.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Successful response
+500
+An internal error occurred.
+get
+/locations
+/v0
+/locations
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"locations"
+:
+[
+{
+"id"
+:
+"US01"
+,
+"is_inventory_master"
+:
+false
+,
+"is_enabled"
+:
+false
+,
+"type"
+:
+"store"
+}
+,
+{
+"id"
+:
+"US02"
+,
+"is_inventory_master"
+:
+true
+,
+"is_enabled"
+:
+true
+,
+"type"
+:
+"store"
+}
+,
+{
+"id"
+:
+"DC01"
+,
+"is_inventory_master"
+:
+false
+,
+"is_enabled"
+:
+true
+,
+"type"
+:
+"dc"
+}
+]
+}
+Enable location as inventory master
+Enables the specified location as
+inventory master
+.
+When you enable a location as inventory master, NewStore is the inventory master in the store. NewStore manages
+all inventory-related operations and data for the store, instead of an ERP. This includes calculating stock on
+hand for the store using
+stock locations
+.
+Important
+: NewStore does not support reverting to an ERP after you have enabled NewStore
+as inventory master in the store. Ensure that you want to use NewStore as inventory master
+before you switch from an ERP.
+Related methods:
+Export stock on hand for store
+Get stock on hand
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The unique identifier of the location. The location ID is the same value that is provided for the
+fulfillment_node_id
+property during the
+stock import
+.
+If the location ID contains special characters like spaces, encode the ID before using it.
+For example, encode the location ID
+US 01
+as
+US%2001
+.
+Responses
+200
+Successfully enabled or the specified location was already inventory master.
+404
+The location with the specified ID was not found.
+405
+The location does not support being inventory master. Ensure that the location is a store.
+409
+The location couldn't be updated because of a concurrent update of the resource.
+500
+An internal error occurred.
+post
+/locations/{id}/inventory_master/_enable
+/v0
+/locations/{id}/inventory_master/_enable
+Response samples
+200
+404
+405
+409
+500
+Content type
+application/json
+Copy
+{
+"id"
+:
+"US01"
+,
+"is_inventory_master"
+:
+true
+,
+"is_enabled"
+:
+true
+,
+"type"
+:
+"store"
+}
+Enable location
+Enables a specific location to start fulfilling orders.
+When a location is enabled:
+Orders are routed to the location for fulfillment.
+ATP for products at the location are calculated again and displayed in
+NOM
+and for
+availability exports
+.
+Note:
+To stop a location from fulfilling orders, use the
+Disable location
+method.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The unique identifier of the location. The location ID is the same value that is provided for the
+fulfillment_node_id
+property during the
+stock import
+.
+If the location ID contains special characters like spaces, encode the ID before using it.
+For example, encode the location ID
+US 01
+as
+US%2001
+.
+Responses
+200
+Successfully enabled or the specified location was already enabled.
+404
+The location with the specified ID was not found.
+409
+The location couldn't be updated because of a concurrent update of the resource.
+500
+An internal error occurred.
+post
+/locations/{id}/_enable
+/v0
+/locations/{id}/_enable
+Response samples
+200
+404
+409
+500
+Content type
+application/json
+Copy
+{
+"id"
+:
+"US01"
+,
+"is_inventory_master"
+:
+true
+,
+"is_enabled"
+:
+true
+,
+"type"
+:
+"store"
+}
+Disable location
+Disables a specific location from fulfilling orders.
+When a location is disabled:
+Orders are not routed to the location for fulfillment.
+ATP for products at this location is set to
+0
+in
+NOM
+and for
+availability exports
+.
+However, the values calculated for
+stock on hand, allocations, reservations, and safety stock quantities for products at
+the location stay unchanged.
+Important:
+The change in ATP for products in the location that was disabled may
+take some time to be displayed in NOM and the availability export data.
+Note:
+Orders routed to the location before it was disabled are fulfilled via
+the usual process. Use
+NewStore Fulfillment App
+to reject these orders if needed.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The unique identifier of the location. The location ID is the same value that is provided for the
+fulfillment_node_id
+property during the
+stock import
+.
+If the location ID contains special characters like spaces, encode the ID before using it.
+For example, encode the location ID
+US 01
+as
+US%2001
+.\
+Responses
+200
+Successfully disabled or the specified location was already disabled.
+404
+The location with the specified ID was not found.
+409
+The location couldn't be updated because of a concurrent update of the resource.
+500
+An internal error occurred.
+post
+/locations/{id}/_disable
+/v0
+/locations/{id}/_disable
+Response samples
+200
+404
+409
+500
+Content type
+application/json
+Copy
+{
+"id"
+:
+"US01"
+,
+"is_inventory_master"
+:
+true
+,
+"is_enabled"
+:
+false
+,
+"type"
+:
+"store"
+}
+Retrieve location
+Retrieves all information about a location.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The unique identifier of the location. The location ID is the same value that is provided for the
+fulfillment_node_id
+property during the
+stock import
+.
+If the location ID contains special characters like spaces, encode the ID before using it.
+For example, encode the location ID
+US 01
+as
+US%2001
+.
+Responses
+200
+Successful response. Any missing or empty fields in a DC configuration will be omitted in the response.
+404
+The location with the specified ID was not found.
+500
+An internal error occurred.
+get
+/locations/{id}
+/v0
+/locations/{id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Example
+Successfully returned DC location
+Successfully returned store location
+Successfully returned DC location
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"DC01"
+,
+"is_inventory_master"
+:
+false
+,
+"is_enabled"
+:
+true
+,
+"type"
+:
+"dc"
+,
+"address"
+:
+{
+"address_line_1"
+:
+"60 Middle St"
+,
+"address_line_2"
+:
+"Suite 10"
+,
+"city"
+:
+"Boston"
+,
+"country_code"
+:
+"US"
+,
+"phone"
+:
+"502 921 0565"
+,
+"state"
+:
+"MA"
+,
+"zip_code"
+:
+"02111"
+,
+"first_name"
+:
+"Boston Warehouse"
+}
+}
+Update DC location
+Updates the information of an existing location. As of now only updates to locations of type 'dc' are allowed.
+If you want to create a new location, please use the availability import first.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The unique identifier of the location. The location ID is the same value that is provided for the
+fulfillment_node_id
+property during the
+stock import
+.
+If the location ID contains special characters like spaces, encode the ID before using it.
+For example, encode the location ID
+US 01
+as
+US%2001
+.
+Request Body schema:
+application/json
+address
+required
+object
+The address of the location.
+address_line_1
+required
+string
+non-empty
+First line of DC address.
+address_line_2
+string
+non-empty
+Second line of DC address.
+city
+required
+string
+non-empty
+City of DC address.
+state
+string
+non-empty
+State of DC address.
+country_code
+required
+string
+non-empty
+Enum
+:
+"AD"
+"AE"
+"AF"
+"AG"
+"AI"
+"AL"
+"AM"
+"AO"
+"AQ"
+"AR"
+"AS"
+"AT"
+"AU"
+"AW"
+"AX"
+"AZ"
+"BA"
+"BB"
+"BD"
+"BE"
+"BF"
+"BG"
+"BH"
+"BI"
+"BJ"
+"BL"
+"BM"
+"BN"
+"BO"
+"BQ"
+"BR"
+"BS"
+"BT"
+"BV"
+"BW"
+"BY"
+"BZ"
+"CA"
+"CC"
+"CD"
+"CF"
+"CG"
+"CH"
+"CI"
+"CK"
+"CL"
+"CM"
+"CN"
+"CO"
+"CR"
+"CU"
+"CV"
+"CW"
+"CX"
+"CY"
+"CZ"
+"DE"
+"DJ"
+"DK"
+"DM"
+"DO"
+"DZ"
+"EC"
+"EE"
+"EG"
+"EH"
+"ER"
+"ES"
+"ET"
+"FI"
+"FJ"
+"FK"
+"FM"
+"FO"
+"FR"
+"GA"
+"GB"
+"GD"
+"GE"
+"GF"
+"GG"
+"GH"
+"GI"
+"GL"
+"GM"
+"GN"
+"GP"
+"GQ"
+"GR"
+"GS"
+"GT"
+"GU"
+"GW"
+"GY"
+"HK"
+"HM"
+"HN"
+"HR"
+"HT"
+"HU"
+"ID"
+"IE"
+"IL"
+"IM"
+"IN"
+"IO"
+"IQ"
+"IR"
+"IS"
+"IT"
+"JE"
+"JM"
+"JO"
+"JP"
+"KE"
+"KG"
+"KH"
+"KI"
+"KM"
+"KN"
+"KP"
+"KR"
+"KW"
+"KY"
+"KZ"
+"LA"
+"LB"
+"LC"
+"LI"
+"LK"
+"LR"
+"LS"
+"LT"
+"LU"
+"LV"
+"LY"
+"MA"
+"MC"
+"MD"
+"ME"
+"MF"
+"MG"
+"MH"
+"MK"
+"ML"
+"MM"
+"MN"
+"MO"
+"MP"
+"MQ"
+"MR"
+"MS"
+"MT"
+"MU"
+"MV"
+"MW"
+"MX"
+"MY"
+"MZ"
+"NA"
+"NC"
+"NE"
+"NF"
+"NG"
+"NI"
+"NL"
+"NO"
+"NP"
+"NR"
+"NU"
+"NZ"
+"OM"
+"PA"
+"PE"
+"PF"
+"PG"
+"PH"
+"PK"
+"PL"
+"PM"
+"PN"
+"PR"
+"PS"
+"PT"
+"PW"
+"PY"
+"QA"
+"RE"
+"RO"
+"RS"
+"RU"
+"RW"
+"SA"
+"SB"
+"SC"
+"SD"
+"SE"
+"SG"
+"SH"
+"SI"
+"SJ"
+"SK"
+"SL"
+"SM"
+"SN"
+"SO"
+"SR"
+"SS"
+"ST"
+"SV"
+"SX"
+"SY"
+"SZ"
+"TC"
+"TD"
+"TF"
+"TG"
+"TH"
+"TJ"
+"TK"
+"TL"
+"TM"
+"TN"
+"TO"
+"TR"
+"TT"
+"TV"
+"TW"
+"TZ"
+"UA"
+"UG"
+"UM"
+"US"
+"UY"
+"UZ"
+"VA"
+"VC"
+"VE"
+"VG"
+"VI"
+"VN"
+"VU"
+"WF"
+"WS"
+"YE"
+"YT"
+"ZA"
+"ZM"
+"ZW"
+Country code in 3166-1 alpha-2 format.
+zip_code
+string
+non-empty
+Zip code of DC address.
+phone
+string
+non-empty
+Phone number of DC.
+first_name
+string
+non-empty
+The fist name of the recipient.
+last_name
+string
+non-empty
+The last name of the recipient.
+Responses
+204
+Successfully updated the address of the location.
+400
+The provided data is malformed and the update can't be performed
+404
+The location with the specified ID was not found.
+405
+The location does not support addresses. Ensure that the location is a DC.
+409
+The location couldn't be updated because of a concurrent update of the resource.
+500
+An internal error occurred.
+put
+/locations/{id}
+/v0
+/locations/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"address"
+:
+{
+"address_line_1"
+:
+"60 Middle St"
+,
+"address_line_2"
+:
+"Suite 10"
+,
+"city"
+:
+"Boston"
+,
+"country_code"
+:
+"US"
+,
+"phone"
+:
+"502 921 0565"
+,
+"state"
+:
+"MA"
+,
+"zip_code"
+:
+"02111"
+,
+"first_name"
+:
+"Boston Warehouse"
+}
+}
+Response samples
+400
+404
+405
+409
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"invalid_data"
+,
+"message"
+:
+"'address_line_1' is blank."
+,
+"request_id"
+:
+"ec2f3c9bb016ba971bf6059188771a18"
+}
+Retrieve location by store id
+Retrieves all information about a location with a given STORE ID.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+store_id
+required
+string
+A unique identifier for a store.
+This
+store_id
+is defined during the
+store creation
+.
+Responses
+200
+Successful response. Any missing or empty fields will be ommitted in the response.
+404
+The location with the specified STORE ID was not found.
+500
+An internal error occurred.
+get
+/locations/store/{store_id}
+/v0
+/locations/store/{store_id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+{
+"id"
+:
+"US01"
+,
+"is_inventory_master"
+:
+false
+,
+"is_enabled"
+:
+true
+,
+"type"
+:
+"store"
+}
+Previous
+Item Return API
+Next
+Manager approval
+Copyright © 2025 NewStore, Inc.

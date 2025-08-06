@@ -1,0 +1,260 @@
+ERP integration example with NetSuite for endless aisle orders
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+ERP integration example with NetSuite for endless aisle orders
+Updated on
+Dec 17, 2024
+Published on Oct 1, 2024
+3 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+This example uses NetSuite as the ERP system for the retailer to integrate with, to sync
+endless aisle
+orders in the NewStore platform. If you integrate with ERP systems other than NetSuite, contact the
+support team
+.
+To successfully create NetSuite orders from NewStore orders, map fields (such as
+channel identifiers
+) from NewStore values to NetSuite values. The necessary static maps are described in the following sections.
+You can also use the AWS Systems Manager Parameter Store to supply integration lambdas with these maps as an implementation option.
+Channel map
+Maps from NewStore channel types (
+web
+or
+store
+) to the corresponding numerical NetSuite identifiers.
+Map name in sample implementation:
+netsuite/newstore_to_netsuite_channel
+Location map
+Provides the following NetSuite attributes for each NewStore store location:
+NetSuite store ID
+NetSuite subsidiary ID for the store
+A placeholder customer name and email used for in-store purchases for situations where no actual customer information is present.
+Map name in sample implementation:
+netsuite/newstore_to_netsuite_locations
+Payment method map
+In NetSuite, each payment needs to be represented as an order line item. The payment method map provides a virtual NetSuite product ID for each NewStore payment method. This information enables the integration to create suitable NetSuite payment line items, corresponding to the received NewStore payment information.
+Map name in sample implementation:
+netsuite/newstore_to_netsuite_payment_items
+List of gift card product IDs
+You need this list to map a gift card payment to the corresponding product ID, when creating a NetSuite payment order line for a gift card payment.
+Map name in sample implementation:
+netsuite/newstore_giftcard_product_ids
+Shipping method map
+Maps the shipping service levels configured as part of the NewStore fulfillment configuration to corresponding NetSuite shipping method identifiers.
+Map name in sample implementation:
+netsuite/newstore_to_netsuite_shipping_methods
+Currency map
+While NewStore uses three-letter ISO codes for currencies, NetSuite uses numeric identifiers. The currency map maps between these two representations.
+In the sample implementation, the
+currency_map
+is part of a collection of multiple configured constants, maintained in the map
+netsuite/iso_to_netsuite_currencies
+.
+SalesOrder Record Type
+For each NewStore e-commerce purchase order, create a
+SalesOrder
+transaction in the ERP system.
+To create the
+RecordRef
+type, you only need the ID of the related record type. See the following example to create a
+RecordRef
+for the
+partner
+attribute with ID
+2
+:
+'partner': RecordRef(internalId=2)
+The mapping table from NewStore order data, as provided by GraphQL, that syncs with NetSuite SalesOrder attributes:
+Sales Order Record Type attribute
+Type
+Comment
+NewStore attribute
+customForm
+String
+This is the NetSuite form identifier for the SalesOrder record type, as configured in NetSuite. The only way to create NetSuite transactions from an integration is via a custom form, as entities like SalesOrder cannot be created directly.
+NA
+partner
+RecordRef
+This is the partner identifier of NewStore, as configured in NetSuite.
+NA
+subsidiary
+RecordRef
+This is the subsidiary of the retailer where the sales happens. The subsidiary is determined by looking it up for the store, using the location map. See the
+example
+.
+order.demand_location
+location
+RecordRef
+This is the store defined in NetSuite. Like the subsidiary, the NetSuite location ID is looked up in the
+Location map
+.
+order.demand_location
+externalId
+String
+order.id
+currency
+RecordRef
+NetSuite currency identifier, as retrieved from the
+Currency map
+.
+order.currency
+tranDate
+DateTime String
+order.placed_at
+entity
+RecordRef
+This attribute represents a customer record-type.
+See
+Entity Record Type
+.
+itemList
+RecordRef
+This attribute represents the items in an order.
+See
+SalesOrderItemList Record Type
+.
+customFieldList
+CustomFieldList
+This is a list of custom fields that are defined in NetSuite by the retailer. The list of these custom fields and their meaning is available from the responsible Solution Architect.
+See
+SalesOrderItemList Record Type
+.
+Entity Record Type
+Use the following mapping table to create a new customer in NetSuite:
+Entity Record Type attribute
+Type
+Comment
+NewStore attribute
+customForm
+String
+This is the NetSuite form identifier for the customer create form.
+NA
+firstName
+order.shipping_address.first_name
+lastName
+order.shipping_address.last_name
+email
+order.customer_email
+phone
+order.shipping_address.phone
+salutation
+order.shipping_address.salutation
+subsidiary
+RecordRef
+See
+SalesOrder Record Type
+.
+isPerson
+Boolean
+Always set it to
+true
+.
+NA
+currencyList
+RecordType
+NetSuite currency identifier, as retrieved from the
+Currency map
+.
+NA
+SalesOrderItemList Record Type
+SalesOrder item list includes the list of order items and the list of payment items.
+SalesOrderItem Record Type attribute
+Type
+Comment
+NewStore attribute
+item
+RecordRef
+This is the NetSuite form identifier for the customer create form.
+order.items[i].product_id
+location
+RecordRef
+order.demand_location
+price
+RecordRef
+This is the identifier of the price type which is specified in the AWS Systems Manager Parameter Store.
+Note
+This is not the price of the item.
+NA
+rate
+This is the price of the item.
+pricebook_price
+taxCode
+This is the identifier of the tax configured in NetSuite which is specified in AWS Systems Manager Parameter Store. There should be different identifiers for taxable and non-taxable items based on the subsidiary.
+order.customer_email
+Was this article helpful?
+Yes
+No
+Tags
+api
+developer
+endless aisle
+ERP integration
+event stream
+events
+integration
+newstore platform
+platform
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

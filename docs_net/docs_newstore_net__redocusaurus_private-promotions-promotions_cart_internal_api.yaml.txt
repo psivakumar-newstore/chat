@@ -1,0 +1,419 @@
+openapi: 3.1.0
+info:
+  title: Apply Promotions To Cart
+  version: '1.0'
+  license:
+    name: NewStore Private
+    url: https://newstore.com
+  contact:
+    name: NewStore Support
+    email: support@newstore.com
+  description: >
+    Use this method to apply existing promotions to a cart to view how pricing
+    during checkout will be calculated based on these promotions. As a default
+    the NewStore promotion engine is used, otherwise a third party promotion
+    engine will be used if properly configured (see NewStore documentation about
+    third party promotion engine).
+
+
+
+    When using the NewStore promotions engine, this method is idempotent, and
+    does not change the state of the cart or products added to the cart. When
+    using a third party promotion engine the idempotency depends on the
+    integration and third party promotion engine.
+
+
+
+    This method returns a version of the cart (``DiscountedCart``) with all
+    specified promotions applied to it. The order of the discounts in the array
+    of discounts attached to each item in a ``DiscountedCart`` is important and
+    should not be changed when being used in other services or contexts.
+servers:
+  - url: https://dodici.s.newstore.net/v0/promotions
+    description: The staging/production server
+security:
+  - newStoreAccessToken: []
+paths:
+  /cart:
+    post:
+      summary: Apply Promotions To Cart
+      operationId: applyToCart
+      responses:
+        '200':
+          $ref: '#/components/responses/CartResponse'
+        '400':
+          $ref: '#/components/responses/ServiceError'
+        '500':
+          $ref: '#/components/responses/ServiceError'
+      description: >-
+        Use this method to apply existing promotions to a cart to view how
+        pricing during checkout will be calculated based on these promotions.
+
+        This method returns a version of the cart (``DiscountedCart``) with all
+        specified promotions applied to it. This method is idempotent, and does
+        not change the state of the cart or products added to the cart.
+
+        The order of the discounts in the array of discounts attached to each
+        item in a ``DiscountedCart`` is important and should not be changed when
+        being used in other services or contexts.
+      parameters: []
+      requestBody:
+        $ref: '#/components/requestBodies/CartRequest'
+      x-internal: true
+components:
+  schemas:
+    Cart:
+      title: Cart
+      type: object
+      description: A shopping cart without promotions applied.
+      examples: []
+      properties:
+        channelType:
+          type: string
+          description: Typically web or store.
+          example: store
+        customerId:
+          type: string
+          description: The customer ID.
+          example: 9deb5d3d-b40a-4c87-85c5-8a79d745b78a
+        currency:
+          type: string
+          description: The currency of the cart.
+          example: USD
+        couponCodes:
+          type: array
+          description: The coupon codes to be applied.
+          example:
+            - HAPPYVALENTINES
+            - BLACKFRIDAY
+          items:
+            type: string
+        storeId:
+          type: string
+          description: The store ID.
+          example: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+        shopId:
+          type: string
+          description: The shop ID.
+          example: storefront-catalog-en
+        locale:
+          type: string
+          description: The locale.
+          example: en-us
+        items:
+          type: array
+          description: The individual items that the cart contains.
+          items:
+            $ref: '#/components/schemas/Item'
+    Item:
+      title: Item
+      type: object
+      description: An individual item in the cart.
+      examples: []
+      properties:
+        id:
+          description: The ID of the item in the cart.
+          type: string
+          example: d2c083d2-35f0-4471-a499-73ea9ecbe644
+        productId:
+          description: The Newstore ID of the product.
+          type: string
+          example: '1000501'
+        price:
+          description: The price of the item, accurate to 5 decimal places.
+          type: string
+          example: '100.00000'
+        adjustedPrice:
+          description: Item price after applying discounts.
+          type: string
+          example: '65.00000'
+          readOnly: true
+        type:
+          description: >
+            The type of item that the promotion is applied to.
+
+
+            Currently, you can apply automatic promotions to specified products
+            or shipping costs.
+
+
+            Automatic promotions can also be applied to
+            [merchandise](docs/product/glossary/#glossary-merchandise)
+
+            that is chargeable to the customer, but not part of a product
+            catalog to sell for
+
+            your business, such as coffee to go in the retail store or gift wrap
+            services.
+          type: string
+          enum:
+            - Product
+            - Shipping
+            - NonMerchantable
+          example: Product
+        discountForbidden:
+          description: Indicate whether discount is forbidden or not for this item.
+          type: boolean
+          default: false
+        productCategories:
+          type: array
+          description: The product categories for which this promotion was applied.
+          example:
+            - - Shop
+              - Clothing
+              - Dresses
+            - - Shop
+              - Clothing
+          items:
+            type: array
+            items:
+              type: string
+        discounts:
+          type: array
+          description: An array of discounts details.
+          items:
+            $ref: '#/components/schemas/Discount'
+          readOnly: true
+    Discount:
+      title: Discount
+      type: object
+      properties:
+        id:
+          description: The discount's id
+          type: string
+          example: 0012e07d-534f-4cb9-8c1a-f9c25dcd07f8
+        name:
+          description: The discount's name
+          type: string
+          example: Valentine's Day
+        description:
+          description: The discount's description
+          type: string
+          example: 5% Coupon for Valentine's Day
+        kind:
+          description: The discount's kind
+          type: string
+          enum:
+            - LegacyCartLevelPercentageCategory
+            - LegacyCartLevelFixedCategory
+            - LegacyProductLevelPercentageCategory
+            - LegacyProductLevelFixedCategory
+            - LegacyShippingPercentageCategory
+            - CartLevelPercentageCategory
+            - ProductLevelPercentageCategory
+            - BogoPercentageCategory
+            - FreeShippingPercentageCategory
+            - BundlePercentageCategory
+            - CartLevelFixedCategory
+            - ProductLevelFixedCategory
+            - BogoFixedCategory
+            - BundleFixedCategory
+          example: CartLevelFixedCategory
+        promotionType:
+          description: The discount's promotion type e.g. cart level or product level
+          type: string
+          enum:
+            - Cart
+            - Product
+          example: Cart
+        discountSource:
+          description: >-
+            The source of the discount. For example, ``Promotion`` implies that
+            the discount is based on automatic promotions, while ``Coupon``
+            refers to discounts from coupons and ``Legacy`` implies that the
+            discount is based on any other discount mechanism other than coupons
+            or automatic promotions.
+          type: string
+          enum:
+            - automatic
+            - coupon
+            - legacy
+          example: coupon
+        discount:
+          description: The value of the discount, to 5 decimal places of accuracy
+          type: string
+          example: '5.00000'
+        change:
+          description: >-
+            The change in price resulting from this discount, to 5 decimal
+            places of accuracy
+          type: string
+          example: '-5.00000'
+        couponCode:
+          description: The coupon, if any, associated with this discount
+          type: string
+          example: HAPPYVALENTINES
+      description: A discount detail.
+    warning:
+      title: warning
+      type: object
+      description: A warning stating what went wrong during the operation.
+      examples: []
+      properties:
+        code:
+          type: string
+          description: A code related to the warning class.
+          example: code_not_active
+        ref:
+          type: string
+          description: A reference to the object that caused the warning. Usually the ID.
+          example: BLACKFRIDAY
+        kind:
+          type: string
+          description: The kind of the resource that caused the warning.
+          example: coupon_code
+        message:
+          type: string
+          description: A message describing what went wrong.
+          example: code 'BLACKFRIDAY' is not active
+  parameters: {}
+  requestBodies:
+    CartRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Cart'
+          examples:
+            Example 1:
+              value:
+                channelType: store
+                customerId: 9deb5d3d-b40a-4c87-85c5-8a79d745b78a
+                currency: USD
+                couponCodes:
+                  - HAPPYVALENTINES
+                  - BLACKFRIDAY
+                storeId: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                shopId: storefront-catalog-en
+                locale: en-us
+                items:
+                  - id: d2c083d2-35f0-4471-a499-73ea9ecbe644
+                    productId: '1000501'
+                    price: '100.00000'
+                    type: Product
+                    discountForbidden: false
+                    productCategories:
+                      - - Shop
+                        - Clothing
+                        - Dresses
+                      - - Shop
+                        - Clothing
+      description: Request of apply promotions to the cart.
+  responses:
+    CartResponse:
+      description: >-
+        The cart with promotions applied plus warnings stating what went wrong
+        during the operation.
+      content:
+        application/json:
+          examples:
+            Example 1:
+              value:
+                channelType: store
+                customerId: 9deb5d3d-b40a-4c87-85c5-8a79d745b78a
+                currency: USD
+                couponCodes:
+                  - HAPPYVALENTINES
+                  - BLACKFRIDAY
+                storeId: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                shopId: storefront-catalog-en
+                locale: en-us
+                items:
+                  - id: d2c083d2-35f0-4471-a499-73ea9ecbe644
+                    productId: '1000501'
+                    price: '100.00000'
+                    adjustedPrice: '65.00000'
+                    type: Product
+                    discountForbidden: false
+                    productCategories:
+                      - - Shop
+                        - Clothing
+                        - Dresses
+                      - - Shop
+                        - Clothing
+                    discounts:
+                      - id: 6215ff42-1b41-4000-8000-f0ca55bdc4da
+                        name: Valentine's Day 20%
+                        description: Discount of 20% for Valentine's Day
+                        kind: ProductLevelPercentageCategory
+                        promotionType: Product
+                        discountSource: automatic
+                        discount: '20.00000'
+                        change: '-20.00000'
+                        couponCode: ''
+                      - id: 62164750-1b41-4000-8000-f0ca55bdc743
+                        name: Cart fixed 10
+                        description: Cart fixed 10
+                        kind: CartLevelFixedCategory
+                        promotionType: Cart
+                        discountSource: automatic
+                        discount: '10.00000'
+                        change: '-10.00000'
+                        couponCode: ''
+                      - id: 0012e07d-534f-4cb9-8c1a-f9c25dcd07f8
+                        name: Valentine's Day
+                        description: 5% Coupon for Valentine's Day
+                        kind: CartLevelFixedCategory
+                        promotionType: Cart
+                        discountSource: coupon
+                        discount: '5.00000'
+                        change: '-5.00000'
+                        couponCode: HAPPYVALENTINES
+                warnings:
+                  - code: code_not_active
+                    ref: BLACKFRIDAY
+                    kind: coupon_code
+                    message: code 'BLACKFRIDAY' is not active
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Cart'
+              - type: object
+                properties:
+                  warnings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/warning'
+    ServiceError:
+      description: An error response.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: The error message.
+                readOnly: true
+              status:
+                description: The HTTP status code.
+                type: integer
+                readOnly: true
+              causes:
+                type: array
+                description: A list of causes. It's optional.
+                items:
+                  type: string
+                  readOnly: true
+              id:
+                type: string
+              type:
+                type: string
+              code:
+                type: string
+            required:
+              - message
+              - status
+          examples:
+            Example 1:
+              value:
+                message: bad request
+                status: 400
+            Example 2:
+              value:
+                message: internal server error
+                status: 500
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+x-internal: true

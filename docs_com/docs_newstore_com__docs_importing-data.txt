@@ -1,0 +1,1384 @@
+Importing data
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Importing data
+Updated on
+Jul 16, 2025
+Published on Oct 1, 2024
+89 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+This topic presents how the import system works. To see a tutorial, see
+Tutorial: Importing products
+.
+Import jobs allow you to import data files into NewStore Omnichannel Cloud. An import job can be
+full
+or
+partial
+:
+Full import
+- Imports the data that you provide and deletes all the existing data from the database that was not found in the provided data.
+Ensure you know what you are doing before you run a full import, as deletion of existing data may affect the current operations or functionalities of the platform. If you only want to hide specific products or categories, the easiest way is to set their
+online_to
+to a past date.
+Partial import
+- Imports the data that you provide. Nothing is deleted during the process.
+NewStore does not support a
+full import
+for the
+availabilities
+entity. Full imports are only supported for
+products
+,
+categories
+, and
+prices
+. If a full import job contains the
+availabilities
+entity, NewStore does not import the
+availabilities
+data. The import is marked as
+failed
+.
+The import process
+To import data, you can do one of the following:
+(Option 1) Create an import job for
+each data entity
+. For example, 1 import job each for products, for price books and for stock.
+OR
+(Option 2) Create an import job for
+all the JSON files
+after we have represented all the required data (products, price books, stock).
+Important
+We recommend importing data in a single import job, via a single file that does not exceed 500 MB.
+However, if an import job needs to be broken down into multiple imports, ensure that each new import job is run after a
+5 minute
+interval.
+If you choose to import data using
+Option 1
+, create import jobs for each data entity in this sequence:
+Products > Stock > Pricebooks > Categories (optional)
+The import process goes as follows:
+Prepare the data to be imported:
+Format JSON according to JSON schemas.
+Zip JSON files.
+Upload files to a URI that NewStore can access.
+Create import job using the
+Create import job method
+.
+Note
+When importing data to multiple fulfillment locations in your business, use the
+availabilities_store_ids
+property to specify the ID of the stores or DCs where you want to import data.
+Start the import job using the
+Start import job method
+.
+The following sections describe each step of the process.
+Formatting the data
+In NewStore, products, categories, price books, distribution centers (DCs), and stock are created through the import process.
+The data must be written in
+JSON
+, in the structure expected by NewStore.
+Create your data files according to the following schema documented for each entity:
+Note
+Duplicated entries
+The import system does not support duplicated entries for the same entity (product, category, price, availability) in catalog, locale, or pricebook.
+For example, the prices import zip file contains multiple files with prices for
+default
+pricebook and
+storefront-en-us
+catalog. These files also contain duplicated price entries for the same product ID with different price values.
+Example of duplicated entries for prices in a same file
+{
+    "head": {
+        "pricebook": "default",
+        "currency": "USD",
+        "catalog": "storefront-en-us"
+    },
+    "items": [
+        {
+            "product_id": "pid1",
+            "value": 10
+        },
+        {
+            "product_id": "pid1",
+            "value": 5
+        }
+    ]
+}
+In this scenario, the import system may pick a random value from the import file because the actual stored value is unknown. We strongly recommend you to remove the duplicated entries before sending the import zip file to avoid ambiguity in the value to be applied.
+Product import file format
+JSON Schema for products import files
+{
+    "type": "object",
+    "description": "Contains an array of products. Importing products is complex, read the `import data tutorial` to learn how to import data, ensure your products can be listed and that their variations are grouped properly in Associate App.",
+    "required": ["head", "items"],
+    "allOf": [{
+        "type": "object",
+        "properties": {
+            "head": {
+                "anyOf": [
+                    {
+                        "type": "object",
+                        "required": [
+                            "catalog",
+                            "locale"
+                        ],
+                        "properties": {
+                            "catalog": {
+                                "type": "string",
+                                "description": "The catalog to which the products belong to. It cannot begin with _ or -. It can't contain spaces, commas, :, \", *, +, /, \\, |, ?, #, >, or <",
+                                "minLength": 1,
+                                "pattern": "^[^_\\-:,\\s'\"*+/|?#><\\\\][^:,\\s'\"*+/|?#><\\\\]*$"
+                            },
+                            "locale": {
+                                "type": "string",
+                                "description": "The locale for the products catalog. It should be in format en-US or only en (deprecated).",
+                                "pattern": "(^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$)"
+                            },
+                            "shop_display_name": {
+                                "type": "string",
+                                "description": "A user-friendly name for the `shop`, or the catalog related to the specified locale.",
+                                "minLength": 1
+                            },
+                            "internal_disable_image_processing": {
+                                "type": "boolean",
+                                "description": "Defines if the product images should be uploaded to NewStore's hosting platform. If you set this field to `true`, ensure that you are hosting the images on a server that can handle the load.",
+                                "default": false
+                            },
+                            "is_master": {
+                                "type": "boolean",
+                                "description": "Defines whether the imported locale is the master locale. If this value is not provided, the imported locale is treated as master locale.",
+                                "default": true
+                            },
+                            "searchable_attributes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": ["name","path"],
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of the attribute to be used when filtering in API.",
+                                            "minLength": 1
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "description": "JSONPath of the attribute to use to search/filter with, for example `$.material` will get material to filter with. For more information about JSONPath check: http://jsonpath.com/.",
+                                            "minLength": 1
+                                        },
+                                        "weight": {
+                                            "type": "integer",
+                                            "description": "Weight of the attribute in the full text search, the bigger the weight the more the attribute will matter in the search result."
+                                        }
+                                    }
+                                }
+                            },
+                            "filterable_attributes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": ["name","path"],
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of the attribute to be used when filtering in API.",
+                                            "minLength": 1
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "description": "JSONPath of the attribute to use to search/filter with, for example `$.material` will get material to filter with. For more information about JSONPath check: http://jsonpath.com/",
+                                            "minLength": 1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "shop",
+                            "locale"
+                        ],
+                        "properties": {
+                            "shop": {
+                                "type": "string",
+                                "description": "The shop to which the products belong to. It cannot begin with _ or -. It can't contain spaces, commas, :, \", *, +, /, \\, |, ?, #, >, or <",
+                                "minLength": 1,
+                                "pattern": "^[^_\\-:,\\s'\"*+/|?#><\\\\][^:,\\s'\"*+/|?#><\\\\]*$"
+                            },
+                            "locale": {
+                                "type": "string",
+                                "description": "The locale for the products shop. It should be in format en-US or only en (deprecated).",
+                                "pattern": "(^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$)"
+                            },
+                            "shop_display_name": {
+                                "type": "string",
+                                "description": "A user-friendly name for the `shop`, or the catalog related to the specified locale.",
+                                "minLength": 1
+                            },
+                            "internal_disable_image_processing": {
+                                "type": "boolean",
+                                "description": "Defines if the product images should be uploaded to NewStore's hosting platform. If you set this field to `true`, ensure that you are hosting the images on a server that can handle the load.",
+                                "default": false
+                            },
+                            "is_master": {
+                                "type": "boolean",
+                                "description": "Defines whether the imported locale is the master locale. If this value is not provided, the imported locale is treated as master locale.",
+                                "default": true
+                            },
+                            "searchable_attributes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": ["name","path"],
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of the attribute to be used when filtering in API.",
+                                            "minLength": 1
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "description": "JSONPath of the attribute to use to search/filter with, for example `$.material` will get material to filter with. For more information about JSONPath check: http://jsonpath.com/.",
+                                            "minLength": 1
+                                        },
+                                        "weight": {
+                                            "type": "integer",
+                                            "description": "Weight of the attribute in the full text search, the bigger the weight the more the attribute will matter in the search result."
+                                        }
+                                    }
+                                }
+                            },
+                            "filterable_attributes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": ["name","path"],
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of the attribute to be used when filtering in API.",
+                                            "minLength": 1
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "description": "JSONPath of the attribute to use to search/filter with, for example `$.material` will get material to filter with. For more information about JSONPath check: http://jsonpath.com/",
+                                            "minLength": 1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "type": "object",
+        "properties": {
+            "items": {
+                "type": "array",
+                "minLength": 1,
+                "items": {
+                    "type": "object",
+                    "description": "A product is a buyable item. These fields describe products and some of these fields are not used by default but can be manipulated via the NewStore SDK to be exposed in the Shopping App or the Associate App.",
+                    "required": ["product_id", "variant_group_id"],
+                    "properties": {
+                        "product_id": {
+                            "description": "Unique identifier of the product. This identifier is used in all NewStore APIs that are related to products.",
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "variant_group_id": {
+                            "description": "**REQUIRED** The identifier of the variant group to which this product belongs. The variant group identifier groups all the variants of a product. For example, Grace Sweater Beige Size 4 and Grace Sweater Beige Size 6 are both variants of the same product and should be grouped with a single ``variant_group_id``. If a product has only one variant, create a unique variant group for it to represent it as a variantless product. Ensure that the same product is not assigned to multiple variant groups in the same shop.",
+                            "type": "string",
+                            "minLength": 1 
+                        },
+                        "show_in_listing": {
+                            "description": "Determines if this product is displayed in the search results and product listings returned by NewStore applications.",
+                            "type": "boolean"
+                        },
+                        "sku": {
+                            "description": "**DEPRECATED** Use the 'external_identifiers' list to store the SKU. The stock keeping unit number of the product.",
+                            "type": "string"
+                        },
+                        "title": {
+                            "description": "The product title. This field is user-facing.",
+                            "type": "string"
+                        },
+                        "brand": {
+                            "description": "The product's brand name. This field is user-facing.",
+                            "type": "string"
+                        },
+                        "caption": {
+                            "description": "A short version of the product's description used for meta tags or thumbnails.",
+                            "type": "string",
+                            "nullable": true
+                        },
+                        "description": {
+                            "description": "The product's description. This field is user-facing.",
+                            "type": "string",
+                            "nullable": true
+                        },
+                        "keywords": {
+                            "description": "List of keywords describing the product. By default, this field has no effect in the NewStore applications.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "is_published": {
+                            "description": "Free boolean field to be used for custom implementations. By default, this field has no effect in the NewStore applications.",
+                            "type": "boolean"
+                        },
+                        "is_active": {
+                            "description": "Free boolean field to be used for custom implementations. By default, this field has no effect in the NewStore applications.",
+                            "type": "boolean"
+                        },
+                        "shipping_weight_value": {
+                            "description": "The weight of the product. Set the weight unit with 'shipping_weight_unit'. Not required during import, but this information might be required if you want to ship your products.",
+                            "type": "number"
+                        },
+                        "shipping_weight_unit": {
+                            "description": "The weight unit of the product. Set the weight with 'shipping_weight_value'. Not required during import, but this information might be required if you want to ship your products.",
+                            "type": "string",
+                            "enum": ["g", "kg", "lb", "oz"]
+                        },
+                        "shipping_dimension_length": {
+                            "description": "The length of the product. Set the unit of measurement with 'shipping_dimension_unit'. Not required during import, but this information might be required if you want to ship your products.",
+                            "type": "number"
+                        },
+                        "shipping_dimension_width": {
+                            "description": "The width of the product. Set the unit of measurement with 'shipping_dimension_unit'. Not required during import, but this information might be required if you want to ship your products.",
+                            "type": "number"
+                        },
+                        "shipping_dimension_height": {
+                            "description": "The height of the product. Set the unit of measurement with 'shipping_dimension_unit'. Not required during import, but this information might be required if you want to ship your products.",
+                            "type": "number"
+                        },
+                        "shipping_dimension_unit": {
+                            "description": "The unit of measurement for the product dimensions.",
+                            "type": "string",
+                            "enum": ["cm", "in"]
+                        },
+                        "external_identifiers": {
+                            "description": "The product's external identifier(s). Note that if you do not specify the SKU identifier, it is automatically set to the value of the 'product_id' field.",
+                            "maxItems": 100,
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["type", "value"],
+                                "properties": {
+                                    "type": {
+                                        "description": "Type of the identifier. For example 'upc', 'ean13' or 'gtin'.",
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "description": "Value of the identifier.",
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "extended_attributes": {
+                            "description": "A collection of key-value pairs for custom diversification of the product. By default, you can include a maximum of 500 extended attributes.",
+                            "maxItems": 500,
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["name", "value"],
+                                "properties": {
+                                    "name": {
+                                        "description": "The name or key of the extended attribute. By default, the length of the name can be a maximum of 250 characters.",
+                                        "maxLength": 250,
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "description": "The value of the extended attribute. By default, the length of the value can be a maximum of 2000 characters.",
+                                        "maxLength": 2000,
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "images": {
+                            "description": "The images of the products. One image must have the 'is_main' property set to 'true'.",
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "description": "Contains the image data of a product.",
+                                "required": ["url"],
+                                "properties": {
+                                    "url": {
+                                        "description": "Product image URL.",
+                                        "type": "string",
+                                        "format": "uri"
+                                    },
+                                    "title": {
+                                        "description": "Product image title.",
+                                        "type": "string"
+                                    },
+                                    "identifier": {
+                                        "type": "string",
+                                        "description": "Product image identifier (e.g. image-top-1)."
+                                    },
+                                    "is_main": {
+                                        "type": "boolean",
+                                        "description": "Identifies the main image. The image that is considered the 'main image' is the first image of the product that consumers/associates see in the applications."
+                                    },
+                                    "alt_text": {
+                                        "description": "The alternative text for the image, used if the image fails to be displayed.",
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "tags": {
+                                        "description": "Tenant specific tags or use 'nwst::productonly' to override the main image coming from the catalog. This image is only displayed in the product overview of an order inside HQ.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "internal_dimension_height": {
+                                        "description": "The height of the image in pixels. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field.",
+                                        "type": "integer"
+                                    },
+                                    "internal_dimension_width": {
+                                        "description": "The width of the image in pixels. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field.",
+                                        "type": "integer"
+                                    },
+                                    "internal_dominant_color": {
+                                        "description": "The dominant color of the image. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field.",
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "tax_class_id": {
+                            "description": "An identifier representing the tax class of the product. A ``tax_class_id`` is associated to a tax code from third-party tax calculation providers such as ``Avalara`` or ``Vertex``. For more information on tax codes, see the [business guide](https://docs.newstore.net/docs/processes/about-tax-calc.html).",
+                            "type": "string"
+                        },
+                        "categories": {
+                            "description": "Categories of the product. One category must have the 'is_main' property set to 'true'.",
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["path"],
+                                "properties": {
+                                    "path": {
+                                        "description": "The category path (e.g. 'Furniture > Chairs').",
+                                        "type": "string"
+                                    },
+                                    "position": {
+                                        "description": "The position of the product inside the given category.",
+                                        "type": "integer"
+                                    },
+                                    "is_main": {
+                                        "description": "Determines that this category is the main category of the product. The main category will be used if customers get deep linked to a product. Only one category can be main and an error will be thrown if two categories are assigned. Also if no category is marked as main, the products cannot be found in NOM when filtered by category. For more information, see the [guide](/developers/guides/importdata#formatting-import).",
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        },
+                        "template_id": {
+                            "type": "string",
+                            "description": "Determines a template that is used to display this product."
+                        },
+                        "variation_color_value": {
+                            "description": "**Important:** set this property or 'variation_size_value' for every product in a variant group with more than one product. The display name of the product's color.",
+                            "type": "string"
+                        },
+                        "variation_size_value": {
+                            "description": "**Important:** set this property or 'variation_color_value' for every product in a variant group with more than one product. The display name of the product's size.",
+                            "type": "string"
+                        },
+                        "variation_size_gender": {
+                            "type": "string",
+                            "description": "The gender of the product.",
+                            "enum": ["male", "female", "unisex"]
+                        },
+                        "google_category": {
+                            "type": "string",
+                            "description": "The size category of the product.",
+                            "enum": ["clothing", "shoes", "hat", "gloves", "none"]
+                        },
+                        "variation_size_type": {
+                            "type": "string",
+                            "description": "This attribute is used to indicate the cut of the product.",
+                            "enum": ["regular", "petite", "plus", "big and tall", "maternity"]
+                        },
+                        "variation_size_system": {
+                            "type": "string",
+                            "description": "The size system this size is in. For example 'US', 'EU' or 'SML'. Individual size systems can be defined via a size systems config."
+                        },
+                        "variation_additional_1_name": {
+                            "description": "Allows determining the name for an additional dimension for the diversification of the product on top of color and size.",
+                            "type": "string"
+                        },
+                        "variation_additional_1_value": {
+                            "description": "Allows determining the value for an additional dimension for the diversification of the product on top of color and size.",
+                            "type": "string"
+                        },
+                        "variation_additional_2_name": {
+                            "description": "Allows determining the name for an additional dimension for the diversification of the product on top of color and size.",
+                            "type": "string"
+                        },
+                        "variation_additional_2_value": {
+                            "description": "Allows determining the value for an additional dimension for the diversification of the product on top of color and size.",
+                            "type": "string"
+                        },
+                        "preorder_start": {
+                            "description": "Determines the datetime (inclusive) when the product is available for pre-order sales.",
+                            "type": "string",
+                            "format": "date-time",
+                            "example":"2020-03-16T05:00:14Z"
+                        },
+                        "serialized_inventory": {
+                            "description": "Determines if the product inventory in NewStore is tracked using serial numbers.",
+                            "type": "boolean"
+                        },
+                        "online_from": {
+                            "description": "Determines the datetime (inclusive) when the product is available to be sold. If the product is available for pre-order, this refers to the date when inventory becomes available and the product can be sold and fulfilled.",
+                            "type": "string",
+                            "format": "date-time",
+                            "example":"2020-03-01T17:00:00Z"
+                        },
+                        "online_to": {
+                            "description": "Determines the datetime (inclusive) when the product is not available anymore to be sold.",
+                            "type": "string",
+                            "format": "date-time",
+                            "example":"2020-02-14T10:01:00Z"
+                        },
+                        "product_hts_number": {
+                            "description": "A numerical code specified by a harmonized system for tariffs (required for international shipments). Could be 6-10 digits in length, depending on the country where the product is being classified.",
+                            "type": "string"
+                        },
+                        "schedule_b": {
+                            "description": "Classification number for exporting goods out of the United States (required for international shipments).",
+                            "type": "string"
+                        },
+                        "country_of_origin": {
+                            "type": "string",
+                            "description": "is the country of manufacture."
+                        },
+                        "material": {
+                            "type": "string",
+                            "description": "indicates the materials the product item is produced of.",
+                            "maxLength": 512
+                        }
+                    }
+                }
+            }
+        }
+    }]
+}
+Prices import file format
+JSON schema for prices import files
+{
+    "type": "object",
+    "description": "Contains an array of prices.",
+    "required": ["head", "items"],
+    "allOf": [{
+        "type": "object",
+        "properties": {
+            "head": {
+                "anyOf": [
+                    {
+                        "type": "object",
+                        "required": [
+                            "pricebook",
+                            "catalog",
+                            "currency"
+                        ],
+                        "properties": {
+                            "pricebook": {
+                                "description": "The identifier of the pricebook. All product prices for the defined catalog are included to these pricebook. The pricebook that contains the default prices must be named 'default'.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "catalog": {
+                                "type": "string",
+                                "description": "The catalog to which the products in this pricebook belong to. It cannot begin with _ or -. It can't contain spaces, commas, :, \", *, +, /, \\, |, ?, #, >, or <",
+                                "minLength": 1,
+                                "pattern": "^[^_\\-:,\\s'\"*+/|?#><\\\\][^:,\\s'\"*+/|?#><\\\\]*$"
+                            },
+                            "currency": {
+                                "type": "string",
+                                "description": "The currency for the prices in this pricebook.",
+                                "minLength": 1,
+                                "maxLength": 3
+                            },
+                            "traits": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A trait of this pricebook."
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "pricebook",
+                            "shop",
+                            "currency"
+                        ],
+                        "properties": {
+                            "pricebook": {
+                                "description": "The identifier of the pricebook. All product prices for the defined catalog are included to these pricebook. The pricebook that contains the default prices must be named 'default'.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "shop": {
+                                "type": "string",
+                                "description": "The shop to which the products in this pricebook belong to. It cannot begin with _ or -. It can't contain spaces, commas, :, \", *, +, /, \\, |, ?, #, >, or <",
+                                "minLength": 1,
+                                "pattern": "^[^_\\-:,\\s'\"*+/|?#><\\\\][^:,\\s'\"*+/|?#><\\\\]*$"
+                            },
+                            "currency": {
+                                "type": "string",
+                                "description": "The currency for the prices in this pricebook.",
+                                "minLength": 1,
+                                "maxLength": 3
+                            },
+                            "traits": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A trait of this pricebook."
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "type": "object",
+        "properties": {
+            "items": {
+                "type": "array",
+                "minLength": 1,
+                "items": {
+                    "type": "object",
+                    "description": "Price object",
+                    "required": ["product_id", "value"],
+                    "properties": {
+                        "product_id": {
+                            "type": "string",
+                            "description": "The unique identifier for the product."
+                        },
+                        "value": {
+                            "description": "Product price for the specific pricebook.",
+                            "type": "number"
+                        }
+                    }
+                }
+            }
+        }
+    }]
+}
+Categories import file format
+JSON schema for categories import files
+{
+    "type": "object",
+    "description": "Contains an array of categories.",
+    "required": ["head", "items"],
+    "allOf": [{
+        "type": "object",
+        "properties": {
+            "head": {
+                "type": "object",
+                "anyOf": [
+                    {
+                        "type": "object",
+                        "required": [
+                            "catalog",
+                            "locale"
+                        ],
+                        "properties": {
+                            "catalog": {
+                                "type": "string",
+                                "description": "The catalog to which the categories belong to. It cannot begin with _ or -. It can't contain spaces, commas, :, \", *, +, /, \\, |, ?, #, >, or <",
+                                "minLength": 1,
+                                "pattern": "^[^_\\-:,\\s'\"*+/|?#><\\\\][^:,\\s'\"*+/|?#><\\\\]*$"
+                            },
+                            "locale": {
+                                "type": "string",
+                                "description": "The locale for the categories catalog. It should be in format en-US or only en (deprecated).",
+                                "pattern": "(^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$)"
+                            },
+                            "is_master": {
+                                "type": "boolean",
+                                "description": "Defines whether the imported locale is the master one. If this value is omitted, the imported locale is treated as master locale.",
+                                "default": true
+                            },
+                            "internal_disable_image_processing": {
+                                "type": "boolean",
+                                "description": "Defines if the category images should be uploaded to NewStore's hosting platform. If you set this field to `true`, ensure that you are hosting the images on a server that can handle the load.",
+                                "default": false
+                            }
+                        }
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "shop",
+                            "locale"
+                        ],
+                        "properties": {
+                            "shop": {
+                                "type": "string",
+                                "description": "The shop to which the categories belong to. It cannot begin with _ or -. It can't contain spaces, commas, :, \", *, +, /, \\, |, ?, #, >, or <",
+                                "minLength": 1,
+                                "pattern": "^[^_\\-:,\\s'\"*+/|?#><\\\\][^:,\\s'\"*+/|?#><\\\\]*$"
+                            },
+                            "locale": {
+                                "type": "string",
+                                "description": "The locale for the categories shop. It should be in format en-US or only en (deprecated).",
+                                "pattern": "(^[A-Za-z]{2}$)|(^[a-z]{2}[-_]{1}[A-Za-z]{2}$)"
+                            },
+                            "is_master": {
+                                "type": "boolean",
+                                "description": "Defines whether the imported locale is the master one. If this value is omitted, the imported locale is treated as master locale.",
+                                "default": true
+                            },
+                            "internal_disable_image_processing": {
+                                "type": "boolean",
+                                "description": "Defines if the category images should be uploaded to NewStore's hosting platform. If you set this field to `true`, ensure that you are hosting the images on a server that can handle the load.",
+                                "default": false
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "type": "object",
+        "properties": {
+            "items": {
+                "type": "array",
+                "minLength": 1,
+                "items": {
+                    "title": "Category",
+                    "type": "object",
+                    "description": "Category object. A category is an arbitrary group of products that are related. For example, shoes or accessories. Categories are typically organized hierarchically. For example 'Shop > Shoes > Sandals'. Some of these fields are not used by default but can be manipulated via the NewStore SDK to be exposed in the Shopping App or the Associate App.",
+                    "required": ["path"],
+                    "properties": {
+                        "path": {
+                            "description": "The hierarchy of the category. Categories and sub-categories must be separated by an angle bracket ([space]>[space]). For example, 'Shop > Clothing > Jackets'.",
+                            "type": "string"
+                        },
+                        "description": {
+                            "description": "The description of the category.",
+                            "type": "string"
+                        },
+                        "name": {
+                            "description": "The name of the category.",
+                            "type": "string"
+                        },
+                        "images": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "title": "Category Image",
+                                "description": "Information about a category image.",
+                                "required": ["url"],
+                                "properties": {
+                                    "url": {
+                                        "description": "Category image URL. The server hosting the images must be available to NewStore.",
+                                        "type": "string",
+                                        "format": "uri"
+                                    },
+                                    "title": {
+                                        "description": "Category image title.",
+                                        "type": "string"
+                                    },
+                                    "identifier": {
+                                        "type": "string",
+                                        "description": "Category image identifier (e.g. image-top-1)."
+                                    },
+                                    "is_main": {
+                                        "type": "boolean",
+                                        "description": "Identifies the main image. The image that is considered the 'main image' is the first image of the category that consumers/associates see in the applications."
+                                    },
+                                    "alt_text": {
+                                        "description": "The alternative text for the image, used if the image fails to be displayed.",
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "tags": {
+                                        "description": "Tenant-specific tags.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "internal_dimension_height": {
+                                        "description": "The height of the image in pixels. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field.",
+                                        "type": "integer"
+                                    },
+                                    "internal_dimension_width": {
+                                        "description": "The width of the image in pixels. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field.",
+                                        "type": "integer"
+                                    },
+                                    "internal_dominant_color": {
+                                        "description": "The dominant color of the image. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field.",
+                                        "type": "string"
+                                    }
+                                }
+                            }                            
+                        },
+                        "keywords": {
+                            "description": "List of keywords describing the category. By default, this field has no effect in the NewStore applications.",
+                            "type": "array",
+                            "minItems": 0,
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "position": {
+                            "description": "The position of this category in the category listing in the NewStore applications. By default, this field has no effect in the NewStore applications.",
+                            "type": "integer"
+                        },
+                        "google_category": {
+                            "type": "string",
+                            "description": "The size category of the products in this category.",
+                            "enum": ["clothing", "shoes", "hat", "gloves", "none"]
+                        },
+                        "extended_attributes": {
+                            "description": "A collection of key-value pairs for custom diversification of the product category. By default, you can include a maximum of 500 extended attributes.",
+                            "maxItems": 500,
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["name", "value"],
+                                "properties": {
+                                    "name": {
+                                        "description": "The name or key of the extended attribute. By default, the length of the name can be a maximum of 250 characters.",
+                                        "maxLength": 250,
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "description": "The value of the extended attribute. By default, the length of the value can be a maximum of 2000 characters.",
+                                        "maxLength": 2000,
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "online_from": {
+                            "description": "Determines the datetime (inclusive) when the category is available.",
+                            "type": "string",
+                            "format": "date-time",
+                            "example":"2020-03-01T17:00:00Z"
+                        },
+                        "online_to": {
+                            "description": "Determines the datetime (inclusive) when the category is not available anymore.",
+                            "type": "string",
+                            "format": "date-time",
+                            "example":"2020-02-14T10:01:00Z"
+                        }
+                    }
+                }                
+            }
+        }
+    }]
+}
+Availabilities import file format
+JSON schema for availabilities import files
+{
+    "type": "object",
+    "description": "Contains an array of availability entries to set the stock on hand. When the import job API (i.e. using /import/<id>/start) is used for availability import, the json data is only validated when import job starts. If validation fails here, the import job could fail or, remain in 'processing' state (in some edge-cases) Refer to the description of each property below for details.",
+    "required": ["head", "items"],
+    "properties": {
+        "head": {
+            "type": "object",
+            "required": ["store_mapping"],
+            "properties": {
+                "store_mapping": {
+                    "type": "array",
+                    "description": "Assigns a NewStore store ID to a fulfillment node. It creates fulfillment nodes inside the NewStore. It should contain all the fulfillment nodes that are used for this particular import. Otherwise, the import item will fail.",
+                    "items": {
+                        "type": "object",
+                        "required": ["fulfillment_node_id"],
+                        "properties": {
+                            "store_id": {
+                                "type": ["string", "null"],
+                                "description": "Identifier of the store in the NewStore platform. For distribution centers leave empty string or null"
+                            },
+                            "fulfillment_node_id": {
+                                "type": "string",
+                                "description": "Identifier of the fulfillment node in the NewStore platform. This value can be equal to the 'store_id'.",
+                                "minLength": 1
+                            }
+                        }
+                    }
+                },
+                "mode": {
+                    "type": "string",
+                    "description": "The mode of the availability import.\n On_hand: When this value is specified, the import quantity is set as the stock on hand for the product in the specified fulfillment location in the platform. Allocations for items that have not been shipped and safety stock will be deducted to calculate the ATP for the product.\nATP: When this value is specified, any Allocations for items that have not been shipped will be added to the import quantity and the safety stock will be deducted to calculate the ATP for the product.",
+                    "enum": ["on_hand", "atp"],
+                    "default": "on_hand"
+                }
+            }
+        },
+        "items": {
+            "type": "array",
+            "minLength": 1,
+            "items": {
+                "title": "Availability",
+                "type": "object",
+                "oneOf": [
+                    {
+                        "required": [
+                            "product_id",
+                            "fulfillment_node_id",
+                            "quantity"
+                        ],
+                        "not": {"required": ["future_inventory"]},
+                        "description": "Provide 'quantity' to set the current inventory for the specific product."
+                    },
+                    {
+                        "required": [
+                            "product_id",
+                            "fulfillment_node_id",
+                            "future_inventory"
+                        ],
+                        "not": {"required": ["quantity"]},
+                        "description": "Provide 'future_inventory' to set the future inventory for the specific product."
+                    },
+                    {
+                        "required": [
+                            "product_id",
+                            "fulfillment_node_id",
+                            "quantity",
+                            "future_inventory"
+                        ],
+                        "description": "Provide values for both 'quantity' and 'future_inventory' when you want to set current and future inventory."
+                    }
+                ],
+                "properties": {
+                    "product_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The unique identifier of the product to which this availability update applies."
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Current quantity in the specified store, as identified by the 'fulfillment_node_id'."
+                    },
+                    "future_inventory": {
+                        "type": "object",
+                        "required": [
+                            "quantity",
+                            "date"
+                        ],
+                        "description": "Sets the future inventory for the specified product at the fulfillment location.",
+                        "properties": {
+                            "quantity": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "description": "Specifies the number of items that will be available on the specified 'date'."
+                            },
+                            "date": {
+                                "type": "string",
+                                "description": "Specifies the date when the future inventory becomes available. The date has to be in the future and cannot be the current day or in the past. Use this format: 'YYYY-MM-DD'.",
+                                "example":"2020-12-25"
+            
+                            }
+                        }
+                    },
+                    "distribution_location_label": {
+                        "type": "string",
+                        "description": "DEPRECATED: Label which uniquely identifies the `DistributionLocation`.",
+                        "maxLength": 256
+                    },
+                    "fulfillment_node_id": {
+                        "type": "string",
+                        "description": "Label which uniquely identifies the `FulfillmentNode`. A fulfillment node typically represents a place able to store and fulfill products.",
+                        "minLength": 1,
+                        "maxLength": 256
+                    },
+                    "bin_locations": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Bin Locations of items in StorageLocation."
+                    }
+                }
+            }            
+        }
+    }
+}
+Import guidelines
+Important
+For import updates, provide the full payload of the entity to update. If the payload only provides the field(s) to update, the entity will be unusable.
+Ensure that you provide the correct value for the
+fulfillment_node_id
+property during the stock import. Deleting a
+fulfillment_node_id
+with a wrong value is currently not possible.
+This is an example of
+incorrect JSON
+that will break the item since it is incomplete:
+{
+  "items": [
+    { "product_id": "AC7089-590", "variant_group_id": "AC7089", "title": "OUTERSKIN FG" }
+  ],
+  "head":
+    { "shop": "storefront-catalog-en", "locale": "en-US", "catalog": "storefront-catalog-en"}
+}
+To specify if the quantity you are importing for a product is the new
+ATP
+or
+stock on hand
+for the product at the specified fulfillment location, use the
+mode
+property. See the
+schema
+or the
+tutorial
+for more information.
+To import
+future inventory
+for a product into the specified fulfillment location, use the
+future_inventory
+property, with the
+mode
+property set to
+atp
+. See the
+schema
+or the
+tutorial
+for more information.
+Note
+You can import future inventory only as the
+future ATP
+for the product in the fulfillment location.
+You can import both future inventory and current inventory (as
+ATP
+) for the product in the fulfillment location as part of the same import job. See the
+API example
+.
+Creating an import job
+Create an import job using the
+Create import job method
+.
+For more information about authentication, see
+Getting started with NewStore APIs
+.
+Important
+In the case of availability imports, do not run several of these with different revision numbers at the same time. Instead, you should run one import job which contains values from both imports.
+The default limit for creating import jobs is
+40
+for all import jobs except for product imports, the limit for which is
+20
+. If you reach the limit with current open import jobs, NewStore keeps them in the
+received
+state and the API returns a
+429
+error. We recommend you to either start your import jobs in the
+received
+state or mark them as failed using the
+Set import job status to failed method
+. Keeping them in the
+received
+or
+waiting
+state adds to the total number of import jobs in the queue.
+NewStore does not support a
+full import
+for the
+availabilities
+entity. Full imports are only supported for
+products
+,
+categories
+, and
+prices
+. If a full import job contains the
+availabilities
+entity, NewStore does not import the
+availabilities
+data. The import is marked as
+failed
+.
+The job is created and can be started using the
+Start import job method
+by providing the URL of the data file to the zip file.
+For more information about authentication, see
+Getting started with NewStore APIs
+.
+The import process begins.
+Checking the status
+Check the
+status
+of your import job:
+Using the
+Get import job method
+.
+Using NewStore Omnichannel Manager, via
+Catalog
+>
+Imports
+>
+Catalog imports
+. For more information, see
+Viewing status of catalog imports
+.
+To retrieve all jobs, use the
+List import jobs method
+.
+Important
+When an import job is finished, the system takes some time to process the data. Usually this means only a few minutes, but in rare cases, when the system is under pressure it can take 24-48 hours to make the imported information available.
+Job statuses
+Depending on the job type, the import job goes through the following statuses:
+Status
+Description
+received
+The import job has been created but has not started yet. This request returns a job ID that you can use to retrieve the status of the job at any time.
+waiting
+The import job has been received, and is waiting for free capacity in the import scheduler. If the import job remains in
+waiting
+status for too long, contact the
+support team
+.
+processing
+The import has started.
+cleaning
+The import itself has been completed, and a cleanup task has been started and is in progress. The cleaning step deletes all data that was not found in the provided imported data, from the database. Partial imports have no cleaning status.
+finished
+After a partial import's
+processing
+status is complete, or after a full import's
+cleaning
+status is complete, this status indicates that all the data in the import request has been added to the system.
+Note
+A finished job
+does not
+mean there were no errors.
+See
+Troubleshooting errors
+.
+failed
+The request failed to be processed. See
+Troubleshooting errors
+.
+Adding multiple prices and currencies for the same product
+When you are using the same catalog in multiple locations, you may want to add the same product in multiple currencies and with different prices.
+To set up a product with multiple prices or currencies:
+Import the product into a catalog.
+Import the separate price books for the different prices or currencies. You must have at least one price book called
+default
+to list the products in the NewStore platform and in Associate App.
+Configure the price book in every store that should use a non-default price book. Use the
+catalog
+and
+pricebook
+properties of the Stores API.
+To make the store-specific price visible to a user in Associate App, assign that user to the respective store.
+Hiding products and categories
+NewStore does not support removing products or categories from the platform once they have been imported. But these products and categories can be hidden so that this information is not available in Associate App.
+To do so, perform a new import with the
+online_to
+property set to a past date for these specific products or categories.
+Exporting product data
+NewStore allows you to export product data as a downloaded CSV file. To export product data for your business, use the
+Export products API
+.
+Once downloaded, the CSV file is refreshed automatically every day, and the
+List products
+method can retrieve product data that is a maximum of a day old.
+Use response header properties such as
+Last-Modified
+or
+ETag
+to verify attributes of the exported product data file, such as the version or the timestamp when the file was last updated.
+Exporting pricebook data
+NewStore allows you to export pricebook data as a downloaded CSV file. To export pricebook data for your business, use the
+Export pricebook API
+.
+Once downloaded, the CSV file is refreshed automatically every day, and the
+Show pricebook export
+method can retrieve pricebook data that is a maximum of a day old.
+Use response header properties such as
+Last-Modified
+or
+ETag
+to verify attributes of the exported pricebook data file, such as the version or the timestamp when the file was last updated.
+Troubleshooting errors
+After the job is finished, check for potential errors using the
+List errors for import method
+. A job with the
+finished
+status can contain errors.
+An import job is also split into chunks. You can retrieve information about these chunks using the
+Get import chunk method
+.
+There can be different types of errors when importing data, depending on the entity you are trying to import. To check why an import job has failed, see the
+reason
+property in the response payload. See
+Import error examples
+for typical errors for an import job.
+A stock import is marked as failed when:
+The zip file specified for the import is not valid.
+The JSON files inside the specified zip file do not match the definitions or properties defined in the schema.
+The specified zip file is too big or not accessible.
+Items in that import belong to an unknown fulfillment location.
+A fulfillment location is marked as a store when it is actually a DC, or vice-versa.
+A specific item is marked as failed because it cannot be processed. This may be due to an invalid payload or because images are not available for this product. An import chunk is marked as failed when 50 or more items in the import chunk are failing.
+General data import FAQs
+We recommend reading these FAQs before importing data into the NewStore platform. For more information on the import process, read the
+integration guide
+or the
+tutorial
+.
+Do import jobs run asynchronously?
+Yes. NewStore Omnichannel Cloud supports running import jobs for multiple retailers asynchronously, as it improves system performance. For more information about running an import job, see the
+Running the import
+section in the
+tutorial
+.
+What should I do if an import fails?
+Use the
+Get import job method
+to see why the import job has failed. NewStore does not automatically retry a failed job. To retry a failed import job, use the
+Start import job method
+.
+Does the import pipeline auto-scale during peak data import events like BFCM (Black Friday Cyber Monday)?
+Yes, the import pipeline will auto-scale to fulfill import requests during peak times, when such requests peak because of BFCM or other reasons. Nevertheless we recommend to always import data at least 48 hours in advance to be sure everything is ready when the data is actually required.
+Am I informed when my import job goes into
+processing
+state for a long time?
+No, only NewStore gets notified when your import job is stuck in the
+processing
+state for hours. We will investigate and resolve import issues by processing the next scheduled import job, or by finishing the current import job that is stuck.
+What do I do when an import job is stuck in the
+received
+state?
+We recommend that you mark these jobs as failed using the
+Set import job status to failed method
+.
+Why is my import job stuck in the
+waiting
+state or taking longer than usual?
+NewStore processes import jobs asynchronously. Based on the size of import, the processing time may vary. Import jobs don't run in parallel, but are queued up and run in a sequential order. For more information, see this
+tutorial
+.
+Why is the imported product data not showing up after my import job is finished?
+This can have multiple reasons. Ensure that:
+The product data was imported without errors
+The product master data is correct, if you wanted to import a non-master locale in catalog
+The product has a price entry in the
+default
+pricebook for the specified catalog
+The
+online_from
+time period for the product is correct
+The
+show_in_listing
+attribute is set to
+true
+When all the above are correct and the product is still not showing up, the product data may not have been indexed yet. The indexing process is currently not part of the import process, and not visible in the import job status. Depending on the overall load, indexing can take several hours. To ensure that all your data is ready in time, we recommend to always import data at least 48 hours in advance.
+Related topics
+Salesforce Commerce Cloud (SFCC) data import FAQs
+Importing data
+Tutorial: Importing products
+Running the import
+Import jobs API
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+catalog
+category
+data import
+fulfillment
+full import
+import job
+integration
+inventory
+newstore platform
+partial import
+platform
+pricebook
+product
+product import
+SFCC
+stock
+stock on hand
+store
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

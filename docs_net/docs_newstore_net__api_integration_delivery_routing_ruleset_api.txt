@@ -1,0 +1,716 @@
+Routing ruleset API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Delivery API
+Shipping rules API
+Fulfillment config history API
+Capacity-based Routing
+Routing insights API
+Routing ruleset API
+Service levels API
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+Get routing rules example
+get
+Get routing rules
+put
+Updates the routing rules
+patch
+Patch the routing rules
+get
+Get routing rules section
+API docs by Redocly
+Routing ruleset API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Team Routing
+:
+team-routing@newstore.com
+Define routing rules for your business
+Get routing rules example
+Retrieves the current 'fulfillment configuration V1' transformed to
+adhere to the 'Routing Rule' V2 format.  It shows the change in
+value-mapping between V1 and V2.  If already using V2, this endpoint
+is of no use, and will return the current configuration.
+Refer to the 'Response Examples' to see the type of structure to be returned.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+OK
+404
+There is no fulfillment configuration set yet.
+500
+Internal server error.
+get
+/routing/ruleset/example
+/v0
+/routing/ruleset/example
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"routes"
+:
+[
+{
+"fulfilled_by"
+:
+{
+"2_DAY"
+:
+[
+"2_DAY::aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61"
+]
+,
+"GROUND"
+:
+[
+"GROUND::aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61"
+]
+}
+,
+"destination_region"
+:
+{
+"country"
+:
+"US"
+,
+"zip_code_region"
+:
+"aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61"
+}
+}
+]
+,
+"sl_levels_priority"
+:
+[
+"GROUND"
+,
+"2_DAY"
+]
+,
+"location_groups"
+:
+{
+"2_DAY::aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61"
+:
+[
+"DC01"
+,
+"US15"
+,
+"US16"
+]
+,
+"GROUND::aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61"
+:
+[
+"US01"
+,
+"US02"
+,
+"US03"
+]
+}
+,
+"zip_code_regions"
+:
+{
+"aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61"
+:
+[
+"*"
+]
+}
+}
+Get routing rules
+Retrieves the current 'Routing Rule V2'. If customer using V1, this endpoint
+is of no use, and will return the error.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+OK
+404
+There is no fulfillment configuration set yet.
+500
+Internal server error.
+get
+/routing/ruleset
+/v0
+/routing/ruleset
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"routes"
+:
+[
+{
+"fulfilled_by"
+:
+{
+"2_DAY"
+:
+[
+"2_DAY::WEST"
+]
+,
+"GROUND"
+:
+[
+"GROUND::WEST"
+]
+}
+,
+"destination_region"
+:
+{
+"country"
+:
+"US"
+,
+"zip_code_region"
+:
+"WEST"
+}
+}
+]
+,
+"sl_levels_priority"
+:
+[
+"GROUND"
+,
+"2_DAY"
+]
+,
+"location_groups"
+:
+{
+"2_DAY::WEST"
+:
+[
+"DC01"
+,
+"US15"
+,
+"US16"
+]
+,
+"GROUND::WEST"
+:
+[
+"US01"
+,
+"US02"
+,
+"US03"
+]
+}
+,
+"zip_code_regions"
+:
+{
+"WEST"
+:
+[
+"*"
+]
+}
+}
+Updates the routing rules
+This endpoint is used to initially seed the routing rules or to replace it completely
+Note:
+You have the option of defining route entries with a single
+country
+or multiple
+countries
+by 
+providing the optional
+Content-Type
+header with your desired payload version.
+If you'd like to define multiple countries set the Content-Type header to application/json; version=1. 
+Select the appropriate Content-Type in the the request schema drop-down to see the schema for supporting 
+multiple countries.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+application/json; version=1
+application/json
+routes
+Array of
+objects
+Routing rules specification
+sl_levels_priority
+Array of
+strings
+non-empty
+[ items
+non-empty
+]
+Service levels priority. This is ordered according to which service level will be taken first
+location_groups
+object
+Location groups identifiers
+zip_code_regions
+object
+Zip code groups, in order to facilitate the identification routes per regions
+Responses
+201
+Routing rules updated successfully
+400
+Bad request
+500
+Internal server error
+put
+/routing/ruleset
+/v0
+/routing/ruleset
+Request samples
+Payload
+Content type
+application/json
+application/json; version=1
+application/json
+Copy
+Expand all
+Collapse all
+{
+"routes"
+:
+[
+{
+"fulfilled_by"
+:
+{
+"2_DAY"
+:
+[
+"2_DAY::WEST"
+]
+,
+"GROUND"
+:
+[
+"GROUND::WEST"
+]
+}
+,
+"destination_region"
+:
+{
+"country"
+:
+"US"
+,
+"zip_code_region"
+:
+"WEST"
+}
+}
+]
+,
+"sl_levels_priority"
+:
+[
+"GROUND"
+,
+"2_DAY"
+]
+,
+"location_groups"
+:
+{
+"2_DAY::WEST"
+:
+[
+"DC01"
+,
+"US15"
+,
+"US16"
+]
+,
+"GROUND::WEST"
+:
+[
+"US01"
+,
+"US02"
+,
+"US03"
+]
+}
+,
+"zip_code_regions"
+:
+{
+"WEST"
+:
+[
+"*"
+]
+}
+}
+Response samples
+201
+400
+500
+Content type
+application/json
+application/json; version=1
+application/json
+Copy
+Expand all
+Collapse all
+{
+"routing_ruleset"
+:
+{
+"routes"
+:
+[
+{
+"fulfilled_by"
+:
+{
+"2_DAY_PR"
+:
+[
+"NJ"
+]
+}
+,
+"destination_region"
+:
+{
+"country"
+:
+"PR"
+,
+"zip_code_region"
+:
+"All"
+}
+}
+]
+,
+"sl_levels_priority"
+:
+[
+"2_DAY_PR"
+]
+,
+"location_groups"
+:
+{
+"NJ"
+:
+[
+"US_NJ"
+]
+}
+,
+"zip_code_regions"
+:
+{
+"All"
+:
+[
+"*"
+]
+}
+}
+,
+"fulfillment_config_uri"
+:
+"v0/fulfillment_configuration/revision/13"
+}
+Patch the routing rules
+A convenience endpoint is where you use JSON patch to change parts of routing rules.
+Note:
+You have the option of defining route entries with a single
+country
+or multiple
+countries
+by 
+providing the optional
+Content-Type
+header with your desired payload version.
+If you'd like to define multiple countries set the Content-Type header to application/json; version=1. 
+Select the appropriate Content-Type in the the request schema drop-down to see the schema for supporting 
+multiple countries.
+To use payload version 1 via the PATCH operation you need to update the route entries from
+country
+to
+countries
+via PUT endpoint for compatibility.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+application/json; version=1
+application/json
+Array
+One of
+object
+object
+object
+path
+required
+string
+A JSON Pointer path.
+op
+required
+string
+Enum
+:
+"add"
+"replace"
+"test"
+The operation to perform.
+value
+required
+any
+The value to add, replace or test.
+Responses
+200
+Routing rules updated successfully
+400
+Bad request.
+500
+Internal server error.
+patch
+/routing/ruleset
+/v0
+/routing/ruleset
+Request samples
+Payload
+Content type
+application/json
+application/json; version=1
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"op"
+:
+"add"
+,
+"path"
+:
+"/location_groups/2_DAY::WEST/-"
+,
+"value"
+:
+"US10"
+}
+]
+Response samples
+200
+400
+500
+Content type
+application/json
+application/json; version=1
+application/json
+Copy
+Expand all
+Collapse all
+{
+"routing_ruleset"
+:
+{
+"routes"
+:
+[
+{
+"fulfilled_by"
+:
+{
+"2_DAY_PR"
+:
+[
+"NJ"
+]
+}
+,
+"destination_region"
+:
+{
+"country"
+:
+"PR"
+,
+"zip_code_region"
+:
+"All"
+}
+}
+]
+,
+"sl_levels_priority"
+:
+[
+"2_DAY_PR"
+]
+,
+"location_groups"
+:
+{
+"NJ"
+:
+[
+"US_NJ"
+]
+}
+,
+"zip_code_regions"
+:
+{
+"All"
+:
+[
+"*"
+]
+}
+}
+,
+"fulfillment_config_uri"
+:
+"v0/fulfillment_configuration/revision/13"
+}
+Get routing rules section
+Retrieves a section of the current 'Routing Rule V2'. If customer using V1, this endpoint
+is of no use, and will return the error.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+section
+required
+string
+Enum
+:
+"routes"
+"sl_levels_priority"
+"location_groups"
+"zip_code_regions"
+name of the section to retrieve
+Responses
+200
+OK
+400
+Bad request.
+500
+Internal server error.
+get
+/routing/ruleset/{section}
+/v0
+/routing/ruleset/{section}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"zip_code_regions"
+:
+{
+"West"
+:
+[
+"90210"
+,
+"90211"
+,
+"90212"
+,
+"90213"
+]
+,
+"East"
+:
+[
+"10001"
+,
+"10002"
+,
+"10003"
+,
+"10004"
+,
+"10005"
+]
+,
+"South"
+:
+[
+"33101"
+,
+"33102"
+,
+"33103"
+,
+"33104"
+,
+"33105"
+,
+"33106"
+]
+}
+}
+Previous
+Routing insights API
+Next
+Service levels API
+Copyright © 2025 NewStore, Inc.

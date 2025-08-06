@@ -1,0 +1,665 @@
+openapi: 3.0.1
+tags:
+  - name: Return configuration
+    description: >
+      Enables you to include an item returned to your store in a specific stock
+      location, based on whether
+
+      the returned item is salable or not.
+
+      You can also use this resource to [create a return
+      configuration](#operation/createOrUpdateReturnConfiguration).
+  - name: Stock locations
+    description: >
+      Represents the types of [stock
+      locations](/docs/glossary.html#term-stock-location) configured for your
+      business.
+
+      Stock locations are virtual or physical locations that hold salable or
+      unsalable stock. NewStore uses stock locations
+
+      to manage inventory and calculate stock on hand in your store(s), when
+      NewStore is enabled as
+
+      [inventory master](/docs/glossary.html#term-inventory-master) for the
+      store.
+
+
+      **Important:** Do not confuse this resource with the
+      [Locations](/newstore-cloud/newstore.html#locations) resource. This
+      resource represents only
+
+      [physical locations](/docs/glossary.html#term-location) configured in your
+      business, such as a store or DC,
+
+      that you operate from.
+
+
+      You can configure each stock location to allow its stock to be included in
+      stock on hand calculations or not.
+
+      See [stock
+      locations](/docs/processes/about-inventory-management.html#stock-locations).
+      For example, you can set up a
+
+      stock location only for damaged goods, and ensure the stock on hand of
+      your store does not include these goods.
+
+
+      **Note:** When you [create a
+      location](/newstore-cloud/newstore.html#locations) for your business,  the
+      salable stock location will be created by default, if there is no salable
+      stock location type exists then the `main` stock location type is created
+      for the location by default. The `salable` property for the `main` stock
+      location is always set to `true`.
+
+
+      To create stock locations that are available for all stores in your
+
+      business, use the [Create stock location](#operation/createStockLocation)
+      method.
+
+      For a guide on creating stock locations, see
+
+      the
+      [tutorial](/docs/development/tutorials/create-store.html#tuto-stock-location).
+info:
+  title: Stock Locations
+  contact:
+    name: Team Inventory
+    url: https://apidocs.newstore.io
+  description: |
+    An API to manipulate the numbers of inventory in StockLocations (a.k.a.
+    Virtual Locations) by adding StockChanges.
+  version: '0.1'
+servers:
+  - url: https://dodici.x.newstore.net/v0
+  - url: http://stock-locations-http.team-inventory:8000
+paths:
+  /stores/{store_id}/products:
+    get:
+      tags:
+        - Stock on Hand
+      summary: Stock of all products in a store
+      description: >
+        Retrieves stock quantities of all products in a store across all stock
+        locations.
+      operationId: getStoreStockOnHand
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            type: string
+          description: The store in which to search for the stock of the product.
+          example: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+        - in: query
+          name: from
+          required: false
+          schema:
+            type: number
+          description: >-
+            Allows returning only the stock on hand changed since the provided
+            timestamp.
+        - in: query
+          name: sellable
+          schema:
+            type: boolean
+          description: Allows returning only the products in sellable stock locations.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                title: Stock on Hand
+                type: array
+                items:
+                  type: object
+                  properties:
+                    location_name:
+                      description: The unique name of the stock location.
+                      type: string
+                      example: main
+                    location_label:
+                      description: The display name of the stock location.
+                      type: string
+                      example: Main
+                    location_sellable:
+                      description: >-
+                        Whether the stock location has a sellable stock of the
+                        product.
+                      type: boolean
+                      example: true
+                    stock:
+                      description: >-
+                        The list of product IDs and their respective quantities
+                        in the stock location.
+                      type: object
+                      additionalProperties:
+                        description: Product quantity.
+                        x-additionalPropertiesName: product_id
+                        type: integer
+                      example:
+                        PRODUCT-ID-1: 30
+                        PRODUCT-ID-2: 26
+                        PRODUCT-ID-3: 69
+                  required:
+                    - location_name
+                    - location_sellable
+                    - stock
+        '404':
+          description: Store not found
+        '421':
+          description: NewStore is not the stock data source for the requested store.
+          content: {}
+  /stores/{store_id}/products/{product_id:.*}:
+    get:
+      tags:
+        - Stock on Hand
+      summary: Stock of a single product in a store
+      description: >
+        Retrieves stock quantities of a specific product in a store across all
+        stock locations.
+      operationId: getStoreProductStockOnHand
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            type: string
+          description: The store in which to search for the stock of the product.
+          example: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+        - in: path
+          name: product_id
+          required: true
+          schema:
+            type: string
+          description: The product to search for in a store across all stock locations.
+          example: PRODUCT-ID-1
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                title: Stock on Hand
+                type: array
+                items:
+                  type: object
+                  properties:
+                    location_name:
+                      description: The unique name of the stock location.
+                      type: string
+                      example: main
+                    location_label:
+                      description: The display name of the stock location.
+                      type: string
+                      example: Main
+                    location_sellable:
+                      description: >-
+                        Whether the stock location has a sellable stock of the
+                        product.
+                      type: boolean
+                      example: true
+                    stock:
+                      description: >-
+                        The list of product IDs and their respective quantities
+                        in the stock location.
+                      type: object
+                      additionalProperties:
+                        description: Product quantity.
+                        x-additionalPropertiesName: product_id
+                        type: integer
+                        maxProperties: 1
+                      example:
+                        PRODUCT-ID-1: 30
+                  required:
+                    - location_name
+                    - location_sellable
+                    - stock
+        '404':
+          description: Store not found
+        '421':
+          description: NewStore is not the stock data source for the requested store.
+          content: {}
+  /stock_locations:
+    get:
+      tags:
+        - Stock locations
+      description: |
+        Retrieves a list of stock locations configured for your business.
+      summary: List stock locations
+      operationId: listStockLocations
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                title: Get stock locations list response
+                required:
+                  - stock_locations
+                type: object
+                properties:
+                  stock_locations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/stockLocation'
+                description: Response schema containing the list of stock locations.
+                example:
+                  stock_locations:
+                    - display_name: Main
+                      name: main
+                      salable: true
+                    - name: damaged
+                      salable: false
+                    - display_name: Display
+                      name: display
+                      salable: false
+    post:
+      tags:
+        - Stock locations
+      description: >
+        Creates a stock location that is available for all stores configured for
+        your business.
+
+        We only support one stock location that is salable - `main`. **A salable
+        stock location should be created before performing any inventory stock
+        operations.**
+
+        **Note:** To create a salable stock location, make sure to set the
+        `name` to `main`. Other stock locations will not be salable.
+
+        **Important:** This method creates a virtual stock location. To create a
+        [physical location](/newstore-cloud/newstore.html#locations),
+
+        run a new [stock
+        import](/newstore-cloud/newstore.html#stockonhandimport).
+      summary: Create stock location
+      operationId: createStockLocation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stockLocation'
+        required: true
+      responses:
+        '201':
+          description: The stock location was successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/stockLocation'
+        '422':
+          description: Create stock location validation failed.
+          content: {}
+      x-codegen-request-body-name: body
+  /stock_locations/{name}:
+    get:
+      tags:
+        - Stock locations
+      description: |
+        Retrieves the stock location with the specified name.
+      summary: Get stock location
+      operationId: getStockLocation
+      parameters:
+        - name: name
+          in: path
+          description: |
+            The name of the stock location. To retrieve the name, use the [List
+            stock locations method](#operation/listStockLocations).
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                title: Stock Location
+                required:
+                  - name
+                  - salable
+                type: object
+                properties:
+                  display_name:
+                    type: string
+                    description: |
+                      The human readable display name of the stock location.
+                      This name is visible in NewStore Fulfillment App, NOM, and
+                      other fulfillment related reports.
+                  name:
+                    pattern: ^[^_].*$
+                    type: string
+                    description: |
+                      The unique name of the stock location. Must be in
+                      lowercase and can contain numbers, hyphens, or ASCII
+                      characters.
+                  salable:
+                    type: boolean
+                    description: >
+                      Specifies if the stock location is sellable or unsellable.
+
+                      - When set to `true`, items in this location are available
+                      for sale,
+
+                      and are included in stock on hand calculations.
+
+                      - When set to `false`, this stock location is not able to
+                      sell its
+
+                      items. For example, you can use this to define a damaged
+                      goods stock
+
+                      location.
+                description: Represents a stock location.
+                example:
+                  display_name: Main
+                  name: main
+                  salable: true
+        '404':
+          description: Stock location not found.
+          content: {}
+    patch:
+      tags:
+        - Stock locations
+      description: >
+        Updates a stock location that is available for all stores configured for
+        your business. Only the display name is configurable at this point.
+      summary: Update stock location
+      operationId: updateStockLocation
+      parameters:
+        - name: name
+          in: path
+          description: |
+            The name of the stock location. To retrieve the name, use the [List
+            stock locations method](#operation/listStockLocations).
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateStockLocation'
+        required: true
+      responses:
+        '204':
+          description: The stock location was successfully updated.
+        '404':
+          description: >-
+            The stock location name provided does not match a known stock
+            location.
+          content: {}
+      x-codegen-request-body-name: body
+  /stock_locations/return_process_configuration:
+    get:
+      tags:
+        - Return process configuration
+      description: >
+        Retrieves the return configuration set up for your business. This
+        includes condition codes and their related
+
+        stock locations.
+
+
+        **Note:** This method only retrieves condition codes that have been
+        mapped to stock locations using the
+
+        return configuration. Any other condition codes configured for your
+        business are ignored.
+
+
+        A condition code identifies the condition of a returned item.
+
+        The condition code is specified
+
+        when processing a return [via NewStore Associate
+        App](/docs/assoapp/using-assoapp.html#returning-items),
+
+        or using the [Create
+        return](/newstore-cloud/newstore.html#/returns-create-return) method.
+
+
+        NewStore creates condition codes for your business. To retrieve the list
+        of condition codes configured for your
+
+        business, contact the support team.
+
+
+        **Related resources:**
+
+        - [Returns](/newstore-cloud/newstore.html#returns)
+
+
+        **Related methods:**
+
+        - [Create stock location](#operation/createStockLocation)
+
+        - [List stock locations](#operation/listStockLocations)
+      summary: Get return configuration
+      operationId: getReturnConfiguration
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                title: Get conditions to stock location list response
+                required:
+                  - return_process_configuration
+                type: object
+                properties:
+                  return_process_configuration:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/returnProcessConfiguration'
+                description: |
+                  Response schema containing the list of conditions to stock
+                  location mapping.
+                example:
+                  return_process_configuration:
+                    - condition_code: 1
+                      revision: 1
+                      stock_location:
+                        display_name: Main
+                        name: main
+                        salable: true
+                    - condition_code: 2
+                      revision: 1
+                      stock_location:
+                        display_name: Damaged
+                        name: damaged
+                        salable: false
+    post:
+      tags:
+        - Return process configuration
+      description: >
+        Creates a return configuration for your business. This configuration
+        enables you to include a returned item
+
+        in the specified stock location in your store, using the condition code
+        for the return.
+
+
+        A condition code identifies the condition of a returned item.
+
+        The condition code is specified when processing a return
+
+        [via NewStore Associate
+        App](/docs/assoapp/using-assoapp.html#returning-items),
+
+        or using the [Create
+        return](/newstore-cloud/newstore.html#/returns-create-return) method.
+
+
+        NewStore creates condition codes for your business. To retrieve the list
+        of condition codes configured for your
+
+        business, contact the support team.
+
+
+        **Note:** You can only create a return configuration to manage returned
+        items in stores, not DCs.
+
+
+        If you include a returned item identified as salable in a stock location
+        that contains salable stock, the stock on hand
+
+        for the store increases.
+
+
+        **Note:**
+
+        By default, a returned item is included in the `main` stock location and
+        considered salable if:
+
+        - No condition code is specified when creating a return.
+
+        - You have not created stock locations for your business.
+
+        - You have not set up a return configuration for your business.
+
+
+        **Related resources:**
+
+        - [Returns](/newstore-cloud/newstore.html#returns)
+
+
+        **Related methods:**
+
+        - [Create stock location](#operation/createStockLocation) - [List stock
+        locations](#operation/listStockLocations)
+      summary: Create or update return configuration
+      operationId: createOrUpdateReturnConfiguration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Create return code to stock location mapping
+              required:
+                - condition_code
+                - stock_location_name
+              type: object
+              properties:
+                condition_code:
+                  type: integer
+                  description: The condition code for the return reason.
+                revision:
+                  type: integer
+                  description: |
+                    Revision of the return configuration. Starts with 1 and is
+                    incremented on each update. The return configuration is
+                    updated only when the new revision number is greater than
+                    the current revision number in the database.
+                stock_location_name:
+                  type: string
+                  description: |
+                    The name of the stock location. The stock location must be
+                    already configured for all stores in your business.
+              description: Represents the return code to stock location mapping.
+              example:
+                condition_code: 1
+                revision: 1
+                stock_location_name: main
+        required: true
+      responses:
+        '201':
+          description: The return configuration was successfully created.
+          content:
+            application/json:
+              schema:
+                title: Return code to stock location mapping
+                required:
+                  - condition_code
+                  - stock_location
+                type: object
+                properties:
+                  condition_code:
+                    type: integer
+                    description: |
+                      The condition code for the returned item in an order. The
+                      value for this property is specified when processing
+                      returns using the NewStore Associate App or the 'Create
+                      return' method.
+                    example: 1
+                  revision:
+                    type: integer
+                    description: |
+                      Revision of the return configuration. Starts with 1 and is
+                      incremented on each update. The return configuration is
+                      updated only when the new revision number is greater than
+                      the current revision number in the database.
+                  stock_location:
+                    $ref: '#/components/schemas/stockLocation'
+                description: Represents the return code to stock location mapping.
+                example:
+                  condition_code: 1
+                  revision: 1
+                  stock_location:
+                    display_name: Main
+                    name: main
+                    salable: true
+      x-codegen-request-body-name: body
+components:
+  schemas:
+    returnProcessConfiguration:
+      title: Return code to stock location mapping
+      required:
+        - condition_code
+        - stock_location
+      type: object
+      properties:
+        condition_code:
+          type: integer
+          description: |
+            The condition code for the returned item in an order. The value for
+            this property is specified when processing returns using the
+            NewStore Associate App or the 'Create return' method.
+          example: 1
+        revision:
+          type: integer
+          description: |
+            Revision of the return configuration. Starts with 1 and is
+            incremented on each update. The return configuration is updated only
+            when the new revision number is greater than the current revision
+            number in the database.
+        stock_location:
+          $ref: '#/components/schemas/stockLocation'
+      description: Represents the return code to stock location mapping.
+    stockLocation:
+      title: Stock Location
+      required:
+        - name
+      type: object
+      properties:
+        display_name:
+          type: string
+          description: |
+            The human readable display name of the stock location. This name is
+            visible in NewStore Fulfillment App, NOM, and other fulfillment
+            related reports.
+        name:
+          pattern: ^[^_].*$
+          type: string
+          description: |
+            The unique name of the stock location. Must be in lowercase and can
+            contain numbers, hyphens, or ASCII characters.
+          example: main
+      example:
+        display_name: Damaged goods
+        name: damaged
+    updateStockLocation:
+      title: Stock Location
+      type: object
+      properties:
+        display_name:
+          type: string
+          description: |
+            The human readable display name of the stock location. This name is
+            visible in NewStore Fulfillment App, NOM, and other fulfillment
+            related reports.
+      example:
+        display_name: 1st Quality

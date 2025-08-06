@@ -1,0 +1,949 @@
+openapi: 3.0.0
+info:
+  title: Manager Approval Rules API
+  version: '0.1'
+  description: >
+    Represents a set of rules which triggers a mandatory approval request within
+    the order fulfillment
+
+    process, typically during [checkout in NewStore Associate
+    App](/docs/assoapp/using-assoapp.html#managing-order-approvals).
+
+    For example `cash_payment_rule` or `discount_rule`.
+servers:
+  - url: https://dodici.x.newstore.net/_/v0/dontuse
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /manager_approval:
+    get:
+      responses:
+        '200':
+          description: Rules are returned successfully.
+          content:
+            application/json:
+              example:
+                rules:
+                  - criteria:
+                      - name: payment_method
+                        value: cash
+                      - name: payment_method
+                        value: gift_card
+                    description: Split payment with cash and giftcard rule.
+                    label: cash_gift_card_rule
+                  - criteria:
+                      - name: discount_percentage
+                        value: '90'
+                    description: Discount rule.
+                    label: discount_percentage_90
+                  - criteria:
+                      - name: has_discount
+                        value: 'true'
+                    description: Discount rule.
+                    label: all_discounts_rule
+                  - criteria:
+                      - name: payment_method
+                        value: gift_card
+                    description: Giftcard payment rule.
+                    label: gift_card_payments_rule
+                  - criteria:
+                      - name: payment_method
+                        value: manual_credit_card
+                    description: Adyen manual credit card rule.
+                    label: manual_credit_card_adyen_payments_rule
+                  - criteria:
+                      - name: payment_method
+                        value: cash
+                    description: Cash payment rule.
+                    label: cash_payments_rule
+              schema:
+                title: Get all manager approval rules response
+                description: Response schema for getting all manager approval rules
+                type: object
+                required:
+                  - rules
+                properties:
+                  rules:
+                    type: array
+                    title: Rules Schema
+                    items:
+                      type: object
+                      title: Rule Items Schema
+                      required:
+                        - label
+                      properties:
+                        label:
+                          type: string
+                          description: >-
+                            A short identifier for the approval rule. Cannot
+                            contain spaces.
+                          pattern: ^[^\s]+$
+                        description:
+                          type: string
+                          description: >-
+                            The human readable description to display the rule
+                            on frontend applications.
+                        criteria:
+                          type: array
+                          description: >-
+                            The criteria that determine if an order requires
+                            manager approval.
+                          minLength: 1
+                          items:
+                            oneOf:
+                              - type: object
+                                required:
+                                  - name
+                                properties:
+                                  name:
+                                    description: >-
+                                      The order criteria based on which a check
+                                      should be applied.
+                                    type: string
+                                    enum:
+                                      - has_discount
+                                      - is_return
+                                      - is_blind_return
+                                      - has_tax_exemption
+                                  value:
+                                    description: >-
+                                      The value to determine if the order needs
+                                      approval based on the specified criterion.
+                                      Can be "true" or "false", defaults to
+                                      "true".
+                                    type: string
+                                    default: 'true'
+                                    enum:
+                                      - 'true'
+                                      - 'false'
+                              - type: object
+                                required:
+                                  - name
+                                  - value
+                                properties:
+                                  name:
+                                    description: >-
+                                      The order criteria based on which a check
+                                      should be applied.
+                                    type: string
+                                    enum:
+                                      - discount_value
+                                      - discount_percentage
+                                      - refund_value
+                                      - order_value
+                                  value:
+                                    description: >-
+                                      The value to determine if the order needs
+                                      approval based on the specified criterion.
+                                      Limited values for discount_value,
+                                      discount_percentage, refund_value or
+                                      order_value are numbers.
+                                    type: string
+                                    pattern: ^[0-9\.]+$
+                              - type: object
+                                required:
+                                  - name
+                                  - value
+                                properties:
+                                  name:
+                                    description: >-
+                                      The order criteria based on which a check
+                                      should be applied.
+                                    type: string
+                                    enum:
+                                      - payment_method
+                                  value:
+                                    description: >-
+                                      The value to determine if the order needs
+                                      approval based on the specified criterion.
+                                      Limited values for payment_method are
+                                      "cash", "credit_card" or
+                                      "manual_credit_card".
+                                    type: string
+                                    enum:
+                                      - cash
+                                      - credit_card
+                                      - manual_credit_card
+                                      - gift_card
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                successful: false
+                message: 'internal server error: failed to get manager approval rules'
+              schema:
+                title: Get Manager Approval Rules Error Response
+                description: >-
+                  Represents a get manager approval rules response in case of an
+                  error.
+                required:
+                  - successful
+                properties:
+                  successful:
+                    type: boolean
+                    description: A flag indicating if the request was successful or not.
+                  message:
+                    description: >-
+                      In order to allow schema validation while following
+                      OpenAPI standards we match the value of this message field
+                      to one of the two schemas below. The enum on null is
+                      necessary to pass schema validation.
+                    oneOf:
+                      - type: string
+                        description: >-
+                          A human readable descriptive message in case of an
+                          error.
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+      description: |
+        Retrieves all manager approval rules.
+      summary: List approval rules
+      operationId: list-approval-rules
+    post:
+      responses:
+        '201':
+          description: The rule has been created successfully.
+          content:
+            application/json:
+              example:
+                successful: true
+                message: ''
+              schema:
+                title: Manager Approval Rule response
+                description: Represents a manager approval rule post or put response.
+                required:
+                  - successful
+                properties:
+                  successful:
+                    type: boolean
+                    description: A flag indicating if the request was successful or not.
+                  message:
+                    description: >-
+                      In order to allow schema validation while following
+                      OpenAPI standards we match the value of this message field
+                      to one of the two schemas below. The enum on null is
+                      necessary to pass schema validation.
+                    oneOf:
+                      - type: string
+                        description: >-
+                          A human readable descriptive message in case of an
+                          error.
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+        '400':
+          description: Bad Request - Request data is invalid.
+          content:
+            application/json:
+              example:
+                request_id: 123.100.12
+                message: 'JSON schema validation failed: criteria is a required field'
+              schema:
+                title: Generic error response.
+                description: Schema for generic and validation error responses.
+                properties:
+                  request_id:
+                    type: string
+                    description: >-
+                      A identifier of the request which lead to an error for
+                      debugging purposes.
+                  message:
+                    type: string
+                    description: A human readable descriptive message of an error.
+        '409':
+          description: Conflict, requested rule label already exists.
+          content:
+            application/json:
+              example:
+                successful: true
+                message: ''
+              schema:
+                title: Manager Approval Rule response
+                description: Represents a manager approval rule post or put response.
+                required:
+                  - successful
+                properties:
+                  successful:
+                    type: boolean
+                    description: A flag indicating if the request was successful or not.
+                  message:
+                    description: >-
+                      In order to allow schema validation while following
+                      OpenAPI standards we match the value of this message field
+                      to one of the two schemas below. The enum on null is
+                      necessary to pass schema validation.
+                    oneOf:
+                      - type: string
+                        description: >-
+                          A human readable descriptive message in case of an
+                          error.
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                successful: false
+                message: >-
+                  internal server error: failed to upsert manager approval rule:
+                  db connection failed
+              schema:
+                title: Manager Approval Rule response
+                description: Represents a manager approval rule post or put response.
+                required:
+                  - successful
+                properties:
+                  successful:
+                    type: boolean
+                    description: A flag indicating if the request was successful or not.
+                  message:
+                    description: >-
+                      In order to allow schema validation while following
+                      OpenAPI standards we match the value of this message field
+                      to one of the two schemas below. The enum on null is
+                      necessary to pass schema validation.
+                    oneOf:
+                      - type: string
+                        description: >-
+                          A human readable descriptive message in case of an
+                          error.
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+      description: >
+        Creates a rule containing the criteria that determines if an order needs
+        approval before it can be placed
+
+        by an associate via NewStore Associate App.
+
+
+        You can use the following criteria to set approval rules:
+
+
+        | Criterion name      | Type              |
+
+        |---------------------|-------------------|
+
+        |`has_discount`       | Boolean           |
+
+        |`discount_value`     | Number            |
+
+        |`discount_percentage`| Number            |
+
+        |`discount_level`     | `order` or `item` |
+
+        |`payment_methods`    | Array             |
+
+        |`is_return`          | Boolean           |
+
+        |`is_blind_return`    | Boolean           |
+
+        |`refund_value`       | Number            |
+
+        |`has_tax_exemption`  | Boolean           |
+
+        |`order_value`        | Number            |
+
+
+        **Note:** NewStore Associate App allows the associate to apply discounts
+        either on `order` level or on
+
+        `item` level using the `discount_level` property. If no value for
+        `discount_level` is specified, it is set
+
+        to `order` by default.
+
+
+        You can apply a fixed discount amount to an order or item(s) using the
+        `discount_value` property.
+
+
+        If an order or item matches or exceeds the criteria specified in the
+        approval rules, the
+
+        order will need approval on the app.
+      summary: Create approval rule
+      operationId: create-approval-rule
+      requestBody:
+        content:
+          application/json:
+            examples:
+              order_level_discount:
+                summary: Order level discount approval
+                description: >
+                  Orders with a discount of 80% or more need approval on the
+                  app.
+                value:
+                  label: RestrictDiscountsAbove80Percent
+                  description: Discounts equal or above 80%
+                  criteria:
+                    - name: has_discount
+                      value: 'true'
+                    - name: discount_percentage
+                      value: '80'
+                    - name: discount_level
+                      value: order
+              item_level_discount:
+                summary: Item level discount approval
+                description: >
+                  If an item in an order has a discount of 40% or more, the
+                  order needs approval
+
+                  on the app.
+                value:
+                  label: RestrictDiscountsAbove40PercentOnItems
+                  description: Discounts equal or above 40% on an item in an order
+                  criteria:
+                    - name: has_discount
+                      value: 'true'
+                    - name: discount_percentage
+                      value: '40'
+                    - name: discount_level
+                      value: item
+              fixed_value_discount:
+                summary: Fixed value discount approval
+                description: >
+                  If an item in an order has a discount of $50 or more, the
+                  order needs approval
+
+                  on the app.
+                value:
+                  label: RestrictDiscountsAbove50USDOnItems
+                  description: Discounts equal or above $50 on an item in an order
+                  criteria:
+                    - name: has_discount
+                      value: 'true'
+                    - name: discount_value
+                      value: '50'
+                    - name: discount_level
+                      value: item
+            schema:
+              description: Represents a manager approval rule definition.
+              title: Manager Approval Rule
+              type: object
+              required:
+                - label
+                - description
+                - criteria
+              properties:
+                label:
+                  type: string
+                  description: >-
+                    A short identifier for the approval rule. Cannot contain
+                    spaces.
+                description:
+                  type: string
+                  description: >-
+                    The human readable description to display the rule on
+                    frontend applications.
+                criteria:
+                  type: array
+                  description: >-
+                    The criteria that determine if an order requires manager
+                    approval.
+                  minLength: 1
+                  items:
+                    oneOf:
+                      - type: object
+                        required:
+                          - name
+                        properties:
+                          name:
+                            description: >-
+                              The order criteria based on which a check should
+                              be applied.
+                            type: string
+                            enum:
+                              - has_discount
+                              - is_return
+                              - is_blind_return
+                              - has_tax_exemption
+                          value:
+                            description: >-
+                              The value to determine if the order needs approval
+                              based on the specified criterion. Can be "true" or
+                              "false", defaults to "true". In case of
+                              has_discount the additional criterion
+                              discount_level is required.
+                            type: string
+                            default: 'true'
+                            enum:
+                              - 'true'
+                              - 'false'
+                      - type: object
+                        required:
+                          - name
+                          - value
+                        properties:
+                          name:
+                            description: >-
+                              The order criteria based on which a check should
+                              be applied.
+                            type: string
+                            enum:
+                              - discount_value
+                              - discount_percentage
+                              - refund_value
+                              - order_value
+                          value:
+                            description: >-
+                              The value to determine if the order needs approval
+                              based on the specified criterion. Limited values
+                              for discount_value, discount_percentage,
+                              refund_value or order_value are numbers. In case
+                              of discount_value or discount_percentage the
+                              additional criterion discount_level is required.
+                            type: string
+                            pattern: ^[0-9\.]+$
+                      - type: object
+                        required:
+                          - name
+                          - value
+                        properties:
+                          name:
+                            description: >-
+                              The order criteria based on which a check should
+                              be applied.
+                            type: string
+                            enum:
+                              - payment_method
+                          value:
+                            description: >-
+                              The value to determine if the order needs approval
+                              based on the specified criterion. Limited values
+                              for payment_method are "cash", "credit_card" or
+                              "manual_credit_card".
+                            type: string
+                            enum:
+                              - cash
+                              - credit_card
+                              - manual_credit_card
+                              - gift_card
+                      - type: object
+                        required:
+                          - name
+                          - value
+                        properties:
+                          name:
+                            description: >-
+                              The order criteria based on which a check should
+                              be applied.
+                            type: string
+                            enum:
+                              - discount_level
+                          value:
+                            description: >-
+                              The value to determine if discount criteria (e.g.
+                              has_discount, discount_value or
+                              discount_percentage) are based on order or item
+                              level. Limited values for discount_level are
+                              "order" or "item", default to "order" This
+                              criterion is required in case has_discount,
+                              discount_value or discount_percentage are part of
+                              a rule.
+                            type: string
+                            enum:
+                              - order
+                              - item
+        required: true
+    x-annotation-deprecated:
+      since: 02/2020
+      replaceWith: |
+        Use [this resource](#manager-approval-rules) instead.
+  /manager_approval/{label}:
+    put:
+      responses:
+        '200':
+          description: The rule has been updated successfully.
+          content:
+            application/json:
+              example:
+                successful: true
+                message: ''
+              schema:
+                title: Manager Approval Rule response
+                description: Represents a manager approval rule post or put response.
+                required:
+                  - successful
+                properties:
+                  successful:
+                    type: boolean
+                    description: A flag indicating if the request was successful or not.
+                  message:
+                    description: >-
+                      In order to allow schema validation while following
+                      OpenAPI standards we match the value of this message field
+                      to one of the two schemas below. The enum on null is
+                      necessary to pass schema validation.
+                    oneOf:
+                      - type: string
+                        description: >-
+                          A human readable descriptive message in case of an
+                          error.
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+        '400':
+          description: Bad Request - Request data is invalid.
+          content:
+            application/json:
+              example:
+                request_id: 123.100.12
+                message: 'JSON schema validation failed: criteria is a required field'
+              schema:
+                title: Generic error response.
+                description: Schema for generic and validation error responses.
+                properties:
+                  request_id:
+                    type: string
+                    description: >-
+                      A identifier of the request which lead to an error for
+                      debugging purposes.
+                  message:
+                    type: string
+                    description: A human readable descriptive message of an error.
+        '404':
+          description: The rule wasn't found.
+          content:
+            application/json:
+              example:
+                successful: false
+                message: >-
+                  not found: failed to upsert manager approval rule: sql update
+                  did not update any row
+              schema:
+                title: Manager Approval Rule response
+                description: Represents a manager approval rule post or put response.
+                required:
+                  - successful
+                properties:
+                  successful:
+                    type: boolean
+                    description: A flag indicating if the request was successful or not.
+                  message:
+                    description: >-
+                      In order to allow schema validation while following
+                      OpenAPI standards we match the value of this message field
+                      to one of the two schemas below. The enum on null is
+                      necessary to pass schema validation.
+                    oneOf:
+                      - type: string
+                        description: >-
+                          A human readable descriptive message in case of an
+                          error.
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                successful: false
+                message: >-
+                  internal server error: failed to upsert manager approval rule:
+                  db connection failed
+              schema:
+                title: Manager Approval Rule response
+                description: Represents a manager approval rule post or put response.
+                required:
+                  - successful
+                properties:
+                  successful:
+                    type: boolean
+                    description: A flag indicating if the request was successful or not.
+                  message:
+                    description: >-
+                      In order to allow schema validation while following
+                      OpenAPI standards we match the value of this message field
+                      to one of the two schemas below. The enum on null is
+                      necessary to pass schema validation.
+                    oneOf:
+                      - type: string
+                        description: >-
+                          A human readable descriptive message in case of an
+                          error.
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+      description: |
+        Updates the specified approval rule.
+
+        **Note:** Requires the `/{label}` to identify the rule
+      summary: Update approval rule
+      operationId: update-approval-rule
+      requestBody:
+        content:
+          application/json:
+            example:
+              label: RestrictDiscountsAbove80Percent
+              description: Discounts equal or above 80%
+              criteria:
+                - name: has_discount
+                  value: 'true'
+                - name: discount_percentage
+                  value: '80'
+                - name: discount_level
+                  value: order
+            schema:
+              description: Represents a manager approval rule definition.
+              title: Manager Approval Rule
+              type: object
+              required:
+                - label
+                - description
+                - criteria
+              properties:
+                label:
+                  type: string
+                  description: >-
+                    A short identifier for the approval rule. Cannot contain
+                    spaces.
+                description:
+                  type: string
+                  description: >-
+                    The human readable description to display the rule on
+                    frontend applications.
+                criteria:
+                  type: array
+                  description: >-
+                    The criteria that determine if an order requires manager
+                    approval.
+                  minLength: 1
+                  items:
+                    oneOf:
+                      - type: object
+                        required:
+                          - name
+                        properties:
+                          name:
+                            description: >-
+                              The order criteria based on which a check should
+                              be applied.
+                            type: string
+                            enum:
+                              - has_discount
+                              - is_return
+                              - is_blind_return
+                              - has_tax_exemption
+                          value:
+                            description: >-
+                              The value to determine if the order needs approval
+                              based on the specified criterion. Can be "true" or
+                              "false", defaults to "true". In case of
+                              has_discount the additional criterion
+                              discount_level is required.
+                            type: string
+                            default: 'true'
+                            enum:
+                              - 'true'
+                              - 'false'
+                      - type: object
+                        required:
+                          - name
+                          - value
+                        properties:
+                          name:
+                            description: >-
+                              The order criteria based on which a check should
+                              be applied.
+                            type: string
+                            enum:
+                              - discount_value
+                              - discount_percentage
+                              - refund_value
+                              - order_value
+                          value:
+                            description: >-
+                              The value to determine if the order needs approval
+                              based on the specified criterion. Limited values
+                              for discount_value, discount_percentage,
+                              refund_value or order_value are numbers. In case
+                              of discount_value or discount_percentage the
+                              additional criterion discount_level is required.
+                            type: string
+                            pattern: ^[0-9\.]+$
+                      - type: object
+                        required:
+                          - name
+                          - value
+                        properties:
+                          name:
+                            description: >-
+                              The order criteria based on which a check should
+                              be applied.
+                            type: string
+                            enum:
+                              - payment_method
+                          value:
+                            description: >-
+                              The value to determine if the order needs approval
+                              based on the specified criterion. Limited values
+                              for payment_method are "cash", "credit_card" or
+                              "manual_credit_card".
+                            type: string
+                            enum:
+                              - cash
+                              - credit_card
+                              - manual_credit_card
+                              - gift_card
+                      - type: object
+                        required:
+                          - name
+                          - value
+                        properties:
+                          name:
+                            description: >-
+                              The order criteria based on which a check should
+                              be applied.
+                            type: string
+                            enum:
+                              - discount_level
+                          value:
+                            description: >-
+                              The value to determine if discount criteria (e.g.
+                              has_discount, discount_value or
+                              discount_percentage) are based on order or item
+                              level. Limited values for discount_level are
+                              "order" or "item", default to "order" This
+                              criterion is required in case has_discount,
+                              discount_value or discount_percentage are part of
+                              a rule.
+                            type: string
+                            enum:
+                              - order
+                              - item
+        required: true
+    delete:
+      responses:
+        '200':
+          description: The rule has been deleted successfully.
+          content:
+            application/json:
+              example:
+                successful: true
+                message: ''
+              schema:
+                title: Manager Approval Rule response
+                description: Represents a manager approval rule post or put response.
+                required:
+                  - successful
+                properties:
+                  successful:
+                    type: boolean
+                    description: A flag indicating if the request was successful or not.
+                  message:
+                    description: >-
+                      In order to allow schema validation while following
+                      OpenAPI standards we match the value of this message field
+                      to one of the two schemas below. The enum on null is
+                      necessary to pass schema validation.
+                    oneOf:
+                      - type: string
+                        description: >-
+                          A human readable descriptive message in case of an
+                          error.
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+        '404':
+          description: The rule wasn't found.
+          content:
+            application/json:
+              example:
+                successful: false
+                message: >-
+                  not found: failed to upsert manager approval rule: sql update
+                  did not update any row
+              schema:
+                title: Manager Approval Rule response
+                description: Represents a manager approval rule post or put response.
+                required:
+                  - successful
+                properties:
+                  successful:
+                    type: boolean
+                    description: A flag indicating if the request was successful or not.
+                  message:
+                    description: >-
+                      In order to allow schema validation while following
+                      OpenAPI standards we match the value of this message field
+                      to one of the two schemas below. The enum on null is
+                      necessary to pass schema validation.
+                    oneOf:
+                      - type: string
+                        description: >-
+                          A human readable descriptive message in case of an
+                          error.
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                successful: false
+                message: >-
+                  internal server error: failed to upsert manager approval rule:
+                  db connection failed
+              schema:
+                title: Manager Approval Rule response
+                description: Represents a manager approval rule post or put response.
+                required:
+                  - successful
+                properties:
+                  successful:
+                    type: boolean
+                    description: A flag indicating if the request was successful or not.
+                  message:
+                    description: >-
+                      In order to allow schema validation while following
+                      OpenAPI standards we match the value of this message field
+                      to one of the two schemas below. The enum on null is
+                      necessary to pass schema validation.
+                    oneOf:
+                      - type: string
+                        description: >-
+                          A human readable descriptive message in case of an
+                          error.
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+      description: |
+        Deletes the specified rule.
+
+        **Note:** Requires the `/{label}` to identify the rule
+      summary: Delete approval rule
+      operationId: delete-approval-rule
+    parameters:
+      - name: label
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The unique identifier of a manager approval rule.
+    x-annotation-deprecated:
+      since: 02/2020
+      replaceWith: |
+        Use [this resource](#manager-approval-rules) instead.

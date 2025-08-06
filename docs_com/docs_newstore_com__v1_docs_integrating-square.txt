@@ -1,0 +1,255 @@
+Integrating Square
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Integrating Square
+Updated on
+Dec 27, 2024
+Published on Oct 1, 2024
+4 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Square is an alternative
+payment service provider
+(PSP) that retailers can use to accept in-store card payments in markets where Adyen does not support in-store payments. For example, Square POS is used at NewStore for retailers with stores in Japan.
+To integrate with a PSP for the United States or Europe, see
+Integrating Adyen
+.
+To accept payments via Square and enable NewStore to seamlessly trigger notifications, payments, and refunds in Square directly via NewStore Associate App, the retailer must set up Square and NewStore separately.
+Limitations of Square as a payment provider
+Store associates must download a separate Square POS app on the same iPhone where NewStore Associate App is installed to accept card payments.
+Note
+Currently, Square only accepts card payments in Japan via the Square POS integration and not the NewStore SDK integration. See
+Setting up Square
+.
+Ensure that store associates only use split payments in NewStore Associate App. In the Square POS app, split payments are not supported via the Square integration at NewStore.
+All Square POS payments are immediately captured.
+Square does not support refunds without the original payment reference. To refund a return that does not have the original Square payment reference, use a different payment method, such as a gift card or cash.
+Prerequisites
+Before setting up Square, request the following from NewStore:
+The URL for NewStore Associate App. For example,
+com.newstore.associate.<retailer_name>
+.
+The NewStore Associate App URL scheme, for example
+com.newstore.square
+.
+Once you have received both values from NewStore, follow the setup instructions in the order provided below.
+Setting up Square
+In the Square developer portal, create a Square business application in your business account.
+To create a new application, follow the instructions specified in the official
+documentation
+. Square generates the information needed for integrations.
+Create store locations in Square for the physical stores where you want to use Square POS to accept payments. See the location documentation from Square.
+Note
+Securely send the mapping of the store name against the store location IDs specified in Square to your contact point in NewStore. This allows NewStore to verify the store associates logged into the store location in Square.
+Retrieve the application ID, access token, and Signature Key to send to your NewStore contact. This enables NewStore to connect to Square and:
+Retrieve payment information and start payment operations with Square API. See
+Configuring the Square API
+.
+Receive notifications from Square. See
+Configuring notifications from Square
+.
+Important
+Contact Square to suppress receipt generation in Square. This avoids receiving two two different receipts from NewStore and Square, which may cause confusion for the customer.
+Configuring notifications from Square
+For NewStore to receive notifications from Square:
+Access the
+Square Portal
+.
+Select the application.
+In the
+Webhooks
+section, click
+Add endpoint
+.
+For the new method you want to add, use the following values:
+Feature/Property
+Value
+NAME
+NewStore
+URL
+https://<retailer>.<short stage id>.newstore.net/_/v1/org/psps/square/notifications
+VERSION
+2020-06-25
+Events
+payment.created
+,
+payment.updated
+,
+refund.created
+, and
+refund.updated
+Copy the value of
+SIGNATURE KEY
+and securely send it to your contact point at NewStore.
+Configuring the Square API
+NewStore also needs to be able to retrieve payment information and request refunds using the
+Square PSP API
+. To allow NewStore to perform
+Square PSP API
+requests:
+Access the
+Square Portal
+.
+Select the application.
+In the
+Credentials
+section, copy the values specified in
+Application ID
+and
+Access Token
+.
+Note
+To test the POS API or for live sales transactions, you need Square production credentials. Before copying the values for application ID and access token, ensure that
+Production Settings
+is displayed in the lower left corner of the page. If
+Sandbox Settings
+is displayed, click the label and the environment automatically switches to production.
+Securely send both values to your contact point at NewStore.
+Configuring locations in Square
+NewStore must be able to correlate stores with the locations configured on Square. To view the configured locations:
+Access the
+Square Portal
+.
+Select the application.
+Specify NewStore Associate App to be allowed to be called via the Square POS app to ensure only NewStore Associate App can trigger a payment in Square:
+In the left navigation bar, select
+Point of Sale API
+.
+For
+iOS App Bundle IDs
+:
+Specify
+com.newstore.associate.<retailer_name>
+, if you use NewStore SDK.
+Specify
+com.newstore.associate-one
+, if you use NewStore Associate App v1.0.0 or later.
+This value is provided by NewStore.
+For
+iOS App URL Schemes
+:
+Specify
+com.newstore.square
+, if you use NewStore SDK.
+Specify
+com.newstore.associate-one.square
+, if you use NewStore Associate App v1.0.0 or later.
+This value is provided by NewStore.
+For more information, see the
+Square documentation
+.
+In the
+Locations
+section, each location has a unique
+Location ID
+. These values should be added to NewStore as described in
+Configuring Square as a payment provider
+.
+Setting up NewStore to connect with Square
+Supported from
+This feature is supported from NewStore SDK v23.1.0 and later.
+To set up NewStore to connect with Square, see
+Configuring Square as a payment provider
+and
+Configuring payment options
+.
+Installing Square apps on the associate's iPhone
+To allow associates to use Square POS on their iPhone for payments during checkout in NewStore:
+Order Square devices. We strongly recommend ordering one device for each iPhone that NewStore Associate App is installed on, as a Square device can only be paired with one Square POS at a given time.
+Install the Square POS app. See the
+Square guide
+.
+Select your store location from the list of available of store locations.
+Configure Square POS settings in the associate’s iPhone:
+Note
+To ensure that the checkout process is completed in the NewStore platform after payment with Square, the
+Skip receipt screen
+button must be enabled in Square POS for each associate’s iPhone. See the
+Signature and receipt documentation
+from Square.
+Testing and going live with integrated payments via Square POS
+You can only test payments via Square POS in the production environment, as Square does not support a sandbox testing environment.
+After you have configured Square POS in NewStore (see the
+guide
+), connect Square webhooks to your production environment. See the webhooks documentation from Square.
+Note
+Square has only one environment available for testing payments. When multiple environments at NewStore are connected to one Square application, each NewStore environment can only process Square notifications that originate from the same environment.
+Related topics
+Integrating a payment service provider
+Integrating Adyen
+Square PSP API
+Was this article helpful?
+Yes
+No
+Tags
+api
+checkout
+integration
+payment device
+payment options
+platform
+Square
+webhook
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

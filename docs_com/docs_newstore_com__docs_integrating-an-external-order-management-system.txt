@@ -1,0 +1,594 @@
+Integrating an external order management system
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Integrating an external order management system
+Updated on
+Mar 4, 2025
+Published on Oct 1, 2024
+20 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+If you use an external order management system (OMS) to capture orders for your business, NewStore can integrate with the external OMS and fulfill your orders. For more information on how NewStore works as an external OMS for your business, see
+this process guide
+.
+This integration playbook helps you integrate an external OMS used in your business with the NewStore platform, to help capture cash & carry and endless-aisle orders and manage them in the external OMS. After integrating with the external OMS, you can fulfill BOPIS (Buy Online Pickup In-Store) and store fulfillment orders also.
+Pre-requisites
+For the external OMS integration to work, configure the following before you start processing orders in the platform:
+Enable the external OMS configuration via the
+external OMS API
+.
+Enable the order configuration in the platform via the
+Sales order config API
+.
+Have a dummy availability import to properly set up fulfillment locations in NewStore.
+Register a
+webhook
+for order history or order details with the external OMS.
+Synchronize the catalogs between the external OMS and NewStore.
+Enable the external OMS UI Customization feature by using the Associate App Configuration API and set the
+use_new_om_ui
+property to
+true
+. For more information, see
+Configuring retrieval of customer purchase history and order details in Associate App
+.
+Configure the payment configuration and set the
+use_charge_api
+to
+true
+.
+Configure the shipping adapter and routing settings in NewStore, which is required only for endless-aisle and BOPIS orders. See
+shipping
+or
+this integration guide
+.
+Note
+Even though with the external OMS, NewStore doesn’t necessarily fulfill orders, you still need to set up the shipping options through EasyPost or a custom adapter. For more information, see the
+adapter
+documentation.
+For additional information, see
+this guide
+.
+Important
+NewStore automatically cancels store fulfillment orders if the fulfillment location ID for the store is not configured in the platform. When setting up fulfillment locations in NewStore, ensure that they are in sync with the location IDs set up for order fulfillment in the external OMS. For more information on order fulfillment, see
+About order fulfillment
+.
+Fulfillment configuration
+To manage the fulfillment configuration for your business, see
+this tutorial
+.
+Also, see the following example payload of the fulfillment configuration API:
+The service level property is defined by the customer.
+~~~ json
+{
+ "fulfillment_config": {
+     "provider_rates": {
+         "Priority": {
+             "return_provider_rate": "",
+             "service_level": "Priority",
+             "shipping_carrier_name": "USPS",
+             "shipping_type": "traditional_carrier",
+             "use_as_customer_facing_cost": false
+         }
+     },
+     "routes": [
+         {
+             "destination_region": {
+                 "countries": [
+                     "US"
+                 ],
+                 "zip_codes": [
+                     "*"
+                 ]
+             },
+             "fulfilled_by": {
+
+                 "Priority": [
+                     {
+                         "fulfillment_node_id": "9801",
+                         "provider_rate": "Priority"
+                     }
+                 ]
+             }
+         }
+
+     ],
+     "service_levels": {
+
+         "Priority": {
+             "currency_code": "USD",
+             "delivery_time": "2-4 business days",
+             "delivery_time_after_cutoff_hour": "",
+             "display_name": "Priority",
+             "price": 0,
+             "remorse_period": 0,
+             "tax_code": ""
+         }
+     },
+     "sl_levels_priority": [
+         "Priority"
+     ]
+ }
+}
+~~~
+Routing settings
+For routing to work for endless-aisle orders, you have to:
+Create fulfillment node - storeID replication through import.
+All service_levels used by customers should be listed in:
+every route (section fulfilled_by). The list of fulfillment nodes in the route is not important in case of the external OMS.
+section
+sl_levels_priority
+Also, ensure that delivery data (provider_rates) must be configured correctly.
+Payment configuration
+You can configure payments for cash & carry, endless-aisle, and mixed-cart orders.
+Payment-related events such as
+payment_account.amount_authorized
+or
+payment_account.amount_captured
+are emitted by NewStore once the order is created and routed to the external OMS. The external OMS listens to order creation events and, based on how the external OMS is configured, NewStore captures or authorizes payment for the order.
+Both payment-related events are emitted because NewStore triggers the shipment as well as captures the payment information for all items of an order.
+Cash & Carry orders (C&C)
+Process workflow and validation
+To validate that the external OMS has been set up and can process C&C orders sent by NewStore, follow these steps:
+Capture order via NewStore Associate App.
+Pay for the order with a credit card or cash and complete the checkout.
+In NewStore Omnichannel Manager, validate that the status for the order is displayed as
+Complete
+, the payment status is displayed as
+Captured
+, and the status for the order items is displayed as
+Complete
+.
+For more information on monitoring order statuses, see
+Managing orders from an external OMS
+.
+Endless-aisle orders
+Before you begin, ensure that you have enabled the following functions:
+External OMS configuration
+to update the
+enabled
+property to
+true
+.
+Payment capture configuration
+to update the
+use_charge_api
+property to
+true
+.
+Process workflow and validation
+The payment is pre-captured for endless-aisle orders.
+To validate that the external OMS has been set up and can process endless-aisle orders sent by NewStore, follow these steps:
+Capture order via NewStore Associate App.
+Pay for the order with a credit card or cash and complete the checkout.
+In NewStore Omnichannel Manager, validate that the status for the order is displayed as
+Complete
+, the payment status is displayed as
+Captured
+, and the status for the order items are displayed as
+Captured
+.
+For more information on monitoring order statuses, see
+Managing orders from an external OMS
+.
+Mixed-cart orders
+Before you begin, ensure that you have enabled the following functions:
+External OMS configuration
+to update the
+enabled
+property to
+true
+.
+Mixed-cart retailer and store configurations
+to update the
+mixed_cart
+property to
+true
+.
+Payment capture configuration
+to update the
+use_charge_api
+property to
+true
+.
+Process workflow and validation
+The payment is pre-captured for mixed-cart orders.
+To validate that the external OMS has been set up and can process mixed-cart orders sent by NewStore, follow these steps:
+Capture order via NewStore Associate App.
+Pay for the order with a credit card or cash and complete the checkout.
+In NewStore Omnichannel Manager, validate that the status for the order is displayed as
+Partially Complete
+, the payment status is displayed as
+Captured
+, and the status for the order items are displayed as
+Captured
+for the endless-aisle items and
+Complete
+for the C&C items.
+For more information on monitoring order statuses, see
+Managing orders from an external OMS
+.
+Payment Behavior with External OMS - Mixed Cart and Endless Aisle Impact
+When integrating with an external order management system to process endless aisle or mixed cart transactions, the entire order payment will be pre-captured. Proper configuration is essential to ensure that NewStore does not mistakenly treat these orders as internal transactions, which could trigger unintended fulfillment requests.
+Failure to configure this correctly may result in NewStore processing refunds for orders already managed by the external system. Thoroughly review and test the configuration to avoid these issues.
+Platform integration
+To set up NewStore to work with your own order management system (OMS) in your business, NewStore must be able to:
+Know about all fulfillment locations in your business, served by the external OMS.
+Accept orders in the platform and send them to the external OMS.
+Enable
+store fulfillment via an external OMS​
+.
+Specify that the external OMS is the source for ATP for all products in your business. It is optional for Cash & Carry orders and required for Endless-aisle orders.
+Fulfillment represents the shipment of one or more items of an order to the customer. A fulfillment provider is an entity that can fulfill orders. For example, a distribution center's Warehouse or Order Management System.
+Managing orders from an external OMS
+When you use an external OMS to fulfill orders, NewStore needs a configuration to be enabled to ensure that such orders are captured in the platform. NewStore Associate App doesn't interact with the platform for ATP.
+In order to configure NewStore to leverage an external OMS, the following things must be configured:
+Configure the
+external OMS API endpoint
+to enable the feature.
+This disables order routing on NewStore.
+Register a webhook for ATP information with OMS.
+Register a webhook for order history or order details with OMS.
+The Associate App will no longer use NewStore OMS for order history and order details.
+Synchronize the catalogs between eCommerce or external OMS and NewStore.
+Enable the external OMS UI Customization feature by using the
+Associate App Configuration API
+Configure the desired refund options by using the
+Payment Configuration API
+. Available refund options are:
+gift_card
+e_gift_card
+credit_card
+original
+external
+Note
+If you want to have refund option allowing to refund to the original payment method, use
+original
+and
+external
+.
+original
+us used to refund against the original payment method for orders placed via the Associate App.
+external
+is used for refunding against the original payment method for orders placed in the external OMS.
+Implement placeholder payment adapter to allow return to the external OMS.
+Create fulfillment locations by performing at least one availability import per location.
+Supported architecture of an external OMS
+With an external OMS, NewStore expects that the external OMS controls the state of the order and receives all orders from the platform. There are APIs to send NewStore information such as Available To Promise (ATP), order history, and any omnichannel orders that would require a store to fulfill or deliver an order. NewStore Associate App leverages APIs to get content that the associate needs such as order history from the external OMS.
+The expected architecture for an external integration can be simplified into the following areas:
+While leveraging an external OMS, NewStore assumes the following artifacts are true:
+Catalogs match between NewStore and eCommerce
+NewStore needs a fulfillment configuration even though orders don’t need to be routed.
+This configuration is required for endless-aisle and store fulfillment.
+All orders flow to the external OMS, including C&C orders.
+Any order captured in the external OMS needs to be returned to the external OMS (including endless-aisle orders).
+NewStore dashboards only work for C&C and Endless-aisle orders.
+Order statuses are not updated in NewStore Omnichannel Manager. This includes returns, refunds, and cancellations managed by the external OMS. A new order will be created in NewStore for returns, causing reports and order counts not to match with the external OMS.
+Orders that come in for fulfillment from any external systems do not create any allocations, which means Omnichannel Manager does not display accurate inventory on the stock pages under Catalog.
+Retrieving ATP for products from an external OMS
+When you use an external OMS, you can use it instead of NewStore as the source for ATP information for products in your business. To ensure that the platform is updated with the correct ATP information from the external OMS you use, first set up a
+webhook configuration for availabilities
+.
+To set up the configuration, see
+Configuring ATP via an external OMS
+.
+After you have set up the configuration, to request ATP information from the external OMS, implement the
+Request availabilities
+webhook.
+Use this webhook to retrieve the ATP information for specified products across a list of fulfillment locations. Currently, only product identifiers (product_id) are supported as possible values for the external_identifier property in the request payload.
+You cannot control the list of locations and identify if the call is happening from the PDP or the checkout flow. Also, store information is not passed on to the external OMS.
+Important
+If the webhook request fails, or the external OMS is unavailable, NewStore assumes that no items are available for the specified products.
+If you have not set up the webhook to request ATP information, NewStore uses the value available for stock in the platform as the ATP for your products. However, ATP information retrieved via stock may not be accurate if a stock import is pending or delayed.
+Retrieving purchase and order history from an external OMS
+When using an external OMS, you can retrieve the purchase history of a customer or details of orders placed in the external system outside NewStore. Associates can view these details in NewStore Associate App and leverage the information for sales operations such as clienteling.
+To start requesting order information from an external OMS, use the following configurations:
+Set webhook config
+to specify that order data and purchase history will be retrieved from an external OMS instead of NewStore.
+Get webhook config
+to retrieve the webhook configuration that allows order data and purchase history to be retrieved from an external OMS instead of NewStore.
+To retrieve order details from the external OMS, implement the following webhooks:
+Request customer purchase history
+that retrieves orders placed by a customer in the external OMS or via NewStore.
+Important
+You can only retrieve the details of the last 100 orders placed by the customer, with the latest orders listed first in the response payload.
+Request order details
+that retrieves the details of a specific order placed in the external OMS or via NewStore, including details such as order status, currency, shipping options, and tax details.
+Important
+If the external OMS supports payment methods other than
+gift_card
+,
+credit_card
+, or
+cash
+, omit the
+payment_history
+when requesting order details, so that the Associate App can show the order details.
+Store fulfillment via an external OMS
+When you use an external OMS to fulfill primary order management tasks in your business, including fulfillment of orders via stores, NewStore skips looking up ATP information when accepting such orders into the platform.
+Ensure that:
+You either
+set up
+, or reconcile order fulfillment separately outside the NewStore platform.
+The store fulfillment orders are imported with routing strategy
+external
+, skipping ATP checks.
+Use the
+Order Injection configuration endpoint
+to set the
+skip_soft_routing_on_injection
+property to
+true
+.
+Note
+NewStore tries to create a reservation or soft allocation for an order, even if this configuration has been set up. When you have set up this configuration, NewStore imports orders from the external OMS without verifying   if the service level or shipping option specified for the order can be offered.
+Important
+If there is not sufficient stock or shipping options are not available for external OMS orders, NewStore automatically cancels them. Manage these orders separately via the external OMS. You cannot manage such orders via NewStore Omnichannel Manager.
+The NewStore platform cannot contain duplicate order numbers, therefore when the order gets canceled because of inventory issues, the re-import is possible with a different order number.
+Syncing an external OMS with the event stream
+When syncing an external OMS with the NewStore
+Event Stream
+, NewStore recommends that certain event data is ignored. For example,
+order_cancelled
+or
+order_pending
+events. This improves the accuracy of the status of orders in the platform even when they are placed in the external OMS.
+Use cases
+Note
+Order details for external OMS orders are supported from Associate App v1.18.
+You cannot reprint orders that are captured in NewStore.
+Ensure that your external OMS can handle item-level details appropriately.
+Cash & Carry orders
+The following sequence diagram represents a typical integration of the NewStore platform with an external OMS for managing cash and carry orders:
+For each C&C order placed via the NewStore Associate App and sent to the external OMS, the following sequence occurs in the platform:
+When a C&C order is placed via NewStore Associate App, NewStore creates a cart with the products, and initiates payment processing in the platform.
+After the payment is authorized, NewStore creates an order in the platform. The
+payment_account.amount_authorized
+event is emitted by the platform.
+When the order is created, the
+order.created
+event is emitted by the platform. The external OMS is notified by this event and creates the same order in the external OMS platform. (Optional) The external OMS can be notified about the
+order.created
+event for order and payment-related data from the NewStore platform.
+After the order is completed and handed over to the customer in an in-store purchase, the
+order.completed
+event is emitted by the NewStore platform. The external OMS completes the order when notified by the
+order.completed
+event.
+After successful order completion, NewStore emits the
+payment_account.amount_captured
+event. The external OMS is notified of payment completion via this event and it marks the payment as complete in the external OMS platform.
+Info
+For C&C orders, the return occurs in Adyen so the external OMS integration with Adyen is necessary.
+Endless-aisle orders
+Important
+You have to register a webhook for ATP information with the external OMS. After enabling the webhook, you don’t see NewStore for ATP during checkout for delivery options.
+The following sequence diagram represents a typical integration of the NewStore platform with an external OMS for managing endless-aisle orders:
+For each endless-aisle order placed in the NewStore platform, the following sequence occurs in the platform:
+The external OMS checks for product availability and sends this ATP information to NewStore. The external OMS also updates the ATP and ATS for the products.
+If there is ATP available for the product, NewStore creates an endless-aisle order in the platform once the product is added to the cart via NewStore Associate App. The
+order.created
+event is emitted by NewStore to notify the external OMS.
+The external OMS creates an order and routes the order for fulfillment.
+Note
+If your business uses NewStore for store fulfillment, the external OMS routes the order back to NewStore with a different order number for fulfillment if the order needs to be fulfilled from a store and not a DC.
+Important
+Enable
+Adyen pre-capture
+to support endless-aisle so that orders are not voided, which means shipment is never received to invoice.
+Enable endless-aisle by integrating with the event stream to receive orders.
+NewStore attempts routing, however external OMS makes its own decision. This could potentially cause losses to the retailer if an external OMS makes different decisions for shipments such as more, less, or cheaper method, not specific to the external OMS. The checkout flow in Associate App uses NewStore routing rules to identify the locations and number of shipments.
+Exceptions
+When integrating an external OMS with NewStore to fulfill endless-aisle orders, be aware of the following exceptions that can occur during checkout or during the order fulfillment process.
+NewStore Associate App displays a
+Products not available
+error message when:
+The product quantity requested for the order is partially or completely unavailable in the external OMS.
+The product quantity requested for a part of a
+split shipment
+order is unavailable in the external OMS.
+The fulfillment locations specified in the external OMS are not configured or are not in-sync with the fulfillment locations in NewStore.
+The fulfillment locations specified in the external OMS are not configured in the fulfillment configuration in NewStore.
+Mixed-cart orders
+Important
+You have to register a webhook for ATP information with the external OMS. After enabling the webhook, you don’t see NewStore for ATP during checkout for delivery options.
+For each mixed-cart order placed in the NewStore platform, the following sequence occurs in the platform:
+The external OMS checks for product availability for the endless-aisle item and sends this ATP information to NewStore. The external OMS also updates the ATP and ATS for the products.
+If there is ATP available for the product, NewStore creates a mixed-cart order in the platform once the product is added to the cart via NewStore Associate App. The
+order.created
+event is emitted by the NewStore platform to notify the external OMS.
+The external OMS creates an order and routes the endless-aisle items for fulfillment.
+Note
+If your business uses NewStore for store fulfillment, the external OMS routes part of the order back to NewStore with a different order number for fulfillment if the order needs to be fulfilled from a store and not a DC.
+Important
+Enable
+Adyen pre-capture
+to support mixed-cart so that orders are not voided, which means shipment is never received to invoice.
+Enable mixed cart by integrating with the event stream to receive orders.
+NewStore attempts routing, however external OMS makes its own decision. This could potentially cause losses to the retailer if an external OMS makes different decisions for shipments such as more, less, or cheaper method, not specific to the external OMS. The checkout flow in Associate App uses NewStore routing rules to identify the locations and number of shipments.
+Exceptions
+When integrating an external OMS with NewStore to fulfill endless-aisle orders, be aware of the following exceptions that can occur during checkout or during the order fulfillment process.
+NewStore Associate App displays a
+Products not available
+error message when:
+The product quantity requested for the order is partially or completely unavailable in the external OMS.
+The product quantity requested for a part of a
+split shipment
+order is unavailable in the external OMS.
+The fulfillment locations specified in the external OMS are not configured or are not in-sync with the fulfillment locations in NewStore.
+The fulfillment locations specified in the external OMS are not configured in the fulfillment configuration in NewStore.
+Store fulfillment orders
+Note
+The orders, such as BOPIS or BORIS that you imported, need to fake all the templates to reflect an external order ID instead of a NewStore order ID.
+The following sequence diagram represents a typical integration of the NewStore platform with an external OMS for managing store fulfillment orders:
+For each order imported into the NewStore platform via the external OMS, the following sequence occurs in the platform to allow it to be fulfilled by a store:
+When an order is imported into the platform from an external system (also referred to as injecting an order) via the
+Create order
+method, NewStore does not check for ATP for the products in the platform.
+The order is routed externally, which is set by the
+routing_strategy
+property defined within the
+fulfillment config
+. For externally routed orders, the
+routing_strategy
+must have been set to
+external
+.
+After the order is routed to a store, the
+fulfillment_request.assigned
+event is emitted by the platform.
+The order is selected by an associate, and the store fulfillment process starts.
+If there is no inventory in the store for one or more item(s) in the order (mispick), or if items are damaged (mispack), the order cannot be fulfilled by the store. The order is cancelled by the platform, and the
+order.cancelled
+event is emitted. The external OMS then re-routes the order to a different store.
+If the store has inventory to fulfill the order, NewStore books the shipment for the order and requests the shipping provider for shipping labels. If it is a BOPIS order, NewStore creates the in-store pickup labels. To configure the labels, see
+Setting up documents to print
+.
+The associate then prints the relevant documents, packs the items, and hands them over to customer or to the shipping provider. A confirmation of the handover is requested by NewStore from the shipping provider, and more details of the order and shipment can be viewed in NewStore Omnichannel Manager. See
+Monitoring orders
+for more information about the Order details shown in NewStore Omnichannel Manager. The
+order.completed
+event is emitted by the platform.
+The external OMS listens to the
+order.completed
+event and marks the order as completed in the external system.
+In-store returns
+You have to implement a dummy payment adapter to allow order returns to an external OMS.
+While integrating with an external OMS, associates can process in-store returns in Associate App. Associate App can process 2 kinds of returns:
+Unreferenced returns
+: When NewStore does not own the payment information, associates can provide it to process an unreferenced return. See the following example of an order payload for an unreferenced return from an external OMS:
+{
+    "id": "GD000001234",
+    "origin": "external",
+    "origin_id": "GD000001234",
+    "items": [{
+       "id": "394329361530903",
+       "origin_id": "394329361530903",
+      ...
+
+    ]},
+   ...
+ }
+Referenced returns
+: When an order was captured in NewStore, associates can process a return without providing the payment information additionally. NewStore refunds the order using the payment method for this order.
+Note
+Orders must have
+origin
+as
+newstore
+for referenced returns.
+For retailers using an external OMS, the value of
+origin
+is returned via the
+external order webhook
+.
+See the following example of an order payload for a return from an external OMS, where a reference is available:
+{
+  "id": "GD000001234",
+  "origin": "newstore",
+  "origin_id": "8ebc1864-606a-45f9-a6a7-82a069c5306f",
+  "items": [
+    {
+      "id": "44070325-52b1-4908-a578-b3b66bd35c33",
+      "origin_id": "44070325-52b1-4908-a578-b3b66bd35c33",
+     ...
+    }
+  ],
+ ...
+}
+See the complete payload schema and examples
+here
+.
+Related topics
+About order fulfillment
+Receiving real-time data
+Using an external OMS to fulfill orders
+Configuring an external OMS
+Event stream webhook
+Was this article helpful?
+Yes
+No
+Tags
+api
+ATP
+configuration
+DC fulfillment
+endless aisle
+event stream
+events
+external OMS
+fulfillment
+fulfillment configuration
+integration
+mixed cart
+order
+order fulfillment
+payment
+platform
+routing
+shipping
+store fulfillment
+warehouse
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

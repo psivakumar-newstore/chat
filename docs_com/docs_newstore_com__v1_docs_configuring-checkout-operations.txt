@@ -1,0 +1,266 @@
+Configuring checkout operations
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Configuring checkout operations
+Updated on
+Dec 11, 2024
+Published on Oct 1, 2024
+4 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Use these configurations to set up checkout operations in the NewStore platform, including checkout via Associate App.
+Configuring gift wrapping
+You can enable gift wrapping to be available during checkout in the Associate App. You can also specify the price and the tax code for gift wrapping.
+To configure gift wrapping for your business:
+Use the
+Update checkout configuration
+method.
+In the
+value
+>
+gift_wrapping
+property":
+Set
+message_enabled
+to
+true
+, if you want to enable customers or associates to add a custom message with the gift order.
+In
+price
+, specify the price that will be added to the order if gift wrapping is added. The price inherits the currency that is specified for the cart.
+In
+tax_code
+, specify the tax code that will be associated with gift wrapping.
+Enabling manager approval
+You can specify if certain orders or items need
+approvals
+from store managers or other associates in the Associate App before checkout.
+To enable manager approvals in the Associate App:
+Use the
+Update checkout configuration
+method.
+Set
+enable_manager_approval
+to
+true
+.
+Important
+Manager approval is not applied to clienteling transactions. Transactions that have not been initiated via clienteling will continue to use manager approval rules, but these rules are not enforced for clienteling transactions.
+In addition, if there is an automatic coupon or promotion applied to an order in the app, manager approval rules are not triggered.
+Let's take an example of an automated discount: “winter jackets for 30% off”. Let's suppose there is also a manager approval rule for discounts of 20% and higher. In this case, the manager approval is NOT triggered. The automatic promotion takes priority.
+Configuring manager approval rules
+You can configure the rules that trigger manager approvals in the Associate App.
+The following criteria are available for approval rules:
+Criterion Name
+Type
+Description
+has_discount
+Boolean
+Specifies if a discount will be applied on the order or item.
+has_tax_exemption
+Boolean
+Specifies if orders with tax exemption need approval in the Associate App.
+is_return
+Boolean
+Specifies if all returns will need approval in the Associate App.
+is_blind_return
+Boolean
+Specifies if all blind returns will need approval in the Associate App.
+discount_value
+Number
+Specifies a fixed value for the discount. Discounts on orders that equal or exceed this value need approval in the Associate App.
+discount_percentage
+Number
+Specifies a percentage value for the discount. Discount percentages that equal or exceed this value need approval in the Associate App.
+refund_value
+Number
+Specifies a fixed value for a refund. Refunds for orders that equal or exceed this value need approval in the Associate App.
+order_value
+Number
+Specifies if orders that equal or exceed a certain value need approval in the Associate App.
+discount_level
+order
+or
+item
+Specifies if the discount is on an order or on an item.
+payment_method
+Array
+Specifies certain payment methods that need approval in the Associate App.
+To see the list of approval rules set up, use the
+List approval rules
+method.
+To create a new approval rule:
+Use the
+Create approval rule
+method.
+In
+label
+, specify the name of the manager approval rule.
+In
+description
+, provide a description of the manager approval rule. For example,
+Discounts equal or above 50%
+.
+In
+criteria
+:
+Specify if the order or item will contain a discount. In
+name
+, specify
+has_discount
+, and in
+value
+, specify
+true
+if the order or item will contain a discount.
+For all possible values, see the
+table
+entries with the
+Type
+as
+Boolean
+.
+Specify the criterion for the discount. For example:
+In
+name
+, specify
+discount_percentage
+. In
+value
+, specify the percentage value for the discount. Discount percentages that equal or exceed this value need approval in the Associate App.
+For example, specify
+50
+to ensure that all orders with discount of 50% or more need approval in the Associate App.
+For a list of possible criteria that you can specify here, see the
+table
+.
+Specify if the discount will be applied on an order or an item.
+In
+name
+, specify
+discount_level
+and in
+value
+specify
+order
+for order-level discounts and
+item
+for discounts to be applied on an item in an order.
+To update an existing approval rule, use the
+Update approval rule
+method.
+Deleting manager approval rules
+To delete a manager approval set up for your business, use the
+Delete approval rule
+method.
+Accepting imported orders without verifying service levels
+You can configure legacy OMS or e-comm orders to be imported into the NewStore platform without verifying if the shipping option or
+service level
+defined for the order can be offered.
+For such orders,
+soft allocations
+are not assigned. If there is insufficient stock for the order or the shipping options specified are unavailable, the order is automatically canceled. Manage such orders separately via the external OMS. You cannot manage these orders via Omnichannel Manager.
+To accept imported orders without verifying the associated service levels:
+Use the
+Update checkout configuration
+method.
+Set
+skip_soft_routing_on_injection
+to
+true
+.
+Limiting the number of items on an in-store order
+You can set the maximum number of items an in-store order can contain. For that, use the
+big_sales_order.hard_limit_for_big_orders
+property of the
+Checkout configuration API
+. By default its value is 100.
+Important
+Do not set the
+hard_limit_for_big_orders
+property to a number higher than 240. Order placement may fail. For transactions where there are more than 240 items, we recommend splitting the transaction into smaller transactions, each with less than 240 items.
+Related topics
+Configuring refund options
+Using NewStore Associate App
+About order routing
+Was this article helpful?
+Yes
+No
+Tags
+api
+checkout
+config api
+customer
+fulfillment
+gift card
+manager approval
+NewStore checkout
+order
+order fulfillment
+platform
+routing
+store associate
+tutorial
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

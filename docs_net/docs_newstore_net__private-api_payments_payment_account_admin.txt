@@ -1,0 +1,713 @@
+Payment Accounts Admin API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Adyen notifications API
+Dummy API
+Cash Drawer API
+Payment Accounts Admin API
+Payment Options API
+Adyen notifications API
+Adyen configuration API
+Square configuration and administration API
+Square notifications API
+Refund Request Admin API
+Promotions and coupons
+Stock
+Other support APIs
+post
+Retry operation
+post
+Mark an operation as successful
+post
+Balance an account
+post
+Process a balance account operation
+get
+Get payment history
+post
+Create a new account with an initial transaction
+post
+Adds a financial instrument to an account
+API docs by Redocly
+Payment Accounts Admin API
+(
+0
+)
+Download OpenAPI specification
+:
+Download
+Payments Administration
+This association is done by assigning the same ID to the payment account and the entity it is linked to.
+Payments
+Represents a payment account used during order placement.
+  It has a balance and stores the transactions and the financial instruments that modified its balance.
+Use this resource to retrieve information about a payment account.
+  A payment account can also be used to track the balance and transactions of other entities
+  created by the NewStore platform. For example, a payment account can be associated with an entity such as a sales order, a customer,
+  or a shopping bag by assigning the same ID to the payment account and to the entity.
+Note
+- Currently, NewStore only supports assigning the same ID to a payment account and the related sales order.
+Retry operation
+Retries the financial operation (authorization, capture or refund) identified by the provided correlation identifier.
+To get an operation's correlation identifier,
+use the
+Get payment history method
+.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+account_id
+required
+string
+(
+account ID
+)
+Unique ID of a payment account. It is the same ID as the entity the payment account is assigned to.
+For example, use the internal ID (
+uuid
+) of a sales order.
+Request Body schema:
+application/json
+correlation_id
+required
+string
+Identifier of the request that should be retried. Only captures and refunds are supported.
+instrument_id
+string
+Identifier of the instrument that should be retried.
+amount
+number
+An optional amount to override the original failed request. Can only apply to capture requests, with a single failed operation.
+Responses
+202
+The requested retry was accepted.
+400
+Malformed request.
+404
+Requested command not found.
+409
+Request is conflicting with internal state.
+This error typically happens when the correlation_id identifies an operation that is not a
+capture or a refund or if the operation is a refund that uses several financial instruments.
+500
+Internal Server Error.
+post
+/payments/accounts/{account_id}/_retry
+/_/v0/support
+/payments/accounts/{account_id}/_retry
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"correlation_id"
+:
+"43696bcc-6242-4428-b5ee-76417c539fea"
+}
+Response samples
+202
+400
+404
+409
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+,
+"error_code"
+:
+"string"
+}
+Mark an operation as successful
+Sets the financial operation (capture or refund) identified by the provided correlation identifier as successful.
+To get an operation's correlation identifier,
+use the
+Get payment history method
+.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+account_id
+required
+string
+(
+account ID
+)
+Unique ID of a payment account. It is the same ID as the entity the payment account is assigned to.
+For example, use the internal ID (
+uuid
+) of a sales order.
+Request Body schema:
+application/json
+correlation_id
+required
+string
+Identifier of the request that should be marked as successful. Only captures and refunds are supported.
+gc_number
+string
+Identifier of the gift card the operation was successful on. Optional for refunds to scanned gift cards, required for e-gift cards, ignored for other operations.
+Responses
+202
+The requested operation was accepted.
+400
+Malformed request.
+404
+Requested operation not found.
+409
+Request is conflicting with internal state.
+This error typically happens when the correlation_id identifies an operation that is not a
+capture or a refund or if the operation is a refund that uses several financial instruments.
+500
+Internal Server Error.
+post
+/payments/accounts/{account_id}/_set_successful
+/_/v0/support
+/payments/accounts/{account_id}/_set_successful
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"correlation_id"
+:
+"43696bcc-6242-4428-b5ee-76417c539fea"
+,
+"gc_number"
+:
+850928572937
+}
+Response samples
+202
+400
+404
+409
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+,
+"error_code"
+:
+"string"
+}
+Balance an account
+Balances accounts with negative balances, triggering refunds when a customer overpaid.
+Should be manually invoked when it is certain that it is not caused by a provider misbehavior,
+like emitting double successes for a capture request.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+account_id
+required
+string
+(
+account ID
+)
+Unique ID of a payment account. It is the same ID as the entity the payment account is assigned to.
+For example, use the internal ID (
+uuid
+) of a sales order.
+Responses
+202
+The request was accepted.
+400
+Malformed request.
+404
+Requested account not found.
+409
+Balancing request is rejected due to the account not being in a state where it can be balanced.
+This error typically happens when the provided account's balance is not negative.
+500
+Internal Server Error.
+post
+/payments/accounts/{account_id}/_balance_account
+/_/v0/support
+/payments/accounts/{account_id}/_balance_account
+Response samples
+202
+400
+404
+409
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+,
+"error_code"
+:
+"string"
+}
+Process a balance account operation
+Balances accounts with negative balances, triggering refunds when a customer overpaid.
+Should be manually invoked when it is certain that it is not caused by a provider misbehavior,
+like emitting double successes for a capture request.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+account_id
+required
+string
+(
+account ID
+)
+Unique ID of a payment account. It is the same ID as the entity the payment account is assigned to.
+For example, use the internal ID (
+uuid
+) of a sales order.
+Responses
+202
+The request was accepted.
+400
+Malformed request.
+404
+Requested account not found.
+409
+Balancing request is rejected due to the account not being in a state where it can be balanced.
+This error typically happens when the provided account's balance is not negative.
+500
+Internal Server Error.
+post
+/payments/accounts/{account_id}/_process_balance_account
+/_/v0/support
+/payments/accounts/{account_id}/_process_balance_account
+Response samples
+202
+400
+404
+409
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"string"
+]
+,
+"request_id"
+:
+"string"
+,
+"error_code"
+:
+"string"
+}
+Get payment history
+Returns the history of the provided account.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+account_id
+required
+string
+(
+account ID
+)
+Unique ID of a payment account. It is the same ID as the entity the payment account is assigned to.
+For example, use the internal ID (
+uuid
+) of a sales order.
+Responses
+200
+The snapshot of the account at the time of the request.
+404
+The account does not exist.
+500
+Internal Server Error.
+get
+/payments/accounts/{account_id}/history
+/_/v0/support
+/payments/accounts/{account_id}/history
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"history"
+:
+[
+{
+"operation"
+:
+"string"
+,
+"created_at"
+:
+"string"
+,
+"updated_at"
+:
+"string"
+,
+"correlation_id"
+:
+"string"
+,
+"initial_amount"
+:
+0
+,
+"final_amount"
+:
+0
+,
+"currency"
+:
+"string"
+,
+"state"
+:
+"PENDING"
+,
+"instruments"
+:
+[
+{
+"created_at"
+:
+"string"
+,
+"updated_at"
+:
+"string"
+,
+"instrument_id"
+:
+"string"
+,
+"initial_amount"
+:
+0
+,
+"final_amount"
+:
+0
+,
+"payment_method"
+:
+"string"
+,
+"payment_provider"
+:
+"string"
+,
+"payment_wallet"
+:
+"string"
+,
+"payment_origin"
+:
+"string"
+,
+"transactions"
+:
+[
+{
+"name"
+:
+"string"
+,
+"created_at"
+:
+"string"
+,
+"amount"
+:
+0
+,
+"error_message"
+:
+"string"
+,
+"error_code"
+:
+"string"
+,
+"processed_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"metadata"
+:
+{ }
+}
+]
+}
+]
+}
+]
+}
+Create a new account with an initial transaction
+Creates a new account, initializing its debit and credit with transactions
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+account_id
+string
+transactions
+Array of
+objects
+(
+Transaction
+)
+The list of the transactions in the account.
+Responses
+201
+Successful response.
+400
+Malformed request.
+post
+/payments/accounts
+/_/v0/support
+/payments/accounts
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"account_id"
+:
+"f32b7e68-dd19-49c7-b192-ec1f22775f3b"
+,
+"transactions"
+:
+[
+{
+"transaction_id"
+:
+"4afbf032-0184-44c6-88c0-fbaaacbf2a41"
+,
+"debit"
+:
+0
+,
+"credit"
+:
+9.99
+,
+"currency"
+:
+"EUR"
+,
+"inserted_at"
+:
+"2021-01-01T02:07:14Z"
+}
+]
+}
+Response samples
+201
+400
+Content type
+application/json
+Copy
+{
+"account_id"
+:
+"string"
+}
+Adds a financial instrument to an account
+Adds a financial instrument to an account.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+account_id
+required
+string
+(
+account ID
+)
+Unique ID of a payment account. It is the same ID as the entity the payment account is assigned to.
+For example, use the internal ID (
+uuid
+) of a sales order.
+Request Body schema:
+application/json
+instrument
+required
+object
+(
+A financial instrument of an account
+)
+payment_method
+required
+string
+The payment method. Possible values: cash, credit_card, gift_card, paypal.
+payment_wallet
+string
+Source of the financial instrument. For example: 'APPLE_PAY'.
+payment_origin
+string
+Source of the payment. For example: 'newstore_checkout'.
+payment_provider
+required
+string
+The payment service provider
+amount
+required
+number
+currency
+required
+string
+The currency code in ISO-4217 format.
+instrument
+required
+object
+metadata
+object
+Internal opaque object containing the data required by the payment provider to process the payment.
+Responses
+201
+Successful response.
+400
+Malformed request.
+post
+/payments/accounts/{account_id}/instruments
+/_/v0/support
+/payments/accounts/{account_id}/instruments
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"instrument"
+:
+{
+"payment_method"
+:
+"credit_card"
+,
+"payment_wallet"
+:
+"APPLE_PAY"
+,
+"payment_origin"
+:
+"pay_by_link"
+,
+"payment_provider"
+:
+"adyen"
+,
+"amount"
+:
+1.23
+,
+"currency"
+:
+"USD"
+,
+"instrument"
+:
+{
+"type"
+:
+"authorized"
+,
+"identifier"
+:
+"unique_psp_reference"
+}
+,
+"metadata"
+:
+{
+"card_digits"
+:
+"1234"
+}
+}
+}
+Response samples
+201
+400
+Content type
+application/json
+Copy
+{
+"instrument_identifier"
+:
+"string"
+}
+Previous
+Cash Drawer API
+Next
+Payment Options API
+Copyright © 2025 NewStore, Inc.

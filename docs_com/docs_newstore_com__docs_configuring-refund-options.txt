@@ -1,0 +1,258 @@
+Configuring refund options
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Configuring refund options
+Updated on
+Jan 28, 2025
+Published on Oct 30, 2024
+6 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Refund options available to the store associates during returns via NewStore Associate App can be configured either for:
+Each specific store for the retailer
+All stores configured for the retailer
+Important
+Set up refund options on a global level (all stores) for retailers currently using NewStore Associate App v1.2.0 or later.
+Setting up refund options for specific stores, however, is optional.
+Configuring refund options with extension slots
+For retailers that have set up
+extension slots
+in their version of NewStore Associate App for refunds, NewStore checks for refund options in this sequence:
+Refund options set up in NewStore Associate App
+extension slots
+, in a way that they override all other configurations.
+Refund options in extension slots that are set up to work with other refund options configured for the retailer via the
+support team
+. Based on how these extensions have been set up, this may include:
+Using refund options configured by the
+support team
+. See
+Setting up refunds
+.
+Using a pre-defined set of refund options created via the extensions.
+For help with such refund options, contact the
+support team
+or
+Team Mobile Apps
+.
+Configuring refund options without extension slots
+For retailers that do not have extension slots configured for refunds, NewStore checks for refund options in this sequence:
+NewStore checks the
+payment_options
+that have been
+configured for a store
+.
+If no refund options are specified for a specific store, NewStore uses the refund options
+configured globally
+for the retailer.
+Unless customized specifically for the retailer, the following refund options are displayed in NewStore Associate App:
+Returns
+: All refund options.
+Blind returns
+: All refund options except the original payment method.
+Items returned for an exchange
+: All refund options.
+Configuring refund options for a specific store
+Retrieve the current refund configuration using the
+Get payment options configuration
+method.
+In the
+store_mapping
+>
+refund_options
+key, specify the list of refund options that are available to store associates in a specific store in NewStore Associate App.
+Use the
+Update payment options configuration
+method to update the refund configuration for your business.
+For example, specify
+gift_card
+instead of
+adyen
+as one of the available refund options in
+refund_options
+for the store (specified in
+store_id
+), where you want associates to use a gift card to issue refunds to the customer. See the example:
+[
+ {
+   "payment_options": [
+     "adyen_terminal",
+     "cash",
+     "gift_card",
+     "adyen_pay_by_link",
+     "square",
+     "worldline"
+   ],
+   "refund_options": [
+     "original",
+     "credit_card",
+     "gift_card",
+     "worldline"
+   ],
+   "store_id": "store1_NYC"
+ }
+]
+Gift card
+is then displayed as one of the available refund options for this specific store during a
+return
+in NewStore Associate App.
+Present Card for Refund
+will be displayed as one of the available refund options for this specific store during a
+return
+in NewStore Associate App when Worldline is added to the refund options configuration - both at a store or at a global level.
+Configuring global refund options
+Retrieve the current refund configuration using the
+Get payment options configuration
+method.
+In the
+refund_options
+key, specify a list of refund options that are available to store associates for the retailer, during returns via NewStore Associate App.
+Use the
+Update payment options configuration
+method to update the refund configuration for your business.
+For example, specify
+original
+,
+credit_card
+, and
+gift_card
+, for these refund options to be displayed to associates in NewStore Associate App for all stores for the retailer.
+Refund options specified for a store overrides the configuration specified at the retailer level.
+Using Worldline as a refund option
+IMPORTANT
+When using the Worldline payment integration, a payment terminal is REQUIRED for processing refunds. ALL refunds must be performed using the Associate App and a connected Worldline payment terminal.
+The Worldline payment integration supports cash and carry payment and refund transactions. All payment and refund transactions will leverage the NewStore Associate App and a connected Worldline Payment terminal.
+To perform a return with a refund or exchange with a refund when a retailer is using Worldline, store associates should perform the following steps:
+Begin the return process and add the items from the original purchase that need to be returned to the cart.
+Once the items have been added to the cart, Tap the
+REFUND
+The associate
+will now be presented with a list of available refund options. To process a credit card refund using Worldline, the associate must select the
+Present Card for Refund
+option.
+The associate should now connect to the desired payment terminal and complete the credit card refund using the payment terminal.
+The associate app will receive confirmation from the payment terminal that the refund was processed.
+IMPORTANT
+For retailers using Worldline, the refund option of
+Original Payment Method
+will be greyed out and will not be available. This option is only available for CASH transactions when Worldline is the payment integration for the retailer.
+Configuring and using granular external refund options
+Supported from
+This feature is supported from Associate App v1.51.0 and later..
+Note
+Prior to the release of Associate App 1.51.0, retailers using the non_integrated/External Payment and Refund option had only a single payment or refund option in the Associate App. After upgrading to Associate App version 1.51.0, retailers who do not want granular external payment options need not modify their existing configurations.
+Retailers who choose to use more granular external refund options as part of the Associate App, along with the ability to track these granular payment options, must make the following configuration changes to enhance their store associate experience and their back office reconciliation data and visibility.
+To create granular payment methods for external payments, use the
+Update Payment Options Configuration
+and follow the steps below:
+Decide whether the configuration levels for non-integrated payment options will be global or store-specific.
+Add
+non_integrated
+to the list of refund options at the appropriate level.
+Define the
+non_integrated_methods_definition
+object, which will map custom granular payment/refund methods to a key (used for event stream and payloads).
+Now, set up the
+non_integrated_methods
+list for each store you want to display granular external methods in, or on the global level if you want to display the same in every store. This list will reference the methods you created definitions for by key.
+This configuration adds the
+External Refund
+option to the NewStore Associate App's refund options list and enables the user to display and select from a listing of granular refund methods under the
+External Refund
+option.
+Visibility of external refund transactions
+Retailers can validate and monitor external refund transactions and the specific granular refund methods used in them. Transactional details are available via the NewStore Omnichannel Manager, event stream, payment APIs, and NewStore Insights.
+NewStore Omnichannel Manager visibility
+The NewStore Omnichannel Manager provides payment visibility on orders where external payments/refunds have been applied. For these transactions, the user is shown the specific external payment/refund method selected and the amount processed per payment method.
+API usage and visibility
+In the payment accounts API, the call to get a summary of the payment account uses the “method” and “PSP” objects. The “PSP” object records “non_integrated” as its value, and the “method” object records the “property name” of the non-integrated payment method.
+Event stream visibility
+As part of the NewStore event stream schema, external payment/refund information can continue to be found under
+instruments
+>
+payment_method
+.
+NewStore insights visibility
+Transactions that have external payments/refunds as part of the order are displayed within NewStore insights and use the value from "property name" in the payment configuration. These transactions are reflected in the "Payment Method" column.
+Related topics
+Configuring payment providers
+Placing orders
+Integrating a payment service provider
+Integrating a gift card provider
+Integrating Adyen
+Was this article helpful?
+Yes
+No
+Tags
+api
+external payment options
+external refund
+newstore platform
+payment
+payment device
+payment options
+refund
+store
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

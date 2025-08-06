@@ -1,0 +1,341 @@
+Tutorial: Setting up a transfer configuration
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Tutorial: Setting up a transfer configuration
+Updated on
+Nov 14, 2024
+Published on Oct 1, 2024
+8 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+The aim of this tutorial is to set up a transfer configuration, based on the fulfillment configuration and strategy for a business created as part of the
+fulfillment config tutorial
+.
+A transfer configuration allows you to transfer inventory from a
+store
+(not a DC) to another location. See the
+general explanation
+, or how the
+integration is done
+.
+Important
+The transfer configuration is related to the fulfillment configuration. The service levels you use in the transfer configuration:
+Must be present in your fulfillment configuration.
+Have the
+same
+service level priority as in the fulfillment configuration.
+Defining the strategy
+We have set up a business with one DC and one store. See the
+strategy
+we created for the
+fulfillment configuration
+earlier.
+In our case, we can only:
+Enable transfers from our unique store to our unique DC.
+Offer traditional delivery for the transferred inventory from the store to the DC.
+The updated strategy for transfers from our store is defined below:
+Country
+Zip code
+Fulfillment node id
+Supported shipping options for transfers
+US
+10*
+store1_NYC
+Traditional
+Creating the transfer configuration
+We use the
+Add transfer shipping configuration
+method to create a transfer configuration.
+Because we only want to use the
+TRADITIONAL
+service level to transfer inventory, our payload for the transfer configuration looks as follows:
+{
+    "transfer_order_configuration": [
+        {
+            "from_location_id": "store1_NYC",
+            "to_location_ids": ["DC01"],
+            "service_level_ids": ["TRADITIONAL"]
+        }
+    ]
+}
+Note
+We can use
+*
+in
+to_location_ids
+to allow shipping to any location.
+Once we call the
+Add transfer shipping configuration
+method, the shipping options for transfers are available in Associate App.
+Use the
+Get transfer shipping configuration
+method to view the transfer config set up for your business.
+(Optional) Creating a transfer configuration without store fulfillment
+In some cases, you may not want to use stores to fulfill orders in your business. In our case, let's use our store (
+store1_NYC
+) to transfer inventory, but not fulfill orders.
+To do this:
+Update the
+routes
+in your fulfillment configuration.
+If you are using the new fulfillment configuration and
+not
+the legacy
+fulfillment configuration API
+to set up the config, you can use the
+Routing ruleset API
+to update the routes by setting the value of
+zip_code_regions
+to
+fake-zip-code
+.
+Based on the shipping strategy we had defined in our fulfillment configuration in the
+tutorial
+, the updated payload to use with the
+Update routing rules method
+looks like this:
+{
+    "routes": [
+        {
+            "fulfilled_by": {
+                "TRADITIONAL": ["Store Group 0"]
+            },
+            "destination_region": {
+                "country": "US",
+                "zip_code_region": "All"
+            }
+        }
+    ],
+    "sl_levels_priority": ["TRADITIONAL"],
+    "location_groups": {
+        "Store Group 0": ["store1_NYC"]
+    },
+    "zip_code_regions": {
+        "All": ["fake-zip-code"]
+    }
+}
+However, if you are still using
+only
+the
+legacy fulfillment configuration API
+to set up your fulfillment configuration, update the routes in our fulfillment configuration using the
+Update fulfillment configuration
+method, and set the value of
+zip_codes
+for the store to
+fake-zip-code
+.
+The updated routes are as follows:
+{
+    "fulfillment_config": {
+        "routes": [
+            {
+                "fulfilled_by": {
+                    "SAME_DAY_DELIVERY": [
+                        {
+                            "provider_rate": "UPS_SAME_DAY_RATE",
+                            "fulfillment_node_id": "store1_NYC"
+                        }
+                    ],
+                    "TRADITIONAL": [
+                        {
+                            "provider_rate": "UPS_TRADITIONAL_RATE",
+                            "fulfillment_node_id": "store1_NYC"
+                        }
+                    ]
+                },
+                "destination_region": {
+                    "countries": ["US"],
+                    "zip_codes": ["fake-zip-code"]
+                }
+            },
+            {
+                "fulfilled_by": {
+                    "TRADITIONAL": [
+                        {
+                            "provider_rate": "UPS_TRADITIONAL_RATE",
+                            "fulfillment_node_id": "DC01"
+                        }
+                    ]
+                },
+                "destination_region": {
+                    "countries": ["US"],
+                    "zip_codes": ["*"]
+                }
+            }
+        ]
+    }
+}
+The final updated payload for our fulfillment configuration with the
+legacy fulfillment configuration API
+looks as follows:
+{
+    "fulfillment_config": {
+        "routes": [
+            {
+                "fulfilled_by": {
+                    "SAME_DAY_DELIVERY": [
+                        {
+                            "provider_rate": "UPS_SAME_DAY_RATE",
+                            "fulfillment_node_id": "store1_NYC"
+                        }
+                    ],
+                    "TRADITIONAL": [
+                        {
+                            "provider_rate": "UPS_TRADITIONAL_RATE",
+                            "fulfillment_node_id": "store1_NYC"
+                        }
+                    ]
+                },
+                "destination_region": {
+                    "countries": ["US"],
+                    "zip_codes": ["fake-zip-code"]
+                }
+            },
+            {
+                "fulfilled_by": {
+                    "TRADITIONAL": [
+                        {
+                            "provider_rate": "UPS_TRADITIONAL_RATE",
+                            "fulfillment_node_id": "DC01"
+                        }
+                    ]
+                },
+                "destination_region": {
+                    "countries": ["US"],
+                    "zip_codes": ["*"]
+                }
+            }
+        ],
+        "provider_rates": {
+            "UPS_SAME_DAY_RATE": {
+                "service_level": "SAME_DAY_DELIVERY",
+                "shipping_type": "same_day_delivery",
+                "return_provider_rate": "",
+                "shipping_carrier_name": "UPS",
+                "use_as_customer_facing_cost": false
+            },
+            "UPS_TRADITIONAL_RATE": {
+                "service_level": "TRADITIONAL",
+                "shipping_type": "same_day_delivery",
+                "return_provider_rate": "",
+                "shipping_carrier_name": "UPS",
+                "use_as_customer_facing_cost": false
+            }
+        },
+        "service_levels": {
+            "SAME_DAY_DELIVERY": {
+                "price": 15,
+                "tax_code": "",
+                "display_name": "Same day delivery",
+                "currency_code": "USD",
+                "delivery_time": "Place order by 2pm.",
+                "remorse_period": 120,
+                "delivery_time_after_cutoff_hour": "Place order by 2pm."
+            },
+            "TRADITIONAL": {
+                "price": 0,
+                "tax_code": "",
+                "display_name": "Traditional delivery",
+                "currency_code": "USD",
+                "delivery_time": "3-7 business days",
+                "delivery_time_after_cutoff_hour": ""
+            }
+        },
+        "sl_levels_priority": ["SAME_DAY_DELIVERY", "TRADITIONAL"]
+    }
+}
+The updated fulfillment configuration ensures that no orders are routed to the store for fulfillment. Only the DC (
+DC01
+) can now fulfill orders.
+Create the transfer configuration
+to transfer inventory from your store.
+Related topics
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+Tutorial: Setting up a store
+Tutorial: Setting up an in-store pickup configuration
+Shipping transfer orders
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+dellivery
+Easypost
+fulfillment
+integration
+international shipping
+inventory
+newstore platform
+onboarding
+platform
+routing
+shipping
+stock on hand
+store fulfillment
+transfer
+tutorial
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

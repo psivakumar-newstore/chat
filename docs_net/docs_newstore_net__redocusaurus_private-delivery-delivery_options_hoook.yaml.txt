@@ -1,0 +1,92 @@
+openapi: 3.0.0
+tags:
+  - name: Rates
+    description: shipping rates
+info:
+  title: Shipping Options Webhooks
+  version: v0
+  contact:
+    email: team-delivery@newstore.com
+  description: >
+    Represents the checkout step during which shipping options are required.
+
+
+    This resource contains the [provider
+    rate](/docs/glossary.html#term-provider-rate) of an order.
+
+    A provider rate is how NewStore identifies a shipping provider and the rates
+    they offer.
+
+    For example, *FedEx Overnight*, *UPS Next Day*, *DHL On-demand delivery*.
+
+
+    **Note:** If you’re looking to [integrate a shipping
+    provider](/docs/development/api/guides/shipment.html)
+
+    for booking, updating, and canceling deliveries, see
+
+    [Shipping Provider Webhooks](/newstore-cloud/delivery/delivery_hook.html).
+
+
+    A typical use case for the shipping options webhook is to define the
+    supported shipping providers and rates for a
+
+    specific list of products being purchased. If an ordered product is too
+    heavy or too large, for example, these
+
+    webhooks allow you to offer a customer
+
+    [customized shipping
+    prices](/docs/development/api/guides/shippingoptions.html#retrieving-custom-shipping-prices-for-orders)
+
+    that can cater to this non-standard package.
+
+
+    To develop an adapter, see [shipping
+    options](/docs/development/api/guides/shippingoptions.html).
+servers:
+  - url: https://example.com/newstore_api/v0
+paths:
+  /provider_rates:
+    post:
+      tags:
+        - Rates
+      description: >
+        Requests provider rates configuration, including service level, provider
+        name, and shipping offer price.
+
+
+        **Important:** See [Retrieving custom shipping
+        prices](/docs/development/api/guides/shippingoptions.html#retrieving-custom-shipping-prices-for-orders)
+
+        to understand how to use the ``use_as_customer_facing_cost`` flag in the
+
+        fulfillment configuration and the price `source` in your adapter.
+      summary: Get customized provider rates for an order
+      operationId: get_customized_provider_rates_for_an_order
+      requestBody:
+        content:
+          application/json:
+            example:
+              $ref: ./examples/provider_rates_post.yaml
+            schema:
+              $ref: ./schemas/provider_rates_request.json
+        required: true
+      responses:
+        '200':
+          description: Provider rates were successfully returned.
+          content:
+            application/json:
+              example:
+                $ref: ./examples/provider_rates_200.yaml
+              schema:
+                $ref: ./schemas/provider_rates_response.json
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              example:
+                $ref: ./examples/provider_rates_400.yaml
+              schema:
+                $ref: ./schemas/provider_rates_error_response.json
+components: {}

@@ -1,0 +1,378 @@
+Tutorial: Importing products
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Tutorial: Importing products
+Updated on
+May 14, 2025
+Published on Oct 1, 2024
+8 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+The aim of this tutorial is to set up a product and a price book in the catalog. To import stock, see
+this tutorial
+.
+Important
+We assume that you have an authentication token stored in the AUTH_TOKEN variable. Retrieve one with the following call:
+export AUTH_TOKEN=$(curl -s <url>/v0/token -d \
+"grant_type=password&username=<myusername>&password=<mypassword>" | jq -r.access_token)
+Pre-requisites
+The product and stock information is at the core of the features offered by NewStore. Providing incomplete product information can make your products unavailable internally in the platform and publicly via the Customer API.
+The steps to import products and a price book are the following:
+Creating the product
+Creating the price book
+Importing the data you created
+The first two steps create data JSON files for each entity and in the last step you'll use the
+Import API
+to import the data you created.
+Creating product data
+A product is imported into a
+shop
+and for a specific
+locale
+. In NewStore Omnichannel Cloud, a
+shop
+is a catalog which contains products, categories, and price books. Each store needs a
+shop
+assigned. Typically, retailers use the same
+shop
+per country.
+The product details that you provide during import determine the product attributes that are displayed in NewStore applications.
+Categories
+are imported with the product import into a
+shop
+and for a specific
+locale
+. Product categories may differ across different
+sales channels
+.
+This tutorial shows how to import one product, to keep the payload example concise. The product you're going to import has three categories:
+Shop > Dresses
+, which is the main category for the product
+Releases > SUMMER 1
+Special collection
+For a thorough description of these attributes, visit the
+guide to managing products
+.
+Product information
+In our case, we want to import a product called
+Grace Sweater
+, color beige and size 4. Let's imagine that we also have a variant of this product: beige and size 6. These two products will share the same
+variant_group_id
+and have different
+variation_size_value
+attribute value.
+To represent this product in NewStore, the following product properties must be used correctly.
+Important
+Failing to use these properties correctly will prevent using the
+Customer API
+or Omnichannel Manager to work with these products.
+To import the product:
+Create a new folder called
+data
+.
+Save the following payload as a file named
+products.json
+in the
+data
+folder.
+{
+    "head": {
+        "shop": "storefront-catalog-en",
+        "locale": "en-US",
+        "is_master": true
+    },
+    "items": [
+        {
+            "product_id": "1000101",
+            "variant_group_id": "variant_group_10001",
+            "title": "Bohemian Print Cutout Chiffon Maxi Dress",
+            "caption": "Our summer-ready chiffon dress features a bohemian print and beaded cut-outs for a textural twist to maxi styles. Full of creativity on every level, it offers delicate transparencies with a pleated hem for extra swish as you move through the summer heat.",
+            "description": "Bohemian Print Chiffon Gathered Waist Silk Dress",
+            "show_in_listing": true,
+            "images": [
+                {
+                    "url": "https://mycompany/hoster/images/default/products/SU16/10001_014_Multi_OFR-1.jpg",
+                    "internal_dimension_height": 2000,
+                    "internal_dimension_width": 1414,
+                    "internal_dominant_color": "#F4F2F4",
+                    "is_main": true
+                },
+                {
+                    "url": "https://mycompany/hoster/images/default/products/SU16/10001_014_Multi_OSP-2.jpg",
+                    "internal_dimension_height": 2000,
+                    "internal_dimension_width": 1414,
+                    "internal_dominant_color": "#F4F2F4"
+                }
+            ],
+            "tax_class_id": "standard",
+            "categories": [
+                {
+                    "path": "Special collection"
+                },
+                {
+                    "path": "Releases > SUMMER 1"
+                },
+                {
+                    "path": "Shop > Dresses",
+                    "position": 10,
+                    "is_main": true
+                }
+            ],
+            "material": "LADIES' 100% SILK WOVEN DRESS",
+            "variation_color_value": "Grace Sweater Beige",
+            "variation_size_value": "4",
+            "variation_size_gender": "unisex",
+            "variation_size_type": "regular",
+            "variation_size_system": "US",
+            "external_identifiers": [
+                {
+                    "type": "sku",
+                    "value": "3825952358"
+                },
+                {
+                    "type": "ean13",
+                    "value": "1000101000007"
+                }
+            ],
+            "extended_attributes": [
+                {
+                    "name": "care",
+                    "value": "1000101 This product doesn't need special caring instructions. Handwash at 50°F is sufficent enough."
+                },
+                {
+                    "name": "fit",
+                    "value": "1000101 Tight"
+                }
+            ]
+        }
+    ]
+}
+At this stage you have the following
+data
+folder structure:
+data
+└── products.json
+Creating price book data
+A
+price book
+represents a collection of prices for products, in a specific currency. You can import multiple price books and specify whether the set of prices is inclusive or exclusive of taxes. For example, each sales channel can have a different price book.
+Important
+To be able to use a price book that you import in this process, you must assign it to a store. See
+Tutorial: Setting up a store
+.
+The expected structure of the price book after a successful import is represented by
+this JSON schema
+. Ensure that you read the description of the properties of this schema before you start importing a price book.
+The price book import has the following specificities:
+The first price book you import has to be called
+default
+.
+To retrieve the prices in the default price book, use the
+List products method
+from the Customer API. To get prices from another price book, use the
+Get prices method
+.
+Important
+A
+shop
+can only contain one
+default
+price book in a specific currency. Importing another
+default
+price book with a different currency overwrites the previous price book. Every default pricebook is independent for each
+shop
+.
+shop
+: Must be set to the same value as the product:
+storefront-catalog-en
+.
+Every record in a pricebook must have a price defined and the price needs to be rounded off to a proper decimal value based on the currency. For example,
+USD
+is rounded off to 2 decimal places, while
+JPY
+is rounded off to 0 decimals. If a price value is invalid, the price record is excluded from processing on the platform.
+Define the following payload to describe the price book:
+{
+    "head": {
+        "pricebook": "default",
+        "shop": "storefront-catalog-en",
+        "currency": "USD"
+    },
+    "items": [
+        {
+            "product_id": "1000101",
+            "value": 995.00
+        }
+    ]
+}
+Save the product payload in a file called
+prices.json
+in the
+data
+folder. You can include all your price books in the same JSON file.
+Your
+data
+folder should now contain:
+data
+├── prices.json
+└── products.json
+You are now ready to import the data.
+Running the import
+Import the data by creating and running an import job:
+Zip the
+data
+folder to
+data.zip
+:
+zip -r data.zip data
+Important
+On Mac, using the context-menu compression might include a
+__MACOSX
+invisible folder to the zip. This folder will break the import.
+Upload it to a URL that NewStore can access.
+NewStore supports HTTPS URIs and Amazon S3 bucket URIs, as long as NewStore can access them to download the file.
+Use the
+Create import job method
+:
+curl -X POST "https://<url>/v0/d/import" \
+   -H "Authorization: string" \
+   -d
+   '{
+     "provider": "MyProductImportTestSystem",
+     "name": "product_import_20170306",
+     "source_uri": "https://some-uri-location/data.zip",
+     "entities": [
+       "products",
+       "availabilities",
+       "prices"
+     ]
+   }'
+The job is created and can be started using the
+Start import job method
+by providing the URL of the data file to the zip file.
+curl -X POST "https://<url>/v0/d/import/{import_id}/start" \
+     -H "Authorization: Bearer ${AUTH_TOKEN}" \
+     -d
+     '{
+       "transformed_uri": "https://assets.example.com/integrations/newstore/data.zip"
+      }'
+The job is placed in a processing queue.
+You can check the import job's status with the
+Get import job method
+or using NewStore Omnichannel Manager, via
+Catalog
+>
+Imports
+>
+Catalog imports
+. For more information, see
+Viewing status of catalog imports
+.
+Once the job is processed, its status becomes
+finished
+.
+Important
+Ensure the
+List errors for import method
+returns an empty array.
+If there are errors for the import job, see
+Troubleshooting import errors
+.
+Testing the import
+Now that the data has been imported, you can try to retrieve our products from the API or list it in NewStore Omnichannel Manager.
+Use the
+List products
+method from the Customer API to retrieve the product you imported:
+curl "http://<url>/api/v1/shops/storefront-catalog-en/products?locale=en-us"
+The import is complete.
+You can also export and validate product and pricebook data you just imported for your business. See
+Exporting product data
+and
+Exporting pricebook data
+.
+Related topics
+Importing data
+Import API
+Customer API
+Configuring distribution centers
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+catalog
+data import
+fulfillment
+import job
+integration
+onboarding
+platform
+pricebook
+product import
+SFCC
+store
+tutorial
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

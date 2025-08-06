@@ -1,0 +1,272 @@
+Integrating a fulfillment provider
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Integrating a fulfillment provider
+Updated on
+Apr 25, 2025
+Published on Oct 1, 2024
+6 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Fulfillment represents the shipment of one or more items of an order to the customer. A fulfillment provider is an entity that can fulfill orders. For example, a
+distribution center
+'s
+WMS
+or
+OMS (Order Management System)
+.
+How fulfillment works
+Let's consider an example with an request that contains 2 items, sent to Location A, a distribution center (DC). Location B is another DC in the same fulfillment configuration.
+Acceptance scenario:
+Partial rejection scenario:
+Rejection scenario:
+Cancelation scenario:
+NewStore sends a fulfillment request to Location A.
+If Location A
+accepts the request
+, all items are packed and shipped. The fulfillment provider updates NewStore with the shipping status.
+If Location A
+accepts some items
+, the accepted items are shipped and the fulfillment provider updates NewStore with the shipping status. For example, the fulfillment location can accept an item immediately, and wait for stock to be replenished the next day before it accepts item 2.
+If Location A
+rejects items
+, it informs NewStore which items were rejected and why. NewStore tries to find a location that has
+ATP
+for all the items. If it can't, available items are shipped from this location. A new request containing only the rejected items is sent to Location B (the next best location in the fulfillment configuration). If a new location contains ATP for all items, the request is sent to the location and all the items are shipped from there.
+If Location A
+cancels items
+, it informs NewStore which items were canceled. The allocations for the canceled items are removed immediately, and NewStore does not send them to any other location. The status of a canceled item is not displayed in NewStore Omnichannel Manager until the other items in the fulfillment request are marked as
+shipped
+,
+rejected
+, or
+canceled
+.
+Important
+Do not cancel an order if the location does not have inventory or cannot fulfill the order. Use the
+Reject items method
+instead. NewStore does not reroute a canceled item or order to a different store or location.
+Also see
+DC fulfillment BPM
+for more information about the
+events
+related to DC fulfillment.
+Important
+When your order contains multiple items with the same product ID and you want to mark items as shipped, canceled, or rejected, NewStore will either pick least expensive or most expensive item first. For more details please see the
+Fulfillment Provider API
+.
+Integrating with NewStore
+To integrate NewStore with a fulfillment provider, implement the
+Fulfillment provider webhooks
+.
+These webhooks allow the following communication between NewStore Omnichannel Cloud and your fulfillment provider.
+Prerequisites
+Before you start the integration, ensure that you have:
+A web URL (HTTPS) where the fulfillment request can be posted. If you use different fulfillment providers at different distribution centers, ensure that you communicate the URL for each provider to NewStore. For help with configuring your distribution centers for fulfillment, use the
+DC configuration API
+.
+An API key provided by your system to access the above URL. Insert it in the authorization header of your requests.
+Receiving a fulfillment request
+Based on your routing configuration, when an order is routed to a fulfillment location, NewStore Omnichannel Cloud sends a fulfillment request to the best fulfillment location, using the
+Create fulfillment request webhook
+.
+Use the
+extended_attributes
+property to include custom attributes for the fulfillment request. For more information about what extended attributes you can configure, contact the
+support team
+.
+Note
+If the POST fails, the request is retried 3 times.
+Accepting a fulfillment request
+Call NewStore Omnichannel Cloud using the
+Accept request method
+.
+When the shipment is sent from the location, inform NewStore. See
+Shipping the package
+.
+Rejecting a fulfillment request
+To reject an item in the request, if the location has inventory for only some items in the request and only part of the order can be fulfilled, use the
+Reject items method
+. Specify the IDs of the items that cannot be fulfilled and provide a rejection reason for each rejected item:
+no inventory
+:
+ATP
+for the items that were rejected is set to 0 at the location. NewStore Omnichannel Cloud finds the next best location that has ATP for all items in the order, and reroutes the order. A new fulfillment request is sent to the next location using the
+Create fulfillment request webhook
+. If a location cannot be found, available items are shipped from this location, and a new request is sent for the rejected items.
+cannot fulfill
+: NewStore Omnichannel Cloud does not send additional requests to this location for this order, and reroutes to the next best location, based on the fulfillment configuration.
+Important
+To reject the
+entire fulfillment request
+use the
+Reject items method
+and include all the items in the request to reject fulfillment. Specify either
+no_inventory
+or
+cannot_fulfill
+as the rejection reason for each item.
+To check the status of your rejections on NewStore's side, use the
+Get rejection status method
+.
+Note
+A fulfillment location can reject a request even
+after
+it has accepted a request if it has insufficient inventory for one or more items, or cannot fulfill the request because of other business issues. However, you cannot reject an item in a fulfillment request if the item is marked as
+shipped
+.
+Canceling a fulfillment request
+To cancel an item or the complete fulfillment request, use the
+Cancel items method
+. The allocations for these items are removed immediately and NewStore does not send them to another location.
+However, you cannot cancel an item in a fulfillment request if the item is marked as
+shipped
+or
+rejected
+.
+To check the status of your cancelations on NewStore's side, use the
+Get item cancellation status method
+.
+Note
+The status of a canceled item is not displayed in NewStore Omnichannel Manager until the other items in the fulfillment request are marked as
+shipped
+,
+rejected
+, or
+canceled
+.
+Shipping the package
+Notify NewStore Omnichannel Cloud using the
+Update shipping status method
+, when a fulfillment location sends a shipment for the fulfillment request. You can send a notification for a single product or for multiple products in the shipment.
+Note
+A
+201
+response does not always signify that the item(s) have been marked as shipped. A shipment request may be rejected, and you need to follow the next step to ensure that the items have been actually shipped.
+Check the status of your shipments on NewStore's side using the
+Get shipment status method
+.
+Ensure that you check the payload for both
+successful_shipments
+and
+failed_shipments
+properties to verify that the items marked as shipped have actually been shipped.
+Ideally, your integration workflow should perform these 2 steps together in sequence to ensure no errors persist with shipments.
+Shipping transfer orders
+You can configure the platform to manage the transfer of inventory from a given store to a specified set of receiving locations such as stores or DCs.
+Before creating this configuration, ensure that:
+You have set up your stores and DC. See the
+tutorial
+.
+You have created a fulfillment configuration for your business. See the
+tutorial
+.
+To set up the transfer configuration:
+Know your fulfillment configuration. You can display it using the
+Get fulfillment configuration method
+.
+Create a transfer configuration using the
+Add transfer shipping configuration method
+and provide the
+same
+service levels and priority as used in your fulfillment configuration.
+To view the transfer config set up for your business, use the
+Get transfer shipping configuration
+method.
+For more information, see
+the transfer order tutorial
+.
+Note
+If you are not using store fulfillment in your business, you still need a fulfillment config and a transfer config to ship transfer orders from your stores. See the
+tutorial
+.
+Related topics
+Fulfillment requests
+About order fulfillment
+About order routing
+Integrating a shipping provider
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+Was this article helpful?
+Yes
+No
+Tags
+api
+DC fulfillment
+endless aisle
+ERP integration
+fulfillment
+integration
+order
+order fulfillment
+order management
+platform
+routing
+shipping
+store
+store fulfillment
+transfer
+warehouse
+warehouse fulfillment
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

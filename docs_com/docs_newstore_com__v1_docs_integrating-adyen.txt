@@ -1,0 +1,521 @@
+Integrating Adyen
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Integrating Adyen
+Updated on
+Apr 30, 2025
+Published on Oct 1, 2024
+10 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Adyen is the main payment service provider used at NewStore and is supported for retailers operating in North America, Europe, and parts of Asia (such as Japan).
+To set up your business to use Adyen as the payment service provider, you will need help with some parts of the integration. For more information, contact the
+support team
+.
+Core Adyen integration
+All Adyen features depend on the core Adyen integration. Once this configuration is set up, NewStore can process Adyen payments for e-commerce orders in the platform.
+Configuring the Adyen integration
+To process payments using Adyen:
+Retrieve the current configuration using the
+Get Adyen Adapter configuration
+method.
+Set the following configurations:
+Feature/Property
+Configuration setting
+provider_name
+Set to
+adyen
+.
+order_placement_delay
+Defines the delay in seconds before the order is placed, if the order is still not ready after the payment notification has been received.
+endpoint
+The Adyen payment processing API base URL.
+In a
+test
+environment this URL should be set to
+https://pal-test.adyen.com/pal/servlet/Payment/[version]
+.
+In a
+live
+environment, a unique URL is provided to every retailer. The live URL has the following structure:
+<https://{random}-{company name}-pal-live.adyenpayments.com/pal/servlet/Payment/[version]>
+<https://8abc203-dodici-pos-payment-live.adyenpayments.com/pal/servlet/Payment/[version]>
+Information about the live Adyen method is available on the
+Adyen support portal
+.
+capture_delay
+Defines how the payment capture is triggered. If it's set to
+manual
+then captures are triggered by NewStore upon handover for store sales or upon shipment for orders that are to be fulfilled. If it's set to
+immediate
+then captures are triggered by Adyen immediately after successful authorization. This setting should mirror the corresponding field in the merchant account settings on the Adyen portal. For more information about payment captures, see the
+Adyen documentation
+.
+If
+manual
+capture is enabled, and the retailer supports multiple shipments per order, see
+Configuring multiple partial captures for a manual payment capture
+.
+Important
+While NewStore can process both manual and immediately captured payments from Adyen, we strongly recommend that retailers choose manual payment processing
+without
+immediate capture for POS and e-commerce transactions.
+For PayPal integrations
+: The Adyen and PayPal configuration MUST be set to full capture
+ONLY
+. Partial captures will not allow NewStore to process refunds correctly.
+This enables NewStore to capture payments when the items are handed over to the customer or shipped, which follows the best practices for payment settlement. This avoids capturing during checkout and the possibility of unnecessary refunds for items that cannot be shipped due to insufficient inventory.
+assume_refund_successful
+Set to
+True
+if refunds should be marked as successful in NewStore without waiting for confirmation from Adyen.
+assume_unreferenced_refund_successful
+Set to
+True
+if refunds for which the original payment method is unavailable should be marked as successful in NewStore, without waiting for confirmation from Adyen.
+assume_void_successful
+Specify
+True
+if voids (revoking of a payment authorizations) should be marked as successful in NewStore without waiting for confirmation from Adyen.
+wait_for_auth_notification
+Specify
+True
+for NewStore to wait up to 10 seconds for a payment confirmation from Adyen, before placing the order.
+Important
+We recommend that you set this value as
+False
+, otherwise the checkout process can be delayed while NewStore waits for a notification from Adyen.
+When set to
+False
+, NewStore uses the payment transaction information from the payment device. Therefore, before setting this value, go to the Adyen portal and in
+Developers
+>
+Additional data
+, select all the checkboxes in the
+Card
+and
+Acquirer
+sections.
+immediate_capture_payment_methods
+(optional)
+List of payment methods that are always captured, and capture requests are not forwarded to Adyen.
+merchant_accounts
+List of merchant accounts for which to use this configuration. For the default merchant account, specify
+["*"]
+for this configuration.
+Important
+Make sure to specify the merchant account list correctly. Failing to set this property correctly may result in a system outage.
+Apply the adjusted configuration using the
+Update Adyen Adapter configuration
+method:
+Fetch the current value from the
+Get FAT PSP configuration
+method.
+Specify a new value (
+adyen
+) for the
+external_providers
+key and set the following properties:
+Feature/Property
+Configuration setting
+callback_url
+Set to
+adyen_adapter
+.
+timeout
+Set to
+60
+.
+Apply the adjusted configuration with the
+Update FAT PSP configuration
+method.
+Configuring the Adyen API credentials
+After setting up Adyen configurations, configure the credentials for the Adyen API. For NewStore to be able to connect to the Adyen backend, use the
+Credentials API for Adyen requests
+to configure the access.
+Before using this API ensure that an Adyen
+API credential
+exists or create a new one by following the
+Adyen new credential
+guide. Grant the Adyen
+API credential
+access to the merchant accounts used to process payments via NewStore, and enable these roles:
+API Clientside Encryption Payments role
+Checkout encrypted cardholder data
+Checkout webservice role
+Merchant Recurring role
+POS Terminal Management API
+Important
+When configuring the API Credentials and Webhooks - you must use Basic Authentication.
+Webhooks
+Payment processing in NewStore relies on receiving payment status updates from Adyen. To ensure that Adyen payments are correctly processed, configure these standard webhook notifications.
+To enable Adyen to start sending notifications, see the
+Adyen notifications setup guide
+. Pay attention to the following steps in the guide:
+For the
+webhook server's URL
+use a URL that follows the pattern:
+<https://{newstore-tenant-name}.{one-letter-stage}.newstore.net/v1/p/psp/notifications/adyen>
+<https://retailer.s.newstore.net/v1/p/psp/notifications/adyen>
+Generate a random
+username
+and a secure
+password
+that will be used for basic authentication. Use these to authenticate the webhook via
+Authentication
+.
+Configure the same username and password in NewStore using the
+Credentials API for Adyen notifications
+.
+This webhook integration validates the HMAC signature of the notifications. In the Adyen webhook settings,
+HMAC
+can be configured under
+Additional Settings
+.
+Proceed to
+Generate a new HMAC Key
+. Store this HMAC Key in NewStore by using the
+Adyen notifications HMAC API
+.
+Feature/Property
+Configuration setting
+hmac
+Collect the HMAC validation key configured in Adyen for notifications.
+Configuring multiple partial captures for a manual payment capture
+For split shipments, NewStore triggers a partial capture for each shipment. NewStore also triggers the voiding of payment authorization for partial amounts for items that are canceled.
+Important
+Set up multiple partial payment captures in Adyen for the
+merchant account
+with manual captures. Otherwise, Adyen cancels the remaining authorization amount after the first partial capture, and subsequent payment captures fail.
+To support multiple payment captures on the Adyen side, the retailer must:
+Request multiple partial captures to be enabled in the Adyen account settings. See
+multiple partial captures
+.
+Ensure that the configurations for payment processing are aligned in Adyen and the
+Get Adyen Adapter configuration
+method, where Adyen's merchant account setting must be set to
+manual
+. This is part of the
+Core Adyen integration
+.
+Additional settings to process payments with Adyen terminals
+Note
+Ensure that you have set up the
+Core Adyen integration
+, and build this integration as an additional measure.
+Fetch the current configuration from the
+Get PSP Adyen configuration
+method.
+Set the following values for
+pos
+:
+Feature/Property
+Configuration setting
+terminal_api_url
+Used for Terminal API communication and listing of payment devices. See
+Adyen Terminal API
+.
+sdk_api_endpoint
+Default URL to communicate with Adyen POS SDK API. Required for setting up
+Tap to Pay on iPhone
+as a payment method. See
+Setting up Tap to Pay on iPhone
+.
+environment
+This value is used to indicate whether the payment device is configured for the
+live
+or
+test
+Adyen environment.
+credentials
+account
+is the default merchant account to be used for processing payments and
+company_account
+is a specific company account to be used for processing payments.
+payment_subject
+The custom subject for the transaction. Based on your integration settings, this value may be sent to Adyen to be displayed against the transaction.
+authorization_type
+This value defines how the payment authorization will behave.
+PreAuth
+means that the authorization is adjustable and extensible.
+FinalAuth
+means that the authorization is final and cannot be adjusted.
+store_mapping
+To ensure that a payment transaction from NewStore Associate App is linked to the correct store in the correct merchant account in Adyen, set:
+adyen_store_id
+: The identifier for the store in the retailer's Adyen account.
+store_id
+: The store ID specified in the NewStore platform.
+merchant_config
+>
+credentials
+>
+account
+: Optional merchant account to be used for processing payments for this specific store. If this is not set the default merchant account will be used.
+merchant_config
+>
+payment_subject
+: Custom subject associated with each transaction specific to this particular store.
+Apply the adjusted configuration with the
+Update PSP Adyen configuration
+method.
+Example
+The following example shows a test setup for a business that has:
+2 stores in the US that use the default merchant credentials
+1 store in Canada that uses store-specific configuration with a different Adyen merchant account.
+{
+    "pos": {
+        "environment": "test",
+        "credentials": {
+            "account": "MyTenant_POS_US"
+        },
+        "payment_subject": "Some subject",
+        "store_mapping": [
+            {
+                "adyen_store_id": "01_Boston",
+                "store_id": "82bgh626-481c-4c71c-a91e-18c12a31cb1f"
+            },
+            {
+                "adyen_store_id": "02_5thAve",
+                "store_id": "c8aa3271-6da1-5f02-af8d-8d0f3f1bc901"
+            },
+            {
+                "merchant_config": {
+                    "credentials": {
+                        "account": "MyTenant_POS_CA"
+                    }
+                },
+                "adyen_store_id": "001_Soho",
+                "store_id": "2c2ad6ad-6b31-4881-9764-9a0fe5f4d2ed"
+            }
+        ],
+        "authorization_type": "PreAuth"
+    }
+}
+Adyen integration for NewStore Checkout
+Note
+Ensure that you have set up the
+Core Adyen integration
+, and build this integration as an additional measure.
+NewStore Checkout uses the
+merchant accounts
+and
+store mapping
+from
+Additional settings to process payments with Adyen terminals
+. Ensure that integration is set up completely before proceeding.
+Once the previous integrations are ready, set up the NewStore Checkout configuration as described in
+NewStore Checkout
+.
+Payment reauthorization
+Note
+Ensure that you have set up the
+Core Adyen integration
+, and build this integration as an additional measure.
+Payment authorizations can only be captured within a specific time interval before they expire.
+Adyen guarantees that authorizations can be captured within 7 days across all payment schemes, except PayPal. Currently, PayPal payments cannot be reauthorized via Adyen.
+Important
+Adyen recommends all PayPal authorizations to be captured within 3 days. After that, the success rate of capture tends to drop for PayPal.
+For scenarios like delayed shipments, where a capture doesn't happen within 7 days, NewStore has a configurable process to extend the payment authorization, called reauthorization.
+Enabling reauthorizations
+Fetch the current value from the
+Get PSP Adyen configuration
+method.
+Set
+payment_reauthorization
+with the following properties:
+Feature/Property
+Configuration setting
+enabled
+Set to
+True
+to activate reauthorization.
+authorization_expiration
+Number of days from the time a payment is authorized until the reauthorization should be performed. Typically set to
+7
+.
+authorization_keep_alive_days
+Maximum number of days the platform will try to keep the authorizations alive until the platform gives up to reauthorize a payment. Typically set to
+14
+.
+Apply the adjusted configuration with the
+Update PSP Adyen configuration
+method.
+Example
+In the configuration example below, after the first 7 days, the authorization expires. Because we have set
+authorization_keep_alive_days
+to 14, NewStore reauthorizes the payment to extend its validity for the next 14 days.
+{
+  "psp_adyen": {
+    "payment_reauthorization": {
+        "enabled": true,
+        "authorization_expiration": 7,
+        "authorization_keep_alive_days": 14
+    },
+    "standard_api": {
+        "base_url": "https://pal-test.adyen.com/pal/servlet/Payment/[version]/",
+        "timeout": 30,
+    },
+  }
+}
+Working with multiple merchant accounts
+Retailers operating in multiple regions may use a different Adyen merchant account for each country they operate in. NewStore supports multiple Adyen merchant accounts for the same retailer.
+When configuring a new merchant account, alongside an existing one, ensure that:
+The new merchant account uses the same capture delay as the existing one. For more information about payment captures, see the
+Adyen documentation
+.
+The current
+API credential
+configured in the
+core Adyen integration
+has access to the new merchant account.
+(Optional) Proceed directly to
+Configure additional API credentials
+.
+The Adyen
+Webhooks
+were configured at retailer level and the existing configuration includes the new merchant account.
+(Optional) Proceed directly to
+Configure additional Adyen webhooks for the core integration
+.
+The stores where the new merchant account will be used are included in the
+store mapping
+section of
+Additional settings to process payments with Adyen terminals
+.
+Configure additional API credentials
+To add new
+API credentials
+to your merchant account in Adyen, follow the
+Adyen new credential
+guide. Grant the Adyen
+API credential
+access to the new merchant account and enable these roles:
+API Clientside Encryption Payments role
+Checkout encrypted cardholder data
+Checkout webservice role
+Merchant Recurring role
+POS Terminal Management API
+After the process is complete, use the
+Adyen credentials API for specific merchant accounts
+to store the new credentials in NewStore.
+Configure additional Adyen webhooks for the core integration
+To configure Adyen to start sending notifications for a new merchant account, see the
+Adyen notifications setup guide
+.
+Pay attention to the following steps in the guide:
+Ensure that you add the new webhook at the merchant level.
+For the
+webhook server's URL
+, use a URL that follows the pattern:
+<https://{newstore-tenant-name}.{one-letter-stage}.newstore.net/v1/p/psp/notifications/adyen>
+For example:
+<https://retailer.s.newstore.net/v1/p/psp/notifications/adyen>
+Generate a random
+username
+and a secure
+password
+that will be used for basic authentication. Use these for the webhook
+Authentication
+. Configure the same username and password in NewStore that use the
+Adyen notifications API for specific merchant accounts
+.
+The advanced Adyen integration validates the HMAC signature of the notifications. In the Adyen webhook settings,
+HMAC
+can be configured under
+Additional Settings
+.
+Proceed to
+Generate a new HMAC Key
+. Store this HMAC Key in NewStore by using the
+Adyen notifications HMAC API
+.
+Feature/Property
+Configuration setting
+hmac
+Collect the HMAC validation key configured in Adyen for notifications.
+Related topics
+Configuring payment providers
+Payment Provider webhooks
+Integrating a payment service provider
+Integrating Square
+Was this article helpful?
+Yes
+No
+Tags
+Adyen
+api
+Associate App
+checkout
+integration
+NewStore checkout
+newstore platform
+order
+payment
+payment device
+payment options
+platform
+webhook
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

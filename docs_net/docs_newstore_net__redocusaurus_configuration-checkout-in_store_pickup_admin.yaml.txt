@@ -1,0 +1,114 @@
+openapi: 3.0.0
+info:
+  title: In-store Pickup API
+  version: v0
+  description: >
+    This is a temporary API, to manage the shipping option token private key as
+    a secret in the
+
+    in-store pickup service.
+  contact:
+    email: team-checkout@newstore.com
+servers:
+  - url: https://dodici.v.newstore.net/api/v1/org/config
+tags:
+  - name: Secrets
+    description: >
+      Represents secret credential data and can be used to access restricted
+      resources.
+paths:
+  /secrets/in_store_pickup/shipping_option_token_private_key:
+    get:
+      tags:
+        - Secrets
+      summary: Get private key's metadata
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: The secret's metadata is returned.
+          content:
+            application/json:
+              example:
+                name: shipping_option_token_private_key
+                metadata:
+                  updated_at: '2020-02-17T09:41:00.000Z'
+                  updated_by: b007be08-ce33-414b-a932-9c70d6432cc2
+              schema:
+                title: Response getting metadata of a secret
+                description: >-
+                  Representation of the secret metadata. No secret value is
+                  included.
+                type: object
+                required:
+                  - name
+                  - metadata
+                additionalProperties: false
+                properties:
+                  name:
+                    type: string
+                    description: Name of the given secret.
+                    pattern: ^[a-zA-Z0-9_.-]*$
+                  metadata:
+                    type: object
+                    description: Metadata append to the given secret.
+                    properties:
+                      updated_at:
+                        type: string
+                        description: Point in time (UTC) when the secret was updated last.
+                        format: date-time
+                      updated_by:
+                        type: string
+                        description: NewStore user ID which updated the secret last.
+                    additionalProperties: false
+        '500':
+          description: Something went wrong with the service.
+      description: |
+        Returns the metadata of the secret, for the specified secret name.
+
+        No secret value is included in the response payload.
+      operationId: GetSecretMetadata
+    put:
+      tags:
+        - Secrets
+      summary: Update private key
+      security:
+        - newStoreAccessToken: []
+      requestBody:
+        content:
+          application/json:
+            example: |-
+              -----BEGIN RSA PRIVATE KEY-----
+              ...
+              -----END RSA PRIVATE KEY-----
+            schema:
+              title: The updated value of RSA private token key
+              type: string
+      responses:
+        '204':
+          description: The private key has been updated. No content is returned.
+        '400':
+          description: Wrong data input. Should be valid JSON string.
+        '500':
+          description: Something went wrong with the service.
+      description: >
+        Updates the RSA private token key value.
+
+
+        Newline characters inside the key value must be explicitly represented
+        with `\n` strings.
+      operationId: UpdateSecret
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}

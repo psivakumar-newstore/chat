@@ -1,0 +1,1216 @@
+openapi: 3.0.0
+info:
+  title: Payment Accounts Admin API
+  version: '0'
+  description: |
+    Payments Administration
+
+      This association is done by assigning the same ID to the payment account and the entity it is linked to.
+
+    Payments
+
+      Represents a payment account used during order placement.
+      It has a balance and stores the transactions and the financial instruments that modified its balance.
+
+      Use this resource to retrieve information about a payment account.
+      A payment account can also be used to track the balance and transactions of other entities
+      created by the NewStore platform. For example, a payment account can be associated with an entity such as a sales order, a customer,
+      or a shopping bag by assigning the same ID to the payment account and to the entity.
+
+      **Note** - Currently, NewStore only supports assigning the same ID to a payment account and the related sales order.
+servers:
+  - url: https://dodici.x.newstore.net/_/v0/support
+paths:
+  /payments/accounts/{account_id}/_retry:
+    parameters:
+      - name: account_id
+        description: >
+          Unique ID of a payment account. It is the same ID as the entity the
+          payment account is assigned to.
+
+          For example, use the internal ID (`uuid`) of a sales order.
+        required: true
+        in: path
+        schema:
+          title: account ID
+          description: >
+            Unique ID of a payment account. It is the same ID as the entity the
+            payment account is assigned to.
+
+            For example, use the internal ID (`uuid`) of a sales order.
+          type: string
+    post:
+      operationId: RetryOperation
+      summary: Retry operation
+      description: >
+        Retries the financial operation (authorization, capture or refund)
+        identified by the provided correlation identifier.
+
+        To get an operation's correlation identifier,
+
+        use the [Get payment history method](#/history-get-payment-history).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - correlation_id
+              properties:
+                correlation_id:
+                  type: string
+                  description: >-
+                    Identifier of the request that should be retried. Only
+                    captures and refunds are supported.
+                instrument_id:
+                  type: string
+                  description: Identifier of the instrument that should be retried.
+                amount:
+                  type: number
+                  description: >-
+                    An optional amount to override the original failed request.
+                    Can only apply to capture requests, with a single failed
+                    operation.
+            examples:
+              RetryPaymentOperation:
+                summary: Validate Authorization with the PSP
+                value:
+                  correlation_id: 43696bcc-6242-4428-b5ee-76417c539fea
+      responses:
+        '202':
+          description: The requested retry was accepted.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '400':
+          description: Malformed request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '404':
+          description: Requested command not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '409':
+          description: >
+            Request is conflicting with internal state.
+
+            This error typically happens when the correlation_id identifies an
+            operation that is not a
+
+            capture or a refund or if the operation is a refund that uses
+            several financial instruments.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+      x-experimental:
+        changes:
+          - 01/2019 - Introduced `_retry` resource.
+          - 10/2019 - Enable authorizations to be retriable
+  /payments/accounts/{account_id}/_set_successful:
+    parameters:
+      - name: account_id
+        description: >
+          Unique ID of a payment account. It is the same ID as the entity the
+          payment account is assigned to.
+
+          For example, use the internal ID (`uuid`) of a sales order.
+        required: true
+        in: path
+        schema:
+          title: account ID
+          description: >
+            Unique ID of a payment account. It is the same ID as the entity the
+            payment account is assigned to.
+
+            For example, use the internal ID (`uuid`) of a sales order.
+          type: string
+    post:
+      operationId: SetSuccessful
+      summary: Mark an operation as successful
+      description: >
+        Sets the financial operation (capture or refund) identified by the
+        provided correlation identifier as successful.
+
+        To get an operation's correlation identifier,
+
+        use the [Get payment history method](#/history-get-payment-history).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - correlation_id
+              properties:
+                correlation_id:
+                  type: string
+                  description: >-
+                    Identifier of the request that should be marked as
+                    successful. Only captures and refunds are supported.
+                gc_number:
+                  type: string
+                  description: >-
+                    Identifier of the gift card the operation was successful on.
+                    Optional for refunds to scanned gift cards, required for
+                    e-gift cards, ignored for other operations.
+            examples:
+              SetPaymentOperationSuccessful:
+                summary: Set operation as successful.
+                value:
+                  correlation_id: 43696bcc-6242-4428-b5ee-76417c539fea
+                  gc_number: 850928572937
+      responses:
+        '202':
+          description: The requested operation was accepted.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '400':
+          description: Malformed request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '404':
+          description: Requested operation not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '409':
+          description: >
+            Request is conflicting with internal state.
+
+            This error typically happens when the correlation_id identifies an
+            operation that is not a
+
+            capture or a refund or if the operation is a refund that uses
+            several financial instruments.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+  /payments/accounts/{account_id}/_balance_account:
+    parameters:
+      - name: account_id
+        description: >
+          Unique ID of a payment account. It is the same ID as the entity the
+          payment account is assigned to.
+
+          For example, use the internal ID (`uuid`) of a sales order.
+        required: true
+        in: path
+        schema:
+          title: account ID
+          description: >
+            Unique ID of a payment account. It is the same ID as the entity the
+            payment account is assigned to.
+
+            For example, use the internal ID (`uuid`) of a sales order.
+          type: string
+    post:
+      operationId: BalanceAccount
+      summary: Balance an account
+      description: >
+        Balances accounts with negative balances, triggering refunds when a
+        customer overpaid.
+
+        Should be manually invoked when it is certain that it is not caused by a
+        provider misbehavior,
+
+        like emitting double successes for a capture request.
+      responses:
+        '202':
+          description: The request was accepted.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '400':
+          description: Malformed request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '404':
+          description: Requested account not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '409':
+          description: >
+            Balancing request is rejected due to the account not being in a
+            state where it can be balanced.
+
+            This error typically happens when the provided account's balance is
+            not negative.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+  /payments/accounts/{account_id}/_process_balance_account:
+    parameters:
+      - name: account_id
+        description: >
+          Unique ID of a payment account. It is the same ID as the entity the
+          payment account is assigned to.
+
+          For example, use the internal ID (`uuid`) of a sales order.
+        required: true
+        in: path
+        schema:
+          title: account ID
+          description: >
+            Unique ID of a payment account. It is the same ID as the entity the
+            payment account is assigned to.
+
+            For example, use the internal ID (`uuid`) of a sales order.
+          type: string
+    post:
+      operationId: ProcessBalanceAccount
+      summary: Process a balance account operation
+      description: >
+        Balances accounts with negative balances, triggering refunds when a
+        customer overpaid.
+
+        Should be manually invoked when it is certain that it is not caused by a
+        provider misbehavior,
+
+        like emitting double successes for a capture request.
+      responses:
+        '202':
+          description: The request was accepted.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '400':
+          description: Malformed request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '404':
+          description: Requested account not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '409':
+          description: >
+            Balancing request is rejected due to the account not being in a
+            state where it can be balanced.
+
+            This error typically happens when the provided account's balance is
+            not negative.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+  /payments/accounts/{account_id}/history:
+    parameters:
+      - name: account_id
+        description: >
+          Unique ID of a payment account. It is the same ID as the entity the
+          payment account is assigned to.
+
+          For example, use the internal ID (`uuid`) of a sales order.
+        required: true
+        in: path
+        schema:
+          title: account ID
+          description: >
+            Unique ID of a payment account. It is the same ID as the entity the
+            payment account is assigned to.
+
+            For example, use the internal ID (`uuid`) of a sales order.
+          type: string
+    get:
+      operationId: GetPaymentHistory
+      summary: Get payment history
+      description: |
+        Returns the history of the provided account.
+      responses:
+        '200':
+          description: |
+            The snapshot of the account at the time of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - history
+                properties:
+                  history:
+                    type: array
+                    description: List of internal payment account operations.
+                    items:
+                      title: >-
+                        The Payment History of the Account as a Collection of
+                        Operations
+                      type: object
+                      required:
+                        - operation
+                        - created_at
+                        - updated_at
+                        - correlation_id
+                        - initial_amount
+                        - final_amount
+                        - currency
+                        - state
+                        - instruments
+                      properties:
+                        operation:
+                          type: string
+                          description: >-
+                            Describes the operation of the request. E.g
+                            add-financial-instrument, capture, refund and issue
+                        created_at:
+                          type: string
+                          description: >-
+                            Date when the operation was requested. Format:
+                            RFC3339.
+                        updated_at:
+                          type: string
+                          description: >-
+                            Date when the operation was updated. Format:
+                            RFC3339.
+                        correlation_id:
+                          type: string
+                          description: >-
+                            A unique key that is used for an operation to match
+                            internal events together.
+                        initial_amount:
+                          type: number
+                          description: Amount with which the operation was requested.
+                        final_amount:
+                          type: number
+                          description: Amount of the action in the current state.
+                        currency:
+                          type: string
+                          description: The currency code in ISO-4217 format.
+                        state:
+                          type: string
+                          description: The state in which the action is.
+                          enum:
+                            - PENDING
+                            - SUCCESS
+                            - PARTIAL_SUCCESS
+                            - FAILURE
+                        instruments:
+                          type: array
+                          description: Set of instruments from the request.
+                          items:
+                            title: The Instrument used for a Operation.
+                            type: object
+                            required:
+                              - created_at
+                              - updated_at
+                              - instrument_id
+                              - initial_amount
+                              - final_amount
+                              - payment_method
+                              - payment_provider
+                              - payment_wallet
+                              - transactions
+                            properties:
+                              created_at:
+                                type: string
+                                description: >-
+                                  When the instrument operation was requested.
+                                  Format: RFC3339.
+                              updated_at:
+                                type: string
+                                description: >-
+                                  When the instrument operation was updated.
+                                  Format: RFC3339.
+                              instrument_id:
+                                type: string
+                                description: >-
+                                  An identifier on which instrument the result
+                                  happened.
+                              initial_amount:
+                                type: number
+                                description: Initial requested amount from instrument.
+                              final_amount:
+                                type: number
+                                description: Amount of the instrument in the current state.
+                              payment_method:
+                                type: string
+                                description: >-
+                                  The payment method. Possible values: cash,
+                                  credit_card, gift_card, paypal.
+                              payment_provider:
+                                type: string
+                                description: The payment service provider.
+                              payment_wallet:
+                                type: string
+                                description: >-
+                                  Source of the financial instrument. For
+                                  example: Apple Pay, Android Pay.
+                              payment_origin:
+                                type: string
+                                description: >-
+                                  Source of the payment. For example:
+                                  'newstore_checkout'.
+                              transactions:
+                                type: array
+                                description: Set of transactions on the instrument.
+                                items:
+                                  title: The Transactions of a Instrument.
+                                  type: object
+                                  required:
+                                    - name
+                                    - created_at
+                                    - amount
+                                    - error_message
+                                    - error_code
+                                    - metadata
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: >-
+                                        Describes in which context the
+                                        transaction was done. Example:
+                                        authorization, capture, refund.
+                                    created_at:
+                                      type: string
+                                      description: >-
+                                        When the transaction was done. Format:
+                                        RFC3339.
+                                    amount:
+                                      type: number
+                                      minimum: 0
+                                      description: Amount of the transaction.
+                                    error_message:
+                                      type: string
+                                      description: >-
+                                        The error in case of a failed
+                                        transaction shown in HQ.
+                                    error_code:
+                                      type: string
+                                      description: >-
+                                        The error code in case of a failed
+                                        transaction shown in HQ.
+                                    processed_at:
+                                      type: string
+                                      format: date-time
+                                      description: >-
+                                        The timestamp when the transaction was
+                                        processed.
+                                    metadata:
+                                      type: object
+                                      nullable: true
+                                      description: >-
+                                        Internal opaque object containing the
+                                        data from the instrument's transaction.
+        '404':
+          description: |
+            The account does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+        '500':
+          description: |
+            Internal Server Error.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+      x-experimental:
+        changes:
+          - 01/2019 - Introduced `history` resource.
+  /payments/accounts:
+    post:
+      operationId: CreateAccount
+      summary: Create a new account with an initial transaction
+      description: >
+        Creates a new account, initializing its debit and credit with
+        transactions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: Request to create a new account
+              properties:
+                account_id:
+                  type: string
+                transactions:
+                  type: array
+                  description: The list of the transactions in the account.
+                  items:
+                    type: object
+                    title: Transaction
+                    description: Every account posting that may affect the balance.
+                    required:
+                      - transaction_id
+                      - credit
+                      - debit
+                      - currency
+                    properties:
+                      transaction_id:
+                        type: string
+                        description: >-
+                          A unique identifier that is attached to the cause of
+                          this transaction. The attachment to the cause, instead
+                          of an arbitrary key, is important for idempotency.
+                          E.g. for a placed order the transaction id should be
+                          the order id as this guarantees that if the same order
+                          is replayed, the transaction won't be duplicated.
+                      debit:
+                        type: number
+                        description: The amount debited to the account.
+                      credit:
+                        type: number
+                        description: >-
+                          The amount credited on the account. Mutually exclusive
+                          with debit.
+                      inserted_at:
+                        type: string
+                        format: date-time
+                        description: The time when the transaction was registered.
+                      currency:
+                        type: string
+                        description: Currency code in ISO-4217 format.
+            examples:
+              CreateAccount:
+                summary: Creates a new Account.
+                value:
+                  account_id: f32b7e68-dd19-49c7-b192-ec1f22775f3b
+                  transactions:
+                    - transaction_id: 4afbf032-0184-44c6-88c0-fbaaacbf2a41
+                      debit: 0
+                      credit: 9.99
+                      currency: EUR
+                      inserted_at: '2021-01-01T02:07:14Z'
+      responses:
+        '201':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - account_id
+                properties:
+                  account_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the newly created account.
+        '400':
+          description: |
+            Malformed request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+  /payments/accounts/{account_id}/instruments:
+    parameters:
+      - name: account_id
+        description: >
+          Unique ID of a payment account. It is the same ID as the entity the
+          payment account is assigned to.
+
+          For example, use the internal ID (`uuid`) of a sales order.
+        required: true
+        in: path
+        schema:
+          title: account ID
+          description: >
+            Unique ID of a payment account. It is the same ID as the entity the
+            payment account is assigned to.
+
+            For example, use the internal ID (`uuid`) of a sales order.
+          type: string
+    post:
+      operationId: AddFinancialInstrument
+      summary: Adds a financial instrument to an account
+      description: |
+        Adds a financial instrument to an account.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: Add financial instrument to an existing account
+              required:
+                - instrument
+              properties:
+                instrument:
+                  title: A financial instrument of an account
+                  type: object
+                  required:
+                    - payment_method
+                    - payment_provider
+                    - instrument
+                    - amount
+                    - currency
+                  properties:
+                    payment_method:
+                      type: string
+                      description: >-
+                        The payment method. Possible values: cash, credit_card,
+                        gift_card, paypal.
+                    payment_wallet:
+                      type: string
+                      description: >-
+                        Source of the financial instrument. For example:
+                        'APPLE_PAY'.
+                    payment_origin:
+                      type: string
+                      description: 'Source of the payment. For example: ''newstore_checkout''.'
+                    payment_provider:
+                      type: string
+                      description: The payment service provider
+                    amount:
+                      type: number
+                    currency:
+                      type: string
+                      description: The currency code in ISO-4217 format.
+                    instrument:
+                      type: object
+                      required:
+                        - type
+                        - identifier
+                      properties:
+                        type:
+                          type: string
+                          enum:
+                            - token
+                            - authorized
+                            - captured
+                            - refunded
+                          description: >-
+                            Type of the identifier. Consuming services can send
+                            us charge tokens (to be authorized), charge
+                            identifiers (already authorized), capture
+                            identifiers (already captured) and refund
+                            identifiers (already refunded).
+                        identifier:
+                          type: string
+                          description: >-
+                            The token or identifier for the specific financial
+                            instrument
+                    metadata:
+                      type: object
+                      description: >-
+                        Internal opaque object containing the data required by
+                        the payment provider to process the payment.
+            examples:
+              CreateAccount:
+                summary: Add a financial instrument to an account.
+                value:
+                  instrument:
+                    payment_method: credit_card
+                    payment_wallet: APPLE_PAY
+                    payment_origin: pay_by_link
+                    payment_provider: adyen
+                    amount: 1.23
+                    currency: USD
+                    instrument:
+                      type: authorized
+                      identifier: unique_psp_reference
+                    metadata:
+                      card_digits: '1234'
+      responses:
+        '201':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - instrument_identifier
+                properties:
+                  instrument_identifier:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the newly added instrument.
+        '400':
+          description: Malformed request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    minLength: 1
+                    description: A list of detailed errors.
+                    items:
+                      type: string
+                      minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: The identifier of the request that failed.
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A specific identifier about the error that happened.
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}
+security:
+  - newStoreAccessToken: []

@@ -1,0 +1,1455 @@
+Automatic Promotions | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Coupons API
+Promotions configuration API
+Discount Rule API
+Apply Promotions To Cart
+Configuration
+Coupons
+Integration Configurations
+Automatic Promotions
+Manage loyalty programs
+Manage Stackable Coupons
+Stock
+Other support APIs
+Manage promotions
+post
+Create promotion
+get
+List promotions
+get
+Get promotion
+put
+Update promotion
+Apply promotions to a cart
+post
+Apply promotions to a cart
+post
+Create a coupon code redemption
+API docs by Redocly
+Automatic Promotions
+(
+v1.0
+)
+Download OpenAPI specification
+:
+Download
+License:
+Open API Specification - OAS
+Terms of Service
+Use this API to manage automatic promotions in NewStore.
+For a guide on how to use automatic promotions via NewStore Omnichannel Manager, see
+this guide
+.
+Manage promotions
+Use this resource to manage automatic promotions in NewStore, such as creating, retrieving,
+or updating promotions.
+You can use these methods to create automatic promotions for specific products or for the
+whole cart, which are applied automatically during checkout in NewStore Associate App. This
+includes creating promotions for both, percentage or fixed amount discounts.
+For more information on automatic promotions, see the
+process documentation
+or
+this guide
+.
+Create promotion
+Use this method to create an automatic promotion. You can create promotions for specific
+products or for the whole cart in the order.
+You can create promotions that apply percentage discounts or fixed amount discounts on
+specified products or the cart. For more information, see the
+process documentation
+or
+this guide
+.
+Authorizations:
+newStoreAccessToken
+header
+Parameters
+x-request-id
+string
+tenant
+required
+string
+user-id
+required
+string
+Request Body schema:
+application/json
+a new promotion
+active
+boolean
+Indicates whether the promotion is active or not
+name
+required
+string
+The name of the promotion
+description
+string
+localizedTimezone
+boolean
+Optional, this property determines local timezone validity for the promotion. If true, UTC is assumed with no timezone required in "validFrom" and "validTo". If false, timezone must be specified in those fields.
+validFrom
+required
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the promotion becomes valid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+validTo
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the promotion becomes invalid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+currencies
+Array of
+objects
+category
+required
+object
+stores
+Array of
+strings
+Indicates in which stores the promotion can be used. A list of IDs states that the promotion can be used in the given stores while an empty array states that the promotion can be used in any store.
+Responses
+201
+Promotion created successfully
+400
+The payload was invalid and the promotion could not be created
+500
+An internal error occurred
+post
+/promotion
+The local development server
+/v0
+/promotion
+/v0/promotions
+/promotion
+Request samples
+Payload
+Content type
+application/json
+Example
+Cart Level Percentage Promotion
+Product Level Percentage Promotion
+BOGO Percentage Promotion
+Free Shipping Promotion
+Bundle Percentage Promotion
+Cart Level Fixed Promotion
+Product Level Fixed Promotion
+BOGO Fixed Promotion
+Bundle Fixed Promotion
+Cart Level Percentage Promotion
+Copy
+Expand all
+Collapse all
+{
+"name"
+:
+"Cart level percentage promotion"
+,
+"description"
+:
+"A promotion with type CartLevelPercentage"
+,
+"localizedTimezone"
+:
+false
+,
+"validFrom"
+:
+"2022-01-01T00:00:00+01:00"
+,
+"validTo"
+:
+"2022-04-01T00:00:00+01:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+10
+}
+]
+}
+Response samples
+201
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"promotion"
+:
+{
+"id"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"active"
+:
+false
+,
+"name"
+:
+"Promotion for hoodies"
+,
+"description"
+:
+"A promotion for hoodies"
+,
+"localizedTimezone"
+:
+false
+,
+"validFrom"
+:
+"2022-01-01T00:00:00+01:00"
+,
+"validTo"
+:
+"2022-04-01T00:00:00+01:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+10
+}
+]
+,
+"createdAt"
+:
+"2021-12-31T00:00:00"
+,
+"updatedAt"
+:
+"2021-12-31T00:00:00"
+,
+"createdBy"
+:
+"store-employee-1"
+,
+"updatedBy"
+:
+"store-employee-1"
+,
+"tenant"
+:
+"newstore"
+,
+"stores"
+:
+[ ]
+,
+"version"
+:
+"2"
+}
+,
+"links"
+:
+{
+"self"
+:
+"/promotion/7c9f2605-9fb3-5444-8fee-47fe51608efe"
+}
+}
+List promotions
+Retrieves all automatic promotions created for your business via NewStore Omnichannel
+Manager or the
+create promotion
+method.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+count
+required
+integer
+The number of promotions to get at once
+page
+required
+integer
+The page number
+header
+Parameters
+x-request-id
+string
+tenant
+required
+string
+user-id
+required
+string
+Responses
+200
+A page of promotions and the links for the previous and next pages
+400
+The request was invalid (an invalid cursor, or neither cursor nor count provided)
+500
+An internal error occurred
+get
+/promotion
+The local development server
+/v0
+/promotion
+/v0/promotions
+/promotion
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"promotion"
+:
+{
+"id"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"active"
+:
+true
+,
+"name"
+:
+"Promotion for hoodies"
+,
+"description"
+:
+"A promotion for hoodies"
+,
+"localizedTimezone"
+:
+false
+,
+"validFrom"
+:
+"2022-01-01T00:00:00+01:00"
+,
+"validTo"
+:
+"2022-04-01T00:00:00+01:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+5
+}
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+10
+}
+]
+,
+"createdAt"
+:
+"2021-12-31T00:00:00"
+,
+"updatedAt"
+:
+"2021-12-31T00:00:00"
+,
+"createdBy"
+:
+"store-employee-1"
+,
+"updatedBy"
+:
+"store-employee-1"
+,
+"tenant"
+:
+"newstore"
+,
+"version"
+:
+"2"
+}
+,
+"links"
+:
+{
+"self"
+:
+"/promotion/7c9f2605-9fb3-5444-8fee-47fe51608efe"
+}
+}
+,
+{
+"promotion"
+:
+{
+"id"
+:
+"6cxtew5ec-9fb3-5478-9cre6-8ue3289y"
+,
+"active"
+:
+false
+,
+"name"
+:
+"Promotion for t-shirts"
+,
+"description"
+:
+"A promotion for t-shirts"
+,
+"localizedTimezone"
+:
+false
+,
+"validFrom"
+:
+"2022-01-01T00:00:00+01:00"
+,
+"validTo"
+:
+"2022-04-01T00:00:00+01:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+3
+}
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+5
+}
+]
+,
+"createdAt"
+:
+"2021-11-01T00:00:00"
+,
+"updatedAt"
+:
+"2021-11-01T00:00:00"
+,
+"createdBy"
+:
+"store-employee-2"
+,
+"updatedBy"
+:
+"store-employee-2"
+,
+"tenant"
+:
+"newstore"
+,
+"stores"
+:
+[ ]
+,
+"version"
+:
+"1"
+}
+,
+"links"
+:
+{
+"self"
+:
+"/promotion/6cxtew5ec-9fb3-5478-9cre6-8ue3289y"
+}
+}
+]
+,
+"links"
+:
+{
+"next"
+:
+"/promotion/2189ey2-b624-7654-2v34-bd4672f425rfe"
+,
+"previous"
+:
+""
+}
+,
+"pagination"
+:
+{
+"count"
+:
+2
+,
+"page"
+:
+1
+,
+"total"
+:
+3
+}
+}
+Get promotion
+Retrieves the specified automatic promotion by ID. To retrieve the promotion ID,
+use the
+List promotions
+method.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+header
+Parameters
+x-request-id
+string
+tenant
+required
+string
+user-id
+required
+string
+Responses
+200
+A promotion
+404
+The requested promotion was not found
+500
+An internal error occurred
+get
+/promotion/{id}
+The local development server
+/v0
+/promotion/{id}
+/v0/promotions
+/promotion/{id}
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"promotion"
+:
+{
+"id"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"active"
+:
+false
+,
+"name"
+:
+"Promotion for hoodies"
+,
+"description"
+:
+"A promotion for hoodies"
+,
+"localizedTimezone"
+:
+false
+,
+"validFrom"
+:
+"2022-01-01T00:00:00+01:00"
+,
+"validTo"
+:
+"2022-04-01T00:00:00+01:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+10
+}
+]
+,
+"createdAt"
+:
+"2021-12-31T00:00:00"
+,
+"updatedAt"
+:
+"2021-12-31T00:00:00"
+,
+"createdBy"
+:
+"store-employee-1"
+,
+"updatedBy"
+:
+"store-employee-1"
+,
+"tenant"
+:
+"newstore"
+,
+"stores"
+:
+[ ]
+,
+"version"
+:
+"1"
+}
+,
+"links"
+:
+{
+"self"
+:
+"/promotion/7c9f2605-9fb3-5444-8fee-47fe51608efe"
+}
+}
+Update promotion
+Updates the specified promotion with new information. Use this method to switch
+a promotion to an
+active
+state or change the currencies that the promotion can be applied
+to, and so on. Given the nature of the update via the PUT method the complete object
+has to be passed. The only property that cannot be updated is the category.
+To retrieve the promotion ID, use the
+List promotions
+method.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+header
+Parameters
+x-request-id
+string
+tenant
+required
+string
+user-id
+required
+string
+Request Body schema:
+application/json
+The updated promotion
+tenant
+string
+version
+required
+string
+active
+boolean
+Indicates whether the promotion is active or not
+name
+string
+The name of the promotion
+description
+string
+localizedTimezone
+boolean
+Optional, this property determines local timezone validity for the promotion. If true, UTC is assumed with no timezone required in "validFrom" and "validTo". If false, timezone must be specified in those fields.
+validFrom
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the promotion becomes valid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+validTo
+string
+(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:...
+Show pattern
+The date the promotion becomes invalid. If localizedTimezone is false, timezone can be indicated at the end of the string.
+currencies
+Array of
+objects
+category
+object
+stores
+Array of
+strings
+Indicates in which stores the promotion can be used. A list of IDs states that the promotion can be used in the given stores while an empty array states that the promotion can be used in any store.
+Responses
+200
+The updated promotion
+400
+The proposed update is invalid
+404
+The call attempted to update a promotion which does not exist
+409
+The version key is out of date and the call is attempting to update a promotion
+which has changed since it was last fetched by the caller
+500
+An internal error occurred
+put
+/promotion/{id}
+The local development server
+/v0
+/promotion/{id}
+/v0/promotions
+/promotion/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"id"
+:
+"62839b62-80ff-4000-8000-01b47275b241"
+,
+"name"
+:
+"My Promotion"
+,
+"description"
+:
+"My Promotion Description"
+,
+"localizedTimezone"
+:
+false
+,
+"validFrom"
+:
+"2022-01-01T00:00:00+01:00"
+,
+"validTo"
+:
+"2022-04-01T00:00:00+01:00"
+,
+"category"
+:
+[
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+]
+,
+"active"
+:
+true
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+"0.00000"
+}
+]
+,
+"stores"
+:
+[ ]
+,
+"version"
+:
+"6f419b7b-1529-4c33-a5ba-a07762850db1"
+}
+Response samples
+200
+400
+404
+409
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"promotion"
+:
+{
+"id"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"active"
+:
+false
+,
+"name"
+:
+"Promotion for hoodies"
+,
+"description"
+:
+"A promotion for hoodies"
+,
+"localizedTimezone"
+:
+false
+,
+"validFrom"
+:
+"2022-01-01T00:00:00+01:00"
+,
+"validTo"
+:
+"2022-04-01T00:00:00+01:00"
+,
+"category"
+:
+{
+"kind"
+:
+"CartLevelPercentage"
+,
+"discount"
+:
+10
+}
+,
+"currencies"
+:
+[
+{
+"code"
+:
+"EUR"
+,
+"minimumCartValue"
+:
+10
+}
+]
+,
+"createdAt"
+:
+"2021-12-31T00:00:00"
+,
+"updatedAt"
+:
+"2021-12-31T00:00:00"
+,
+"createdBy"
+:
+"store-employee-1"
+,
+"updatedBy"
+:
+"store-employee-1"
+,
+"tenant"
+:
+"newstore"
+,
+"stores"
+:
+[ ]
+,
+"version"
+:
+"2"
+}
+,
+"links"
+:
+{
+"self"
+:
+"/promotion/7c9f2605-9fb3-5444-8fee-47fe51608efe"
+}
+}
+Apply promotions to a cart
+Use this resource to apply existing promotions to a cart to view how pricing during checkout
+will be calculated based on these promotions.
+Important
+: This resource does not impact the cart pricing or items in NewStore Associate App.
+Use this method only to validate if promotions are being calculated correctly for products
+added to a cart.
+Apply promotions to a cart
+Use this method to apply existing promotions to a cart to view how pricing during checkout
+will be calculated based on these promotions.
+This method returns a version of the cart (
+DiscountedCart
+) with all specified promotions applied to it.
+This method is idempotent, and does not change the state of the cart or products added to
+the cart.
+The order of the discounts in the array of discounts attached to each item in a
+DiscountedCart
+is important and should not be changed when being used in other services or contexts.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+The cart without promotions applied
+customerId
+string
+The customer id
+channelType
+string
+Typically web or store
+currency
+string
+The currency of the cart
+couponCodes
+Array of
+strings
+The coupon codes to be applied
+storeId
+string
+The store ID
+shopId
+string
+The shop ID
+locale
+string
+The locale
+items
+Array of
+objects
+The individual items that the cart contains
+Responses
+200
+The cart with promotions applied
+400
+The provided cart is invalid
+500
+An internal error occurred
+post
+/cart
+The local development server
+/v0
+/cart
+/v0/promotions
+/cart
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"customerId"
+:
+""
+,
+"channelType"
+:
+"store"
+,
+"currency"
+:
+"USD"
+,
+"couponCodes"
+:
+[
+"HAPPYVALENTINES"
+]
+,
+"storeId"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"shopId"
+:
+"storefront-catalog-en"
+,
+"locale"
+:
+"en-us"
+,
+"items"
+:
+[
+{
+"id"
+:
+"d2c083d2-35f0-4471-a499-73ea9ecbe644"
+,
+"productId"
+:
+"1000501"
+,
+"price"
+:
+"100.00000"
+,
+"type"
+:
+"Product"
+,
+"discountForbidden"
+:
+false
+,
+"productCategories"
+:
+[
+[
+"Shop"
+,
+"Clothing"
+,
+"Dresses"
+]
+,
+[
+"Shop"
+,
+"Clothing"
+]
+]
+}
+]
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"customerId"
+:
+""
+,
+"channelType"
+:
+"store"
+,
+"currency"
+:
+"USD"
+,
+"storeId"
+:
+"7c9f2605-9fb3-5444-8fee-47fe51608efe"
+,
+"shopId"
+:
+"storefront-catalog-en"
+,
+"locale"
+:
+"en-us"
+,
+"couponCodes"
+:
+[
+"HAPPYVALENTINES"
+]
+,
+"items"
+:
+[
+{
+"id"
+:
+"d2c083d2-35f0-4471-a499-73ea9ecbe644"
+,
+"productId"
+:
+"1000501"
+,
+"price"
+:
+"100.00000"
+,
+"type"
+:
+"Product"
+,
+"discountForbidden"
+:
+false
+,
+"productCategories"
+:
+[
+[
+"Shop"
+,
+"Clothing"
+,
+"Dresses"
+]
+,
+[
+"Shop"
+,
+"Clothing"
+]
+]
+,
+"adjustedPrice"
+:
+"65.00000"
+,
+"discounts"
+:
+[
+{
+"id"
+:
+"6215ff42-1b41-4000-8000-f0ca55bdc4da"
+,
+"name"
+:
+"Valentine's Day 20%"
+,
+"description"
+:
+"Discount of 20% for Valentine's Day"
+,
+"kind"
+:
+"ProductLevelPercentageCategory"
+,
+"promotionType"
+:
+"Product"
+,
+"discountSource"
+:
+"Promotion"
+,
+"discount"
+:
+"20.00000"
+,
+"change"
+:
+"-20.00000"
+,
+"couponCode"
+:
+""
+}
+,
+{
+"id"
+:
+"62164750-1b41-4000-8000-f0ca55bdc743"
+,
+"name"
+:
+"Cart fixed 10"
+,
+"description"
+:
+"Cart fixed 10"
+,
+"kind"
+:
+"CartLevelFixedCategory"
+,
+"promotionType"
+:
+"Cart"
+,
+"discountSource"
+:
+"Promotion"
+,
+"discount"
+:
+"10.00000"
+,
+"change"
+:
+"-10.00000"
+,
+"couponCode"
+:
+""
+}
+,
+{
+"id"
+:
+"0012e07d-534f-4cb9-8c1a-f9c25dcd07f8"
+,
+"name"
+:
+"Valentine's Day"
+,
+"description"
+:
+"5% Coupon for Valentine's Day"
+,
+"kind"
+:
+"LegacyCartLevelFixedCategory"
+,
+"promotionType"
+:
+"Cart"
+,
+"discountSource"
+:
+"Legacy"
+,
+"discount"
+:
+"5.00000"
+,
+"change"
+:
+"-5.00000"
+,
+"couponCode"
+:
+"HAPPYVALENTINES"
+}
+]
+}
+]
+}
+Create a coupon code redemption
+Use this method to redeem a coupon code. It redeem the coupon for legacy or for the stackable coupons
+according to the internal configuration for the given tenant.
+This method is not idempotent and should be called when the coupon was used. If the order for which
+this coupon was used failes, the coupon is unredeemed automatically at a later stage.
+After a successful execution a 200 status is returned.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+The redemption request
+codes
+Array of
+strings
+consumerId
+string
+channelType
+string
+catalogTotal
+number
+currency
+string
+orderId
+string
+Responses
+200
+The redemption was created successfully
+400
+Provided data are not as expected
+500
+An internal error occurred
+post
+/code/redemption
+The local development server
+/v0
+/code/redemption
+/v0/promotions
+/code/redemption
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"value"
+:
+{
+"codes"
+:
+[
+"SUMMER2022"
+,
+"DRESS10"
+]
+,
+"consumerId"
+:
+"consumer-id-123"
+,
+"channelType"
+:
+"store"
+,
+"catalogTotal"
+:
+100
+,
+"currency"
+:
+"USD"
+,
+"orderId"
+:
+"2b89a5e0-1f1f-4374-b6d3-272341193cc7"
+}
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"message"
+:
+"string"
+,
+"status"
+:
+0
+,
+"causes"
+:
+[
+"string"
+]
+,
+"id"
+:
+"string"
+,
+"type"
+:
+"string"
+,
+"code"
+:
+"string"
+}
+Previous
+Integration Configurations
+Next
+Manage loyalty programs
+Copyright © 2025 NewStore, Inc.

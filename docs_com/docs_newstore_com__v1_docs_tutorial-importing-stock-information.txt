@@ -1,0 +1,528 @@
+Tutorial: Importing stock information
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Tutorial: Importing stock information
+Updated
+Updated on
+Jul 18, 2025
+Published on Oct 1, 2024
+11 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+After you follow the previous
+product import tutorial
+, you now have product(s) available to sell in your business. In this tutorial, we add stock numbers to them to assign the quantity of items that you can sell.
+Stock information is at the core of the features offered by NewStore Omnichannel Cloud.
+Important
+You import stock data that is allocated to a physical fulfillment location (distribution center or a store). This is different from products, which are allocated to a logical grouping called
+shop
+.
+Read
+the integration guide
+to understand how the
+Import API
+works.
+We assume that you have an authentication token stored in the
+AUTH_TOKEN
+variable. Retrieve one with the following call:
+export AUTH_TOKEN=$(curl -s <url>/v0/token -d \
+"grant_type=password&username=<myusername>&password=<mypassword>" | jq -r .access_token)
+Pre-requisites
+Important
+Before going through the import steps, ensure that a
+store is created
+and
+products are imported
+.
+You may or may not have enabled NewStore as inventory master for your business. Follow the instructions for the use case that best describes your operational mode with NewStore.
+To understand how to manage distribution centers, see
+Configuring distribution centers
+.
+Import stock information for Distribution Centers (DCs)
+The first step is to create a data JSON file for stock availability. In the second step use the
+Import API
+to import the stock data created.
+This section focuses on distribution center workflows. However, the same steps apply to stores when NewStore is not the inventory master. For more information on stores,
+see below
+.
+Creating
+stock
+data
+As part of the
+stock
+import, fulfillment locations are also created for DCs from the
+store_mapping
+provided:
+store_mapping
+: Maps a fulfillment location to a
+fulfillment_node_id
+. This mapping allows to enable routing from that fulfillment location.
+fulfillment_node_id
+: Assigns a
+fulfillment_node_id
+to the fulfillment location. This
+fulfillment_node_id
+is used in the fulfillment config to include the fulfillment location in the routing logic for the store. For more information, see
+fulfillment config
+.
+Important
+If the
+fulfillment_node_id
+property is configured incorrectly, create a new fulfillment location with a different ID.
+For Distribution Centers, set the
+store_id
+value to
+null
+in the mapping. The
+store_id
+value is needed for stores specifically.
+By default, NewStore platform creates a fulfillment location when a new
+store
+is created. The fulfillment location has the same id as the store
+fulfillment_node_id == store_id
+To use different ids for fulfillment nodes and stores, reach out to your point of contact at NewStore.
+For DCs only
+For DCs and Stores
+Save the following payload as a file named
+availabilities.json
+in the
+data
+folder:
+For distribution center
+DC01
+, import 100 items with product ID
+1000101
+and 50 of the same product for
+DC02
+.
+In this example we use
+ATP
+mode. When this value is specified, any
+Hard allocation
+and
+Soft allocation
+for items (that have not been shipped) will be added to the import quantity, and the
+Safety stock
+will be deducted to calculate the ATP (Available To Promise) for the product.
+{
+    "head": {
+        "store_mapping": [
+            {
+                "store_id": null,
+                "fulfillment_node_id": "DC01"
+            },
+            {
+                "store_id": null,
+                "fulfillment_node_id": "DC02"
+            }
+        ],
+        "mode": "atp"
+    },
+    "items": [
+        {
+            "product_id": "1000101",
+            "quantity": 100,
+            "fulfillment_node_id": "DC01"
+        },
+        {
+            "product_id": "1000101",
+            "quantity": 50,
+            "fulfillment_node_id": "DC02"
+        }
+    ]
+}
+Save the following payload as a file named
+availabilities.json
+in the
+data
+folder:
+This will prepare stock information for
+DC01
+to have 50 items of product 1000101.
+store1_NYC
+will have 100 items of the same product.
+In this example we use
+On Hand
+mode. When this value is specified, the import quantity is set as the
+Stock on hand
+for the product in the specified fulfillment location in the platform.
+Hard allocation
+and soft allocation for items (that have not been shipped) as well as safety stock will be deducted to calculate the ATP (Available To Promise) for the product.
+{
+    "head": {
+        "store_mapping": [
+            {
+                "store_id": "store1_NYC",
+                "fulfillment_node_id": "store1_NYC"
+            },
+            {
+                "store_id": null,
+                "fulfillment_node_id": "DC01"
+            }
+        ],
+        "mode": "on_hand"
+    },
+    "items": [
+        {
+            "product_id": "1000101",
+            "quantity": 100,
+            "fulfillment_node_id": "store1_NYC"
+        },
+        {
+            "product_id": "1000101",
+            "quantity": 50,
+            "fulfillment_node_id": "DC01"
+        }
+    ]
+}
+The
+data
+folder should now contain:
+data
+├── availabilities.json
+The data is ready to be imported. Run the import job as
+described here
+.
+Import stock information for Stores
+When importing stock information for stores, decide whether NewStore is the inventory master or not.
+NewStore as inventory master implies that NewStore is the source of truth for stock-on-hand data. The physical inventory data is tracked by NewStore.
+If NewStore is not the inventory master, then another system like an ERP tracks the physical stock-on-hand information.
+Use case 1: NewStore is the inventory master
+Important
+By default, NewStore platform creates a fulfillment location when a new
+store
+is created. The fulfillment location has the same id as the store
+fulfillment_node_id == store_id
+To use different ids for fulfillment nodes, reach out to your point of contact at NewStore before
+creating fulfillment locations with custom ids
+as this is an “on demand” feature.
+Use
+Enable location as inventory master
+method to set NewStore as the inventory master. A fuflillment location is automatically created for each new store. The id of the fulfillment location is the same as the store id.
+curl -X POST "https://<url>/v0/locations/store1_NYC/inventory_master/_enable" \
+     -H "Authorization: Bearer $AUTH_TOKEN"
+Import stock into the store via the
+Import stock quantities API
+method. See API documentation for further details.
+curl -X POST "https://<url>/v0/i/inventory/stores/store1_NYC/stock_locations/main/stock_import" \
+     -H "Authorization: Bearer $AUTH_TOKEN" \
+     -F "count_type=full_count" \
+     -F "file=@/home/user1/Desktop/stock-quantities.csv"
+(Optional) Creating a fulfillment location with a custom id
+Note
+This only applies if you need to use custom fulfillment location ids for your stores. Custom fulfilment location IDs are an “on demand” feature, please contact your Omnichannel Success Manager if you would like to enable this functionality.
+If you use custom identifiers for fulfillment locations, you need to perform an availability import with a custom product, quantity set to 0 and a store mapping that reflects the
+fulfillment_node_id
+that you want to use. The steps below create the
+fulfillment_node_id_of_store1_NYC
+location and maps it to the store.
+Important
+Set the product quantity to 0 and use a nonexistent product id as this import will be used to first create the fulfilment location, before the second step of importing stock information for the location.
+Save the following payload as a file named
+availabilities.json
+in the
+data
+folder:
+{
+    "head": {
+        "store_mapping": [
+            {
+                "store_id": "store1_NYC",
+                "fulfillment_node_id": "fulfillment_node_id_of_store1_NYC"
+            }
+        ]
+    },
+    "items": [
+        {
+            "product_id": "1000001",
+            "quantity": 0,
+            "fulfillment_node_id": "fulfillment_node_id_of_store1_NYC"
+        }
+    ]
+}
+Run the import job as
+described here
+.
+You now have a custom
+fulfillment_node_id
+which is mapped to your store. You can proceed with steps above to enable the location as inventory master and importing stock quantities.
+Use case 2: NewStore is not the inventory master
+When NewStore is not the inventory master, initial stock quantities can be imported in the same way as for
+distribution centers
+.
+Importing
+Future inventory
+For this special business case, import
+future inventory
+on a scheduled date to fulfill orders. During each stock import, specify either the current
+stock on hand
+or future inventory to import for a product,
+but not both
+.
+Run two separate import jobs to import both stock on hand and future inventory for a product.
+To import future inventory into the distribution center (
+DC01
+), use the
+future_inventory
+property, with the
+mode
+property set to
+atp
+. See the
+Availability import schema
+.
+Important
+NewStore only supports importing future inventory into warehouses or distribution centers, and not stores.
+Import future inventory only as the
+future ATP
+for the product in the distribution center.
+To update the quantity or date of future inventory for a product, import future inventory again with the updated data. The data from the previous import is overwritten.
+When importing
+product data
+for business, we specified that:
+50 items with the product ID
+1001001
+can be pre-ordered from February 28, 2021
+The product itself is available for sale from March 15, 2021.
+Import 50 items with the product ID
+1001001
+as the future ATP, on a scheduled date (March 15, 2021) into the distribution center. This ensures there is enough inventory to fulfill the pre-orders for the product on the date that the product becomes available for sale.
+Save the following payload as a file named
+availabilities.json
+in the
+data
+folder:
+{
+    "head": {
+        "store_mapping": [
+            {
+                "store_id": "null",
+                "fulfillment_node_id": "DC01"
+            }
+        ],
+        "mode": "atp"
+    },
+    "items": [
+        {
+            "product_id": "1001001",
+            "fulfillment_node_id": "DC01",
+            "future_inventory":
+              {
+                "quantity": 50,
+                "date": "2021-03-15"
+          }
+        }
+    ]
+}
+The
+data
+folder should now contain:
+data
+├── availabilities.json
+The data is ready to be imported. Run the import job as
+described here
+.
+Running the import
+Import the data by creating and running an import job:
+Zip the
+data
+folder to
+data.zip
+:
+zip -r data.zip data
+Important
+On Mac, using the context-menu action might include a
+__MACOSX
+invisible folder to the zip. This folder breaks the import.
+Upload it to a URL that NewStore can access.
+NewStore supports HTTPS URIs and Amazon S3 bucket URIs, as long as NewStore can access them to download the file.
+Use the
+Create import job method
+:
+curl -X POST "https://<url>/v0/d/import" \
+   -H "Authorization: Bearer $AUTH_TOKEN" \
+   -d
+   '{
+     "provider": "<provider>",
+     "name": "product_import_20170306",
+     "source_uri": "https://some-uri-location/data.zip",
+     "entities": [
+       "products",
+       "availabilities",
+       "prices"
+     ]
+   }'
+NewStore does not support a
+full import
+for the
+availabilities
+entity. Full imports are only supported for
+products
+,
+categories
+, and
+prices
+. If a full import job contains the
+availabilities
+entity, NewStore does not import the
+availabilities
+data. The import is marked as
+failed
+.
+Important
+Be aware that a full import
+deletes ALL
+of the currently stored data. Only the data freshly imported via the new import job is retained, and this may affect other operations or functionalities in the platform. We
+do not
+recommend using full imports in your production environment. Performing a full import with multiple catalog/locale combinations in the same zip file can lead to unexpected behavior, and can result in complete loss of data of the affected entities. To hide specific products or categories, the easiest way is to set their
+online_to
+property to a past date.
+The job is created and can be started using the
+Start import job method
+by providing the URL of the data file to the zip file.
+curl -X POST "https://<url>/v0/d/import/{import_id}/start" \
+     -H "Authorization: Bearer $AUTH_TOKEN" \
+     -d
+     '{
+       "transformed_uri": "https://assets.example.com/integrations/newstore/data.zip"
+      }'
+The job is placed in a processing queue.
+You can check the import job's status with the
+Get import job method
+or using NewStore Omnichannel Manager, via
+Catalog
+>
+Imports
+>
+Catalog imports
+. For more information, see
+Viewing status of catalog imports
+.
+Once the job is processed, the status becomes
+finished
+.
+Important
+Ensure the
+List errors for import method
+returns an empty array.
+Testing the import
+Now that the data has been imported, you can check the
+Stocks Levels
+page in NewStore Omnichannel Manager to check that the stock levels reflect the updated stock values from the import. Please be aware that there can be short lag between finishing the import and seeing the new values in NewStore Omnichannel Manager due to internal data replication processes. The lag should be measureable only in minutes.
+Related topics
+Importing data
+Import API
+Customer API
+Configuring distribution centers
+At NewStore, this is called an allocation. Setting aside items at a specific fulfillment location, against a specific order. A
+Soft allocation
+is converted to an allocation when the order is routed to a fulfillment location. See
+Phase 2: Requesting fulfillment to the best fulfillment location
+.
+(Also Reservation)
+Earmarking goods for a configurable amount of time, at a store or
+Distribution center
+, after an order is placed in the platform. A reservation expires if the order is not completed when the configured time has elapsed. When the item is routed, the reservation is changed to an
+Hard allocation
+. See
+About order routing
+.
+The quantity of items that cannot be promised for delivery and is set aside as a safety measure against overselling. See
+Monitoring stock levels
+.
+(Also On hand stock)
+This term outside NewStore, refers to the quantity of a stock-keeping unit that is physically available to sell, at a location, including
+Hard allocation
+,
+Soft allocation
+, and
+Safety stock
+.
+About inventory management
+that is scheduled to arrive into the
+Fulfillment location
+on a future date. Once the items arrive at the fulfillment location, they are added to the
+Stock on hand
+for the product at the location and are not considered future inventory anymore. In NewStore Omnichannel Cloud, future inventory for a product can be set using a stock import. See
+Future inventory
+.
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+catalog
+data import
+fulfillment
+integration
+inventory
+onboarding
+platform
+product import
+SFCC
+stock on hand
+tutorial
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

@@ -1,0 +1,519 @@
+About order routing
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+About order routing
+Updated
+Updated on
+Jul 22, 2025
+Published on Oct 1, 2024
+14 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Important
+This topic is not applicable to in-store purchases.
+To understand what is supported by NewStore if you use an external
+OMS
+for your business, see
+Using an external OMS to fulfill orders
+.
+Orders coming into NewStore OMS can have one of two routing strategies, letting us know whether routing logic needs to be applied (default routing) or if the order should go straight through to fulfillment at a specific location (pre-routing):
+Default routing
+: NewStore routes the order to the best location based on the retailer's fulfillment configuration and configured routing logic. See
+Default order routing
+.
+Prerouting
+: Retailers provide a specific fulfillment location where the order can be fulfilled. Typically used for BOPIS orders. See
+Prerouting to a specific location
+.
+The routing of orders depends primarily on the following data and configurations:
+The shipping address ZIP/postal code and country
+The shipping option is chosen by the customer
+The fulfillment locations that can satisfy the selected shipping option
+The inventory capacity of the locations to fulfill orders
+For stores, NewStore also considers item processing capacity, fulfillment working hours, and whether fulfillment has been enabled for the store
+Order routing components
+Order routing at NewStore is based off multiple factors, as outlined in the above section. These components or factors have been described in detail in the following sections.
+1. Order routing table
+This is an
+order routing table
+that lists the available shipping routes your business supports. It will contain a mapping of
+fulfillment locations/groups
+to shipping service levels, for each country and ZIP code that the business supports. This is used to determine which fulfillment locations:
+Have stock available to satisfy the customer’s order
+Can provide the shipping option & delivery service level chosen by the customer
+This gives NewStore OMS the fulfillment locations to analyze, using your configured routing logic, in order to decide on the
+best
+location to fulfill the items in that specific customer order. See the
+example use cases
+for more detail.
+Note
+To create generic zip code formats, you can use the star sign (
+*
+) to represent all characters (letters or digits). For example,
+10*
+matches all zip codes starting with
+10
+. Specifying
+*
+in the mapping rule matches all ZIP codes.
+2. Prioritized list of shipping options
+A prioritized list of shipping options is used, as part of the routing logic, to determine the order in which the NewStore OMS should check for other shipping options if all the fulfillment locations for a shipping option are unavailable.
+For example:
+Same-day delivery > Expedited delivery > Standard delivery
+.
+When NewStore has tried all fulfillment locations for
+all
+the shipping options and found no available fulfillment solution, NewStore OMS tries to split the order. Using your
+split shipment configuration
+, NewStore OMS finds the optimum split of items within the order, while following the same shipping option prioritization logic.
+3. Prioritized list of locations
+Retailers group locations together in
+Location groups
+, providing a powerful mechanism of acknowledging how a fulfillment location fits into your business landscape. Locations can appear in multiple location groups and NewSore does not limit the number of location groups a Retailer can set up.
+Note
+Location groups are a key factor in the new fulfillment configuration. To learn how to migrate from the legacy fulfillment configuration to the new fulfilment configuration, see
+the migration guide
+.
+For example, you may want to have location groups to reflect the following business classifications:
+Location groups
+High volume stores
+Low volume stores
+---------------------------
+Paris 2 hour delivery
+Paris 1 hour delivery
+---------------------------
+East France 1 day delivery
+East France 3 day delivery
+---------------------------
+Summer fashion stores
+Winter fashion stores
+The location groups are then listed in a prioritized order in the routing table. You can manage the locations within each Location Group in Omnichannel Manager. See the guide
+here
+.
+4. Split shipment configuration
+Orders are split only when a single fulfillment location cannot ship all the items in the order. When shipping for an order is split, items are shipped from multiple locations as multiple shipments. Each shipment in the order might be associated with a different shipping option and a different shipping price.
+You can configure:
+The maximum number of shipments for orders that have high shipping costs or are split between multiple fulfillment locations
+The threshold beyond which shipping for orders is allowed to be split
+For more information, see
+Shipping split orders
+.
+5.
+(Optional)
+Store capacity configuration
+To avoid stores from being overwhelmed with fulfillment of orders, you can define:
+How many items can be processed per day, and
+For how many hours per day each store can dedicate to processing fulfillment requests
+When using the
+default routing
+strategy, a store is no longer considered for fulfillment if the store has reached the limit for processing order fulfillment, or if the request comes in outside of fulfilment processing hours.
+Important
+Store capacity limits are not applied when using
+prerouting
+, such as for BOPIS orders.
+For more information, see the
+configuration guide
+.
+6. On-hold order configuration
+Whenever an order cannot be fulfilled by the fulfillment network, the order then gets placed
+on hold
+. If configured, NewStore continuously tries to re-route and/or cancel these orders.
+You can also use Omnichannel Manager to manage
+On hold
+orders. See
+Managing On Hold orders
+.
+(Optional)
+Automatic re-routing
+If automatic rerouting is enabled, the routing engine tries to reroute orders as soon as relevant stock becomes available within your fulfillment network.
+For more information, see
+Automatically routing On Hold orders
+.
+Here are some example scenarios:
+Example 1
+: When stock for all items in an order becomes available.
+An order has
+Item A
+and
+Item B
+on hold, and the stock for both items become available.
+Available stock for
+Item A
+has no allocations for other orders.
+Item A
+is automatically routed for fulfillment.
+Available stock for
+Item B
+has allocations for other orders. If the allocated stock is equal to or less than the available stock,
+Item B
+stays
+On Hold
+.
+Example 2
+: When stock for some items in an order becomes available.
+An order has
+Item A
+and
+Item B
+on hold, and the stock for only
+Item A
+becomes available.
+If available stock for
+Item A
+has no allocations for other orders, the order is split and
+Item A
+is automatically routed for fulfillment.
+Example 3
+: When an
+On Hold
+order scheduled for automatic routing is canceled during the delay.
+There are 7 orders
+On Hold
+because of insufficient inventory for
+Item C
+.
+3
+On Hold
+orders are scheduled for automatic routing as stock becomes available.
+4
+On Hold
+orders wait for more stock to be available in the next availability import.
+During the delay, 1
+On Hold
+order is canceled. As the available allocations for
+Item C
+remain unchanged, the status of the 4 On Hold orders waiting for available stock does not change.
+The remaining 2
+On Hold
+orders are automatically routed for fulfillment after the delay.
+(Optional)
+Automatic cancelations
+If automatic cancelation is enabled for your business, then all orders matching the specified reasons for
+on hold
+orders will be automatically canceled instead of being placed on hold. For more information, see
+Configuring order cancelation and On Hold settings
+.
+The following reasons can be specified for automatic cancelation:
+insufficient_stock
+failed_fulfillment_node_mapping
+shipping_offer_update_error
+error
+not_enough_stock_to_create_allocation
+Default order routing
+The default routing strategy in NewStore uses the settings in the fulfillment configuration to route orders. If an order imported into the NewStore platform doesn't specify a strategy, this strategy is used by default.
+Note
+For orders imported into NewStore from other systems, if the order quantity limits exceed the limits set for your business, they are put on hold and are not routed immediately even if inventory exists for the items. These orders require approval before they are routed and fulfilled. No inventory is reserved or allocated for items in these orders until they are approved on NewStore Omnichannel Manager. For more information, see
+Reviewing big orders
+and
+Importing orders with many items
+.
+For managing orders that are on hold because of insufficient inventory or other reasons, see
+Managing On Hold orders
+.
+How default order routing works
+Let's consider an example where a customer wants to buy 2 products from your business. The items are in the shopping cart and they enter their shipping address. They choose the shipping option that they like best, and pay. When their payment is successful, they see that their order was placed successfully.
+Phase 1: Routing order items
+When the customer enters their shipping address, NewStore ensures that:
+there is enough
+ATP
+for the items to fulfill the order.
+there are
+shipping option
+s that can be offered to the customer.
+This is done automatically within the platform and surfaced via Associate App or an external e-commerce solution that you may have integrated with.
+Note
+When reserving order items during routing (phase 1 as specified in this section, also called soft routing), consider the following points when analyzing your shipping logic:
+The default routing logic tries to find a route for each
+Service level
+from the service levels specified in your
+fulfillment configuration
+, within the
+sl_level_priority
+property. If a route cannot be found, a shipping option for the corresponding service level is not available in the app.
+NewStore tries to avoid a
+split shipment
+and only considers fulfillment locations that have ATP during the default routing process.
+To determine if the items in the order can be delivered, NewStore requests shipping options from the
+integrated shipping providers
+, for the ZIP code and the country in the shipping address. For example, the customer's address is in New York City and ATP for the items exists in a New Jersey store. Based on the provider, the shipping options may only include
+Next-day delivery
+and not
+Same-day delivery
+. For more information, see
+Shipping
+.
+When the customer selects a shipping option and places the order, a
+soft allocation
+or reservation is placed on the items at fulfillment locations that have the highest ATP. The items are reserved for a configurable time period.
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+To change or configure a reservation, See
+Setting the reservation timeout
+.
+Phase 2: Requesting fulfillment to the best fulfillment location
+Orders are routed only after the
+grace period
+configured for your business has
+ended
+. A grace period in the NewStore platform can be set for all orders in your business. You can define a specific grace period for each
+service level
+supported by your shipping provider, to override the grace period set for your business.
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+To change or configure a grace period, see
+Setting the grace period
+.
+NewStore tries to route the order:
+using the shipping option the customer selected.
+from the best fulfillment location.
+The best fulfillment location is decided based on the settings in your fulfillment configuration.
+Note
+If you are using the new process to set up your fulfillment configuration, and not the
+older alternative
+API, you can use multiple fulfillment locations as a
+location group
+to fulfill orders.
+For help with updating your fulfillment configuration and migrating to the new process, see the
+guide
+.
+Let's look at different scenarios and how NewStore routes orders for them. NewStore processes routing orders in the following sequence, to ensure that order fulfillment is efficient and quick.
+If the best location in the configuration matches the location where the products were reserved; and the promised shipping option can be met along with a successful check for routing capacity, the order is routed to this location.
+If the best fulfillment location cannot send the products, the order is routed to the next best location in the fulfillment configuration.
+If only part of the order can be sent from the best location, NewStore chooses the next best location from where all the ordered items can be sent in one shipment. The aim is to try to send the complete order in a single shipment.
+Note
+If the order is routed using a shipping option that is different from what was promised during checkout, the customer is notified. For example, a change from
+Same-day delivery
+to
+Standard shipping
+.
+When the best fulfillment location has been decided, an
+allocation
+is placed on the item, at the fulfillment location. The reservation placed in phase 1 is removed and the quantity is deducted from the
+ATP
+. When an item is shipped, allocation for the associated item is removed from the NewStore platform.
+Configuring default order routing
+Note
+Shipping and order routing settings are inter-related, and they must each be understood in the context of the other. For more information, See
+Shipping
+.
+Order routing can be customized to best suit your business. The way orders are routed depends on the settings in your fulfillment configuration:
+The shipping address ZIP/postal code and country.
+The shipping option is chosen by the customer.
+The fulfillment locations that can satisfy the selected shipping option.
+The capacity of the locations to fulfill orders.
+The priority of each fulfillment location for the given address and shipping option.
+Note
+If changes in your business impact this configuration, update it using the relevant APIs or
+Omnichannel Manager
+. For example, to prevent routing orders to deactivated stores, ensure that the store is not part of the fulfillment location priority.
+Share the following information with your NewStore contact point:
+An
+order routing table
+A table containing a mapping of
+fulfillment location
+priority and shipping options, for each country and ZIP code that your business supports. The table is read
+top to bottom
+. See the
+Example
+section, to understand this better.
+Note
+To create generic zip code formats, you can use the star sign (
+*
+) to represent all characters (letters or digits). For example,
+10*
+matches all zip codes starting with
+10
+. A rule matching ZIP codes equal to
+*
+matches all ZIP codes.
+A
+prioritized list of shipping options
+(if you offer several shipping options).
+If all the fulfillment locations for a shipping option are unavailable, other shipping options are tested. The order in which the other shipping options are tried is based on the priority you provide.
+For example:
+Same-day delivery > Expedite delivery > Standard delivery
+.
+Orders are split (when items in the order are fulfilled from different locations) when NewStore has tried all fulfillment locations for
+all
+the shipping options and found no fulfillment solution.
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+If you are using the
+Routing ruleset
+and
+Service levels
+APIs to set up your fulfillment configuration, and only using the
+legacy fulfillment configuration API
+, to set up provider rates (customer-facing shipping options), you need to group your fulfillment locations and zip code regions to facilitate easier order fulfillment.
+For more information, see
+Tutorial: Setting up a fulfillment configuration
+.
+Example
+Consider this example with deliveries to the US, Canada, and Mexico where the shipping priority is
+Same Day > Standard > Standard International
+:
+Country
+Zip code
+Fulfillment locations and priority
+Supported shipping option
+US
+10*,02*
+DC1 > DC2 > DC3
+Standard
+US
+10*
+DC4
+Same-day
+US
+*
+DC1 > DC2
+Standard
+CA
+*
+DC5
+Standard international
+MX
+*
+DC5
+Standard international
+Based on the table, for orders shipped within the US:
+ZIP codes
+10xxx
+and
+02xxx
+match New York City and Boston. DC1, DC2, and DC3 have been set up to fulfill
+Standard
+delivery orders to New-York and Boston. The order is routed first to DC1. If DC1 cannot fulfill the order, it is routed to DC2 and, eventually, to DC3.
+All other standard orders to the rest of the country are fulfilled from DC1 first, then from DC2, with DC3 as the last option.
+Same-day
+delivery orders are routed only to DC4.
+If DC1, DC2, and DC3 are unavailable, only deliveries to New York might be fulfilled from DC4.
+Orders shipped to Canada and Mexico will only support
+Standard international
+delivery from DC5.
+Important
+Notice the importance of the line order. The US
+*
+rule is not applied to New York or Boston orders because the
+10*,02*
+rule is higher in the table, making it the main routing rule for these two cities.
+Prerouting to a specific location
+When you send orders to NewStore, you can set the routing strategy to
+prerouted
+and specify the fulfillment location where the order must be fulfilled. For example, in a
+click and collect
+order that you import into the NewStore platform, you can specify the store from which the customer wants to collect the order, and the shipping option offered to the customer. See the
+create order
+method.
+Note
+You cannot use store capacity limits in your business when prerouting orders to stores. Store capacity limits are only available when using the
+default routing
+strategy.
+Order Rerouting
+Orders need to be rerouted in several scenarios, for example On Hold orders typically cannot be processed without manual intervention via Omnichannel Manager, unless automatic rerouting is enabled.
+Here is an overview of the rerouting scenarios which typically occur:
+Fulfillment rejection rerouting
+A fulfillment request can be rejected from a fulfillment location for a variety of reasons (mispick, mispack, rescinded). When this happens, the fulfillment will be automatically rerouted.
+If the
+reroute_to_rejected_fulfillment_nodes
+property is enabled, then the fulfillment may end up getting rerouted to a location that has previously rejected it. This only occurs when all other eligible fulfillment locations have rejected the fulfillment. The routing engine then follows the location priority as defined in the route within the fulfillment configuration. The location with the highest priority that has sufficient ATP is where the fulfillment will then be rerouted to, and no other locations will be considered for rerouting from that point onward.
+If you have the
+reroute_to_rejected_fulfillment_nodes
+feature disabled, fulfillment nodes that have rejected the fulfillment will be fully ignored in all future routing decisions. If all eligible fulfillment nodes reject the fulfillment, then the order will be placed On Hold with the reason specified as “Insufficient inventory”.
+Automatic rerouting
+Orders that are On Hold due to insufficient inventory can be automatically rerouted when inventory is made available. As soon the inventory becomes available, NewStore reroutes the order without any manual intervention. See
+Automatically routing On Hold orders
+for more information.
+Manual rerouting
+Orders can be manually rerouted when they are in an On Hold state. When the user chooses to manually reroute, then the routing engine attempts to route the order based on the routing logic and the fulfillment configuration set up for your business.
+Manual rerouting to a specific location
+Orders can also be manually rerouted to a specific location when they are in an On Hold state. The user chooses a fulfillment location, then the order is routed to that location regardless of its ATP (the order will be routed to the location even if the ATP is 0).
+This feature must be enabled in Omnichannel Manager. See
+Enabling manual rerouting for On Hold items
+.
+Related topics
+Integrating a fulfillment provider
+Integrating a shipping provider
+Shipping
+Was this article helpful?
+Yes
+No
+Tags
+DC fulfillment
+delivery
+Easypost
+fulfillment
+international shipping
+NewStore OMS
+newstore platform
+order cancellation
+order management
+routing
+routing rules
+SFCC
+shipping
+soft routing
+store fulfillment
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

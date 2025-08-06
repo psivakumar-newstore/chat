@@ -1,0 +1,149 @@
+Delivery Options API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Delivery Options API
+Shipping Options Webhooks
+EasyPost Adapter
+Shipment notification configuration API
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+post
+Create or update a shipping option token key pair
+get
+Get the public key for a shipping option token
+API docs by Redocly
+Delivery Options API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+API for creating and updating delivery options token key pair.
+Upload an RSA key pair in PEM format.
+Create or update a shipping option token key pair
+Create or update the public/private key pair used to generate shipping offer tokens.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+public_key
+required
+string
+non-empty
+A PEM formatted RSA public key
+private_key
+required
+string
+non-empty
+A PEM formatted RSA private key
+Responses
+200
+Token was successfully updated.
+400
+The request body is invalid.
+500
+An error occurred on the server.
+post
+/delivery_options/shipping_option_token_key_pair
+/v0/d
+/delivery_options/shipping_option_token_key_pair
+Request samples
+Payload
+Content type
+application/json
+Generate a private key and certificate request with the following command:
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 10000 -nodes
+Extract the public key from the certificate request using the following command:
+openssl x509 -pubkey -noout -in cert.pem > pubkey.pem
+Prepare strings to use in the
+private_key
+and
+public_key
+request body fields:
+cat key.pem | awk '{printf "%s\\n", $0}' | sed 's,.\{2\}$,,'
+(same for pubkey.pem)
+Copy
+{
+"public_key"
+:
+"-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0C4knVfllYex03XzEwV6\nV9psB6y6sm+gMaeI==\n-----END PUBLIC KEY-----"
+,
+"private_key"
+:
+"(similar to public key)"
+}
+Response samples
+400
+500
+Content type
+application/json
+Copy
+{
+"message"
+:
+"Invalid public/private key pair."
+,
+"request_id"
+:
+"123456"
+,
+"error_code"
+:
+"invalid_key_pair"
+}
+Get the public key for a shipping option token
+Gets the public/private key for a shipping option token
+Authorizations:
+newStoreAccessToken
+header
+Parameters
+tenant
+required
+string
+Responses
+200
+The public key was retrieved successfully
+404
+The key doesn't exist for the tenant
+500
+An error occurred on the server.
+get
+/delivery_options/shipping_option_token_public_key
+/v0/d
+/delivery_options/shipping_option_token_public_key
+Response samples
+200
+404
+500
+Content type
+application/json
+Copy
+{
+"public_key"
+:
+"string"
+}
+Previous
+Consumer Profile API
+Next
+Shipping Options Webhooks
+Copyright © 2025 NewStore, Inc.

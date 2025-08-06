@@ -1,0 +1,158 @@
+openapi: 3.0.0
+info:
+  title: Sales Order Support API
+  version: 1.0.0
+  x-audience: internal-company
+  x-api-id: sales-order-amdin-1.0.0
+  description: Sales Order Support HTTP API
+  contact:
+    name: team-headquarters
+    email: team-headquarters@newstore.com
+    url: https://newstoreinc.slack.com/archives/C07ECPJ7601
+servers:
+  - url: https://order-management.s.newstore.domain/order-management
+tags:
+  - name: updateOrder
+    description: Update order
+paths:
+  /orders/{id}:
+    patch:
+      tags:
+        - updateOrder
+      summary: Update order information
+      operationId: updateOrder
+      security:
+        - oauth:
+            - order-management:orders:write
+      description: |
+        Updates specific fields of an order. 
+
+        Supported updates:
+        - Order Status
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID of the order.
+        - in: header
+          name: Request-Id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Tenant
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-Newstore-Tenant
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  description: >-
+                    The new status of the order. Only `on_hold` is currently
+                    supported.
+        required: true
+      responses:
+        '200':
+          description: Order updated successfully
+        '400':
+          description: >
+            Bad Request
+
+
+            This can happen if the request body is malformed. The request can
+            only be retried if the error described 
+
+            in the response body is fixed.
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                  - error_code
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A short reference that identifies the problem type.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A short, human-readable summary of the problem type.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier of the failed request.
+        '500':
+          description: >
+            Internal Error
+
+
+            This can happen if there is an unexpected error while processing the
+            request. It is acceptable to 
+
+            automatically retry the request.
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                  - error_code
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: A short reference that identifies the problem type.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A short, human-readable summary of the problem type.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier of the failed request.
+        default:
+          description: Unexpected error
+components:
+  securitySchemes:
+    oauth:
+      flows:
+        clientCredentials:
+          scopes:
+            order-management:orders:write: Grants privileges to capture orders
+          tokenUrl: >-
+            https://id.{stage}.newstore.net/auth/realms/{tenant}/protocol/openid-connect/token
+      type: oauth2
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - error_code
+      properties:
+        error_code:
+          type: string
+          minLength: 1
+          description: A short reference that identifies the problem type.
+        message:
+          type: string
+          minLength: 1
+          description: A short, human-readable summary of the problem type.
+        request_id:
+          type: string
+          minLength: 1
+          description: Unique identifier of the failed request.

@@ -1,0 +1,156 @@
+openapi: 3.1.0
+info:
+  title: Integration Configurations
+  version: '1.0'
+  license:
+    name: NewStore Private
+    url: https://newstore.com
+  contact:
+    name: NewStore Support
+    email: support@newstore.com
+  description: >-
+    Use this API to manage integration configurations. For now, it supports
+    Third Party Promotion Engine (TPPE).
+  x-audience: external-public
+  x-api-id: df5eab82-db44-4a64-bc80-f3d2d16bf93e
+  x-domain-gateway-integration:
+    serviceName: chimera
+servers:
+  - url: https://promotions.s.newstore.domains/promotions
+    description: The staging server
+  - url: https://promotions.p.newstore.domains/promotions
+    description: The production server
+security:
+  - newStoreAccessToken: []
+tags:
+  - name: Manage integration configurations
+    description: Manage integration configurations
+paths:
+  /configurations/{section-id}:
+    get:
+      summary: Get Configuration
+      responses:
+        '200':
+          $ref: '#/components/responses/IntegrationConfigResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+      operationId: showConfiguration
+      description: Retrives integration configurations.
+      requestBody:
+        content: {}
+      tags:
+        - Manage integration configurations
+    parameters:
+      - schema:
+          type: string
+          enum:
+            - tppe
+        name: section-id
+        in: path
+        required: true
+        description: The id of the section to be configured.
+    patch:
+      summary: Update Configuration
+      operationId: updateConfiguration
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+      description: Updates integration configuration.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/IntegrationConfig'
+            examples:
+              tppe example:
+                value:
+                  session_update_url: >-
+                    http://abc.cloudhub.io/promotion/cart-session/{customerSessionId}
+                  auth_token: test-auth-token
+      parameters: []
+      tags:
+        - Manage integration configurations
+components:
+  schemas:
+    IntegrationConfig:
+      title: IntegrationConfig
+      type: object
+      description: Third party promotions engine integration config.
+      properties:
+        session_update_url:
+          type: string
+          description: >-
+            Session Update URL.
+
+
+            The URL that will be called each time the order gets updated in
+            NewStore's Associate App. The URL has to end with the placeholder
+            {customerSessionId} that will be replaced with the cart ID/order ID.
+        auth_token:
+          type: string
+          description: >-
+            The auth token that will be used as Bearer token for the
+            authentication with the third party integration APIs. It can be
+            empty.
+          writeOnly: true
+      examples:
+        - session_update_url: http://abc.cloudhub.io/promotion/cart-session/{customerSessionId}
+          auth_token: test-auth-token
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+  parameters: {}
+  responses:
+    Error:
+      description: An error response.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: The error message.
+                readOnly: true
+              status:
+                description: The HTTP status code.
+                type: integer
+                readOnly: true
+              causes:
+                type: array
+                description: A list of causes. It's optional.
+                items:
+                  type: string
+                  readOnly: true
+            required:
+              - message
+              - status
+          examples:
+            Example 1:
+              value:
+                message: not found
+                status: 404
+            Example 2:
+              value:
+                message: internal server error
+                status: 500
+    IntegrationConfigResponse:
+      description: Integration Config Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IntegrationConfig'
+          examples:
+            Example 1:
+              value:
+                session_update_url: >-
+                  http://abc.cloudhub.io/promotion/cart-session/{customerSessionId}
+  requestBodies: {}

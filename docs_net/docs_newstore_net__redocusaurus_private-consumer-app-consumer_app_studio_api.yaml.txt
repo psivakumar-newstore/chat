@@ -1,0 +1,4699 @@
+consumes:
+  - application/json
+produces:
+  - application/json
+schemes:
+  - https
+swagger: '2.0'
+info:
+  description: |
+    ### This is a draft and has not yet been finalized
+
+    Some important changes to note:
+      - Promotions are now deprecated. Meaning the following routes no longer exist:
+        - `OPTIONS /promotion/:store/promotions/?`
+        - `OPTIONS /promotion/:store/promotions/*`
+        - `GET /promotion/:store/promotions/?`
+        - `GET /promotions/:unique_id/?`
+        - `GET /promotion/:store/promotions/:unique_id/?`
+        - `POST /promotion/:store/promotions/?`
+        - `PUT /promotion/:store/promotions/?`
+        - `PUT /promotion/:store/promotions/:unique_id/?`
+        - `DELETE /promotion/:store/promotions/?`
+        - `DELETE /promotion/:store/promotions/:unique_id/?`
+
+      - The merchant_id is now at the base of the path so for example: `lookbook/:merchant/lookbooks` is now
+        `/:merchant/lookbooks`.
+      - all references to `cms_id`, `store` within urls has been replaced with the `merchant_id`
+      - Lookbooks, Walls and Push Notifications no longer belong to a `store` but belong to the
+        `merchant`. This enables us to share Lookbooks, for example, across multiple stores.
+      - Lookbooks, Walls and Push Notifications now also contain a list of tags that they are
+        associated with.
+      - A new endpoint has been added for Lookbooks, Walls and Push Notifications to enable adding
+        tags.
+  title: Studio API
+  version: '1.0'
+host: cms-api.highstreetapp.com
+basePath: /
+paths:
+  /authenticated/:
+    get:
+      description: |
+        This Simply lets you know wether the current user is logged in or not.
+      produces:
+        - text/plain; charset=utf-8
+      tags:
+        - User
+      summary: Check if a User is authenticated
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+      responses:
+        '200':
+          description: OK. The User is authenticated. No Content is returned
+        '401':
+          description: |
+            The User has not been successfully authenticated.
+
+            - The body will return `PERMISSION DENIED`
+          schema:
+            type: string
+          examples:
+            text/plain; charset=utf-8: Permission denied
+  /intercom:
+    get:
+      produces:
+        - application/json
+      tags:
+        - User
+      summary: View intercom details
+      operationId: Mixin7
+      responses:
+        '200':
+          description: |
+            Returns the intercom details
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+          examples:
+            name: some sample data
+        '404':
+          $ref: '#/responses/not_found'
+  /login/:
+    post:
+      description: >
+        This authenticates a User and returns a valid session token. This
+        Session token can then be
+
+        attached to the `HTTP_AUTHORIZATION` for all future requests.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - User
+      summary: Login a User
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/user_login'
+      responses:
+        '200':
+          description: OK. Successfully logged the user in
+          schema:
+            type: object
+            properties:
+              token:
+                description: A vaild session token.
+                type: string
+          examples:
+            application/json:
+              token: laksjoiqw84y3298rflksajbflksanfasf89puas98fyuaw800329
+        '403':
+          description: Wrong username/password
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: nil
+              message: Wrong username/password
+              success: false
+  /logout/:
+    post:
+      description: |
+        This logs a user out of the studio and destroys their session.
+      produces:
+        - application/json
+      tags:
+        - User
+      summary: Logout a User
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+      responses:
+        '200':
+          description: OK. Successfully logged the user out. No content is returned.
+        '403':
+          description: The user is not logged in. Or the session token is invalid
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: nil
+              message: Not logged in
+              success: false
+  /merchants:
+    get:
+      description: >
+        Typically a user only has access to one merchant. However there are a
+        few cases where some
+
+        users have access to multiple. This endpoint returns an array of
+        available merchant ids
+      produces:
+        - application/json
+      tags:
+        - User
+      summary: Get all Merchants for a user
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+      responses:
+        '200':
+          description: |
+            Returns a list of all merchant objects that a user has access to
+          schema:
+            type: object
+            properties:
+              merchants:
+                type: array
+                items:
+                  $ref: '#/definitions/Merchants'
+        '400':
+          description: |
+            - There are no merchants associated to the user
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: NO_MERCHANTS
+              message: There are no merchants associated to this user
+              success: false
+        '403':
+          $ref: '#/responses/unauthorized'
+  /merchants/{id}:
+    get:
+      description: |
+        This endpoint fetches a merchant including storefronts.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Merchants
+      summary: Get a merchant
+      operationId: Mixin7
+      parameters:
+        - type: string
+          description: The merchant identifier
+          name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              merchant:
+                type: array
+                items:
+                  $ref: '#/definitions/Merchant'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+  /merchants/{merchant_id}/app_status:
+    get:
+      description: |
+        This endpoint fetches current app status settings
+      produces:
+        - application/json
+      tags:
+        - App Status
+      summary: List app status details for current merchant
+      operationId: ListAppStatus
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/access_token'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AppStatus'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+    put:
+      description: >-
+        This endpoint will allow updating App Status mode (enabled or not) and
+        text for title and message
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - App Status
+      summary: Updates App Status
+      operationId: UpdateAppStatus
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/access_token'
+        - name: Create message request params
+          in: body
+          schema:
+            type: object
+            properties:
+              maintenance:
+                $ref: '#/definitions/UpdateAppStatusRequestParams'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AppStatus'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+        '422':
+          description: Response when the params object is invalid
+          schema:
+            $ref: '#/responses/unprocessable_entity_error'
+  /merchants/{merchant_id}/broken_links/alert:
+    delete:
+      tags:
+        - BrokenLinkAlerts
+      summary: Will dismiss all broken links alerts for a breakable
+      operationId: DismissAllBrokenLinksAlerts
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - name: Breakable object
+          in: body
+          schema:
+            type: object
+            properties:
+              breakable_id:
+                description: The ID of the content that has broken links
+                type: integer
+              breakable_type:
+                description: The type of the breakable
+                type: string
+                enum:
+                  - Look
+                  - Lookbook
+                  - Lookbook::Video
+                  - Lookbook::Image
+                  - Lookbook::Timeframe
+                  - V2::Row
+                  - Row
+                  - PushNotification
+                  - ProductList
+      responses:
+        '200':
+          description: An error occured while trying to find broken links for this content
+          schema:
+            type: object
+            properties:
+              code:
+                description: The error code
+                type: string
+                example: no_active_broken_link_found
+        '204':
+          description: The alert was dismissed
+        '422':
+          description: The input params are invalid
+          schema:
+            type: object
+            properties:
+              code:
+                description: The error code
+                type: string
+                example: invalid_input
+              details:
+                type: object
+                additionalProperties:
+                  type: array
+              message:
+                description: The error message
+                type: string
+  /merchants/{merchant_id}/content_extensions:
+    get:
+      tags:
+        - Content Extensions
+      summary: List Content Extensions
+      operationId: ViewContentExtensions
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - content_extensions
+            properties:
+              content_extensions:
+                type: array
+                items:
+                  $ref: '#/definitions/ContentExtension'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+    post:
+      tags:
+        - Content Extensions
+      summary: Create Content Extension
+      operationId: CreateContentExtension
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/create_content_extension'
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/ContentExtension'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '422':
+          $ref: '#/responses/unprocessable_entity_error'
+  /merchants/{merchant_id}/content_extensions/{content_extension_id}:
+    get:
+      tags:
+        - Content Extensions
+      summary: View Content Extension
+      operationId: ViewContentExtension
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/content_extension_id'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ContentExtension'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+    delete:
+      tags:
+        - Content Extensions
+      summary: Delete Content Extension
+      operationId: DeleteContentExtension
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/content_extension_id'
+      responses:
+        '204':
+          description: No Content
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+    patch:
+      tags:
+        - Content Extensions
+      summary: Update Content Extension
+      operationId: UpdateContentExtension
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/content_extension_id'
+        - $ref: '#/parameters/update_content_extension'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ContentExtension'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '422':
+          $ref: '#/responses/unprocessable_entity_error'
+  /merchants/{merchant_id}/messages:
+    get:
+      description: |
+        This endpoint fetches all the messages created by a merchant.
+      tags:
+        - Messages
+      summary: List all messages
+      operationId: ListAllMessages
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/storefront_id'
+        - enum:
+            - active
+            - published
+            - scheduled
+          type: string
+          description: A status used to filter messages
+          name: status
+          in: query
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              messages:
+                type: array
+                items:
+                  $ref: '#/definitions/Message'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+        '422':
+          $ref: '#/responses/unprocessable_entity_error'
+    post:
+      description: |
+        This endpoint creates a message for a merchant.
+      tags:
+        - Messages
+      summary: Create a message
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - name: Create message request params
+          in: body
+          schema:
+            type: object
+            properties:
+              message:
+                $ref: '#/definitions/CreateMessageRequestParams'
+      responses:
+        '201':
+          description: Created
+          schema:
+            type: object
+            properties:
+              message:
+                $ref: '#/definitions/Message'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+        '422':
+          $ref: '#/responses/unprocessable_entity_error'
+  /merchants/{merchant_id}/messages/{message_id}:
+    delete:
+      description: |
+        This endpoint deletes a message.
+      tags:
+        - Messages
+      summary: Delete a message
+      operationId: DeleteMessage
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/message_id'
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+    patch:
+      description: |
+        This endpoint updates an existing message.
+      tags:
+        - Messages
+      summary: Update a Message
+      operationId: UpdateMessage
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/message_id'
+        - name: Update message request params
+          in: body
+          schema:
+            type: object
+            properties:
+              message:
+                $ref: '#/definitions/UpdateMessageRequestParams'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              message:
+                $ref: '#/definitions/Message'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+        '422':
+          $ref: '#/responses/unprocessable_entity_error'
+  /merchants/{merchant_id}/published_messages:
+    get:
+      description: |
+        This endpoint fetches published messages.
+      tags:
+        - Published Messages
+      summary: List published messages
+      operationId: ListPublishedMessages
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/storefront_id'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              messages:
+                type: array
+                items:
+                  $ref: '#/definitions/Message'
+        '404':
+          $ref: '#/responses/not_found_error'
+  /merchants/{merchant_id}/push_notifications:
+    get:
+      produces:
+        - application/json
+      tags:
+        - Push Notifications
+      summary: Get list of all push notifications with filters support
+      operationId: GetAllPushNotifications
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - description: Status of push notifications
+          name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - sent
+              - scheduled
+        - description: Content type of push notification
+          name: content_type
+          in: query
+          schema:
+            type: string
+            enum:
+              - resource
+              - custom
+        - example: en-NL, en-US, de-DE
+          description: Comma separated list of storefront_ids
+          name: locales
+          in: query
+          schema:
+            type: string
+        - description: Offset for returning results
+          name: from
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - description: Limit for the number of results returned
+          name: to
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Returns the Push notification
+          schema:
+            $ref: '#/definitions/PushNotifications'
+        '422':
+          description: The input params are invalid
+          schema:
+            type: object
+            properties:
+              code:
+                description: The error code
+                type: string
+                example: invalid_input
+              details:
+                type: object
+                additionalProperties:
+                  type: array
+              message:
+                description: The error message
+                type: string
+    post:
+      description: >
+        The push notifications are used to improve engagement with users of the
+        Highstreet app and
+
+        to promote promotions, products, categories or lookbooks.
+
+
+        A notification consists of a message, an optional title or a subtitle
+        and additional
+
+        information to guide the app in presenting rich notification content and
+        allowing the app to
+
+        take advantage of the deep linking feature.
+
+
+        A notification can also be sent to a single user by adding user's email
+        address to the customer_id key
+
+
+        A notification is described as follows:
+
+        ```json
+
+        {
+          "message": "The message of the push notification, displayed on device's lockscreen",
+          "push_time": "1473172784",
+          "store": "test",
+          "destination_type": "categories",
+          "destination_type_id": "xwhl123",
+          "destination_name": "A category name",
+          "cancelled": false
+        }
+
+        ```
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Push Notification
+      summary: Schedules or sends a Push Notification
+      operationId: Mixin4
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/create_push_notification'
+      responses:
+        '201':
+          description: Successfully scheduled push notification
+          schema:
+            $ref: '#/definitions/PushNotification'
+        '400':
+          description: |
+            - Invalid request parameters
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          $ref: '#/responses/unauthorized'
+        '500':
+          description: |
+            The Notification has not been sent
+  /merchants/{merchant_id}/push_notifications_report:
+    get:
+      description: >-
+        This endpoint will respond information about total number of users and
+        total number of subscribers.
+      produces:
+        - application/json
+      tags:
+        - Push Notifications
+      summary: Get list of all push notifications stats for the merchant
+      operationId: GetPushNotificationsReport
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - enum:
+            - 1day
+            - 7days
+            - 30days
+          type: string
+          default: 1day
+          description: Period for report
+          name: interval
+          in: query
+      responses:
+        '200':
+          description: Returns the Push Notification Report
+          schema:
+            $ref: '#/definitions/PushNotificationsReport'
+        '422':
+          description: The input params are invalid
+          schema:
+            type: object
+            properties:
+              code:
+                description: The error code
+                type: string
+                example: invalid_input
+              details:
+                type: object
+                additionalProperties:
+                  type: array
+              message:
+                description: The error message
+                type: string
+  /merchants/{merchant_id}/users:
+    get:
+      description: >
+        This endpoint will give a list of users allowed to access the specified
+        merchant.
+      produces:
+        - application/json
+      tags:
+        - Users
+      summary: List all users
+      operationId: ListUsers
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/access_token'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Users'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+    post:
+      description: >
+        Creates a new user with access to this merchant and sends them an email
+        to let them set a password.
+
+
+        If a user with this email address already exists, the existing user will
+        be updated to also have access to this merchant.
+
+
+        If the request body has the 'name' attribute it will update the user's
+        name from the database with the one from the request.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Users
+      summary: Create User
+      operationId: CreateUser
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/access_token'
+        - name: Create User Request
+          in: body
+          schema:
+            type: object
+            properties:
+              user:
+                $ref: '#/definitions/CreateUserRequestParams'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+        '422':
+          description: Response when the params object is invalid
+          schema:
+            $ref: '#/responses/unprocessable_entity_error'
+  /merchants/{merchant_id}/users/{uuid}:
+    get:
+      description: |
+        This endpoint will show the details of a single user.
+      produces:
+        - application/json
+      tags:
+        - Users
+      summary: Show User
+      operationId: ShowUser
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/uuid'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+    delete:
+      description: >
+        This endpoint will remove a user from a merchant. 
+
+
+        If after removing the user from the merchant their list of
+        'allowed_merchants' is empty, it will also delete the user from the
+        database. 
+      produces:
+        - application/json
+      tags:
+        - Users
+      summary: Delete User
+      operationId: DeleteUser
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/uuid'
+      responses:
+        '204':
+          description: The user was deleted successfully
+  /messages/{message_id}/publications:
+    post:
+      description: |
+        This endpoint creates publication for a message.
+      tags:
+        - Message Publications
+      summary: Create a publication
+      operationId: CreateMessagePublication
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/message_id'
+        - name: create_publication_request
+          in: body
+          schema:
+            type: object
+            properties:
+              publication:
+                $ref: '#/definitions/CreatePublicationRequestParams'
+      responses:
+        '201':
+          description: Created
+          schema:
+            type: object
+            properties:
+              publication:
+                $ref: '#/definitions/Publication'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+        '422':
+          $ref: '#/responses/unprocessable_entity_error'
+  /messages/{message_id}/publications/{publication_id}:
+    delete:
+      description: |
+        This endpoint deletes a publication.
+      tags:
+        - Message Publications
+      summary: Delete a publication
+      operationId: DeleteMessagePublication
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/message_id'
+        - $ref: '#/parameters/publication_id'
+      responses:
+        '204':
+          description: No Content
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+    patch:
+      description: |
+        This endpoint updates an existing publication.
+      tags:
+        - Message Publications
+      summary: Update a publication
+      operationId: UpdateMessagePublication
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/message_id'
+        - $ref: '#/parameters/publication_id'
+        - name: update_publication_request
+          in: body
+          schema:
+            type: object
+            properties:
+              publication:
+                $ref: '#/definitions/UpdatePublicationRequestParams'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              publication:
+                $ref: '#/definitions/Publication'
+        '401':
+          $ref: '#/responses/unauthorized_error'
+        '403':
+          $ref: '#/responses/forbidden_error'
+        '404':
+          $ref: '#/responses/not_found_error'
+        '422':
+          $ref: '#/responses/unprocessable_entity_error'
+  /password_resets/:
+    post:
+      description: >
+        This endpoint will find the User by the supplied email address and send
+        them an email
+
+        containing a link for them to reset their password.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - User
+      summary: Send a Password reset email
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/user_email'
+      responses:
+        '200':
+          description: OK. Successfully sent an email to the given user
+        '400':
+          description: The supplied email was not found.
+          schema:
+            type: object
+            properties:
+              errors:
+                description: Human readable reason for the error
+                type: string
+    patch:
+      description: >
+        This will update the Users password with the supplied information. There
+        is **no** password
+
+        confirmation validation on this endpoint as it only accepts one password
+        attribute.
+
+        Therefore the frontend must check that the supplied passwords match.
+
+
+        If an expired or invalid reset token is supplied the server will return
+        a 400.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - User
+      summary: Reset Users password
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/password_reset'
+      responses:
+        '200':
+          description: OK. Successfully updated the Users password
+        '400':
+          description: The supplied email was not found.
+          schema:
+            type: object
+            properties:
+              errors:
+                description: Human readable reason for the error
+                type: string
+  /password_resets/{token}/validate/:
+    post:
+      description: |
+        Check wether a given token is valid for a given user.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - User
+      summary: Validate a password_reset token
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/user_email'
+        - $ref: '#/parameters/token'
+      responses:
+        '200':
+          description: OK. The specified token is valid for the specified user
+        '400':
+          description: The given token it not valid for the specified user.
+          schema:
+            type: object
+            properties:
+              errors:
+                description: Human readable reason for the error
+                type: string
+  /{merchant_id}/catalog/{locale}/categories:
+    get:
+      description: |
+        Returns a flat list of available categories for the locale.
+      produces:
+        - application/json
+      summary: Get Categories
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/locale'
+      responses:
+        '200':
+          description: |
+            A list of categories
+          schema:
+            $ref: '#/definitions/Categories'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/catalog/{locale}/categories/{id}:
+    get:
+      description: |
+        Checks if the category exists
+      produces:
+        - application/json
+      summary: Get a Category
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+        - $ref: '#/parameters/locale'
+      responses:
+        '200':
+          description: |
+            The Category does exist
+          schema:
+            $ref: '#/definitions/Category'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/catalog/{locale}/products:
+    get:
+      description: |
+        Returns a search of products for the catalog of the specified locale
+      produces:
+        - application/json
+      summary: Get Products
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/locale'
+      responses:
+        '200':
+          description: |
+            A list of products
+          schema:
+            $ref: '#/definitions/Products'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/grid_image?columns=&rows=:
+    post:
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      summary: Upload an Image
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - type: file
+          description: The file to upload.
+          name: upfile
+          in: formData
+      responses:
+        '201':
+          description: (empty)
+          schema:
+            type: object
+            properties:
+              image_key:
+                description: The path of the image on s3
+                type: string
+          examples:
+            image_key: promotions/test/random_source
+        '400':
+          description: |
+            - The image has to fit with required dimensions
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: WRONG_DIMENSIONS
+              message: Expected image to be 2048x1194
+              success: false
+  /{merchant_id}/lookbooks/:
+    get:
+      description: >
+        Gets all look books by merchant_id. This endpoint is used by both the
+        studio frontend and
+
+        the middleware. Passing in an optional array of locales will return a
+        filtered set of
+
+        lookbooks for the matching locales. You can also pass an optional
+        parameter of view with one
+
+        of the following values: `published`, `scheduled`, `drafts`. These will
+        each return the
+
+        respective lookbooks depending on their status. Note that one lookbook
+        could be published in
+
+        one locale but scheduled in another. Therefore the same lookbook could
+        appear in the both a
+
+        `published` and `scheduled` list.
+      produces:
+        - application/json
+      tags:
+        - Lookbook
+      summary: |
+        Get all Lookbooks.
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/locales'
+        - $ref: '#/parameters/merchant_id'
+        - type: string
+          name: view
+          in: query
+      responses:
+        '200':
+          description: Returns an array of all matching lookbooks
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Lookbook'
+        '403':
+          $ref: '#/responses/unauthorized'
+    post:
+      description: >
+        Creates a lookbook. When creating a Lookbook for the first time it will
+        always be in an
+
+        unpublished state
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Lookbook
+      summary: Create a Lookbook
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - name: tags
+          in: body
+          schema:
+            $ref: '#/definitions/CreateLookbook'
+      responses:
+        '201':
+          description: Successfully created the lookbook
+          schema:
+            $ref: '#/definitions/Lookbook'
+        '400':
+          description: |
+            Invalid request parameters
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: INVALID_PROPERTY
+              message: The parameters were invalid
+              success: false
+        '403':
+          $ref: '#/responses/unauthorized'
+  /{merchant_id}/lookbooks/{id}:
+    get:
+      description: |
+        Get a specific Lookbook by merchant_id and id
+      produces:
+        - application/json
+      tags:
+        - Lookbook
+      summary: Get a Lookbook
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+      responses:
+        '200':
+          description: Returns a Lookbook
+          schema:
+            $ref: '#/definitions/Lookbook'
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+    delete:
+      description: |
+        Deletes a lookbook according to merchant id and lookbook id.
+      produces:
+        - application/json
+      tags:
+        - Lookbook
+      summary: Delete a Lookbook
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+      responses:
+        '204':
+          description: Lookbook was successfully deleted
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/lookbooks/{id}/duplicate:
+    post:
+      description: >
+        Copies a Lookbook and all associated Looks. The copied lookbook will
+        always be created as
+
+        unpublished. All tags associated with the lookbook will also be copied.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Lookbook
+      summary: Duplicate a Lookbook
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+        - $ref: '#/parameters/auth'
+      responses:
+        '201':
+          description: Successfully copied
+          schema:
+            description: An array of the newly created Lookbook ids
+            type: object
+            properties:
+              copied_lookbook:
+                description: ID of the copied_lookbook
+                type: string
+          examples:
+            application/json:
+              copied_lookbook: '12'
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/lookbooks/{id}/looks:
+    get:
+      description: |
+        Get all looks of a certain lookbook
+      produces:
+        - application/json
+      tags:
+        - Look
+      summary: Get all Looks by Lookbook
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+      responses:
+        '200':
+          description: Returns a list of Looks
+          schema:
+            $ref: '#/definitions/Looks'
+        '404':
+          $ref: '#/responses/not_found'
+    post:
+      description: |
+        Creates a look for a lookbook
+      produces:
+        - application/json
+      tags:
+        - Look
+      summary: Create a Look
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+      responses:
+        '201':
+          description: Look was successfully created
+          schema:
+            $ref: '#/definitions/Look'
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/lookbooks/{id}/looks/order:
+    post:
+      description: >
+        Represents the order of the looks in a particular lookbook.
+
+
+        When supplying a new order, all look IDs should be present. Extra or
+        missing look ids are not allowed.
+
+        Example Order:
+          ```
+            {
+              "order": [1, 2, 3, 4]
+            }
+          ```
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Lookbook
+      summary: Update order of looks
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+        - name: row
+          in: body
+          schema:
+            type: object
+            properties:
+              order:
+                type: array
+                items:
+                  type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid Order
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: INVALID_ORDER
+              message: Missing or unknown looks
+              success: false
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/lookbooks/{id}/looks/{nested_id}:
+    get:
+      description: |
+        Get all looks of a certain lookbook
+      produces:
+        - application/json
+      tags:
+        - Look
+      summary: Get a Look
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+        - $ref: '#/parameters/nested_id'
+      responses:
+        '200':
+          description: Returns a Look
+          schema:
+            $ref: '#/definitions/Look'
+        '404':
+          $ref: '#/responses/not_found'
+    put:
+      description: |
+        Updates a look for a lookbook
+      produces:
+        - application/json
+      tags:
+        - Look
+      summary: Update a Look
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+        - $ref: '#/parameters/nested_id'
+        - $ref: '#/parameters/look'
+      responses:
+        '200':
+          description: Look was successfully updated
+          schema:
+            $ref: '#/definitions/Look'
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+    delete:
+      description: |
+        Deletes a look for a lookbook
+      produces:
+        - application/json
+      tags:
+        - Look
+      summary: Delete a Look
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+        - $ref: '#/parameters/nested_id'
+      responses:
+        '204':
+          description: Look was successfully Deleted
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/lookbooks/{id}/schedule:
+    post:
+      description: >
+        A Lookbook has 3 "states", Published, scheduled and unpublished(in
+        drafts). These states
+
+        determine what is visible in the app and when.
+
+
+        A Lookbook can have a different schedule for a number of different
+        locales. For example a
+
+        wall can be scheduled to be live in France on Monday and the US on
+        Wednesday.
+
+
+        This endpoint is responsible for publishing, scheduling and unpublishing
+        a wall. The
+
+        endpoint accepts an array of objects representing a locale. If the time
+        is in the
+
+        future the wall will be scheduled, and if publish_at is now then the
+        resource will be
+
+        published.
+
+
+        Note that the array in the request will replace all current
+        tags/schedules in the resource.
+
+        Eg if the resource is published in en-GB but the request does not
+        include an en-GB tag then the
+
+        en-GB tag will be removed from the resource and the resource will no
+        longer be published in
+
+        that locale.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Lookbook
+      summary: Publish/Schedule a Lookbook
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+        - $ref: '#/parameters/scheduling'
+      responses:
+        '201':
+          description: Resource successfully updated
+          schema:
+            $ref: '#/definitions/Lookbook'
+        '400':
+          description: A validation failed and the resource could not be updated
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/lookbooks/{id}/tags:
+    post:
+      description: >
+        *This endpoint is not currently in use!!*
+
+        Enables a lookbook to be associated with multiple store fronts or
+        customer groups
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Lookbook
+      summary: Add tags to a lookbook
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+        - $ref: '#/parameters/tag'
+      responses:
+        '201':
+          description: Successfully added tags to the resource
+          schema:
+            $ref: '#/definitions/Lookbook'
+        '400':
+          description: |
+            Invalid Tag type
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: INVALID_PROPERTY
+              message: Invalid tag_type
+              success: false
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+    patch:
+      description: |
+        Removes a set of tags from a lookbook
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Lookbook
+      summary: remove tags from a lookbook
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+        - name: tags
+          in: body
+          schema:
+            type: object
+            properties:
+              tags:
+                type: array
+                items:
+                  $ref: '#/definitions/Tag'
+      responses:
+        '204':
+          description: Successfully Removed the given tags from the resource
+        '400':
+          description: |
+            The specified tags were not associated with this lookbook
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: INVALID_PROPERTY
+              message: The specified tags were not associated with this resource
+              success: false
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/lookbooks/{locale}/order:
+    post:
+      description: >
+        Updates the order of lookbooks for a single locale.
+
+
+        **When supplying a new order, all lookbook IDs should be present. Extra
+        lookbook IDs or
+
+        missing row IDs are not allowed.**
+
+
+        Example Order:
+
+        ```
+          {
+            "order": [1, 2, 3, 4]
+          }
+        ```
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Lookbook
+      summary: Update order of lookbooks
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/locale'
+        - name: row
+          in: body
+          schema:
+            type: object
+            properties:
+              order:
+                type: array
+                items:
+                  type: integer
+            example:
+              order:
+                - 1
+                - 2
+                - 3
+                - 4
+      responses:
+        '204':
+          description: Success
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/push_notifications:
+    post:
+      description: >
+        The push notifications are used to improve engagement with users of the
+        Highstreet app and
+
+        to promote promotions, products, categories or lookbooks.
+
+
+        A notification consists of a message, an optional title or a subtitle
+        and additional
+
+        information to guide the app in presenting rich notification content and
+        allowing the app to
+
+        take advantage of the deep linking feature.
+
+
+        A notification can also be sent to a single user by adding user's email
+        address to the customer_id key
+
+
+        A notification is described as follows:
+
+        ```json
+          {
+            "message": "The message of the push notification, displayed on device's lockscreen",
+            "push_time": "1473172784",
+            "store": "test",
+            "destination_type": "categories",
+            "destination_type_id": "xwhl123",
+            "destination_name": "A category name",
+            "cancelled": false
+          }
+        ```
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Push Notification
+      summary: Send a push notification
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/create_push_notification'
+      responses:
+        '201':
+          description: Successfully scheduled push notification
+          schema:
+            $ref: '#/definitions/PushNotification'
+        '400':
+          description: |
+            - Invalid request parameters
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          $ref: '#/responses/unauthorized'
+        '500':
+          description: |
+            The Notification has not been sent
+  /{merchant_id}/push_notifications/image:
+    post:
+      description: >
+        Push notifications now support Rich notifications. This means that we
+        can assign an image to
+
+        the notification. We generate this image for the client depending on the
+        destination type of
+
+        the notification.
+
+        Only push notifications with a destination type of `products`,
+        `lookbooks`, `categories` or
+
+        `home` will have an image attached. The destination_type_id related to
+        the id of the
+
+        resource. The only slightly confusing part is with `home` the
+        `destination_type_id` is
+
+        actually the id of a Tile and not a Wall.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Push Notification
+      summary: Create Image for notification
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/auth'
+        - name: notification
+          in: body
+          schema:
+            type: object
+            properties:
+              destiantion_type_id:
+                type: string
+              destination_type:
+                type: string
+      responses:
+        '201':
+          description: Successfully created image
+          schema:
+            type: object
+            properties:
+              image_thumbnail_url:
+                type: string
+              image_url:
+                type: string
+          examples:
+            image_thumbnail_url: http://test.imgix.new/ldjalsk..."
+            image_url: http://test.imgix.new/dkjjkdh...
+        '403':
+          $ref: '#/responses/unauthorized'
+        '500':
+          description: |
+            Image Creation Failed
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: IMAGE_CREATION_FAILED
+              message: >-
+                Something went wrong with creating your notification. Please try
+                again.
+              success: false
+  /{merchant_id}/push_notifications/{id}:
+    get:
+      description: |
+        Returns a single Push Notification by id and merchant_id
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Push Notification
+      summary: Get a single Notification
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+        - $ref: '#/parameters/auth'
+      responses:
+        '200':
+          description: Returns the Push notification
+          schema:
+            $ref: '#/definitions/PushNotification'
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+    put:
+      description: >
+        Updates a notification. One signal doesn't actually support this
+        functionality. So behind
+
+        the scenes we are cancelling the original notification and creating a
+        new one.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Push Notification
+      summary: update a push notification
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/path_id'
+        - $ref: '#/parameters/create_push_notification'
+      responses:
+        '200':
+          description: Successfully update push notification
+          schema:
+            $ref: '#/definitions/PushNotification'
+        '400':
+          description: |
+            - Invalid request parameters
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          $ref: '#/responses/unauthorized'
+    delete:
+      description: |
+        Cancels a pending push notification.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Push Notification
+      summary: Cancel a notification
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+        - $ref: '#/parameters/auth'
+      responses:
+        '204':
+          description: Successfully cancelled the notifaction
+        '400':
+          description: |
+            - The push notification has already been sent
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: TOO_LATE
+              message: push notification is already sent
+              success: false
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+        '500':
+          description: |
+            - Cancellation failed
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: CANCELLATION_FAILED
+              message: unknown error
+              success: false
+  /{merchant_id}/row/{row_id}:
+    get:
+      description: |
+        Represents a single row in a promotion wall.
+      tags:
+        - Rows
+      summary: View a row
+      operationId: ViewRow
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/row_id'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Row'
+        '403':
+          $ref: '#/responses/legacy_unauthorized_error'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+    put:
+      description: |
+        Updates a single row in a wall along with it's associated tiles
+      tags:
+        - Rows
+      summary: Update a Row
+      operationId: UpdateRow
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/row_id'
+        - $ref: '#/parameters/update_row_request_body'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Row'
+        '403':
+          $ref: '#/responses/legacy_unauthorized_error'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+    delete:
+      description: |
+        Deletes a single row in a promotion wall.
+
+        *Note:* A wall **must** have between **2** and **25 rows**. Attempting
+        to delete a row when the associated wall has only 2 rows will result in
+        an error.
+      tags:
+        - Rows
+      summary: Delete a Row
+      operationId: DeleteRow
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/row_id'
+      responses:
+        '204':
+          description: The row was successfully deleted
+        '400':
+          description: >
+            - The minimum required amount of rows for a promotion wall has been
+            reached
+          schema:
+            $ref: '#/definitions/LegacyError'
+          examples:
+            application/json:
+              error_code: MINIMUM_REACHED
+              message: Published walls must have at least 2 rows
+              success: false
+        '403':
+          $ref: '#/responses/legacy_unauthorized_error'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+  /{merchant_id}/settings/appearance:
+    get:
+      description: |
+        Returns appearance configurations
+      produces:
+        - application/json
+      tags:
+        - Settings
+      summary: Get appearance settings
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/AppearanceConfig'
+        '403':
+          $ref: '#/responses/unauthorized'
+  /{merchant_id}/settings/cache_refresh:
+    post:
+      description: |
+        Refreshes the cache for a list of storefronts
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Settings
+      summary: Refresh the cache
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - name: storefronts
+          in: body
+          schema:
+            type: object
+            properties:
+              storefronts:
+                type: array
+                items:
+                  $ref: '#/definitions/CacheRefreshSchedule'
+      responses:
+        '200':
+          description: Cache was successfully refreshed for all storefronts
+        '400':
+          description: REFRESH_ERROR
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          $ref: '#/responses/unauthorized'
+  /{merchant_id}/settings/cache_refresh/:id:
+    delete:
+      description: >
+        Cancels a cache refresh event using the schedule_id. This is returned by
+        the
+
+        {merchant_id}/settings/cache_refresh/schedules end point.
+
+        This will cancel a cache refresh schedule for all associated
+        storefronts.
+      produces:
+        - application/json
+      tags:
+        - Settings
+      summary: Cancel a Cache refresh
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/path_id'
+      responses:
+        '204':
+          description: Cache Refresh was successfully cancelled
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+  /{merchant_id}/settings/cache_refresh/schedules:
+    get:
+      description: |
+        Returns a list of scheduled cache refreshes
+      produces:
+        - application/json
+      tags:
+        - Settings
+      summary: Get all scheduled refreshes
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+      responses:
+        '200':
+          description: A list of cache refreshes
+          schema:
+            $ref: '#/definitions/CacheRefreshes'
+        '400':
+          description: REFRESH_ERROR
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          $ref: '#/responses/unauthorized'
+  /{merchant_id}/tags:
+    get:
+      description: >
+        Get all available tags for a merchant. The response is grouped by
+        `tag_type` for example
+
+        `locale` or `customer_group`
+      produces:
+        - application/json
+      tags:
+        - Tag
+      summary: Get all Tags
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            properties:
+              customer_group:
+                type: array
+                items:
+                  description: Array of all matching tags
+                  $ref: '#/definitions/Tag'
+              locale:
+                type: array
+                items:
+                  description: Array of all matching tags
+                  $ref: '#/definitions/Tag'
+        '403':
+          $ref: '#/responses/unauthorized'
+  /{merchant_id}/video:
+    post:
+      description: |
+        Uploads and transcodes video content for use in a home wall.
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      summary: Upload Video content
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - type: string
+          description: The number of rows the tile will take up
+          name: rows
+          in: formData
+        - type: string
+          description: The number of columns the tile will take up
+          name: columns
+          in: formData
+        - type: file
+          description: >-
+            The image file to upload. This is displayed whilst the video is
+            loading in the app
+          name: placeholder
+          in: formData
+        - type: file
+          description: The video file to upload
+          name: video
+          in: formData
+      responses:
+        '201':
+          description: |
+            Files successfully uploaded
+          schema:
+            type: object
+            properties:
+              placeholder:
+                description: the destination path of the placeholder image on s3
+                type: string
+              videos:
+                description: A hash of video formats and their respective keys on s3
+                type: object
+        '400':
+          description: |
+            - Image or video validation failed
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              error_code: UPLOAD_ERROR
+              message: Video must be of type MP4
+              success: false
+  /{merchant_id}/wall/{wall_id}/schedule:
+    post:
+      description: |
+        A Wall has 3 "states", Published, scheduled and unpublished(in drafts).
+        These states determine what is visible in the app and when.
+
+        A Wall can have a different schedule for a number of different locales.
+        For example a wall can be scheduled to be live in France on Monday and
+        the US on Wednesday.
+
+        This endpoint is responsible for publishing, scheduling and unpublishing
+        a wall. The endpoint accepts an array of objects representing a locale.
+        If the time is in the future the wall will be scheduled, and if
+        `publish_at` is now then the wall will be published.
+
+        Note that the array in the request will replace all current tags /
+        schedules in the resource. E.g. if the wall is published in en-GB but
+        the request does not include a en-GB tag then the en-GB tag will be
+        removed from the resource and the resource will no longer be published
+        in that locale.
+      tags:
+        - Walls
+      summary: Publish a wall
+      operationId: PublishWall
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/wall_id'
+        - $ref: '#/parameters/publish_wall_request_body'
+      responses:
+        '201':
+          description: Resource successfully updated
+          schema:
+            $ref: '#/definitions/Wall'
+        '400':
+          description: A validation failed and the wall could not be updated
+        '403':
+          $ref: '#/responses/legacy_unauthorized_error'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+  /{merchant_id}/walls:
+    get:
+      description: |
+        * The `locales` and `view` parameters cannot be combined.
+        * The `view` parameter is ignored if it has an unknown value.
+      tags:
+        - Walls
+      summary: List all walls
+      operationId: ListAllWalls
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/legacy_locales'
+        - $ref: '#/parameters/view'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - walls
+            properties:
+              walls:
+                type: array
+                items:
+                  $ref: '#/definitions/WallPreview'
+        '403':
+          $ref: '#/responses/legacy_unauthorized_error'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+    post:
+      tags:
+        - Walls
+      summary: Create a wall
+      operationId: CreateWall
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/create_wall_request_body'
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/Wall'
+          x-summary: Hi
+        '400':
+          description: The request body is invalid
+          schema:
+            $ref: '#/definitions/LegacyError'
+        '403':
+          $ref: '#/responses/legacy_unauthorized_error'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+  /{merchant_id}/walls/active:
+    get:
+      description: |
+        Retrieve the currently active wall. Passing in an optional array of
+        locales will return a filtered set of walls for the matching locales.
+      tags:
+        - Walls
+      summary: View active Wall
+      operationId: ViewActiveWall
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/legacy_locales'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Wall'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+  /{merchant_id}/walls/{wall_id}:
+    put:
+      description: >
+        A wall **must** have between **2** and **25 rows**. Attempting to
+        publish a wall
+
+        with only one row results in an error.
+      tags:
+        - Walls
+      summary: Update a wall
+      operationId: UpdateWall
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/wall_id'
+        - $ref: '#/parameters/update_wall_request_body'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Wall'
+        '400':
+          description: Update failed some validations
+          schema:
+            $ref: '#/definitions/LegacyError'
+          examples:
+            application/json:
+              error_code: UNPUBLISHABLE_WALL
+              message: Cannot publish wall with 0 rows
+              success: false
+        '403':
+          $ref: '#/responses/legacy_unauthorized_error'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+    delete:
+      tags:
+        - Walls
+      summary: Delete a wall
+      operationId: DeleteWall
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/wall_id'
+      responses:
+        '204':
+          description: The wall was successfully deleted
+        '400':
+          description: Cannot delete a published wall
+          schema:
+            $ref: '#/definitions/LegacyError'
+          examples:
+            application/json:
+              error_code: PUBLISHED_WALL
+              message: Cannot delete published wall
+              success: false
+        '403':
+          $ref: '#/responses/legacy_unauthorized_error'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+  /{merchant_id}/walls/{wall_id}/duplicate:
+    post:
+      description: |
+        Copies a wall and all associated rows and tiles. The copied Wall will
+        always be created as unpublished.
+      tags:
+        - Walls
+      summary: Duplicate a wall
+      operationId: DuplicateWall
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/wall_id'
+      responses:
+        '201':
+          description: Successfully copied
+          schema:
+            description: The id of the newly created wall
+            type: object
+            required:
+              - copied_wall
+            properties:
+              copied_wall:
+                description: The ID of the wall
+                type: number
+          examples:
+            application/json:
+              copied_wall: 123
+        '403':
+          $ref: '#/responses/legacy_unauthorized_error'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+  /{merchant_id}/walls/{wall_id}/order:
+    post:
+      description: |
+        All row IDs should be present. Extra row IDs or missing row IDs are
+        not allowed.
+      tags:
+        - Walls
+      summary: Update the order of rows
+      operationId: ReorderRows
+      parameters:
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/wall_id'
+        - $ref: '#/parameters/reorder_rows_request_body'
+      responses:
+        '204':
+          description: The order was changed
+        '400':
+          description: The given order is invalid
+          schema:
+            $ref: '#/definitions/LegacyError'
+          examples:
+            application/json:
+              code: INVALID_ORDER
+              message: Missing or unknown rows
+              success: false
+        '403':
+          $ref: '#/responses/legacy_unauthorized_error'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+  /{merchant_id}/walls/{wall_id}/rows:
+    post:
+      description: >
+        Represents the collection of rows in a promotion wall.
+
+        The collection of tiles, when placed on the grid, should cover the whole
+        grid exactly. It’s
+
+        not allowed to leave gaps, overlap tiles or let tiles stick out of the
+        grid.
+
+        A home wall can have at most 25 rows. Attempting to add more results in
+        an error.
+
+        A resource can only be linked once per wall.
+
+        Tiles can be one of 2 types; `img` or `video`. The `content` body
+        changes depending on the
+
+        type.
+      tags:
+        - Rows
+      summary: Create a Row
+      operationId: CreateRow
+      parameters:
+        - $ref: '#/parameters/access_token'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/wall_id'
+        - $ref: '#/parameters/create_row_request_body'
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/Row'
+        '400':
+          description: |
+            The Resource has already been linked
+          schema:
+            $ref: '#/definitions/LegacyError'
+          examples:
+            application/json:
+              error_code: ALREADY_LINKED
+              message: Resource category 'women' already linked
+              success: false
+        '403':
+          $ref: '#/responses/legacy_unauthorized_error'
+        '404':
+          $ref: '#/responses/legacy_not_found_error'
+  /{merchant_id}/{resource}/{id}/translations:
+    post:
+      description: >
+        Create translations for a resource. For example `POST
+        /scotch/lookbooks/2/translations` will
+
+        create translations for the specified lookbook.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      summary: Adds translations to a resource
+      operationId: Mixin7
+      parameters:
+        - $ref: '#/parameters/auth'
+        - $ref: '#/parameters/merchant_id'
+        - $ref: '#/parameters/resource'
+        - $ref: '#/parameters/path_id'
+        - description: The number of rows the tile will take up
+          name: translations
+          in: body
+          schema:
+            $ref: '#/definitions/Translations'
+      responses:
+        '201':
+          description: >
+            Files successfully uploaded. Returns the specified resource, for
+            example the lookbook
+        '400':
+          description: |
+            - A validation failed
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          $ref: '#/responses/unauthorized'
+        '404':
+          $ref: '#/responses/not_found'
+definitions:
+  AppStatus:
+    description: App Status Settings
+    type: object
+    properties:
+      android:
+        $ref: '#/definitions/AppStatusAndroid'
+      default_message:
+        description: Default message displayed for all languages as body
+        type: string
+      default_title:
+        description: Default title displayed for all languages as header
+        type: string
+      enabled:
+        description: Maintenance Status Enabled or Disabled
+        type: boolean
+      ios:
+        $ref: '#/definitions/AppStatusIOS'
+      merchant:
+        description: Merchant ID
+        type: string
+      messages:
+        description: Translations for Messages for various languages and countries
+        type: array
+        items:
+          $ref: '#/definitions/AppStatusTranslatedMessage'
+      titles:
+        description: Translations for Titles for various languages and countries
+        type: array
+        items:
+          $ref: '#/definitions/AppStatusTranslatedTitle'
+  AppStatusAndroid:
+    description: Specific information used by Android mobile apps
+    type: object
+    required:
+      - minimum_version
+    properties:
+      minimum_version:
+        description: Minimum app version for Android
+        type: string
+  AppStatusIOS:
+    description: Specific information used by iOS mobile apps
+    type: object
+    properties:
+      minimum_version:
+        description: Minimum app version for iOS
+        type: string
+  AppStatusTranslatedMessage:
+    description: Translated Message
+    type: object
+    required:
+      - lang
+      - value
+    properties:
+      country:
+        description: Country Code
+        type: string
+        example: NL
+      lang:
+        description: Language code
+        type: string
+        example: en
+      value:
+        description: Translation for the specified language
+        type: string
+  AppStatusTranslatedTitle:
+    description: Translated Title
+    type: object
+    required:
+      - lang
+      - value
+    properties:
+      country:
+        description: Country Code
+        type: string
+        example: NL
+      lang:
+        description: Language code
+        type: string
+        example: en
+      value:
+        description: Translation for the specified language
+        type: string
+        example: English Title
+  AppearanceConfig:
+    type: object
+    required:
+      - appearance
+    properties:
+      appearance:
+        type: object
+        required:
+          - home_wall
+        properties:
+          home_wall:
+            $ref: '#/definitions/HomeWallConfig'
+  AttributeValue:
+    type: object
+    properties:
+      code:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      value:
+        type: object
+        properties:
+          id:
+            type: string
+          sort_hint:
+            type: string
+          title:
+            type: string
+  CacheRefresh:
+    type: object
+    properties:
+      schedule_id:
+        type: string
+      storefronts:
+        type: array
+        items:
+          type: string
+      time:
+        type: string
+  CacheRefreshSchedule:
+    type: object
+    properties:
+      id:
+        description: The storefront id
+        type: string
+      time:
+        description: An ISO8061 time stamp
+        type: string
+  CacheRefreshes:
+    type: array
+    items:
+      $ref: '#/definitions/CacheRefresh'
+  Categories:
+    type: array
+    items:
+      $ref: '#/definitions/Category'
+  Category:
+    type: object
+    properties:
+      id:
+        type: string
+      path:
+        type: string
+      title:
+        type: string
+  ContentExtension:
+    allOf:
+      - $ref: '#/definitions/ContentExtensionFields'
+      - required:
+          - id
+          - default_title
+          - default_url
+          - titles
+          - urls
+        properties:
+          id:
+            description: Content Extension ID
+            type: number
+    example:
+      default_title: Winter Collection
+      default_url: https://merchant.com/winter-collection
+      id: 273
+      titles:
+        - country: nl
+          lang: nl
+          value: Winter collectie
+        - country: nl
+          lang: fr
+          value: Collection d'hiver
+      urls:
+        - storefront_id: en-NL
+          url: https://merchant.com/en-nl/winter-collection
+        - storefront_id: nl-NL
+          url: https://merchant.com/nl-nl/winter-collection
+        - storefront_id: nl-BE
+          url: https://merchant.com/nl-be/winter-collection
+        - storefront_id: fr-BE
+          url: https://merchant.com/fr-be/winter-collection
+        - storefront_id: fr-FR
+          url: https://merchant.com/fr-fr/winter-collection
+  ContentExtensionFields:
+    description: A content extension
+    type: object
+    properties:
+      default_title:
+        description: The default title
+        type: string
+      default_url:
+        description: The default title
+        type: string
+        format: uri
+      titles:
+        description: Language specific titles
+        type: array
+        items:
+          $ref: '#/definitions/LocalizedContentExtensionTitle'
+      urls:
+        description: Storefront specific URLs
+        type: array
+        items:
+          $ref: '#/definitions/LocalizedContentExtensionURL'
+  ContentExtensionTitle:
+    type: object
+    properties:
+      country:
+        type: string
+      lang:
+        type: string
+      value:
+        type: string
+  ContentExtensionUrl:
+    type: object
+    properties:
+      storefront_id:
+        type: string
+      value:
+        type: string
+  ContentType:
+    description: >-
+      Is the push notification linked to a content in Studio or was it created
+      custom (video/image)
+    type: string
+    enum:
+      - resource
+      - custom
+  CreateLookbook:
+    type: object
+    properties:
+      display_categories:
+        type: array
+        items:
+          type: string
+      published:
+        description: >
+          Defines if the lookbook is published or not. Only published lookbooks
+          are visible in the
+
+          app.
+        type: boolean
+        default: false
+      title:
+        description: Title of the lookbook
+        type: string
+  CreateMessageRequestParams:
+    type: object
+    required:
+      - title
+      - body
+      - language
+      - image_path
+    properties:
+      body:
+        description: The body of the message
+        type: string
+      image_path:
+        description: The image url for the visual element of the message
+        type: string
+      language:
+        description: The language of the message
+        type: string
+      title:
+        description: The title of the message
+        type: string
+  CreatePublicationRequestParams:
+    type: object
+    required:
+      - publish_at
+      - placements
+      - storefront_ids
+    properties:
+      placements:
+        description: List of placements where the message will be shown in the app
+        type: array
+        items:
+          type: string
+          enum:
+            - cart
+      publish_at:
+        description: Unix timestamp that indicates when the message should be published
+        type: integer
+      storefront_ids:
+        description: List of storefront_ids the publication is linked to
+        type: array
+        items:
+          type: string
+      unpublish_at:
+        description: >-
+          Unix timestamp that indicates until when the message should stay
+          published
+        type: integer
+  CreateUserRequestParams:
+    description: Params for creating a new user for a merchant
+    type: object
+    required:
+      - email
+    properties:
+      email:
+        description: Email
+        type: string
+      name:
+        description: Full Name
+        type: string
+      role:
+        description: User role to be created, default to 'user'
+        type: string
+  DestinationType:
+    description: The destination type for the deep linking
+    type: string
+    enum:
+      - categories
+      - products
+      - lookbooks
+      - home
+  Err:
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        description: The code of the error
+        type: string
+      details:
+        description: Additional details for debug purposes
+      message:
+        description: A developer friendly message about the error
+        type: string
+  Error:
+    description: Error envelope
+    type: object
+    properties:
+      error_code:
+        type: string
+      message:
+        description: Developer friendly description of the error
+        type: string
+      success:
+        type: boolean
+  ExtraHotHotspot:
+    description: Describes the position of a hotspot its linked product(s)
+    type: object
+    required:
+      - product_slots
+      - position
+    properties:
+      position:
+        description: The position of the hotspot
+        type: object
+        required:
+          - x
+          - 'y'
+        properties:
+          x:
+            description: The X position of the hotspot
+            type: number
+            maximum: 1
+            minimum: 0
+          'y':
+            description: The Y position of the hotspot
+            type: number
+            maximum: 1
+            minimum: 0
+      product_slots:
+        description: The linked product(s)
+        type: array
+        maxItems: 4
+        items:
+          type: object
+          required:
+            - products
+          properties:
+            products:
+              type: array
+              maxItems: 1
+              minItems: 1
+              items:
+                description: A product ID
+                type: string
+  FrontImages:
+    type: object
+    properties:
+      background-568h@2x~iphone:
+        type: string
+      background-667h@2x~iphone:
+        type: string
+      background-667h@3x~iphone:
+        type: string
+      background-736h@3x~iphone:
+        type: string
+      background@2x~ipad:
+        type: string
+      background@2x~iphone:
+        type: string
+      background@2x~watch:
+        type: string
+      background~ipad:
+        type: string
+  HomeWallConfig:
+    type: object
+    required:
+      - background_color
+      - gutter_size
+      - horizontal_margin
+      - shadow_alpha
+      - tile_corner_radius
+      - vertical_margin
+    properties:
+      background_color:
+        type: string
+      gutter_size:
+        type: string
+      horizontal_margin:
+        type: string
+      shadow_alpha:
+        type: string
+      tile_corner_radius:
+        type: string
+      vertical_margin:
+        type: string
+  Hotspot:
+    type: object
+    properties:
+      position:
+        type: object
+        properties:
+          x:
+            type: string
+          'y':
+            type: string
+      product_slots:
+        type: array
+        items:
+          type: object
+          properties:
+            products:
+              type: array
+              items:
+                type: integer
+  ImageTile:
+    allOf:
+      - $ref: '#/definitions/Tile'
+      - $ref: '#/definitions/Translatable'
+      - required:
+          - type
+          - content
+        properties:
+          content:
+            description: Describes the image to display
+            type: object
+            properties:
+              parralax:
+                description: Should a parallax be applied when scrolling?
+                type: boolean
+              url:
+                description: URL of the image
+                type: string
+                format: uri
+          default_image:
+            description: The default image to use for when there is no localized option
+            type: object
+            required:
+              - path
+            properties:
+              path:
+                description: The path on S3 for the image
+                type: string
+              url:
+                description: The full url of the image
+                type: string
+          default_title:
+            description: The default title to display
+            type: string
+          images:
+            description: List of localized images
+            type: array
+            items:
+              $ref: '#/definitions/LocalizedTileImage'
+          titles:
+            description: Localized titles
+            type: array
+            items:
+              $ref: '#/definitions/LocalizedTileTitle'
+          type:
+            type: string
+            enum:
+              - img
+  ImageTileRequest:
+    allOf:
+      - $ref: '#/definitions/TileRequest'
+      - $ref: '#/definitions/Translatable'
+      - required:
+          - type
+          - content
+        properties:
+          content:
+            description: Describes the image to display
+            type: object
+            properties:
+              parralax:
+                description: Should a parallax be applied when scrolling?
+                type: boolean
+              url:
+                description: URL of the image
+                type: string
+                format: uri
+          default_image:
+            description: The default image to use for when there is no localized option
+            type: object
+            required:
+              - path
+            properties:
+              path:
+                description: The path on S3 for the image
+                type: string
+              url:
+                description: The full url of the image
+                type: string
+          default_title:
+            description: The default title to display
+            type: string
+          images:
+            description: List of localized images
+            type: array
+            items:
+              $ref: '#/definitions/LocalizedTileImage'
+          titles:
+            description: Localized titles
+            type: array
+            items:
+              $ref: '#/definitions/LocalizedTileTitle'
+          type:
+            type: string
+            enum:
+              - img
+  LegacyError:
+    description: Error envelope
+    type: object
+    properties:
+      error_code:
+        type: string
+      message:
+        description: Developer friendly description of the error
+        type: string
+      success:
+        type: boolean
+  LegacyTag:
+    type: object
+    properties:
+      id:
+        description: Tag ID
+        type: integer
+      merchant:
+        description: Merchant ID
+        type: string
+      tag_type:
+        description: The type of tag
+        type: string
+        enum:
+          - locale
+      tag_value:
+        description: The tag value
+        type: string
+  LinkedCategory:
+    allOf:
+      - $ref: '#/definitions/LinkedResource'
+      - required:
+          - type
+          - id
+        properties:
+          id:
+            description: ID of the category
+            type: string
+          type:
+            type: string
+            enum:
+              - category
+  LinkedCategoryRequest:
+    allOf:
+      - $ref: '#/definitions/LinkedResourceRequest'
+      - required:
+          - type
+          - id
+        properties:
+          id:
+            description: ID of the category
+            type: string
+          type:
+            type: string
+            enum:
+              - category
+  LinkedContentExtension:
+    allOf:
+      - $ref: '#/definitions/LinkedResource'
+      - required:
+          - type
+          - default_url
+          - default_title
+        properties:
+          default_title:
+            description: Default title of the content extension
+            type: string
+          default_url:
+            description: URL of the content extension
+            type: string
+          titles:
+            type: array
+            items:
+              $ref: '#/definitions/ContentExtensionTitle'
+          type:
+            type: string
+            enum:
+              - contentextension
+          urls:
+            type: array
+            items:
+              $ref: '#/definitions/ContentExtensionUrl'
+  LinkedContentExtensionRequest:
+    allOf:
+      - $ref: '#/definitions/LinkedResourceRequest'
+      - required:
+          - type
+          - id
+        properties:
+          id:
+            description: id of ContentExtension
+            type: integer
+          type:
+            type: string
+            enum:
+              - contentextension
+  LinkedLook:
+    allOf:
+      - $ref: '#/definitions/LinkedResource'
+      - required:
+          - type
+          - id
+          - meta
+        properties:
+          id:
+            description: ID of the look
+            type: string
+          meta:
+            required:
+              - lookbook_id
+              - index
+            properties:
+              index:
+                description: '**DEPRECATED**: position of the look in its lookbook'
+                type: integer
+              lookbook_id:
+                description: ID of the lookbook
+                type: integer
+          type:
+            type: string
+            enum:
+              - lookbook_look
+  LinkedLookRequest:
+    allOf:
+      - $ref: '#/definitions/LinkedResourceRequest'
+      - required:
+          - type
+          - id
+          - meta
+        properties:
+          id:
+            description: ID of the look
+            type: string
+          meta:
+            required:
+              - lookbook_id
+              - index
+            properties:
+              index:
+                description: '**DEPRECATED**: position of the look in its lookbook'
+                type: integer
+              lookbook_id:
+                description: ID of the lookbook
+                type: integer
+          type:
+            type: string
+            enum:
+              - lookbook_look
+  LinkedLookbook:
+    allOf:
+      - $ref: '#/definitions/LinkedResource'
+      - required:
+          - type
+          - id
+        properties:
+          id:
+            description: ID of the lookbook
+            type: string
+          type:
+            type: string
+            enum:
+              - lookbook
+  LinkedLookbookRequest:
+    allOf:
+      - $ref: '#/definitions/LinkedResourceRequest'
+      - required:
+          - type
+          - id
+        properties:
+          id:
+            description: ID of the lookbook
+            type: string
+          type:
+            type: string
+            enum:
+              - lookbook
+  LinkedProduct:
+    allOf:
+      - $ref: '#/definitions/LinkedResource'
+      - required:
+          - type
+          - id
+        properties:
+          id:
+            description: ID of the product
+            type: string
+          type:
+            type: string
+            enum:
+              - product
+  LinkedProductRequest:
+    allOf:
+      - $ref: '#/definitions/LinkedResourceRequest'
+      - required:
+          - type
+          - id
+        properties:
+          id:
+            description: ID of the product
+            type: string
+          type:
+            type: string
+            enum:
+              - product
+  LinkedResource:
+    description: A linked resource
+    type: object
+    properties:
+      _:
+        type: string
+    discriminator: type
+  LinkedResourceRequest:
+    description: A linked resource request
+    type: object
+    properties:
+      _:
+        type: string
+    discriminator: type
+  LocalizedContentExtensionTitle:
+    description: A localized title
+    type: object
+    required:
+      - lang
+      - country
+      - value
+    properties:
+      country:
+        description: A country code
+        type: string
+      lang:
+        description: A language code
+        type: string
+      value:
+        description: A title
+        type: string
+  LocalizedContentExtensionURL:
+    description: A localized URL
+    type: object
+    required:
+      - storefront_id
+      - url
+    properties:
+      storefront_id:
+        description: A storefront ID
+        type: string
+      url:
+        description: A URL
+        type: string
+  LocalizedTileImage:
+    type: object
+    required:
+      - lang
+      - path
+    properties:
+      lang:
+        description: The target language for the image
+        type: string
+      path:
+        description: The path on S3 for the image
+        type: string
+      region:
+        description: The target region for the image
+        type: string
+      url:
+        description: The full url of the image
+        type: string
+  LocalizedTileTitle:
+    type: object
+    required:
+      - lang
+      - value
+    properties:
+      lang:
+        description: A language code
+        type: string
+      region:
+        description: A country code
+        type: string
+      value:
+        description: The localized text
+        type: string
+  Look:
+    type: object
+    properties:
+      created_at:
+        type: integer
+      hotspots:
+        type: array
+        items:
+          $ref: '#/definitions/Hotspot'
+      id:
+        type: integer
+      image:
+        type: object
+        properties:
+          0x:
+            type: string
+          1x:
+            type: string
+      image_key:
+        type: string
+      images:
+        type: object
+        properties:
+          background-568h@2x~iphone:
+            type: string
+          background-667h@2x~iphone:
+            type: string
+          background-667h@3x~iphone:
+            type: string
+          background-736h@3x~iphone:
+            type: string
+          background@2x~ipad:
+            type: string
+          background@2x~iphone:
+            type: string
+          background@2x~watch:
+            type: string
+          background~ipad:
+            type: string
+      index:
+        type: integer
+      lookbook_id:
+        type: integer
+      updated_at:
+        type: integer
+  LookCreate:
+    type: object
+    properties:
+      id:
+        type: integer
+      look:
+        description: A JSON Hash
+        type: string
+      lookbook_id:
+        type: integer
+  LookTile:
+    allOf:
+      - $ref: '#/definitions/Tile'
+      - $ref: '#/definitions/Translatable'
+      - required:
+          - type
+          - content
+        properties:
+          content:
+            description: Describes the look to display
+            type: object
+            required:
+              - lookbook
+              - look
+              - image
+              - hotspots
+            properties:
+              hotspots:
+                type: array
+                items:
+                  $ref: '#/definitions/ExtraHotHotspot'
+              image:
+                description: An image URL
+                type: string
+                format: uri
+              look:
+                description: ID of the look
+                type: string
+              lookbook:
+                description: ID of the lookbook the look belongs to
+                type: string
+          type:
+            type: string
+            enum:
+              - look
+  LookTileRequest:
+    allOf:
+      - $ref: '#/definitions/TileRequest'
+      - $ref: '#/definitions/Translatable'
+      - required:
+          - type
+          - content
+        properties:
+          content:
+            description: Describes the look to display
+            type: object
+            required:
+              - lookbook
+              - look
+              - image
+              - hotspots
+            properties:
+              hotspots:
+                type: array
+                items:
+                  $ref: '#/definitions/ExtraHotHotspot'
+              image:
+                description: An image URL
+                type: string
+                format: uri
+              look:
+                description: ID of the look
+                type: string
+              lookbook:
+                description: ID of the lookbook the look belongs to
+                type: string
+          type:
+            type: string
+            enum:
+              - look
+  Lookbook:
+    type: object
+    properties:
+      base_storefront:
+        description: >-
+          Defines which storefront to use when searching for products and
+          categories
+        type: string
+      created_at:
+        type: integer
+      display_categories:
+        type: string
+      front_images:
+        $ref: '#/definitions/FrontImages'
+      id:
+        type: integer
+      index:
+        type: integer
+      linked_to_tile:
+        description: A list of Homewall names that this lookbook is linked to
+        type: array
+        items:
+          type: string
+      look_count:
+        type: integer
+      merchant_id:
+        type: string
+      published:
+        type: boolean
+      schedule_overview:
+        $ref: '#/definitions/Schedule'
+      title:
+        type: string
+      translations:
+        $ref: '#/definitions/Translations'
+      updated_at:
+        type: integer
+  Looks:
+    type: array
+    items:
+      $ref: '#/definitions/Look'
+  Merchant:
+    type: object
+    required:
+      - id
+      - storefronts
+    properties:
+      id:
+        description: The identifier of the merchant
+        type: string
+      storefronts:
+        description: The storefronts of the merchant
+        type: array
+        items:
+          $ref: '#/definitions/Storefront'
+  Merchants:
+    type: object
+    properties:
+      app_store_id:
+        description: The app_store_id of the merchant. This is used to get the icon.
+        type: string
+      deeplink_scheme:
+        description: App identifier for use in a deeplink eg scotchsoda
+        type: string
+      display_name:
+        description: Human readable Merchant name
+        type: string
+      id:
+        description: the merchant id
+        type: string
+  Message:
+    type: object
+    required:
+      - id
+      - title
+      - body
+      - language
+      - publications
+      - visual
+    properties:
+      body:
+        description: The body of the message
+        type: string
+      id:
+        description: The identifier of the message
+        type: string
+      language:
+        description: The language of the message
+        type: string
+      publications:
+        description: The publications of the messages
+        type: array
+        items:
+          $ref: '#/definitions/Publication'
+      title:
+        description: The title of the message
+        type: string
+      visual:
+        $ref: '#/definitions/Visual'
+  Product:
+    type: object
+    properties:
+      attribute_values:
+        type: array
+        items:
+          $ref: '#/definitions/AttributeValue'
+      id:
+        type: string
+      images:
+        type: object
+        properties:
+          image:
+            type: string
+          small_image:
+            type: string
+          thumbnail:
+            type: string
+      name:
+        type: string
+      sku:
+        type: string
+  Products:
+    type: array
+    items:
+      $ref: '#/definitions/Product'
+  Publication:
+    type: object
+    required:
+      - id
+      - message_id
+      - publish_at
+      - unpublish_at
+      - placements
+      - storefront_ids
+    properties:
+      id:
+        description: The identifier of the publication
+        type: string
+      message_id:
+        description: The identifier of the message to be published
+        type: string
+      placements:
+        description: List of placements where the message will be shown in the app
+        type: array
+        items:
+          type: string
+          enum:
+            - cart
+      publish_at:
+        description: Unix timestamp that indicates when the message should be published
+        type: integer
+      storefront_ids:
+        description: List of storefront_ids the publication is linked to
+        type: array
+        items:
+          type: string
+      unpublish_at:
+        description: >-
+          Unix timestamp that indicates until when the message should stay
+          published
+        type: integer
+  PushNotification:
+    type: object
+    properties:
+      cancelled:
+        description: Is the push notification cancelled?
+        type: boolean
+      content_type:
+        $ref": '#/definitions/ContentType'
+      destination_name:
+        description: The human readable identifier of the destination.
+        type: string
+      destination_storefront_id:
+        description: >-
+          The storefront from where the category of product was selected (in
+          case destination type is categories or products)
+        type: string
+      destination_type:
+        $ref: '#/definitions/DestinationType'
+      destination_type_id:
+        description: The identifier for the destination type, if needed.
+        type: string
+      expiration_time:
+        description: The expiration time in Unix Timestamp
+        type: integer
+      image_thumbnail_url:
+        description: The url to a thumbnail created to display on the lock screen
+        type: string
+      image_url:
+        description: The url to an image created to display in rich notifications
+        type: string
+      language:
+        description: The language used when selecting the storefront id
+        type: string
+      merchant_id:
+        description: The Merchant for which the push belongs to.
+        type: string
+      message:
+        description: The message for the push notification.
+        type: string
+      push_time:
+        description: When the notification will be sent.
+        type: string
+      studio_id:
+        description: An unique id to be used by Studio FE
+        type: string
+      tagged_with:
+        $ref: '#/definitions/TaggedWith'
+      time_zone:
+        description: The time zone choosen by the user when created the push notification
+        type: string
+      title:
+        description: The title for the push notification
+        type: string
+      unique_id:
+        description: The unique id for the push notification
+        type: integer
+      video_url_480:
+        description: >-
+          The url to an video uploaded by the user when created the push
+          notification in format 480p or extracted from Homewall or Lookbook
+          Video
+        type: string
+      video_url_720:
+        description: >-
+          The url to an video uploaded by the user when created the push
+          notification in format 720p or extracted from Homewall or Lookbook
+          Video
+        type: string
+  PushNotificationDataPoint:
+    type: object
+    properties:
+      day:
+        type: string
+        format: date
+        example: '2022-03-16'
+      total:
+        type: integer
+        example: 110
+  PushNotifications:
+    type: object
+    properties:
+      push_notifications:
+        type: array
+        items:
+          $ref: '#/definitions/PushNotification'
+  PushNotificationsCreate:
+    type: object
+    required:
+      - destination_type
+      - destination_type_id
+      - message
+      - tags
+      - title
+      - content_type
+    properties:
+      content_type:
+        $ref: '#/definitions/ContentType'
+      customer_id:
+        description: >-
+          The email address of a customer. This will send the notifaction to
+          this user only
+        type: string
+      destination_name:
+        description: The human readable identifier of the destination
+        type: string
+      destination_type:
+        description: The destination type for the deep linking
+        type: string
+        enum:
+          - categories
+          - products
+          - lookbooks
+          - home
+      destination_type_id:
+        description: The identifier for the destination type, if needed.
+        type: string
+      image_thumbnail_url:
+        description: The url to a thumbnail created to display on the lock screen
+        type: string
+      image_url:
+        description: The url to an image created to display in rich notifications
+        type: string
+      message:
+        description: The message for the push notification.
+        type: string
+      push_time:
+        description: When the notification will be sent.
+        type: string
+      tags:
+        type: array
+        items:
+          $ref: '#/definitions/SimpleTag'
+      title:
+        description: The title for the push notification.
+        type: string
+  PushNotificationsReport:
+    type: object
+    properties:
+      report:
+        type: object
+        properties:
+          beginning_of_interval:
+            description: >-
+              Time in format ISO8601 in UTC time zone that was took into
+              consideration as beginning of the interval
+            type: string
+            example: '2022-06-05T03:34:47Z'
+          delta_subscribers:
+            description: >-
+              The difference between number of subscribers at the beginning of
+              the interval and at the end of the interval. Can have negative
+              sign if the change is negative.
+            type: integer
+            example: 50
+          delta_users:
+            description: >-
+              The difference between number of users at the beginning of the
+              interval and at the end of the interval. Can have negative sign if
+              the change is negative.
+            type: integer
+            example: -5
+          end_of_interval:
+            description: >-
+              Time in format ISO8601 in UTC time zone that was took into
+              consideration as end of interval
+            type: string
+            example: '2022-06-10T03:34:47Z'
+          subscribers_data:
+            type: array
+            items:
+              $ref: '#/definitions/PushNotificationDataPoint'
+          total_subscribers:
+            description: The total number of subscribers at the end of the interval
+            type: integer
+            example: 100
+          total_users:
+            description: The total number of users at the end of the interval
+            type: integer
+            example: 82
+          users_data:
+            type: array
+            items:
+              $ref: '#/definitions/PushNotificationDataPoint'
+  Row:
+    description: A Row
+    allOf:
+      - $ref: '#/definitions/RowFields'
+      - required:
+          - id
+          - type
+          - config
+          - tiles
+        properties:
+          id:
+            description: Identifier of the row
+            type: integer
+  RowFields:
+    type: object
+    properties:
+      config:
+        description: Configuration of the row
+        type: object
+        required:
+          - height
+        properties:
+          height:
+            description: Height of the grid
+            type: integer
+      tiles:
+        description: The tiles the row contains
+        type: array
+        items:
+          $ref: '#/definitions/Tile'
+      type:
+        description: The row type
+        type: string
+        enum:
+          - grid
+  RowFieldsRequest:
+    type: object
+    properties:
+      config:
+        description: Configuration of the row
+        type: object
+        required:
+          - height
+        properties:
+          height:
+            description: Height of the grid
+            type: integer
+      tiles:
+        description: The tiles the row contains
+        type: array
+        items:
+          $ref: '#/definitions/TileRequest'
+      type:
+        description: The row type
+        type: string
+        enum:
+          - grid
+  Schedulable:
+    properties:
+      schedule_overview:
+        type: array
+        items:
+          $ref: '#/definitions/ScheduleItem'
+  Schedule:
+    type: array
+    items:
+      - $ref: '#/definitions/Schedule_item'
+  ScheduleItem:
+    type: object
+    properties:
+      id:
+        description: Unique id of the locale tag
+        type: string
+      time:
+        description: An ISO8061 formatted time stamp
+        type: string
+      time_zone:
+        description: The time zone identifier eg Europe/Amsterdam
+        type: string
+      value:
+        description: Human readable value of locale tag eg nl-NL
+        type: string
+  Schedule_item:
+    type: object
+    properties:
+      id:
+        description: Unique id of the locale tag
+        type: string
+      time:
+        description: An ISO8061 formatted time stamp
+        type: string
+      time_zone:
+        description: The time zone identifier eg Europe/Amsterdam
+        type: string
+      value:
+        description: Human readable value of locale tag eg nl-NL
+        type: string
+  SimpleTag:
+    type: object
+    properties:
+      tag_type:
+        description: the type of tag. Could be either `locale`  or `customer_group`
+        type: string
+      tag_value:
+        description: The tag name eg. `Men 30 - 40`
+        type: string
+  Store:
+    type: object
+    properties:
+      app_store_id:
+        type: string
+      capabilities:
+        type: string
+      country:
+        type: string
+      name:
+        type: string
+  Storefront:
+    type: object
+    required:
+      - id
+      - language
+    properties:
+      id:
+        description: The identifier of the storefront
+        type: string
+      language:
+        description: The main language of the storefront
+        type: string
+  Tag:
+    type: object
+    properties:
+      id:
+        description: unique database id
+        type: string
+      merchant_id:
+        description: The merchant That this tag belongs to
+        type: string
+      tag_type:
+        description: the type of tag. Could be either `locale`  or `customer_group`
+        type: string
+      tag_value:
+        description: The tag name eg. `Men 30 - 40`
+        type: string
+  Taggable:
+    properties:
+      tagged_with:
+        type: array
+        items:
+          $ref: '#/definitions/LegacyTag'
+  TaggedWith:
+    type: object
+    properties:
+      customer_group:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+      locale:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+  Tile:
+    description: A tile to be placed on a Row of type grid
+    type: object
+    required:
+      - rect
+      - resource
+    properties:
+      rect:
+        description: Describes a rectangle on the grid (x, y, width, height)
+        type: array
+        items:
+          - description: X position
+            type: integer
+          - description: Y position
+            type: integer
+          - description: Width
+            type: integer
+          - description: Height
+            type: integer
+      resource:
+        $ref: '#/definitions/LinkedResource'
+    discriminator: type
+  TileRequest:
+    description: A tile to be placed on a Row of type grid
+    type: object
+    required:
+      - rect
+      - resource
+    properties:
+      rect:
+        description: Describes a rectangle on the grid (x, y, width, height)
+        type: array
+        items:
+          - description: X position
+            type: integer
+          - description: Y position
+            type: integer
+          - description: Width
+            type: integer
+          - description: Height
+            type: integer
+      resource:
+        $ref: '#/definitions/LinkedResourceRequest'
+    discriminator: type
+  Translatable:
+    properties:
+      translations:
+        $ref: '#/definitions/Translations'
+  Translation:
+    type: object
+    properties:
+      locale:
+        description: The locale
+        type: string
+      section:
+        type: string
+      text:
+        type: string
+  Translations:
+    type: object
+    properties:
+      translations:
+        type: array
+        items:
+          $ref: '#/definitions/Translation'
+  UpdateAppStatusRequestParams:
+    type: object
+    required:
+      - enabled
+    properties:
+      android:
+        $ref: '#/definitions/AppStatusAndroid'
+      default_message:
+        description: >
+          Default message displayed for all languages as body. Required, unless
+          'messages' is empty
+        type: string
+      default_title:
+        description: >
+          Default title displayed for all languages as header. Required, unless
+          'titles' is empty.
+        type: string
+      enabled:
+        description: Maintenance Status Enabled or Disabled
+        type: boolean
+      ios:
+        $ref: '#/definitions/AppStatusIOS'
+      messages:
+        description: >
+          Translations for Messages for various languages and countries. When
+          used, 'default_title' cannot be empty.
+        type: array
+        items:
+          $ref: '#/definitions/AppStatusTranslatedMessage'
+      titles:
+        description: >
+          Translations for Titles for various languages and countries. When
+          used, 'default_title' cannot be empty.
+        type: array
+        items:
+          $ref: '#/definitions/AppStatusTranslatedTitle'
+  UpdateMessageRequestParams:
+    type: object
+    properties:
+      body:
+        description: The body of the message
+        type: string
+      image_path:
+        description: The image url for the visual element of the message
+        type: string
+      title:
+        description: The title of the message
+        type: string
+  UpdatePublicationRequestParams:
+    type: object
+    properties:
+      placements:
+        description: List of placements where the message will be shown in the app
+        type: array
+        items:
+          type: string
+          enum:
+            - cart
+      publish_at:
+        description: Unix timestamp that indicates when the message should be published
+        type: integer
+      storefront_ids:
+        description: List of storefront_ids the publication is linked to
+        type: array
+        items:
+          type: string
+      unpublish_at:
+        description: >-
+          Unix timestamp that indicates until when the message should stay
+          published
+        type: integer
+  User:
+    description: User attributes
+    type: object
+    properties:
+      email:
+        description: Email
+        type: string
+      merchants:
+        description: List of merchants this user has access to
+        type: array
+        items:
+          type: string
+        example:
+          - highstreet
+          - dstar
+      name:
+        description: Full name of the user
+        type: string
+      role:
+        description: Role of the user
+        type: string
+        enum:
+          - user
+          - admin
+          - super_admin
+      uuid:
+        description: Unique user identifier
+        type: string
+  Users:
+    description: List of users
+    type: object
+    properties:
+      users:
+        type: array
+        items:
+          $ref: '#/definitions/User'
+  VideoTile:
+    allOf:
+      - $ref: '#/definitions/Tile'
+      - $ref: '#/definitions/Translatable'
+      - required:
+          - type
+          - content
+        properties:
+          content:
+            description: Describes the video to display
+            type: object
+            required:
+              - videos
+              - placeholder
+            properties:
+              placeholder:
+                description: URL of a placeholder image
+                type: string
+                format: uri
+              videos:
+                description: URLs to videos in several sizes
+                type: object
+                required:
+                  - mp4_720
+                  - mp4_480
+                  - mp4_360
+                properties:
+                  mp4_360:
+                    type: string
+                    format: uri
+                  mp4_480:
+                    type: string
+                    format: uri
+                  mp4_720:
+                    type: string
+                    format: uri
+          type:
+            type: string
+            enum:
+              - video
+  VideoTileRequest:
+    allOf:
+      - $ref: '#/definitions/TileRequest'
+      - $ref: '#/definitions/Translatable'
+      - required:
+          - type
+          - content
+        properties:
+          content:
+            description: Describes the video to display
+            type: object
+            required:
+              - videos
+              - placeholder
+            properties:
+              placeholder:
+                description: URL of a placeholder image
+                type: string
+                format: uri
+              videos:
+                description: URLs to videos in several sizes
+                type: object
+                required:
+                  - mp4_720
+                  - mp4_480
+                  - mp4_360
+                properties:
+                  mp4_360:
+                    type: string
+                    format: uri
+                  mp4_480:
+                    type: string
+                    format: uri
+                  mp4_720:
+                    type: string
+                    format: uri
+          type:
+            type: string
+            enum:
+              - video
+  Visual:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        description: The type of visual element
+        type: string
+    discriminator: type
+  Wall:
+    allOf:
+      - $ref: '#/definitions/WallFields'
+      - $ref: '#/definitions/Schedulable'
+      - $ref: '#/definitions/Taggable'
+      - properties:
+          rows:
+            description: List of rows
+            type: array
+            maxItems: 25
+            items:
+              $ref: '#/definitions/Row'
+  WallFields:
+    type: object
+    properties:
+      base_storefront:
+        description: |
+          **DEPRECATED**: Used to determine which storefront to use when
+          searching for products / categories.
+        type: string
+      gutter_size:
+        description: |
+          **DEPRECATED**: Size of the gutter between tiles
+        type: number
+      id:
+        description: ID of the wall
+        type: integer
+      name:
+        description: Reference name of the wall (for merchants)
+        type: string
+      published:
+        description: Is this wall pusblished?
+        type: boolean
+  WallPreview:
+    allOf:
+      - $ref: '#/definitions/WallFields'
+      - $ref: '#/definitions/Schedulable'
+      - $ref: '#/definitions/Taggable'
+      - properties:
+          preview:
+            $ref: '#/definitions/Row'
+          row_count:
+            description: The number of rows this wall has
+            type: integer
+  image:
+    allOf:
+      - $ref: '#/definitions/Visual'
+      - required:
+          - url
+        properties:
+          path:
+            description: The image path
+            type: string
+          url:
+            description: The url of the image
+            type: string
+            format: uri
+parameters:
+  access_token:
+    type: string
+    description: Access token
+    name: Authorization
+    in: header
+    required: true
+  auth:
+    type: string
+    description: The valid session token, returned after logging a user in.
+    name: Authorization
+    in: header
+    required: true
+  breakable_type:
+    enum:
+      - Look
+      - Lookbook
+      - Lookbook::Video
+      - Lookbook::Image
+      - Lookbook::Timeframe
+      - V2::Row
+      - Row
+      - PushNotification
+      - ProductList
+    type: string
+    description: The breakable_type
+    name: breakable_type
+    in: body
+    required: true
+  content_extension_id:
+    type: string
+    description: Content Extension ID
+    name: content_extension_id
+    in: path
+    required: true
+  create_content_extension:
+    name: create_content_extension
+    in: body
+    schema:
+      allOf:
+        - $ref: '#/definitions/ContentExtensionFields'
+        - required:
+            - default_title
+            - default_url
+  create_push_notification:
+    name: push_notification
+    in: body
+    required: true
+    schema:
+      $ref: '#/definitions/PushNotificationsCreate'
+  create_row_request_body:
+    description: Request body for creating a row
+    name: row
+    in: body
+    required: true
+    schema:
+      allOf:
+        - $ref: '#/definitions/RowFieldsRequest'
+        - required:
+            - type
+            - config
+            - tiles
+  create_wall_request_body:
+    description: Request body for creating a wall
+    name: create_wall_request_body
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        base_storefront:
+          description: |
+            **DEPRECATED**: Used to determine which storefront to use when
+            searching for products / categories.
+          type: string
+        name:
+          description: Name of the home walls (inteded for merchants)
+          type: string
+  legacy_locales:
+    type: array
+    items:
+      type: string
+    description: A comma separated list of locales
+    name: locales
+    in: query
+  locale:
+    type: string
+    description: The locale you want to edit
+    name: locale
+    in: path
+    required: true
+  locales:
+    type: array
+    items:
+      type: string
+    description: A optional set of locales to filter by
+    name: locales
+    in: query
+  look:
+    description: A json representation of a Look
+    name: Look
+    in: body
+    schema:
+      $ref: '#/definitions/LookCreate'
+  merchant_id:
+    type: string
+    description: The merchant ID
+    name: merchant_id
+    in: path
+    required: true
+  message_id:
+    type: string
+    description: The message id
+    name: message_id
+    in: path
+    required: true
+  nested_id:
+    type: string
+    description: The id of the requested resource
+    name: nested_id
+    in: path
+    required: true
+  password_reset:
+    name: password_reset
+    in: body
+    schema:
+      type: object
+      properties:
+        email:
+          description: The Users email address
+          type: string
+        password:
+          description: The new password
+          type: string
+        token:
+          description: A valid password reset token
+          type: string
+  path_id:
+    type: string
+    description: The id of the requested resource
+    name: id
+    in: path
+    required: true
+  publication_id:
+    type: string
+    description: The publication id
+    name: publication_id
+    in: path
+    required: true
+  publish_wall_request_body:
+    description: Request body for publishing a wall
+    name: scheduling
+    in: body
+    schema:
+      type: array
+      items:
+        - $ref: '#/definitions/ScheduleItem'
+  reorder_rows_request_body:
+    description: Request body for changing the order of rows within a wall
+    name: row
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        order:
+          description: List of row IDs
+          type: array
+          items:
+            type: integer
+  resource:
+    type: string
+    description: The name of requested resource type, eg lookbooks
+    name: resource
+    in: path
+    required: true
+  row_id:
+    type: string
+    description: Row ID
+    name: row_id
+    in: path
+    required: true
+  scheduling:
+    name: scheduling
+    in: body
+    schema:
+      type: array
+      items:
+        - $ref: '#/definitions/ScheduleItem'
+  storefront_id:
+    type: string
+    description: The storefront id
+    name: storefront_id
+    in: query
+  tag:
+    name: tags
+    in: body
+    schema:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            $ref: '#/definitions/SimpleTag'
+  tag_type:
+    type: string
+    description: The type of tag. Either `locale` or `customer_group`
+    name: tag_type
+    in: path
+    required: true
+  token:
+    type: string
+    description: A valid token. This is extracted from the link sent in the email
+    name: token
+    in: path
+    required: true
+  update_content_extension:
+    name: create_content_extension
+    in: body
+    schema:
+      $ref: '#/definitions/ContentExtensionFields'
+  update_row_request_body:
+    description: Request body for updating a row
+    name: row
+    in: body
+    required: true
+    schema:
+      allOf:
+        - $ref: '#/definitions/RowFieldsRequest'
+        - required:
+            - type
+            - config
+            - tiles
+  update_wall_request_body:
+    description: Request body for updating a wall
+    name: update_wall_request_body
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        name:
+          type: string
+  user_email:
+    name: email
+    in: body
+    schema:
+      type: object
+      properties:
+        email:
+          description: The Users email address
+          type: string
+  user_login:
+    name: user_login
+    in: body
+    schema:
+      type: object
+      properties:
+        email:
+          description: The user's email address
+          type: string
+        password:
+          description: A valid password
+          type: string
+  uuid:
+    type: string
+    description: User Unique Identifier
+    name: uuid
+    in: path
+    required: true
+  view:
+    enum:
+      - published
+      - scheduled
+      - drafts
+    type: string
+    description: The type of walls to list
+    name: view
+    in: query
+  wall_id:
+    type: string
+    description: Wall ID
+    name: wall_id
+    in: path
+    required: true
+responses:
+  forbidden_error:
+    description: Forbidden
+    schema:
+      $ref: '#/definitions/Err'
+    examples:
+      application/json:
+        code: unauthorized
+        message: The user doesn't have permissions to perform this action
+  legacy_not_found_error:
+    description: Resource not found
+    schema:
+      $ref: '#/definitions/LegacyError'
+    examples:
+      application/json:
+        error_code: NOT_FOUND
+        message: The requested resource was not found
+        success: false
+  legacy_unauthorized_error:
+    description: The supplied session token or login details are invalid
+    schema:
+      $ref: '#/definitions/LegacyError'
+    examples:
+      application/json:
+        error_code: UNAUTHORIZED
+        message: Permission denied
+        success: false
+  not_found:
+    description: |
+      Resource not found
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        error_code: NOT_FOUND
+        message: The requested resource was not found
+        success: false
+  not_found_error:
+    description: Not Found
+    schema:
+      $ref: '#/definitions/Err'
+    examples:
+      application/json:
+        code: unknown_entity
+        message: entity does not exist
+  unauthorized:
+    description: |
+      Unauthorized
+
+      * `unauthorized`: The supplied session token or login details are invalid
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        error_code: UNAUTHORIZED
+        message: Permission denied
+        success: false
+  unauthorized_error:
+    description: Unauthorized
+    schema:
+      $ref: '#/definitions/Err'
+    examples:
+      application/json:
+        code: authentication_failed
+        message: Invalid authentication token or credentials
+  unprocessable_entity_error:
+    description: Unprocessable entity
+    schema:
+      allOf:
+        - $ref: '#/definitions/Err'
+        - properties:
+            details:
+              description: A hash of detailed errors
+              type: object
+    examples:
+      application/json:
+        code: invalid_input
+        details:
+          title:
+            - Can't be empty
+        message: The request body was invalid
+tags:
+  - name: App Status
+  - name: BrokenLinkAlerts
+  - name: Content Extensions
+  - name: Messages
+  - name: Message Publications
+  - name: Published Messages
+  - name: Push Notifications
+  - name: Users
+  - description: >
+      The Home wall is the first thing you see when you open a Highstreet app.
+
+      Each storefront has one or more home walls, of which one and only one can
+
+      be active at any given time.
+
+
+      A home wall consists of a collection of Rows. They are stacked on top of
+
+      each other. Each wall must have at least 2 and at most 25 Rows before it
+      can
+
+      be activated. A row has a grid with 12 (invisible) columns and a
+
+      configurable number of rows on which Tiles can be placed.
+
+
+      A Tile consists of coordinates describing the position on the grid,
+      content
+
+      (e.g. an image) and an optional linked resource (e.g. a lookbook or
+
+      category).
+    name: Walls
+  - name: Rows
+  - description: >
+      A Lookbook is a collection of Looks. Each Look contains an image and a
+      number of 'hotspots'.
+
+      These 'hotspots' are linked to individual products.
+    name: Lookbook
+  - name: Look
+  - description: >
+      A studio user is able to create and schedule push notifications. Rich push
+      notifications are now
+
+      supported meaning that an image can be attached and viewed in the app.
+
+
+      A push notification consists of a title and a message. The Notification is
+      also associated to a
+
+      number of locations. These being `home`, `category`, `lookbook`,
+      `product`. The Notification will
+
+      contain a deeplink and open the app in the respective location.
+
+
+      Example of a rich push notification:
+
+
+      ![lockscreen](http://apidoc.highstreetapp.com/lockscreen.png)
+
+      ![rich preview](http://apidoc.highstreetapp.com/rich_preview.png)
+    name: Push Notification
+  - description: >
+      The User model on  the studio is fairly simple. A User is able to login
+      and logout of the studio
+
+      as well as reset their password. A User is allowed access to a merchant
+      via the `merchants` attribute.
+
+
+      User Model:
+        | attribute       | type     | description                                                             |
+        | --------------- | -------- | ----------------------------------------------------------------------- |
+        | email           | string   | Unique identifier of the user                                           |
+        | password_digest | string   | Hashed password                                                         |
+        | reset_digest    | string   | Hashed reset token for use when resetting a password                    |
+        | reset_sent_at   | datetime | Time when reset token was sent                                          |
+        | merchants       | array    | An array of merchants the user has access to. This is normally just one |
+        | super_admin     | boolean  | Highstreet staff admin staff. Gives the user access to all merchants    |
+        | last_updated    | integer  | Timestamp of when record was last updated                               |
+    name: User
+  - description: >
+      Resources such as lookbooks, push notifications and home walls can be
+      tagged.
+
+      These tags are in place to add a store front or customer group to a
+      resource. Enabling the same
+
+      resource to be shared across multiple store fronts and customer groups.
+    name: Tag
+  - name: Settings

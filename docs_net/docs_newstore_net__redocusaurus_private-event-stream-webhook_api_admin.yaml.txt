@@ -1,0 +1,252 @@
+openapi: 3.1.0
+info:
+  title: Webhook API
+  version: 1.0.0
+  x-audience: internal-company
+  x-api-id: customer-care-order-webhook-062023
+  description: >
+    This is an internal API for newstore teams, to be called from service-mesh,
+    to send the events payload.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+    url: newstore.com
+tags:
+  - name: webhook
+    description: Webhook events
+servers:
+  - url: https://dodici.x.newstore.net/v1
+paths:
+  /webhook-events:
+    post:
+      summary: Create Event
+      operationId: createEvent
+      requestBody:
+        content:
+          application/json:
+            examples:
+              delivery_booked:
+                value:
+                  payload:
+                    delivery_request_id: 16469b87-a86b-44ba-b5ca-2297cb78f9c1
+                    packages:
+                      - commercial_invoice_url: null
+                        cost:
+                          currency: null
+                          price: null
+                        delivery_estimate:
+                          ends_at: '2017-09-15T16:00:00.000000'
+                          starts_at: '2017-09-15T14:00:00.000000'
+                        label_url: >-
+                          https://dodici.v.labels.dmz.newstore.io/ab2887bc-c647-4a61-9219-10d55c60152a.pdf
+                        provider: COURSIER_PRIVE
+                        return_commercial_invoice_url: null
+                        return_cost:
+                          currency: null
+                          price: null
+                        return_label_url: null
+                        return_tracking_code: null
+                        return_tracking_url: null
+                        tracking_code: 2OXFPDPZ4HADIP2HCNO
+                        tracking_url: >-
+                          http://dashboard.fleeters-preprod.io/tracking/2OXFPDPZ4HADIP2HCNO
+                    timestamp: '2023-06-23T15:37:35.925704'
+                    sales_order_uuid: f39bd978-b328-55b1-9477-90330caa6689
+                    shipping_option_token: >-
+                      eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1dWlkIjoiMTQ4MDlmYzktNDQ1ZC00MDgwLWIzMGItNWJjMTZiYjc0OGRhIiwiZnVsZmlsbG1lbnRfbm9kZV9pZCI6IkUyRV9VU18wMV9ORVdfRkxPVyIsInppcF9jb2RlIjoiMTAwMTIiLCJjb3VudHJ5X2NvZGUiOiJVUyIsInNoaXBwaW5nX3R5cGUiOiJ0cmFkaXRpb25hbF9jYXJyaWVyIiwic2VydmljZV9sZXZlbF9pZGVudGlmaWVyIjoiTm9Cb29raW5nIiwiY2Fycmllcl9jb2RlIjoibm8tYm9va2luZyIsInByb3ZpZGVyX3JhdGVfaWRlbnRpZmllciI6Ik5vQm9va2luZyIsImRlbGl2ZXJ5X2VzdGltYXRlIjp7ImlkIjoiT0ZGRVJJRCIsImRlbGl2ZXJ5X3dpbmRvdyI6eyJzdGFydHNfYXQiOiIyMDIzLTA2LTI0VDA4OjQyOjEwLjAwMDAwMFoiLCJlbmRzX2F0IjoiMjAyMy0wNi0yNlQxNjo0MjoxMC4wMDAwMDBaIn19fQ.QQ32EL5TNfw70Z13KEyRjxjAzRP9xzVyOuyiLYWfUbN1JAJKyim6-tWwms1trbLVOaNHXIO4JHCG8vi3nBMUO333bho3Bbboty7ZZ7Cjm9ltYaK1u7WeXVwK5o9MpbtrhgZIE0mhSmlmf20MzTDT7P29-5D_04JTCQjsyLI6cuwTc-vGWUaSOzRbSd615d8n0qv9cpnM2B3KkWTSg6Nzv3Wd2ejPzwvID8_dz8g6Ey36RmZxdN4jF1eoLF6LHAqjWS34HPpRlT6Ds6OGpnu2JASOm1L8KTRtxIEwMVTngwqQ9HlonaAJHTP6dIVPjKykl2giKmxoQtJVF72QaYYUpQ
+                  event_name: delivery_booked
+            schema:
+              $ref: '#/components/schemas/webhook_request'
+        required: true
+      responses:
+        '202':
+          description: The event was handled successfully.
+        '400':
+          description: The request body is invalid.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '500':
+          description: An internal server error occurred.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        default:
+          description: Unexpected Error
+      tags:
+        - webhook
+      description: >
+        Webhook API is a replacement for events, accepts the event payload and
+        event_name
+components:
+  schemas:
+    delivery_cost:
+      description: The cost of delivery for a package
+      type: object
+      required:
+        - price
+        - currency
+      properties:
+        price:
+          description: Cost for shipping and handling.
+          type:
+            - 'null'
+            - string
+        currency:
+          description: The currency used to buy this shipment ISO 4217
+          type:
+            - 'null'
+            - string
+          maxLength: 3
+          minLength: 3
+    delivery_package:
+      description: Information of a delivered package
+      type: object
+      required:
+        - provider
+        - cost
+        - return_cost
+        - delivery_estimate
+        - label_url
+        - tracking_code
+        - tracking_url
+        - return_tracking_url
+        - return_label_url
+        - commercial_invoice_url
+        - return_commercial_invoice_url
+        - return_tracking_code
+      properties:
+        external_package_id:
+          type:
+            - 'null'
+            - string
+          minLength: 1
+          description: Package ID for external identification
+        index:
+          type: integer
+          description: The index of the package, starting from 0
+        provider:
+          type: string
+          description: The delivery provider
+        cost:
+          description: >-
+            Information related to the actual cost charged by the provider for
+            the delivery
+          $ref: '#/components/schemas/delivery_cost'
+        return_cost:
+          description: >-
+            Information related to the actual cost charged by the provider for
+            the return delivery
+          $ref: '#/components/schemas/delivery_cost'
+        delivery_estimate:
+          description: >-
+            Delivery window received during delivery booking (can be different
+            from the one selected on shipping options)
+          type: object
+          required:
+            - starts_at
+            - ends_at
+          properties:
+            starts_at:
+              type:
+                - 'null'
+                - string
+            ends_at:
+              type:
+                - 'null'
+                - string
+        label_url:
+          type: string
+        display_tracking_code:
+          type: string
+          description: >-
+            Tracking code of the package - can be displayed to the user facing
+            parts of the system.
+        tracking_code:
+          type: string
+          description: Tracking code of the package, can uniquely identify it
+        tracking_url:
+          type:
+            - 'null'
+            - string
+        return_label_url:
+          type:
+            - 'null'
+            - string
+        return_tracking_code:
+          type:
+            - 'null'
+            - string
+        return_provider:
+          description: >-
+            The delivery provider for the return shipment. It is null if the
+            delivery was booked without a return.
+          type:
+            - 'null'
+            - string
+        return_tracking_url:
+          type:
+            - string
+            - 'null'
+        commercial_invoice_url:
+          description: URL of the commercial invoice document for international shipments.
+          type:
+            - 'null'
+            - string
+        return_commercial_invoice_url:
+          description: URL of the commercial invoice document for international returns.
+          type:
+            - 'null'
+            - string
+    delivery_booked_request:
+      description: Delivery booked event
+      type: object
+      properties:
+        event_name:
+          type: string
+          description: The store where the order was placed.
+          enum:
+            - delivery_booked
+        payload:
+          properties:
+            delivery_request_id:
+              type: string
+              minLength: 1
+              description: >-
+                The delivery request id for which a delivery booking was
+                requested.
+            packages:
+              type: array
+              minItems: 1
+              description: Information about the packages that will be delivered.
+              items:
+                $ref: '#/components/schemas/delivery_package'
+            shipping_option_token:
+              type: string
+              minLength: 1
+              description: Shipping option token for the delivery
+            sales_order_uuid:
+              type: string
+              minLength: 36
+              maxLength: 36
+              description: UUID of the corresponding sales order
+    webhook_request:
+      oneOf:
+        - $ref: '#/components/schemas/delivery_booked_request'
+    error_response:
+      description: >-
+        Updates the details of an order, such as the location where the order
+        was placed.
+      type: object
+      properties:
+        error_code:
+          type: string
+          description: The error code.
+        message:
+          type: string
+          description: A human readable message.
+        request_id:
+          type: string
+          description: The request id.

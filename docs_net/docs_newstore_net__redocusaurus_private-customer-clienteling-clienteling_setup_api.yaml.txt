@@ -1,0 +1,1147 @@
+openapi: 3.0.0
+components:
+  schemas:
+    OnboardStoreRequest:
+      type: object
+      required:
+        - phone_number
+      description: Store onboarding request.
+      properties:
+        phone_number:
+          type: string
+          example: '+1234567890'
+          description: >-
+            The phone number that will be used to onboard the store for
+            clienteling.
+        bundle_sid:
+          type: string
+          example: BU5e9d0932167fd19bfef4000e0fb15e15
+          description: >-
+            Regulatory Bundle ID from Twilio for the country of the store (for
+            countries other than US/CA)
+        address_sid:
+          type: string
+          example: AD5e9d0932167fd19bfef4000e0fb15e15
+          description: Address ID from Twilio (for countries other than US/CA)
+    OnboardStoreToWhatsAppRequest:
+      type: object
+      required:
+        - waba_id
+        - profile_name
+      description: Store onboarding request for WhatsApp.
+      properties:
+        waba_id:
+          type: string
+          example: '1234567890'
+          description: >-
+            WhatsApp Business Account ID that will be used to onboard the store
+            for WhatsApp.
+        profile_name:
+          type: string
+          example: Dodici Potsdamer Platz by NewStore
+          description: >-
+            The name of the WhatsApp profile that will be shown to customers
+            when they interact with the store via WhatsApp.
+    OnboardRetailerRequest:
+      type: object
+      description: Retailer onboarding request.
+      properties:
+        ecom_link:
+          type: string
+          example: https://example.com
+          description: The link to the retailer's website.
+    GetAvailablePhoneNumbersResponse:
+      type: array
+      items:
+        type: object
+        required:
+          - phone_number
+        description: >-
+          List of available phone numbers for purchase. These can be used to
+          onboard a store for clienteling.
+        properties:
+          phone_number:
+            type: string
+            example: '+1234567890'
+            description: An available phone number.
+          locality:
+            type: string
+            example: Jacksonville
+            description: Locality of the available phone number, if known.
+          region:
+            type: string
+            example: FL
+            description: >
+              Geographical region of the available phone number, if known.
+
+              For geographies outside of US and Canada, region defaults back to
+              the country code of a store.
+    GetAddressesResponse:
+      type: array
+      items:
+        type: object
+        required:
+          - sid
+          - friendly_name
+        description: List of addresses registered with Twilio for the store's country.
+        properties:
+          sid:
+            type: string
+            example: AD5e9d0932167fd19bfef4000e0fb15e15
+            description: The unique identifier for the address.
+          friendly_name:
+            type: string
+            example: Main Office
+            description: A human-readable name for the address.
+          street:
+            type: string
+            example: 123 Main St
+            description: The street address.
+          street_secondary:
+            type: string
+            example: Suite 100
+            description: Additional street address information.
+          city:
+            type: string
+            example: San Francisco
+            description: The city of the address.
+          region:
+            type: string
+            example: CA
+            description: The state or region of the address.
+          postal_code:
+            type: string
+            example: '94105'
+            description: The postal code of the address.
+          iso_country:
+            type: string
+            example: US
+            description: The ISO country code of the address.
+    GetRegulatoryBundlesResponse:
+      type: array
+      items:
+        type: object
+        required:
+          - sid
+          - friendly_name
+        description: >-
+          List of regulatory bundles registered with Twilio for the store's
+          country.
+        properties:
+          sid:
+            type: string
+            example: BU5e9d0932167fd19bfef4000e0fb15e15
+            description: The unique identifier for the regulatory bundle.
+          friendly_name:
+            type: string
+            example: Germany Bundle
+            description: A human-readable name for the regulatory bundle.
+    GetTrustProductsResponse:
+      type: array
+      items:
+        type: object
+        required:
+          - sid
+          - friendly_name
+        description: List of trust products registered with Twilio.
+        properties:
+          sid:
+            type: string
+            example: BU5e9d0932167fd19bfef4000e0fb15e15
+            description: The unique identifier for the trust product.
+          friendly_name:
+            type: string
+            example: My Trust Product
+            description: A human-readable name for the trust product.
+    ErrorResponse:
+      type: object
+      required:
+        - request_id
+        - message
+      description: Generic error response.
+      properties:
+        request_id:
+          type: string
+          description: The identifier to track the request.
+        message:
+          type: string
+          description: The error message.
+      example:
+        request_id: ckdk5bwy00009ztlo16062bce
+        message: Something is wrong with the request.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+info:
+  title: Clienteling Setup API
+  description: >
+    Use this resource to set up retailers and stores for clienteling
+
+    in the NewStore platform. For more information, see how clienteling is used
+    via
+
+    [NewStore Associate App](/product/assoapp/assoapp-clienteling).
+  version: 0.0.1
+security:
+  - bearerAuth: []
+servers:
+  - url: https://apis.clienteling.c.x.newstore.net/setup
+    description: Sandbox
+  - url: https://apis.clienteling.c.s.newstore.net/setup
+    description: Staging
+  - url: https://apis.clienteling.c.p.newstore.net/setup
+    description: Production
+tags:
+  - name: Enable clienteling configuration
+    description: |
+      Represents a new configuration created for retailers to enable
+      clienteling in stores in their business.
+  - name: Onboarding stores
+    description: >
+      Contains endpoints that you can use to enable
+      [clienteling](/docs/glossary.html#term-clienteling)
+
+      at specified stores for the retailer.
+
+
+      **Note:** Ensure that you have the phone number that you intend to use for
+
+      clienteling conversations in the store.
+  - name: Available phone numbers
+    description: >
+      Represents the phone numbers that are available to be purchased for the
+      store, which can then be used
+
+      to configure clienteling operations in the store.
+
+
+      See [onboarding
+      stores](/api/configuration/apps/clienteling_setup_api/#tag/Enable-clienteling-configuration/operation/create-new-clienteling-retailer)
+      for more information.
+  - name: Addresses
+    description: >
+      Represents the addresses that are registered with Twilio for the store's
+      country, which can then be used
+
+      when purchasing phone numbers for countries that require an address.
+  - name: Regulatory Bundles
+    description: >
+      Represents the regulatory bundles that are registered with Twilio for the
+      store's country, which can then be used
+
+      when purchasing phone numbers for countries that require regulatory
+      compliance.
+  - name: Trust Products
+    description: >
+      Represents the trust products that are registered with Twilio, which can
+      then be used
+
+      when purchasing phone numbers for countries that require trust
+      verification.
+paths:
+  /retailers:
+    post:
+      tags:
+        - Enable clienteling configuration
+      operationId: create-new-clienteling-retailer
+      summary: Enable clienteling configuration for retailer
+      description: >
+        Configures clienteling capabilities for an existing
+
+        retailer. Once configured, the retailer can start clienteling operations
+        in stores in their
+
+        business.
+
+
+        The ``ecom_link`` property contains the link to the e-commerce website
+
+        of the retailer, which is included along with product recommendations
+        sent to the
+
+        customer via clienteling messages.
+      parameters:
+        - name: Tenant
+          in: header
+          description: The name of the tenant making the request.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Retailer onboarding request.
+              properties:
+                ecom_link:
+                  type: string
+                  example: https://example.com
+                  description: The link to the retailer's website.
+      responses:
+        '204':
+          description: Retailer is successfully created and configured.
+        '400':
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '409':
+          description: Conflict.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '500':
+          description: A generic error response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+  /stores/{store_id}:
+    post:
+      tags:
+        - Onboarding stores
+      operationId: onboard-new-store-to-clienteling
+      summary: Onboard store
+      description: |
+        Onboard a new store to clienteling.
+      parameters:
+        - name: store_id
+          in: path
+          description: The identifier of the store.
+          required: true
+          schema:
+            type: string
+        - name: Tenant
+          in: header
+          description: The name of the tenant making the request.
+          required: true
+          schema:
+            type: string
+        - name: enable
+          in: query
+          description: If true enables the store right away on clienteling
+          required: false
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone_number
+              description: Store onboarding request.
+              properties:
+                phone_number:
+                  type: string
+                  example: '+1234567890'
+                  description: >-
+                    The phone number that will be used to onboard the store for
+                    clienteling.
+                bundle_sid:
+                  type: string
+                  example: BU5e9d0932167fd19bfef4000e0fb15e15
+                  description: >-
+                    Regulatory Bundle ID from Twilio for the country of the
+                    store (for countries other than US/CA)
+                address_sid:
+                  type: string
+                  example: AD5e9d0932167fd19bfef4000e0fb15e15
+                  description: Address ID from Twilio (for countries other than US/CA)
+        required: true
+      responses:
+        '204':
+          description: Store is successfully onboarded.
+        '400':
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '500':
+          description: A generic error response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+  /stores/{store_id}/whatsapp:
+    post:
+      tags:
+        - Onboarding stores
+      operationId: onboard-new-store-to-whatsapp
+      summary: Onboard a store to WhatsApp
+      description: |
+        Onboard a new store to WhatsApp.
+      parameters:
+        - name: store_id
+          in: path
+          description: The identifier of the store.
+          required: true
+          schema:
+            type: string
+        - name: Tenant
+          in: header
+          description: The name of the tenant making the request.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - waba_id
+                - profile_name
+              description: Store onboarding request for WhatsApp.
+              properties:
+                waba_id:
+                  type: string
+                  example: '1234567890'
+                  description: >-
+                    WhatsApp Business Account ID that will be used to onboard
+                    the store for WhatsApp.
+                profile_name:
+                  type: string
+                  example: Dodici Potsdamer Platz by NewStore
+                  description: >-
+                    The name of the WhatsApp profile that will be shown to
+                    customers when they interact with the store via WhatsApp.
+        required: true
+      responses:
+        '204':
+          description: >-
+            The request to onboard a store to WhatsApp was successfully sent to
+            Meta.
+        '400':
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '500':
+          description: A generic error response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+  /stores/{store_id}/available_phone_numbers:
+    get:
+      tags:
+        - Available phone numbers
+      operationId: get-list-of-available-phone-numbers
+      summary: List available phone numbers
+      description: >
+        Retrieves a list of available phone numbers that can be used to
+
+        [enable clienteling operations in a
+        store](/api/configuration/apps/clienteling_setup_api/#tag/Enable-clienteling-configuration/operation/create-new-clienteling-retailer).
+
+        The available phone numbers are based on
+
+        store configuration for the specified store (such as the country code,
+        geography and landline extension).
+
+
+        Once a number has been used to onboard a store, it will be used for
+
+        clienteling operations in the store.
+      parameters:
+        - name: store_id
+          in: path
+          description: The identifier of the store.
+          required: true
+          schema:
+            type: string
+        - name: Tenant
+          in: header
+          description: The name of the tenant making the request.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of available phone numbers is successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - phone_number
+                  description: >-
+                    List of available phone numbers for purchase. These can be
+                    used to onboard a store for clienteling.
+                  properties:
+                    phone_number:
+                      type: string
+                      example: '+1234567890'
+                      description: An available phone number.
+                    locality:
+                      type: string
+                      example: Jacksonville
+                      description: Locality of the available phone number, if known.
+                    region:
+                      type: string
+                      example: FL
+                      description: >
+                        Geographical region of the available phone number, if
+                        known.
+
+                        For geographies outside of US and Canada, region
+                        defaults back to the country code of a store.
+        '400':
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '404':
+          description: Store not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '500':
+          description: A generic error response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+  /stores/{store_id}/addresses:
+    get:
+      tags:
+        - Addresses
+      operationId: get-list-of-addresses
+      summary: List addresses
+      description: >
+        Retrieves a list of addresses registered with Twilio for the store's
+        country.
+
+        These addresses can be used when purchasing phone numbers for countries
+        that require an address.
+
+
+        The addresses are filtered by the ISO country code of the specified
+        store.
+      parameters:
+        - name: store_id
+          in: path
+          description: The identifier of the store.
+          required: true
+          schema:
+            type: string
+        - name: Tenant
+          in: header
+          description: The name of the tenant making the request.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of addresses is successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - sid
+                    - friendly_name
+                  description: >-
+                    List of addresses registered with Twilio for the store's
+                    country.
+                  properties:
+                    sid:
+                      type: string
+                      example: AD5e9d0932167fd19bfef4000e0fb15e15
+                      description: The unique identifier for the address.
+                    friendly_name:
+                      type: string
+                      example: Main Office
+                      description: A human-readable name for the address.
+                    street:
+                      type: string
+                      example: 123 Main St
+                      description: The street address.
+                    street_secondary:
+                      type: string
+                      example: Suite 100
+                      description: Additional street address information.
+                    city:
+                      type: string
+                      example: San Francisco
+                      description: The city of the address.
+                    region:
+                      type: string
+                      example: CA
+                      description: The state or region of the address.
+                    postal_code:
+                      type: string
+                      example: '94105'
+                      description: The postal code of the address.
+                    iso_country:
+                      type: string
+                      example: US
+                      description: The ISO country code of the address.
+        '400':
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '404':
+          description: Store not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '500':
+          description: A generic error response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+  /stores/{store_id}/regulatory-bundles:
+    get:
+      tags:
+        - Regulatory Bundles
+      operationId: get-list-of-regulatory-bundles
+      summary: List regulatory bundles
+      description: >
+        Retrieves a list of regulatory bundles registered with Twilio for the
+        store's country.
+
+        These regulatory bundles can be used when purchasing phone numbers for
+        countries that require regulatory compliance.
+
+
+        The regulatory bundles are filtered by the ISO country code of the
+        specified store.
+      parameters:
+        - name: store_id
+          in: path
+          description: The identifier of the store.
+          required: true
+          schema:
+            type: string
+        - name: Tenant
+          in: header
+          description: The name of the tenant making the request.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of regulatory bundles is successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - sid
+                    - friendly_name
+                  description: >-
+                    List of regulatory bundles registered with Twilio for the
+                    store's country.
+                  properties:
+                    sid:
+                      type: string
+                      example: BU5e9d0932167fd19bfef4000e0fb15e15
+                      description: The unique identifier for the regulatory bundle.
+                    friendly_name:
+                      type: string
+                      example: Germany Bundle
+                      description: A human-readable name for the regulatory bundle.
+        '400':
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '404':
+          description: Store not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '500':
+          description: A generic error response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+  /trust-products:
+    get:
+      tags:
+        - Trust Products
+      operationId: get-list-of-trust-products
+      summary: List trust products
+      description: >
+        Retrieves a list of trust products registered with Twilio.
+
+        These trust products can be used when purchasing phone numbers for
+        countries that require trust verification.
+      parameters:
+        - name: Tenant
+          in: header
+          description: The name of the tenant making the request.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of trust products is successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - sid
+                    - friendly_name
+                  description: List of trust products registered with Twilio.
+                  properties:
+                    sid:
+                      type: string
+                      example: BU5e9d0932167fd19bfef4000e0fb15e15
+                      description: The unique identifier for the trust product.
+                    friendly_name:
+                      type: string
+                      example: My Trust Product
+                      description: A human-readable name for the trust product.
+        '400':
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.
+        '500':
+          description: A generic error response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - request_id
+                  - message
+                description: Generic error response.
+                properties:
+                  request_id:
+                    type: string
+                    description: The identifier to track the request.
+                  message:
+                    type: string
+                    description: The error message.
+                example:
+                  request_id: ckdk5bwy00009ztlo16062bce
+                  message: Something is wrong with the request.

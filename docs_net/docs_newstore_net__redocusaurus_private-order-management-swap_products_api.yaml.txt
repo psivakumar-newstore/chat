@@ -1,0 +1,357 @@
+openapi: 3.1.0
+info:
+  title: Swap products in order
+  version: 0.1.0
+  x-audience: internal-team
+  x-api-id: sales-order-swap-products
+  description: |
+    Use these APIs to swap products in an existing order.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net
+tags:
+  - name: Swap items on an order
+    description: |
+      Use this resource to initiate and complete swapping of items on an order.
+paths:
+  /order-items/product-swaps:
+    post:
+      summary: Initiate swapping of products in an existing order.
+      operationId: createSwapProducts
+      tags:
+        - Swap items on an order
+      requestBody:
+        content:
+          application/json:
+            example:
+              swaps:
+                - sales_order_item_uuid: d34438a4-ddfb-441d-b85a-98fe2420acac
+                  product_id: '10000023'
+            schema:
+              $ref: '#/components/schemas/init_swap_products_request'
+      responses:
+        '200':
+          description: Order swap initiated successfully.
+          content:
+            application/json:
+              example:
+                swaps:
+                  - uuid: fcd4af6f-886a-42c2-9349-7d14dc49f83e
+                    product_sku: '11111111'
+                    product_name: Blue Bag
+                    shipping_weight_value: '1'
+                    shipping_weight_unit: kg
+                    product_hts_number: '76546789'
+                    country_of_origin: De
+                    material: Leather
+                    schedule_b: ''
+                    product_attributes: {}
+                    external_identifier: '8765478'
+                    epc_list: []
+                    product_id: '110000023'
+                    old_item_uuid: d34438a4-ddfb-441d-b85a-98fe2420acac
+                    old_product_id: '11111111'
+                order_status: routing
+              schema:
+                $ref: '#/components/schemas/init_swap_products_response'
+        '400':
+          description: Bad Request Error.
+          content:
+            application/problem+json:
+              examples:
+                Validation error:
+                  value:
+                    error_code: bad_request
+                    message: Value provided should be a string.
+                    request_id: ec2f3c9bb016ba971bf6074098363
+                Sales Order item not found error:
+                  value:
+                    error_code: sales_order_item_not_found
+                    message: >-
+                      The sales order item with id
+                      ed668d62-c6ac-472f-9c72-24b12739142a cannot be found.
+                    request_id: ec2f3c9bb016ba971bf6074098363
+                Swapping with same product:
+                  value:
+                    error_code: swapping_to_the_same_product_id
+                    message: Swapping with same product is not allowed
+                    request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                $ref: '#/components/schemas/http_error_response'
+        '404':
+          description: Not Found/Not available Error.
+          content:
+            application/problem+json:
+              examples:
+                no_availability:
+                  value:
+                    error_code: no_availability
+                    message: Product 11000023 is not available
+                    request_id: ec2f3c9bb016ba971bf6074098363
+                product_not_found:
+                  value:
+                    error_code: product_not_found
+                    message: Product with product id 11000023 not found
+                    request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                $ref: '#/components/schemas/http_error_response'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't process request due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                $ref: '#/components/schemas/http_error_response'
+        default:
+          description: Unexpected Error
+    patch:
+      summary: Complete the swapping of products in an existing order.
+      operationId: updateSwapProducts
+      tags:
+        - Swap items on an order
+      requestBody:
+        content:
+          application/json:
+            example:
+              swap_status: swapped
+              sales_order_item_uuids:
+                - d34438a4-ddfb-441d-b85a-98fe2420acac
+            schema:
+              $ref: '#/components/schemas/complete_swap_products_request'
+      responses:
+        '204':
+          description: Items have been swapped successfully.
+        '400':
+          description: Bad Request Error.
+          content:
+            application/problem+json:
+              examples:
+                Validation error:
+                  value:
+                    error_code: bad_request
+                    message: Value provided should be a string.
+                    request_id: ec2f3c9bb016ba971bf6074098363
+                Transition not possible:
+                  value:
+                    error_code: transition_not_possible
+                    message: The swap cannot be completed.
+                    request_id: ec2f3c9bb016ba971bf6074098363
+                Swap item not found:
+                  value:
+                    error_code: swap_not_found
+                    message: >-
+                      Swap with sales_order_item_uuid
+                      57787cdb-3474-47b5-b3ec-7b776731309e not found.
+                    request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                $ref: '#/components/schemas/http_error_response'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't process request due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                $ref: '#/components/schemas/http_error_response'
+        default:
+          description: Unexpected Error
+components:
+  schemas:
+    init_swap_products_request:
+      title: Request to swap products
+      description: Call schema for swapping products of sales order items.
+      type: object
+      required:
+        - swaps
+      properties:
+        swaps:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+              - sales_order_item_uuid
+              - product_id
+            description: Product swap details for a given sales order item uuid.
+            properties:
+              sales_order_item_uuid:
+                type: string
+                maxLength: 36
+                minLength: 36
+                description: The UUID of the sales order item that should be swapped.
+              product_id:
+                description: The SKU of the new product.
+                minLength: 1
+                type: string
+    product_attributes:
+      title: Product Attributes
+      type: object
+      properties:
+        variation_color_value:
+          type: string
+          maxLength: 100
+        variation_size_value:
+          type: string
+          maxLength: 100
+        variation_additional_1_value:
+          type: string
+          maxLength: 100
+          description: An additional variation selection, e.g. material
+        variation_additional_2_value:
+          type: string
+          maxLength: 100
+          description: An additional variation selection, e.g. material
+    init_swap_products_response:
+      title: Response for items swap request
+      description: Contains information related to the swapped sales order items.
+      type: object
+      required:
+        - swaps
+        - order_status
+      properties:
+        swaps:
+          type: array
+          description: List of product information for each swapped product.
+          minItems: 1
+          items:
+            type: object
+            description: Contains some important attributes of sales order item
+            properties:
+              uuid:
+                description: New sales order item identifier.
+                type: string
+                maxLength: 36
+                minLength: 36
+              old_item_uuid:
+                description: The sales order item identifier of the replaced product.
+                type: string
+                maxLength: 36
+                minLength: 36
+              old_product_id:
+                description: Unique identifier of the replaced product.
+                maxLength: 256
+                type: string
+              product_id:
+                description: >-
+                  Unique identifier of the product that is this SalesOrder's
+                  line item
+                maxLength: 256
+                type: string
+              product_sku:
+                description: SKU of the product that is this SalesOrder's line item
+                maxLength: 256
+                type: string
+              product_name:
+                description: >-
+                  Human-readable name of the product that is this SalesOrder's
+                  line item
+                maxLength: 512
+                type: string
+              shipping_weight_value:
+                description: Weight of the product, numeric value.
+                type: number
+              shipping_weight_unit:
+                description: The chosen weight unit (e.g. 'kg').
+                type: string
+              product_hts_number:
+                description: >-
+                  A six digit code specified by harmonized system for tariffs
+                  (required for international shipments).
+                type: string
+              country_of_origin:
+                description: >-
+                  The origin country code of product (required for international
+                  shipments).
+                type: string
+              material:
+                description: >-
+                  The raw material of product (for product's description in
+                  custom)
+                type: string
+              schedule_b:
+                description: >-
+                  a classification code for exporting goods out of the 
+
+                  United States. The Schedule B is used to track the amount of
+                  trade 
+                   goods that are being exported from the U.S. The U.S. Census Bureau
+                   keeps records of the amount of exports by country/quantity, and
+                   dollar amount.
+                type: string
+              product_attributes:
+                description: >-
+                  Attributes like size and color of the product in this
+                  SalesOrder
+                $ref: '#/components/schemas/product_attributes'
+              product_image_url:
+                description: Url of the main image of the product
+                type: string
+              product_customs_category:
+                description: Product's main category subject
+                type: string
+              epc_list:
+                type: array
+                items:
+                  type: string
+                  maxLength: 256
+                  description: EPC number of the product, if available
+        order_status:
+          description: The current status of the order.
+          minLength: 1
+          type: string
+    http_error_response:
+      description: The error response.
+      type: object
+      required:
+        - error_code
+        - message
+        - request_id
+      properties:
+        error_code:
+          type: string
+          minLength: 1
+          description: The specific code of the error.
+        message:
+          type: string
+          minLength: 1
+          description: A message explaining the error.
+        request_id:
+          type: string
+          minLength: 1
+          description: The identifier of the request, which can be used for tracing.
+    complete_swap_products_request:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Request to complete the sales order swaps, reverting or committing it
+      description: >-
+        Call schema for defining the desired state of the sales order items
+        swaps.
+      type: object
+      required:
+        - swap_status
+        - sales_order_item_uuids
+      properties:
+        swap_status:
+          type: string
+          enum:
+            - swapped
+            - failed
+          description: >-
+            The desired status for the swapped items. The swap_status can be
+            swapped or failed.
+        sales_order_item_uuids:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            minLength: 36
+            maxLength: 36
+            description: >-
+              UUIDs of the sales order items for which the status should be
+              applied.

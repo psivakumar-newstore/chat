@@ -1,0 +1,423 @@
+Push Notifications API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Highstreet E-commerce Platform API
+Push Notifications API
+Jobs API
+Stock Subscription
+Configuration APIs
+Webhooks
+New Generation APIs
+Notification
+post
+Send a notification
+API docs by Redocly
+Push Notifications API
+(
+0.1.0
+)
+Download OpenAPI specification
+:
+Download
+General
+All requests must be made over https. The base url is
+https://push.highstreetapp-services.com/
+Your merchant id will be provided to you by Highstreet. NOTE that the merchant ID is unique per environment
+Authentication
+All requests are protected by basic auth. You will be supplied with a user name and password by
+Highstreet. If needed you can request this by contacting
+support@highstreetmobile.com
+Testing
+When testing it's important to not send requests to the production environment as this can result in notifications being sent to real users. Your production merchant id will look something like
+brand
+whereas the merchant ID of the staging environment will look something like
+brand-staging
+. Also it's important to realise that if an email address is not specified in the request that a request will be sent out to all users that match the specified locale(s).
+Localisation
+Locales are identified using language tags as defined by
+IETF BCP 47
+. Countries are identified by two character
+country codes as defined by
+ISO 3166-1 Alpha-2
+. A locale can also be
+referred to as a storefront. An example of a valid locale is
+nl-NL
+.
+Dates and Time
+Dates and times follow the
+ISO 8601 standard
+.
+Notification
+Personalized notifications can be sent to individual customers.
+Customers are identified by their e-mail address.
+Notifications can be cancelled if they have not already been sent.
+The notification endpoints are provided by Highstreet.
+Authentication
+HTTP Basic Authentication is used for authentication. The credentials will be provided by
+Highstreet.
+Images
+A notification
+may
+have two attached images:
+A thumbnail image; shown on the lock screen (pictured below left). The minimum image size for
+the thumbnail is 160x160 pixels with an aspect ratio of 1:1.
+A larger image shown when the details of the notification are opened (pictured below right).
+The minimum image size for the bigger image is 1120x680 pixels with an aspect ratio of 16:9.
+On IOS a user can view the larger image by pressing or swiping left on the notification.
+Deeplinks
+A Notification will link to a specified location within the app. The current valid locations are
+vouchers
+,
+cart
+,
+products
+,
+categories
+,
+lookbooks
+,
+content_extension
+,
+orders
+and
+home
+. A valid id of the linked
+resource also needs to be supplied unless specifying
+home
+,
+vouchers
+or
+cart
+.
+Send a notification
+Sends a push notification to a specific customer. The customer is identified by their email
+address.
+The customer's preferred locale is unknown to the loyalty platform. All locales have to
+be specified.
+A List of IDs are returned. These represent the scheduled or sent notifications. These
+should be stored as they are needed to cancel a scheduled notification.
+Note:
+Most of the
+time only one notification will be sent. However there are some circumstances where the
+same user may have the app installed on multiple devices each in a different locale.
+Resulting in a separate notification being created for each locale.
+Example Curl Request:
+curl
+-
+X POST https
+:
+/
+/
+push
+.
+highstreetapp
+-
+services
+.
+com
+/
+v1
+/
+:
+MERCHANT_ID
+/
+notifications
+-
+H
+"Content-Type: application/json"
+\
+-
+u USERNAME
+:
+PASSWORD \
+-
+d '
+{
+"notifications"
+:
+[
+{
+"id"
+:
+"699ead86-9f8a-4d07-9621-3f7f430c4960"
+,
+"email"
+:
+"pete@highstreetapp.com"
+,
+"contents"
+:
+[
+{
+"locale"
+:
+"en-GB"
+,
+"title"
+:
+"Personal Greeting Pete"
+,
+"body"
+:
+"A personalized body for Pete"
+,
+"thumbnail"
+:
+"https://images.unsplash.com/photo-1467810563316-b5476525c0f9?auto=format&fit=crop&w=1349&q=80"
+,
+"image"
+:
+"https://images.unsplash.com/photo-1467810563316-b5476525c0f9?auto=format&fit=crop&w=1349&q=80"
+}
+,
+{
+"locale"
+:
+"en-NL"
+,
+"title"
+:
+"Title of your notification"
+,
+"body"
+:
+"Body of your notification"
+,
+"thumbnail"
+:
+"https://images.unsplash.com/photo-1467810563316-b5476525c0f9?auto=format&fit=crop&w=1349&q=80"
+,
+"image"
+:
+"https://images.unsplash.com/photo-1467810563316-b5476525c0f9?auto=format&fit=crop&w=1349&q=80"
+}
+]
+,
+"resource"
+:
+{
+"type"
+:
+"cart"
+}
+,
+"scheduling"
+:
+{
+"start"
+:
+"2018-01-24T13:04:00Z"
+}
+}
+]
+}
+'
+path
+Parameters
+merchant_id
+required
+string
+Your unique merchant id with Highstreet Mobile. Make sure to use the staging merchant ID when testing
+api_version
+required
+string
+The api version to use
+header
+Parameters
+Authorization
+required
+string
+Basic Authentication credentials
+Request Body schema:
+application/json
+notifications
+Array of
+objects
+(
+Notification
+)
+Array
+id
+required
+string
+A unique identifier for the notification in UUIDv4 format, used as an
+idempotency key.
+email
+required
+string
+non-empty
+E-mail address of the customer.
+IMPORTANT
+If the email address is empty or missing then the notification will get sent out to all users.
+contents
+required
+Array of
+objects
+(
+NotificationContent
+)
+non-empty
+The
+localised
+notification contents
+resource
+required
+object
+Description of the linked resource
+scheduling
+object
+The time period the notification is relevant for.
+Notifications will be sent to the customer at the
+start
+of the period.
+The customer will be able to receive the notification until the
+end
+of the period.
+When this property is omitted the notification is sent
+immediately
+.
+Responses
+201
+Created
+Notifcations were successfully created
+400
+Bad Request
+invalid
+: The request body is invalid.
+401
+Unauthorized
+unauthorized
+: The Basic Authentication credentials are invalid.
+503
+Service Unavailable
+unavailable
+: The notification service is temporarily unavailable.
+post
+/{api_version}/{merchant_id}/notifications
+/{api_version}/{merchant_id}/notifications
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"notifications"
+:
+[
+{
+"email"
+:
+"amber@highstreetapp.com"
+,
+"id"
+:
+"4f3c2a8f-e084-4124-93ac-b6e3345fc5ae"
+,
+"contents"
+:
+[
+{
+"locale"
+:
+"en-US"
+,
+"title"
+:
+"Happy Birthday Amber!"
+,
+"body"
+:
+"We have a great birthday gift for you."
+}
+,
+{
+"locale"
+:
+"nl-NL"
+,
+"title"
+:
+"Van harte Amber!"
+,
+"body"
+:
+"We hebben een verjaardagscadeauty voor je."
+}
+]
+,
+"resource"
+:
+{
+"type"
+:
+"cart"
+}
+,
+"scheduling"
+:
+{
+"start"
+:
+"2017-03-12T14:00:00Z"
+,
+"end"
+:
+"2017-03-13T14:00:00Z"
+}
+}
+]
+}
+Response samples
+201
+400
+401
+503
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"meta"
+:
+{ }
+,
+"data"
+:
+{
+"unique_id_1"
+:
+"c050bda9-af94-441e-8096-7d5c51f1818d"
+,
+"unique_id_2"
+:
+"lfahflsahlkfhjk9flhsalk0-lkalksfkl0j"
+}
+}
+Previous
+Highstreet E-commerce Platform API
+Next
+Jobs API
+Copyright © 2025 NewStore, Inc.

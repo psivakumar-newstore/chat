@@ -1,0 +1,731 @@
+Configuring taxes and tax providers
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Configuring taxes and tax providers
+Updated on
+Feb 24, 2025
+Published on Oct 1, 2024
+16 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Use these configurations to set up a third-party tax calculation provider, such as
+Avalara
+or
+Vertex
+, to calculate taxes.
+Important
+Check
+Avalara Developer documentation
+for configuring tax codes in Avalara or contact
+Vertex support
+for configuring tax codes in Vertex. These tax codes are used to apply appropriate tax rates for different products.
+After you have configured tax codes in the third-party calculation providers' systems, reconcile them in NewStore by importing them during a product import. Use the
+tax_class_id
+property to specify the tax codes. See the
+Product JSON schema
+or this
+guide
+for more information on import guidelines.
+Configuring settings for Avalara integration
+To view the current tax calculation strategy for your business, use the
+Get tax calculation config
+method.
+Note
+NewStore validates the Avalara credentials through a ping request to Avalara. The ping request validates the authenticity of Avalara credentials from the final version of the configuration.
+As the store and the tenant configurations are merged for the retailer even after creating or updating with a different tax calculation strategy, NewStore triggers a ping request to Avalara for authentication if the tenant and/or store configuration contains the Avalara configuration.
+The ping check is performed if the Avalara configuration is set in tenant and/or store level. NewStore performs the ping check:
+While creating or updating a tenant or store config, if the Avalara configuration is set at the tenant level.
+While creating or updating a store config, if the Avalara configuration is set at the store level.
+For more information, see the
+Tax calculation API
+.
+Configuring Avalara for tax calculation
+You can set store or tenant-level tax configuration for Avalara.
+To configure Avalara and calculate taxes automatically:
+For the store-level, use the
+Create tax calculation config
+or
+Update tax calculation config
+method
+and/or
+for the tenant-level, use the
+Create tax calculation config
+or
+Update tax calculation config
+method.
+Set
+tax_calculation_strategy
+to
+avalara
+.
+In
+avalara
+>
+account_number
+, provide the retailer's AvaTax account number or account ID.
+In
+avalara
+>
+company_code
+, provide the retailer's company code in the AvaTax account.
+To set the license key to use Avalara's AvaTax for tax calculation, use the
+avalara
+>
+license_key
+property in the
+Tax calculation API
+.
+In
+avalara
+>
+environment
+, provide Avalara's environment that NewStore uses to get taxes from AvaTax.
+Configuring Avalara tax exemption class mapping
+Tax exemption information can be configured for an order during checkout when the new tax exemption functionality is enabled. To enable tax exemption for your business, see
+Enabling tax exemption in the app
+.
+When the tax exemption information is configured for an order in Associate App, this information is sent to Avalara during tax calculation:
+The entity use code that corresponds to the given tax exemption class
+The exemption number
+Note
+When the Avalara tax exemption class mapping is not configured, the default list of tax exemption class options for Avalara will be rendered in Associate App while the tax exemption information is being configured.
+The custom exemption classes are supported from Associate App v1.39.0 and later. The display name will not be rendered in the earlier versions of Associate App.
+(Optional)
+To configure tax exemption class mapping for Avalara:
+For stores, use the
+Create tax calculation config
+or
+Update tax calculation config
+method
+and/or
+For the whole business, use the
+Create tax calculation config
+or
+Update tax calculation config
+method.
+In
+avalara
+>
+exemption_classes
+, provide the list of tax exemption class mappings.
+For example, use the following syntax to configure tax exemption class mappings for:
+CHARITY_ORGANIZATION
+Will be available in all countries.
+Will be mapped to Avalara entity use code
+E
+.
+FEDERAL_GOVERNMENT
+Will be available in stores operating in United States.
+Will be mapped to Avalara entity use code
+A
+.
+CUSTOM_CANADA_FNC
+Will be available in stores operating in Canada.
+Will be mapped to a custom entity use code
+CANADA_FNC
+. A custom entity use code can be defined within an
+Exempt Entity Rule
+, which can be configured under the
+Settings
+>
+All settings
+>
+Custom rules
+>
+Manage
+section of the Avalara AvaTax admin portal. An
+Exempt Entity Rule
+can be used for defining a partial tax exemption rule that can exempt certain taxes.
+Tax exemption class option will be rendered in the Associate App based on the given display text translations.
+[
+  {
+    "exemption_class": "CHARITY_ORGANIZATION",
+    "avalara_entity_use_code": "E",
+    "valid_countries": [
+      "*"
+    ]
+  },
+  {
+    "exemption_class": "FEDERAL_GOVERNMENT",
+    "avalara_entity_use_code": "A",
+    "valid_countries": [
+      "US"
+    ]
+  },
+  {
+    "exemption_class": "CUSTOM_CANADA_FNC",
+    "avalara_entity_use_code": "CANADA_FNC",
+    "valid_countries": [
+      "CA"
+    ],
+    "display_text": {
+      "en": "First Nations",
+      "fr": "Premières Nations"
+    }
+  }
+]
+For more details, see:
+List of Avalara entity use codes
+Avalara Exempt reason matrix for the U.S. and Canada
+Create a custom tax rule to override AvaTax calculations
+Enabling tax committing for Avalara integration
+Tax committing can be enabled for the configured tax calculation strategy.
+Note
+Tax committing is currently only supported for
+Avalara
+.
+To enable tax committing for your business:
+Use the
+Create tax calculation config
+or
+Update tax calculation config
+method.
+Set
+tax_committing_enabled
+to
+true
+.
+Important
+Tax committing using the productized Avalara integration is limited to in-store orders, where taxes are calculated within the NewStore platform. For more details, see
+Tax committing use cases
+.
+Configuring settings for Vertex integration
+NewStore only supports integrating with the Vertex cloud instance for tax calculation services for retailers on the platform.
+Use the
+Tax calculation API
+to manage these credentials at NewStore.
+Note
+NewStore validates the Vertex credentials through a ping request to Vertex. The ping request validates the authenticity of Vertex credentials from the final version of the configuration.
+As the store and the tenant configurations are merged for the retailer even after creating or updating with a different tax calculation strategy, NewStore triggers a ping request to Vertex for authentication if the tenant and/or store configuration contains the Vertex configuration.
+The ping check is performed if the Vertex configuration is set in tenant and/or store level. NewStore performs the ping check:
+While creating or updating a tenant or store config, if the Vertex configuration is set at the tenant level.
+While creating or updating a store config, if the Vertex configuration is set at the store level.
+For more information, see the
+Tax calculation API
+.
+Retrieving the existing tax calculation strategy
+To view the current tax calculation strategy for your business, use the
+Get tax calculation config
+method.
+Configuring Vertex for tax calculation
+To set up a new tax calculation strategy, configure the following values in Vertex via the
+Tax calculation API
+:
+For stores, use the
+Create tax calculation config
+or
+Update tax calculation config
+method
+For the whole business, use the
+Create tax calculation config
+or
+Update tax calculation config
+method.
+To configure Vertex for tax calculation:
+Set up the authentication flow for Vertex for your business using:
+A
+TrustedId
+as
+vertex
+>
+login_type
+or,
+A combination of a
+username
+and
+password
+in
+vertex
+The
+tax_calculation_strategy
+config value decides which tax provider will be used for your tenant.
+The
+vertex
+>
+login_type
+config value is used for the relevant authentication method. Possible values include a
+TrustedId
+parameter or a combination of
+username
+and password.
+The
+vertex
+>
+soap_url
+config value contains the WSDL URL for Vertex SOAP, such as
+https://sandboxap2.ondemand.vertexinc.com/vertex-ws/services/CalculateTax90
+.
+Set up the Vertex taxpayer codes for your business:
+The
+vertex
+>
+company_code
+config value should be set to the taxpayer code of the top-level taxpayer (company) within Vertex.
+(Optional)
+If exists, the
+vertex
+>
+division_code
+config value can be set to the taxpayer code of the mid-level taxpayer (division) under a top-level taxpayer (company) within Vertex.
+Important
+Vertex supports taxpayer codes up to three levels:
+Top-level (company)
+Mid-level (division)
+Low-level (department)
+The taxpayer codes can be configured for top-level (company) and mid-level (department) within the NewStore platform.
+Testing the Vertex integration
+After the Vertex integration is configured on the NewStore platform, verify that the tax calculation is working as intended.
+In your test environment in NewStore Associate App,
+add an item to the cart
+and verify if the taxes for the item are displayed correctly.
+To fix issues with the integration, contact the
+support team
+at NewStore.
+Configuring Vertex tax exemption class mapping
+Tax exemption information can be configured for an order during checkout when the new tax exemption functionality is enabled. See
+Enabling tax exemption in the app
+.
+When the tax exemption information is configured for an order in Associate App, the following information is sent to Vertex during tax calculation:
+The customer class code that corresponds to the given tax exemption class
+The exemption certificate number
+Note
+When the Vertex tax exemption class mapping is not configured, the
+tax exemption class
+field will not be rendered in Associate App while the tax exemption information is being configured.
+The custom exemption classes are supported from Associate App v1.39.0 and later. The display name will not be rendered in the earlier versions of Associate App.
+(Optional)
+To configure tax exemption class mapping for Vertex:
+For stores, use the
+Create tax calculation config
+or
+Update tax calculation config
+method
+and/or
+For the whole business, use the
+Create tax calculation config
+or
+Update tax calculation config
+method.
+In
+vertex
+>
+exemption_classes
+, provide the list of tax exemption class mappings.
+For example, use the following syntax to configure tax exemption class mappings for:
+CHARITY_ORGANIZATION
+Will be available in all countries.
+Will be mapped to Vertex customer class code
+02
+.
+FEDERAL_GOVERNMENT
+Will be available in stores operating in United States.
+Will be mapped to Vertex customer class code
+01
+.
+CUSTOM_CANADA
+Will be available in stores operating in Canada.
+Will be mapped to Vertex customer class code
+03
+.
+Tax exemption class option will be rendered in the Associate App based on the given display text translations.
+[
+  {
+    "exemption_class": "CHARITY_ORGANIZATION",
+    "vertex_class_code": "02",
+    "valid_countries": [
+      "*"
+    ]
+  },
+  {
+    "exemption_class": "FEDERAL_GOVERNMENT",
+    "vertex_class_code": "01",
+    "valid_countries": [
+      "US"
+    ]
+  },
+  {
+    "exemption_class": "CUSTOM_CANADA",
+    "vertex_class_code": "03",
+    "valid_countries": [
+      "CA"
+    ],
+    "display_text": {
+      "en": "First Nations",
+      "fr": "Premières Nations"
+    }
+  }
+]
+Customer classes can be configured from the
+My Enterprise
+>
+Customers
+section of the Vertex admin portal.
+Tax rules for exemptions can be configured under the
+Tax Setup
+>
+Taxability Mapping
+section of the Vertex admin portal by using a customer class.
+For more details, see
+Vertex Taxability Mapping
+.
+Configuring a fixed tax rate fallback for external tax calculation providers
+If the retailer uses an external tax calculation provider, such as
+Avalara
+, Vertex, or custom tax provider to calculate taxes, you can set a fixed rate tax applicable when the external tax provider is not reachable. For example, you can specify a percentage of the sale amount to charge as tax, such as
+8%
+. See
+Using a fixed rate as a fallback
+.
+Note
+It is
+mandatory
+to configure the fixed rate provider regardless of the usage of external tax calculation providers.
+To configure a fallback fixed tax rate for the external tax provider:
+For the store-level, use the
+Create tax calculation config
+or
+Update tax calculation config
+method
+and/or
+for the tenant-level, use the
+Create tax calculation config
+or
+Update tax calculation config
+method.
+Set
+tax_calculation_strategy
+to
+avalara
+,
+vertex
+or
+custom
+.
+Set the
+fixed_tax_rate
+property to indicate the percentage of the sale amount to charge as tax. For example, enter
+0.08
+to set the tax rate at 8%.
+Configuring a fixed rate per country
+Note
+This tax rate is
+not a fallback strategy
+and is for retailers who don't use a third party tax calculation provider.
+To configure a fixed tax rate per country:
+For the store-level, use the
+Create tax calculation config
+or
+Update tax calculation config
+method
+and/or
+for the tenant-level, use the
+Create tax calculation config
+or
+Update tax calculation config
+method.
+Set
+tax_calculation_strategy
+to
+fixed_rate_per_country
+.
+In the
+fixed_rate_per_country
+property, specify the country code and the fixed taxation rate.
+For example, use the following syntax to set the tax rate at 15% for all stores operating in USA. You can create a fixed tax rate for each country that the retailer does business in.
+{
+  "fixed_rate_per_country": {
+    "US": {
+      "tax_rate": "0.15",
+      "tax_name": "US VAT"
+    }
+  }
+}
+Enabling tax exemption in the app
+Tax exemption can be configured for an order during checkout when this functionality is enabled. To enable the new tax exemption functionality in Associate App:
+Go to the
+Associate App configuration API
+.
+Set
+release_toggles
+>
+new_tax_exemption
+to
+true
+.
+Note
+In Associate App v1.43.0 to v1.44.0, the breakdown of taxes is displayed within
+Taxes
+for an order during checkout when you have enabled this feature. Tax breakdown details for each item are also displayed in the same screen. For more details, see
+Displaying tax breakdown for an order
+.
+From Associate App v1.45.0 and later, tax breakdown is enabled for all retailers and does not require tax exemption to be enabled separately for it to work.
+Tax exemption classes can be set up for supported tax providers:
+For the store-level, use the
+Create tax calculation config
+or
+Update tax calculation config
+method
+For the tenant-level, use the
+Create tax calculation config
+or
+Update tax calculation config
+method.
+To set up tax exemption class mapping for a third party tax provider, see:
+Configuring Avalara tax exemption class mapping
+Configuring Vertex tax exemption class mapping
+To configure tax exemption information for an order, see
+Adding tax exemption to an order
+.
+The tax provider calculates the taxes for the order based on the tax classes of the items and store or shipping addresses.
+In countries with
+tax-exclusive pricing
+: The tax provider calculates the taxes by using the given tax exemption information of the customer.
+In countries with
+tax-inclusive pricing
+: The tax provider calculates the taxes and the calculated taxes will be exempted from the item prices by the NewStore platform.
+Testing the tax calculation settings
+Validating your tax calculation settings is critical to ensure that your setup is working as expected before ensuring production readiness. The initial testing can be done through the
+Tax transaction preview API endpoint
+, where requests to the
+/previews/transactions
+API triggers the configured tax provider in the same way in which Associate App works during a standard checkout operation in the store.
+Validating your tax integration
+To test the tax integration through the NewStore platform, send the following sample payload to the
+Tax transaction preview API endpoint
+:
+curl --location 'https://{tenant}.{env}.newstore.net/taxes/previews/transactions' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {token}' \
+--data '{
+  "tax_exempt": false,
+  "transaction_type": "SALE",
+  "order_id": "56bb9975-f43a-4eee-8fb2-200957eb0624",
+  "items": [
+    {
+      "tax_class": "AAA000",
+      "tax_method": "vat_included",
+      "item_price": 200,
+      "quantity": 1,
+      "shipping_address": {
+        "address_line_1": "Potsdamer Str. 7, 10785 Berlin",
+        "zip_code": "10785",
+        "city": "Berlin",
+        "country_code": "DE"
+      },
+      "shipping_origin": {
+        "address_line_1": "Potsdamer Str. 7, 10785 Berlin",
+        "zip_code": "10785",
+        "city": "Berlin",
+        "country_code": "DE"
+      },
+      "type": "product",
+      "currency_consumer": "EUR",
+      "product_name": "Metallica shirt"
+    }
+  ]
+}'
+Using the response of this API, you can verify that the configured provider is working as expected by checking the
+totals.tax_strategy
+value in the response:
+{
+    "tax_exempt": false,
+    "calculation_mode": "STANDARD",
+    "transaction_type": "SALE",
+    "order_id": "56bb9975-f43a-4eee-8fb2-200957eb0624",
+    "items": [
+        {
+            "tax_class": "AAA000",
+            "tax_method": "vat_included",
+            "item_price": 200,
+            "quantity": 1,
+            "shipping_address": {
+                "address_line_1": "Potsdamer Str. 7, 10785 Berlin",
+                "zip_code": "10785",
+                "city": "Berlin",
+                "country_code": "DE"
+            },
+            "shipping_origin": {
+                "address_line_1": "Potsdamer Str. 7, 10785 Berlin",
+                "zip_code": "10785",
+                "city": "Berlin",
+                "country_code": "DE"
+            },
+            "type": "product",
+            "currency_consumer": "EUR",
+            "product_name": "Metallica shirt",
+            "price_net": 168.07,
+            "price_tax": 31.93,
+            "price_line_item": 200,
+            "tax_rates": [
+                {
+                    "rate": 0.19,
+                    "tax_name": "Standard",
+                    "country_code": "DE",
+                    "amount": 31.93,
+                    "exempt_amount": 0,
+                    "taxable_amount": 168.07,
+                    "tax_status": "TAXABLE"
+                }
+            ]
+        }
+    ],
+    "totals": {
+        "subtotal": 200,
+        "grand_total": 200,
+        "tax_total": 31.93,
+        "shipping_total": 0,
+        "shipping_tax_amount": 0,
+        "tax_strategy": "avalara",
+        "tax_rates_summary": [
+            {
+                "amount": 31.93,
+                "country_code": "DE",
+                "rate": 0.19,
+                "tax_name": "Standard"
+            }
+        ],
+        "net_total": 168.07,
+        "discount_total": 0
+    },
+    "document_id": "56bb9975-f43a-4eee-8fb2-200957eb0624"
+}
+The
+totals.tax_strategy
+should be set to the configured tax provider, which indicates that the NewStore platform was able to use the configured tax provider integration to calculate the taxes for this request. Getting a different strategy other than the configured tax provider indicates that the tax provider setup is not working as expected and a fallback calculation strategy was used instead.
+Troubleshooting errors
+You can identify the failure scenarios by checking the
+fallback_error
+object in the response that would only be present when the original tax provider calculation fails and a fallback is needed to calculate the totals of the cart.
+An error sample is as follows:
+{
+    ...,
+    "totals": {
+        ...,
+        "tax_strategy": "fixedrate"
+    },
+    "fallback_error": {
+        "error_code": "taxes_provider_error_response",
+        "message": "Avalara quotation request failed.",
+        "original_tax_provider": "avalara"
+    }
+}
+The above
+fallback_error
+indicates that NewStore platform faced an issue getting a response from the configured tax provider based on the example
+"error_code" : "taxes_provider_error_response"
+. You can use the
+error_code
+to get a high-level understanding of the problem with the configured tax provider as different values indicate different problems with the integration.
+The following are the possible values of the
+error_code
+and their meanings:
+Error code
+:
+taxes_provider_invalid_credentials
+means that the underlying request to the configured tax provider failed with a 401 response indicating that an authentication issue occurred due to invalid credentials. You can troubleshoot this issue by ensuring that your configurations contain the correct credentials needed to access your configured tax provider.
+Error code:
+taxes_provider_client_error_response
+means that the underlying request to the configured tax provider failed with a 4XX response indicating that the configured tax provider rejected the request, which often indicates a configuration error. You can troubleshoot this issue by ensuring that your configurations contain the correct parameters.
+Error code
+:
+taxes_provider_error_response
+means that a generic network issue, such as timeouts, occurred, or an unexpected response, such as a bad gateway response, was received. You can troubleshoot this issue by checking the logs to explore the root cause and address the issue.
+Error code
+:
+taxes_address_validation_failed
+means that the origin/shipping address could not be resolved. Ensure that the store and/or shipping addresses are valid.
+Logs
+In cases where the
+error_code
+is not enough to determine the root cause of the issue, check the NewStore logs using the
+fallback_error.message
+key value. Use the
+fallback_error.message
+key value in your tests as a filter in your search to narrow down the logs. The logs have a detailed description of the underlying issue that occurred and help you receive an in-depth understanding of the problem.
+Related topics
+About taxes
+Adding tax exemption to an order
+Retrieving tax information
+Importing data
+Was this article helpful?
+Yes
+No
+Tags
+api
+Avalara
+config api
+documents
+fiscal regulations
+internationalization
+payment
+platform
+receipts
+tax exemption
+tax provider
+tax rate
+taxes
+tutorial
+Vertex
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

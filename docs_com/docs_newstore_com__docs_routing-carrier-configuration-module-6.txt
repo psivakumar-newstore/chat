@@ -1,0 +1,118 @@
+Routing & Carrier configuration (Module 6)
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Routing & Carrier configuration (Module 6)
+Updated on
+Mar 11, 2025
+Published on Mar 11, 2025
+2 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Prerequisites
+Complete both Module 1 - Foundational Setup, and Module 4: Web order injection using sample payment gateway before proceeding with this module.
+If you have not configured it earlier, configure the shipping option token key pair config as it is needed for the shipping offer generation.
+Carrier Config
+For the sake of simplicity, you can use your dummy carrier adapter from Module 4 and extend it to support the booking and cancellation of shipment labels. During the fulfilment flow, NewStore will emit a
+shipment booking request webhook
+and expects back a label URL and a tracking code for each shipment. The shipment provider integration tutorial provides more details on the process flow and what the adapter needs to do.
+By setting "
+booking_includes_return
+": false for the carrier in the carrier config, NewStore will only request one label from your dummy adapter.
+Further consideration
+: Configuring Multiple Carriers and using provider rate priority settings
+To ensure optimal flexibility and reliability, it is possible to configure multiple carriers and applying the provider rate priority setup to determine the order of carriers to be tried to book a shipment label. This approach allows the platform to automatically fall back to the next available carrier in scenarios where:
+The primary carrier is unavailable
+The primary carrier does not service the specified address (e.g. military addresses in the US)
+By configuring multiple carriers with prioritized rates, you can ensure seamless and efficient shipping operations.
+To activate the provider rate priority feature, please follow the instructions outlined in the tutorial
+Enabling features
+.
+Please note that using multiple carriers might be not optimal from a commercial perspective. Carriers will provide better rates to Retailers the higher the package volume is. The above setup makes sense to cover exceptional use cases such as military addresses in the US which are serviced by USPS only. Using multiple carriers also means more carrier pickups which is additional work for store associates.
+Routing Config
+As part of Module 4 you have put together a routing configuration with routing rules using the DC location to fulfil orders. This needs to be extended to include a store which you have setup as part of Module 1.
+You have seen during the setup for Module 4, that the routing rules configuration consists of 4 main parts:
+routes
+sl_levels_priority
+location_groups
+zip_code_regions
+The most simple way to add stores as fulfilment nodes is to add another location group which contains the store and add it to the existing routes by extending the fulfilled_by section:
+{
+  "destination_region": {
+    "country": "US",
+    "zip_code_region": "ALL"
+  },
+  "fulfilled_by": {
+    "TRADITIONAL": [
+      "US_DC",
+      "US_STORES"
+    ],
+  }
+}
+US_STORES is defined in the location_groups section. The above setup will prioritise fulfilling from the US DC. You can change the sort order in case you want a different behaviour.
+Further consideration: You can leverage the zip_code_regions to define geographic regions to fine tune your routing setup. For example in case you don’t want the stores to ship to remote locations (e.g. Hawaii) or doing international shipments, you can use zip_code_regions to define a mainland region which is serviced by stores. Then setup a destination_region for that region and setup store location groups to service that destination region. Order shipped to other locations outside of the mainland definition would be caught by a separate “catch all” destination_region which is using a wildcard *. That destination region would only use the DC to fulfil.
+Was this article helpful?
+Yes
+No
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

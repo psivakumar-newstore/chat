@@ -1,0 +1,419 @@
+Stock Admin API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Stock
+Availabilities API
+Bag Availability Admin API
+External Availability Webhook
+Public Availability Admin API
+Stock Admin API
+Stock Insights Admin API
+Other support APIs
+post
+Get unallocated items
+get
+Get unallocated items for a product
+post
+Get ATP by product ids
+patch
+Update the store mapping.
+API docs by Redocly
+Stock Admin API
+(
+0.1.0
+)
+Download OpenAPI specification
+:
+Download
+team-order-management
+:
+team-order-management@newstore.com
+This internal stock API provides access to
+availability
+values in the platform.
+Get unallocated items
+Retrieves the count for unallocated items for a specified set of
+ATP keys
+, where
+ATP keys are defined as a combination of the product ID and fulfillment location.
+The number of unallocated items returned in the response payload is the number of
+items that are sellable on hand, after removing the number of safety stock items and
+allocations.
+Note
+: This API only supports requesting for 2000 items. If more items need to be requested,
+use multiple requests.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+A list of ATP keys
+atp_keys
+required
+Array of
+objects
+[ 1 .. 2000 ] items
+Array
+([ 1 .. 2000 ] items)
+product_id
+required
+string
+non-empty
+The id of the product.
+fulfillment_node_id
+required
+string
+non-empty
+The id of the fulfillment node.
+Responses
+200
+Unallocated items response.
+400
+Something was wrong with the request
+500
+An internal error occurred.
+default
+Unexpected Error
+post
+/stock/unallocated_items
+/v0
+/stock/unallocated_items
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"atp_keys"
+:
+[
+{
+"product_id"
+:
+1000012
+,
+"fulfillment_node_id"
+:
+"US01"
+}
+]
+}
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"product_id"
+:
+1000012
+,
+"fulfillment_node_id"
+:
+"US01"
+,
+"count"
+:
+10
+}
+,
+{
+"product_id"
+:
+1000012
+,
+"fulfillment_node_id"
+:
+"US02"
+,
+"count"
+:
+12
+}
+]
+}
+Get unallocated items for a product
+Retrieves the count for unallocated items for the specified product ID. In this request,
+the ATP keys are defined as a combination of the same product ID and
+different fulfillment locations.
+The number of unallocated items returned in the response payload is the number of
+items that are sellable on hand, after removing the number of safety stock items and
+allocations.
+Note
+: This API only supports requesting for 2000 items. If more items need to be requested,
+use multiple requests.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+product_id
+string
+The product ID of the item.
+Responses
+200
+List unallocated items.
+400
+Something was wrong with the request
+500
+An internal error occurred.
+default
+Unexpected Error
+get
+/stock/unallocated_items
+/v0
+/stock/unallocated_items
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"product_id"
+:
+1000012
+,
+"fulfillment_node_id"
+:
+"US01"
+,
+"count"
+:
+10
+}
+,
+{
+"product_id"
+:
+1000012
+,
+"fulfillment_node_id"
+:
+"US02"
+,
+"count"
+:
+12
+}
+]
+}
+Get ATP by product ids
+Retrieves the atp for the specified product IDs.
+Note
+: This API only supports requesting for 2000 items. If more items need to be requested fetch the next
+page. The boolean
+has_more
+and the number
+total_count
+indicates if there are more pages to be fetched.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+A list of ATP keys
+products
+required
+Array of
+strings
+non-empty
+page_number
+required
+number
+multiple of 1
+>= 1
+The page number of paginated response. The page number starts at 1
+page_size
+required
+number
+multiple of 1
+[ 1 .. 2000 ]
+The max size of the paginated response. This value should not be more than 2000.
+Responses
+200
+List of ATP keys and ATP.
+400
+Something was wrong with the request
+500
+An internal error occurred.
+default
+Unexpected Error
+post
+/stock/products/availability
+/v0
+/stock/products/availability
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"products"
+:
+[
+"1000001"
+,
+"1000002"
+,
+"1000003"
+]
+,
+"page_number"
+:
+1
+,
+"page_size"
+:
+500
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"items"
+:
+[
+{
+"product_id"
+:
+1000012
+,
+"fulfillment_node_id"
+:
+"US01"
+,
+"atp"
+:
+35
+}
+,
+{
+"product_id"
+:
+1000012
+,
+"fulfillment_node_id"
+:
+"DC01"
+,
+"atp"
+:
+100
+}
+]
+,
+"has_more"
+:
+false
+}
+Update the store mapping.
+Updates the store mapping for the provided fulfillment node in the NewStore platform. 
+This operation will not affect any ATP values in the platform.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+fulfillment_node_id
+required
+string
+The identifier of the fulfillment node.
+Request Body schema:
+application/json
+store_id
+required
+string
+New store id for the provided fulfillment node. If value is an empty string the store id will be removed from the provided fulfillment node.
+Responses
+204
+The store id mapping for the fulfillment node was updated.
+400
+Something was wrong with the request
+404
+The provided fulfillment node id does not exist.
+500
+An internal error occurred.
+default
+Unexpected Error
+patch
+/fulfillment_node/{fulfillment_node_id}/update_store_mapping
+/v0
+/fulfillment_node/{fulfillment_node_id}/update_store_mapping
+Request samples
+Payload
+Content type
+application/json
+Example
+Update store id to new value
+Remove store id
+Update store id to new value
+Copy
+{
+"store_id"
+:
+"06d2a32a-b251-4751-83c6-81517a46e79f"
+}
+Response samples
+400
+404
+500
+Content type
+application/problem+json
+Copy
+Expand all
+Collapse all
+{
+"messages"
+:
+[
+"store_id: store_id is required"
+]
+,
+"request_id"
+:
+"1235a3d3-1884-4e95-9926-d7253edb4f7f"
+}
+Previous
+Public Availability Admin API
+Next
+Stock Insights Admin API
+Copyright © 2025 NewStore, Inc.

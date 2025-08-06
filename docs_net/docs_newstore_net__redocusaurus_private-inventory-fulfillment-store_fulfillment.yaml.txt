@@ -1,0 +1,769 @@
+openapi: 3.0.1
+tags:
+  - name: Store Fulfillment
+    description: >
+      Represents the life cycle of on order.
+
+      From the moment the order is routed to a store until the it's handed over
+      to the customer.
+
+      This includes processes as: picking, packing, printing required documents.
+info:
+  title: Store Fulfillment
+  contact:
+    name: Team Store Fulfillment
+    url: https://docs.newstore.net/
+    email: team-store-fulfillment@newstore.com
+  description: >
+    Represents the life cycle of on order.
+
+    From the moment the order is routed to a store until the it's handed over to
+    the customer.
+
+    This includes processes as: picking, packing, printing required documents.
+  version: '0.1'
+servers:
+  - url: https://dodici.x.newstore.net/v0/store-fulfillment
+paths:
+  /fulfillment-tasks:
+    get:
+      parameters:
+        - in: query
+          name: status
+          description: |
+            The status of the fulfillment tasks.
+          schema:
+            type: string
+            enum:
+              - open
+              - ready_for_pickup
+              - closed
+      tags:
+        - Get fulfillment task by status
+      description: |
+        Retrieves a list fulfillment tasks in store.
+      summary: Get fulfillment task by status
+      operationId: listFulfillmentTasks
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/fulfillmentTasksResponse'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - Create new fulfillment task
+      description: |
+        Create new fulfillment task in store.
+      summary: Create new fulfillment task
+      operationId: createFulfillmentTask
+      parameters:
+        - in: header
+          name: Tenant
+          description: Tenant
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/fulfillmentTaskPostBody'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/fulfillmentTaskDetailsResponse'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '422':
+          description: A required field is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/missingRequiredFieldError'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment-tasks/overview:
+    get:
+      tags:
+        - Get fulfillment tasks overview numbers.
+      description: |
+        Retrieves the fulfillment tasks overview information
+        such as number of new, in progress, and ready for pickup orders
+      summary: Get fulfillment tasks overview
+      operationId: getFulfillmentTasksOverview
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/fulfillmentTasksOverviewResponse'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment-tasks/{fulfillment_task_id}:
+    get:
+      tags:
+        - Get fulfillment task information by id
+      description: |
+        Retrieves a fulfillment task
+      summary: Get fulfillment task by id
+      operationId: getFulfillmentTaskById
+      parameters:
+        - name: fulfillment_task_id
+          in: path
+          description: |
+            The identifier of the fulfillment task.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/fulfillmentTaskDetailsResponse'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Fulfillment task with provided id not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/fulfillmentTaskNotFound'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment-tasks/{fulfillment_task_id}/ready_for_pickup:
+    post:
+      tags:
+        - Mark order as ready for pickup.
+      description: |
+        Mark order as ready for pickup
+      summary: Mark order as ready for pickup
+      operationId: markAsReadyForPickup
+      parameters:
+        - name: fulfillment_task_id
+          in: path
+          description: |
+            The identifier of the fulfillment task.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+        - in: header
+          name: Tenant
+          description: Tenant
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: |
+                      The state of the transaction
+                    example: ready_for_pickup
+                required:
+                  - status
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '422':
+          description: A required field is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/missingRequiredFieldError'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment-tasks/{fulfillment_task_id}/complete:
+    post:
+      tags:
+        - Marks package as picked up by the carrier.
+      description: |
+        Marks package as picked up by the carrier
+      summary: Marks package as picked up by the carrier.
+      operationId: markAsComplete
+      parameters:
+        - name: fulfillment_task_id
+          in: path
+          description: |
+            The identifier of the fulfillment task.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+        - in: header
+          name: Tenant
+          description: Tenant
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: |
+                      The state of the transaction
+                    example: closed
+                required:
+                  - status
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '422':
+          description: A required field is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/missingRequiredFieldError'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /pick-lists:
+    get:
+      tags:
+        - Get pick lists.
+      description: |
+        Retrieves a list of pick lists per store.
+      summary: Get pick lists
+      operationId: getPicklists
+      parameters:
+        - in: header
+          name: Tenant
+          description: Tenant
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: user_id
+          description: User identifier in the platform
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getPicklistsResponse'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '422':
+          description: A required field is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/missingRequiredFieldError'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - Create pick list.
+      description: |
+        Generates pick list.
+        By default, all open orders will be part of the picklist.
+      summary: Generates pick list
+      operationId: createPickList
+      parameters:
+        - in: header
+          name: Tenant
+          description: Tenant
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: user_id
+          description: User identifier in the platform
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Pick list succesfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pickListIdentifier'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: 'Request did not succeed. Possible reasons: no open ordes available.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '422':
+          description: A required field is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/missingRequiredFieldError'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /pick-lists/{picklist_id}:
+    get:
+      tags:
+        - Get picklist information by id
+      description: |
+        Retrieves the picklist products
+      summary: Get products for the given picklist ID
+      operationId: getPicklistById
+      parameters:
+        - name: picklist_id
+          in: path
+          description: |
+            The identifier of the picklist.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/picklist_detail'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Fulfillment task with provided id not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/picklistNotFound'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /pick-lists/{picklist_id}/pick_item:
+    put:
+      tags:
+        - Mark item from picklist as picked
+      description: |
+        Mark item from picklist as picked
+      summary: Mark item from picklist as picked
+      operationId: markItemAsPicked
+      parameters:
+        - name: picklist_id
+          in: path
+          description: |
+            The identifier of the picklist.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/markItemAsPickedBody'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: |
+                      The state of the transaction
+                    example: true
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Picklist with provided id not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/picklistNotFound'
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+components:
+  schemas:
+    error:
+      title: General error format.
+      properties:
+        error_data:
+          type: object
+          description: Information regarding errors in case operation fails.
+          properties:
+            code:
+              type: string
+              description: Custom error code which gives you brief details about the error.
+              example: not_found, no_orders_to_fulfill_found
+            description:
+              type: string
+              description: Error description which gives you more details about the error.
+              example: >-
+                Failed to find task with id:
+                e93e698e-c4ac-417a-8a58-47a732c98457
+    missingRequiredFieldError:
+      title: Missing required field error.
+      properties:
+        detail:
+          type: array
+          description: Error details.
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                description: Missing field location.
+                items:
+                  type: string
+              msg:
+                type: string
+                description: Error description.
+              type:
+                type: string
+                description: Error type.
+    fulfillmentTaskPostBody:
+      title: Post Fulfillment task body.
+      properties:
+        detail:
+          type: object
+          required:
+            - fulfillment_node_id
+            - order_id
+            - line_items
+          properties:
+            fulfillment_node_id:
+              type: string
+              description: Fulfillment node where order should be fulfilled.
+            order_id:
+              type: string
+              description: Count type related to the import.
+            line_items:
+              type: array
+              items:
+                type: object
+                properties:
+                  item_ids:
+                    type: array
+                    description: Item IDs.
+                    items:
+                      type: string
+                  product_id:
+                    type: string
+                    description: Product identifier.
+    fulfillmentTaskNotFound:
+      title: Fulfillment task with provided id not found.
+      properties:
+        detail:
+          type: object
+          properties:
+            detail:
+              type: string
+              description: Error description.
+    fulfillmentTasksResponse:
+      title: Fulfillment tasks response
+      required:
+        - fulfillment_tasks
+      type: object
+      properties:
+        fulfillment_tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/fulfillmentTask'
+    fulfillmentTaskDetailsResponse:
+      $ref: '#/components/schemas/fulfillmentTaskCompleteInfo'
+    fulfillmentTask:
+      title: Fulfillment Task
+      required:
+        - created_on
+        - order_id
+        - fulfillment_task_id
+        - fulfillment_request_id
+        - status
+      type: object
+      properties:
+        created_on:
+          type: string
+          format: date-time
+          description: |
+            Sales order created time
+        order_id:
+          type: string
+          description: |
+            Human readable order reference
+          example: GD0000000001
+        fulfillment_task_id:
+          type: string
+          description: |
+            An internal fulfillment task reference
+          example: e93e698e-c4ac-417a-8a58-47a732c98457
+        fulfillment_request_id:
+          type: string
+          description: |
+            An external fulfillment task reference
+          example: e93e698e-c4ac-417a-8a58-47a732c98457
+        status:
+          type: string
+          description: |
+            The state of the transaction
+          enum:
+            - open
+            - ready_for_pickup
+            - closed
+        picklist:
+          type: string
+          description: |
+            Name of the picklist to which the task is associated
+          example: 1
+    fulfillmentTaskCompleteInfo:
+      title: Fulfillment Task Details
+      allOf:
+        - $ref: '#/components/schemas/fulfillmentTask'
+        - $ref: '#/components/schemas/fulfillmentTaskAdditionalInfo'
+    fulfillmentTaskAdditionalInfo:
+      type: object
+      required:
+        - fulfillment_task_id
+      properties:
+        fulfillment_task_id:
+          type: string
+          description: |
+            An internal fulfillment task reference
+          example: e93e698e-c4ac-417a-8a58-47a732c98457
+    getPicklistsResponse:
+      type: object
+      required:
+        - picklists
+      properties:
+        picklists:
+          type: array
+          items:
+            $ref: '#/components/schemas/picklist'
+    pickListIdentifier:
+      type: object
+      required:
+        - picklist_id
+      properties:
+        picklist_id:
+          type: string
+          description: |
+            An internal reference to the pick list.
+          example: e93e698e-c4ac-417a-8a58-47a732c98457
+    picklist:
+      title: Picklist
+      required:
+        - picklist_id
+        - created_on
+      type: object
+      properties:
+        picklist_id:
+          type: string
+          description: |
+            An internal reference to the pick list.
+          example: e93e698e-c4ac-417a-8a58-47a732c98457
+        created_on:
+          type: string
+          description: |
+            The date the pick list was created.
+          example: '2021-08-18T12:10:06.079694+00:00'
+    picklist_detail:
+      title: Picklist Detail
+      required:
+        - products
+        - created_on
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/product'
+        created_on:
+          type: string
+          description: |
+            The date the pick list was created.
+          example: '2021-08-18T12:10:06.079694+00:00'
+    picklistNotFound:
+      title: Picklist with provided id not found.
+      properties:
+        detail:
+          type: object
+          properties:
+            detail:
+              type: string
+              description: Error description.
+    product:
+      title: Product
+      required:
+        - product_id
+        - quantity
+      type: object
+      properties:
+        product_id:
+          type: string
+          description: |
+            An intenal reference for the product
+          example: e93e698e-c4ac-417a-8a58-47a732c98457
+        quantity:
+          type: integer
+          description: |
+            The quantity of the product that belongs to the order
+          example: 10
+        color:
+          type: string
+          description: |
+            The color of the product.
+          example: blue
+        size:
+          type: string
+          description: |
+            The size of the product.
+          example: S
+        title:
+          type: string
+          description: |
+            The title of the product.
+          example: Jacket
+    markItemAsPickedBody:
+      title: Mark item as picked body.
+      properties:
+        detail:
+          type: object
+          required:
+            - product_id
+            - quantity
+          properties:
+            product_id:
+              type: string
+              description: Product id of the picked item
+            quantity:
+              type: integer
+              description: Quantity of items picked
+    fulfillmentTasksOverviewResponse:
+      type: object
+      required:
+        - new
+        - in_progress
+        - ready_for_handover
+        - total
+      properties:
+        new:
+          type: integer
+          description: The count of total fulfillment tasks that are new
+        in_progress:
+          type: integer
+          description: The count of total fulfillment tasks that are in progress
+        ready_for_handover:
+          type: integer
+          description: The count of total fulfillment tasks that are ready for handover
+        total:
+          type: integer
+          description: The total amount of fulfillment tasks that are not closed

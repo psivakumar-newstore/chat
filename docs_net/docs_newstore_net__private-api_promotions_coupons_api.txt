@@ -1,0 +1,961 @@
+Coupons API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Coupons API
+Promotions configuration API
+Discount Rule API
+Apply Promotions To Cart
+Configuration
+Coupons
+Integration Configurations
+Automatic Promotions
+Manage loyalty programs
+Manage Stackable Coupons
+Stock
+Other support APIs
+Coupon definitions
+post
+Create coupon definition
+get
+Get coupon definition
+put
+Update coupon definition
+del
+Delete coupon definition
+Coupons
+post
+Create coupon
+post
+[DEPRECATED] Update coupon
+patch
+Update coupon partially
+Coupon templates
+post
+Create coupon template
+API docs by Redocly
+Coupons API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Use this API to manage
+coupons
+that can be used by the
+customer during checkout, and coupon definitions, which are used to generate these coupons.
+To learn how to create coupons, see the
+guide
+.
+Coupon definitions
+Represents a coupon definition from which coupons are generated. A coupon definition,
+is based on a
+discount
+.
+To learn how to create them, refer to the
+Coupons tutorial
+.
+Create coupon definition
+Creates a coupon definition, which is used to create coupons using the
+Create coupon
+method.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+label
+required
+string
+non-empty
+Label to identify the coupon definition by. Must be unique, second call with the same label will fail.
+pattern
+required
+string
+non-empty
+RegEx pattern to generate the coupon code with.
+validation_rules
+Array of
+Valid from validation rule object (object) or Valid to validation rule object (object) or Restricted to consumer id validation rule object (object)
+A list of validation rules applied by default to the coupons created with this coupon definition.
+discount_rule_id
+required
+string
+non-empty
+Unique identifier of the discount rule applied by default to the coupons.
+channel_types
+Array of
+strings
+<= 5 items
+Items
+Enum
+:
+"web"
+"mobile"
+"mobile_ios"
+"mobile_android"
+"store"
+max_redemptions
+integer
+>= 1
+The maximum number of times a coupon based on this definition can be redeemed.
+Responses
+200
+The coupon definition was successfully created.
+400
+Something was wrong with the request.
+post
+/coupon_definitions
+/v0/d
+/coupon_definitions
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"coupondef_req_date"
+:
+{
+"schema"
+:
+{
+"pattern"
+:
+"coupondef-[A-Z]{3}[0-9]{3}"
+,
+"validation_rules"
+:
+[
+{
+"label"
+:
+"valid_from"
+,
+"values"
+:
+{
+"valid_from"
+:
+"2017-10-23T06:00:00.000Z"
+}
+}
+,
+{
+"label"
+:
+"valid_to"
+,
+"values"
+:
+{
+"valid_to"
+:
+"2019-11-30T23:59:59.000Z"
+}
+}
+]
+,
+"label"
+:
+"cybermon678"
+,
+"discount_rule_id"
+:
+"f32f4cf6-f65d-4ed9-be4c-26a2b0552a51"
+,
+"max_redemptions"
+:
+10000000
+}
+}
+,
+"coupondef_req_customer"
+:
+{
+"schema"
+:
+{
+"pattern"
+:
+"coupondef-[A-Z]{3}[0-9]{3}"
+,
+"validation_rules"
+:
+[
+{
+"label"
+:
+"restricted_to_consumer_id"
+,
+"values"
+:
+{
+"consumer_id"
+:
+"8de1d881-2572-4848-b3f7-e8cb9a45b4f5"
+}
+}
+]
+,
+"label"
+:
+"loyalty"
+,
+"discount_rule_id"
+:
+"48f5c1d4-b34b-4e5e-a16e-6941acb8f8fe"
+,
+"max_redemptions"
+:
+1
+}
+}
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"schema"
+:
+{
+"id"
+:
+"c4c429fc-9744-41ea-87a0-e081092d63f9"
+,
+"label"
+:
+"cybermon679"
+}
+}
+Get coupon definition
+Returns the coupon definition for the coupon with the specified ID.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+Responses
+200
+The coupon is returned.
+404
+Could not find the coupon definition with the specified ID.
+get
+/coupon_definitions/{id}
+/v0/d
+/coupon_definitions/{id}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"schema"
+:
+{
+"id"
+:
+"c4c429fc-9744-41ea-87a0-e081092d63f9"
+,
+"label"
+:
+"cybermon678"
+,
+"pattern"
+:
+"coupondef-[A-Z]{3}[0-9]{3}"
+,
+"validation_rules"
+:
+[
+{
+"label"
+:
+"valid_from"
+,
+"values"
+:
+{
+"valid_from"
+:
+"2017-10-23T06:00:00.000Z"
+}
+}
+,
+{
+"label"
+:
+"valid_to"
+,
+"values"
+:
+{
+"valid_to"
+:
+"2019-11-30T23:59:59.000Z"
+}
+}
+]
+,
+"discount_rule_id"
+:
+"f32f4cf6-f65d-4ed9-be4c-26a2b0552a51"
+,
+"max_redemptions"
+:
+10000000
+}
+}
+Update coupon definition
+Overwrites the coupon definition with the specified ID, using
+the updated coupon definition specified in the payload.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+Request Body schema:
+application/json
+label
+required
+string
+non-empty
+Label to identify the coupon definition by. Must be unique, second call with the same label will fail.
+pattern
+required
+string
+non-empty
+RegEx pattern to generate the coupon code with.
+validation_rules
+Array of
+Valid from validation rule object (object) or Valid to validation rule object (object) or Restricted to consumer id validation rule object (object)
+A list of validation rules applied by default to the coupons created with this coupon definition.
+discount_rule_id
+required
+string
+non-empty
+Unique identifier of the discount rule applied by default to the coupons.
+channel_types
+Array of
+strings
+<= 5 items
+Items
+Enum
+:
+"web"
+"mobile"
+"mobile_ios"
+"mobile_android"
+"store"
+max_redemptions
+integer
+>= 1
+The maximum number of times a coupon based on this definition can be redeemed.
+Responses
+200
+The coupon was updated.
+400
+Invalid input data.
+404
+Could not find the coupon definition with the specified ID.
+put
+/coupon_definitions/{id}
+/v0/d
+/coupon_definitions/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"coupon_definition_update"
+:
+{
+"schema"
+:
+{
+"pattern"
+:
+"coupondef-[A-Z]{3}[0-9]{3}"
+,
+"validation_rules"
+:
+[
+{
+"label"
+:
+"valid_from"
+,
+"values"
+:
+{
+"valid_from"
+:
+"2017-10-23T06:00:00.000Z"
+}
+}
+,
+{
+"label"
+:
+"valid_to"
+,
+"values"
+:
+{
+"valid_to"
+:
+"2019-11-30T23:59:59.000Z"
+}
+}
+]
+,
+"label"
+:
+"cybermon678"
+,
+"discount_rule_id"
+:
+"f32f4cf6-f65d-4ed9-be4c-26a2b0552a51"
+,
+"max_redemptions"
+:
+10000000
+}
+}
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"schema"
+:
+{
+"id"
+:
+"c4c429fc-9744-41ea-87a0-e081092d63f9"
+,
+"label"
+:
+"cybermon678"
+,
+"pattern"
+:
+"coupondef-[A-Z]{3}[0-9]{3}"
+,
+"validation_rules"
+:
+[
+{
+"label"
+:
+"valid_from"
+,
+"values"
+:
+{
+"valid_from"
+:
+"2017-10-23T06:00:00.000Z"
+}
+}
+,
+{
+"label"
+:
+"valid_to"
+,
+"values"
+:
+{
+"valid_to"
+:
+"2019-11-30T23:59:59.000Z"
+}
+}
+]
+,
+"discount_rule_id"
+:
+"f32f4cf6-f65d-4ed9-be4c-26a2b0552a51"
+,
+"max_redemptions"
+:
+10000000
+}
+}
+Delete coupon definition
+Deletes the coupon definition with the specified ID.
+Note
+: You cannot delete the coupon definition for a coupon that has been used at
+least once.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+Responses
+204
+The coupon definition was deleted.
+404
+The coupon definition with the specified ID could not be found.
+delete
+/coupon_definitions/{id}
+/v0/d
+/coupon_definitions/{id}
+Coupons
+Represents a coupon that can be used by the customer during checkout.
+It is created from a
+coupon definition
+.
+To learn how to create them, refer to this
+guide
+.
+Create coupon
+Creates a coupon from an existing definition. This method links
+the existing coupon definition to the coupon.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+label
+string
+Optional label to apply to the coupon.
+template_label
+required
+string
+non-empty
+Coupon definition (template) label to create coupon by. Multiple coupons can be created using the same label.
+validation_rules
+Array of
+Valid from validation rule object (object) or Valid to validation rule object (object) or Restricted to consumer id validation rule object (object) or Minimal order total before discount validation rule object (object)
+A list of validation rules to be applied to the coupon. The list provided here is intersected with the one coupon definition (template) provides, and validation rules from this list either override the ones of the coupon definition or produce a conflict, depending on the rule.
+amount
+object
+(
+Monetary amount object
+)
+DEPRECATED. Amount is taken from the discount rule. In the deprecated case of no discount rule, amount must be provided either here or on the corresponding definition (template). Amount provided here can not override the one provided by coupon definition.
+discount_rule_id
+string
+non-empty
+DEPRECATED. Use coupon definitions (templates) with attached discount_rule_id. Unique identifier of the discount rule which is attached to the coupon.
+Responses
+200
+The coupon was successfully created.
+400
+Something went wrong with the request.
+post
+/coupons
+/v0/d
+/coupons
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"coupon_create"
+:
+{
+"schema"
+:
+{
+"label"
+:
+"loyaltyfeb"
+,
+"template_label"
+:
+"loyalty"
+,
+"validation_rules"
+:
+[
+{
+"values"
+:
+{
+"consumer_id"
+:
+"8de1d881-2572-4848-b3f7-e8cb9a45b4f5"
+}
+,
+"label"
+:
+"restricted_to_consumer_id"
+}
+]
+}
+}
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"schema"
+:
+{
+"label"
+:
+"loyalty_feb"
+,
+"code"
+:
+"COUPON_bf3sK"
+,
+"id"
+:
+"5d3e00b3-20c1-4268-832c-e299527e3d33"
+,
+"is_enabled"
+:
+true
+}
+}
+[DEPRECATED] Update coupon
+Deprecated
+This endpoint is deprecated. Use
+Update coupon partially
+instead.
+Updates the
+is_enabled
+parameter of a coupon. When set to
+false
+the coupon is not redeemable and cannot be used during checkout.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+coupon ID
+Request Body schema:
+application/json
+is_enabled
+boolean
+Is true when the coupon is enabled
+validation_rules
+Array of
+Valid from validation rule object (object) or Valid to validation rule object (object) or Restricted to consumer id validation rule object (object) or Minimal order total before discount validation rule object (object)
+A list of validation rules to be applied to the coupon. The list provided here is intersected with the one coupon definition (template) provides, and validation rules from this list either override the ones of the coupon definition or produce a conflict, depending on the rule.
+Responses
+200
+The coupon was successfully updated.
+404
+Could not find the coupon with the given id.
+post
+/coupons/{id}
+/v0/d
+/coupons/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"update-coupon"
+:
+{
+"schema"
+:
+{
+"is_enabled"
+:
+false
+,
+"validation_rules"
+:
+[
+{
+"values"
+:
+{
+"consumer_id"
+:
+"8de1d881-2572-4848-b3f7-e8cb9a45b4f5"
+}
+,
+"label"
+:
+"restricted_to_consumer_id"
+}
+]
+}
+}
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"schema"
+:
+{
+"label"
+:
+"loyalty_feb"
+,
+"code"
+:
+"COUPON_bf3sK"
+,
+"id"
+:
+"5d3e00b3-20c1-4268-832c-e299527e3d33"
+,
+"is_enabled"
+:
+false
+}
+}
+Update coupon partially
+Updates several parameters of a coupon. When
+is_enabled
+is set to
+false
+,
+the coupon is not redeemable and cannot be used during checkout.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+coupon ID
+Request Body schema:
+application/json
+is_enabled
+boolean
+Is true when the coupon is enabled
+validation_rules
+Array of
+Valid from validation rule object (object) or Valid to validation rule object (object) or Restricted to consumer id validation rule object (object) or Minimal order total before discount validation rule object (object)
+A list of validation rules to be applied to the coupon. The list provided here is intersected with the one coupon definition (template) provides, and validation rules from this list either override the ones of the coupon definition or produce a conflict, depending on the rule.
+Responses
+200
+The coupon was successfully updated.
+404
+Could not find the coupon with the given id.
+patch
+/coupons/{id}
+/v0/d
+/coupons/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"update_coupon"
+:
+{
+"schema"
+:
+{
+"is_enabled"
+:
+false
+,
+"validation_rules"
+:
+[
+{
+"values"
+:
+{
+"consumer_id"
+:
+"8de1d881-2572-4848-b3f7-e8cb9a45b4f5"
+}
+,
+"label"
+:
+"restricted_to_consumer_id"
+}
+]
+}
+}
+}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"schema"
+:
+{
+"label"
+:
+"loyalty_feb"
+,
+"code"
+:
+"COUPON_bf3sK"
+,
+"id"
+:
+"5d3e00b3-20c1-4268-832c-e299527e3d33"
+,
+"is_enabled"
+:
+false
+}
+}
+Coupon templates
+Represents a coupon template that can be used to create coupons.
+Create coupon template
+Creates a coupon template which is later used to create a coupon itself.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+label
+required
+string
+non-empty
+Label to identify the coupon template by. Must be unique, second call with the same label will fail.
+pattern
+required
+string
+non-empty
+RegEx pattern to generate the coupon code with.
+validation_rules
+Array of
+Valid from validation rule object (object) or Valid to validation rule object (object) or Restricted to consumer id validation rule object (object) or Minimal order total before discount validation rule object (object)
+A list of validation rules that are going to be applied by default to the coupons, created with this coupon template.
+amount
+object
+(
+Monetary amount object
+)
+Amount to be applied to the coupons created with this coupon template.
+Responses
+200
+The coupon template was successfully created.
+400
+Something was wrong with the request.
+post
+/coupon_templates
+/v0/d
+/coupon_templates
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"label"
+:
+"string"
+,
+"pattern"
+:
+"string"
+,
+"validation_rules"
+:
+[
+{
+"label"
+:
+"valid_from"
+,
+"values"
+:
+{
+"valid_from"
+:
+"2019-08-24T14:15:22Z"
+}
+}
+]
+,
+"amount"
+:
+{
+"value"
+:
+0
+,
+"currency"
+:
+"string"
+}
+}
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"id"
+:
+"string"
+,
+"label"
+:
+"string"
+}
+Previous
+Refund Request Admin API
+Next
+Promotions configuration API
+Copyright © 2025 NewStore, Inc.

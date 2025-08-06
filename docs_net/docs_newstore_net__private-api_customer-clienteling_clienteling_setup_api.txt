@@ -1,0 +1,599 @@
+Clienteling Setup API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Clienteling Setup API
+Customer Profile Admin API
+Consumer Profile API
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+Enable clienteling configuration
+post
+Enable clienteling configuration for retailer
+Onboarding stores
+post
+Onboard store
+post
+Onboard a store to WhatsApp
+Available phone numbers
+get
+List available phone numbers
+Addresses
+get
+List addresses
+Regulatory Bundles
+get
+List regulatory bundles
+Trust Products
+get
+List trust products
+API docs by Redocly
+Clienteling Setup API
+(
+0.0.1
+)
+Download OpenAPI specification
+:
+Download
+Use this resource to set up retailers and stores for clienteling
+in the NewStore platform. For more information, see how clienteling is used via
+NewStore Associate App
+.
+Enable clienteling configuration
+Represents a new configuration created for retailers to enable
+clienteling in stores in their business.
+Enable clienteling configuration for retailer
+Configures clienteling capabilities for an existing
+retailer. Once configured, the retailer can start clienteling operations in stores in their
+business.
+The
+ecom_link
+property contains the link to the e-commerce website
+of the retailer, which is included along with product recommendations sent to the
+customer via clienteling messages.
+Authorizations:
+bearerAuth
+header
+Parameters
+Tenant
+required
+string
+The name of the tenant making the request.
+Request Body schema:
+application/json
+ecom_link
+string
+The link to the retailer's website.
+Responses
+204
+Retailer is successfully created and configured.
+400
+Bad Request.
+403
+Forbidden.
+409
+Conflict.
+500
+A generic error response.
+post
+/retailers
+Sandbox
+/setup
+/retailers
+Staging
+/setup
+/retailers
+Production
+/setup
+/retailers
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"ecom_link"
+:
+"
+https://example.com
+"
+}
+Response samples
+400
+403
+409
+500
+Content type
+application/json
+Copy
+{
+"request_id"
+:
+"ckdk5bwy00009ztlo16062bce"
+,
+"message"
+:
+"Something is wrong with the request."
+}
+Onboarding stores
+Contains endpoints that you can use to enable
+clienteling
+at specified stores for the retailer.
+Note:
+Ensure that you have the phone number that you intend to use for
+clienteling conversations in the store.
+Onboard store
+Onboard a new store to clienteling.
+Authorizations:
+bearerAuth
+path
+Parameters
+store_id
+required
+string
+The identifier of the store.
+query
+Parameters
+enable
+boolean
+Default:
+false
+If true enables the store right away on clienteling
+header
+Parameters
+Tenant
+required
+string
+The name of the tenant making the request.
+Request Body schema:
+application/json
+phone_number
+required
+string
+The phone number that will be used to onboard the store for clienteling.
+bundle_sid
+string
+Regulatory Bundle ID from Twilio for the country of the store (for countries other than US/CA)
+address_sid
+string
+Address ID from Twilio (for countries other than US/CA)
+Responses
+204
+Store is successfully onboarded.
+400
+Bad Request.
+403
+Forbidden.
+404
+Not found.
+500
+A generic error response.
+post
+/stores/{store_id}
+Sandbox
+/setup
+/stores/{store_id}
+Staging
+/setup
+/stores/{store_id}
+Production
+/setup
+/stores/{store_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"phone_number"
+:
+"+1234567890"
+,
+"bundle_sid"
+:
+"BU5e9d0932167fd19bfef4000e0fb15e15"
+,
+"address_sid"
+:
+"AD5e9d0932167fd19bfef4000e0fb15e15"
+}
+Response samples
+400
+403
+404
+500
+Content type
+application/json
+Copy
+{
+"request_id"
+:
+"ckdk5bwy00009ztlo16062bce"
+,
+"message"
+:
+"Something is wrong with the request."
+}
+Onboard a store to WhatsApp
+Onboard a new store to WhatsApp.
+Authorizations:
+bearerAuth
+path
+Parameters
+store_id
+required
+string
+The identifier of the store.
+header
+Parameters
+Tenant
+required
+string
+The name of the tenant making the request.
+Request Body schema:
+application/json
+waba_id
+required
+string
+WhatsApp Business Account ID that will be used to onboard the store for WhatsApp.
+profile_name
+required
+string
+The name of the WhatsApp profile that will be shown to customers when they interact with the store via WhatsApp.
+Responses
+204
+The request to onboard a store to WhatsApp was successfully sent to Meta.
+400
+Bad Request.
+403
+Forbidden.
+500
+A generic error response.
+post
+/stores/{store_id}/whatsapp
+Sandbox
+/setup
+/stores/{store_id}/whatsapp
+Staging
+/setup
+/stores/{store_id}/whatsapp
+Production
+/setup
+/stores/{store_id}/whatsapp
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"waba_id"
+:
+"1234567890"
+,
+"profile_name"
+:
+"Dodici Potsdamer Platz by NewStore"
+}
+Response samples
+400
+403
+500
+Content type
+application/json
+Copy
+{
+"request_id"
+:
+"ckdk5bwy00009ztlo16062bce"
+,
+"message"
+:
+"Something is wrong with the request."
+}
+Available phone numbers
+Represents the phone numbers that are available to be purchased for the store, which can then be used
+to configure clienteling operations in the store.
+See
+onboarding stores
+for more information.
+List available phone numbers
+Retrieves a list of available phone numbers that can be used to
+enable clienteling operations in a store
+.
+The available phone numbers are based on
+store configuration for the specified store (such as the country code, geography and landline extension).
+Once a number has been used to onboard a store, it will be used for
+clienteling operations in the store.
+Authorizations:
+bearerAuth
+path
+Parameters
+store_id
+required
+string
+The identifier of the store.
+header
+Parameters
+Tenant
+required
+string
+The name of the tenant making the request.
+Responses
+200
+List of available phone numbers is successfully retrieved.
+400
+Bad Request.
+403
+Forbidden.
+404
+Store not found.
+500
+A generic error response.
+get
+/stores/{store_id}/available_phone_numbers
+Sandbox
+/setup
+/stores/{store_id}/available_phone_numbers
+Staging
+/setup
+/stores/{store_id}/available_phone_numbers
+Production
+/setup
+/stores/{store_id}/available_phone_numbers
+Response samples
+200
+400
+403
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"phone_number"
+:
+"+1234567890"
+,
+"locality"
+:
+"Jacksonville"
+,
+"region"
+:
+"FL"
+}
+]
+Addresses
+Represents the addresses that are registered with Twilio for the store's country, which can then be used
+when purchasing phone numbers for countries that require an address.
+List addresses
+Retrieves a list of addresses registered with Twilio for the store's country.
+These addresses can be used when purchasing phone numbers for countries that require an address.
+The addresses are filtered by the ISO country code of the specified store.
+Authorizations:
+bearerAuth
+path
+Parameters
+store_id
+required
+string
+The identifier of the store.
+header
+Parameters
+Tenant
+required
+string
+The name of the tenant making the request.
+Responses
+200
+List of addresses is successfully retrieved.
+400
+Bad Request.
+403
+Forbidden.
+404
+Store not found.
+500
+A generic error response.
+get
+/stores/{store_id}/addresses
+Sandbox
+/setup
+/stores/{store_id}/addresses
+Staging
+/setup
+/stores/{store_id}/addresses
+Production
+/setup
+/stores/{store_id}/addresses
+Response samples
+200
+400
+403
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"sid"
+:
+"AD5e9d0932167fd19bfef4000e0fb15e15"
+,
+"friendly_name"
+:
+"Main Office"
+,
+"street"
+:
+"123 Main St"
+,
+"street_secondary"
+:
+"Suite 100"
+,
+"city"
+:
+"San Francisco"
+,
+"region"
+:
+"CA"
+,
+"postal_code"
+:
+"94105"
+,
+"iso_country"
+:
+"US"
+}
+]
+Regulatory Bundles
+Represents the regulatory bundles that are registered with Twilio for the store's country, which can then be used
+when purchasing phone numbers for countries that require regulatory compliance.
+List regulatory bundles
+Retrieves a list of regulatory bundles registered with Twilio for the store's country.
+These regulatory bundles can be used when purchasing phone numbers for countries that require regulatory compliance.
+The regulatory bundles are filtered by the ISO country code of the specified store.
+Authorizations:
+bearerAuth
+path
+Parameters
+store_id
+required
+string
+The identifier of the store.
+header
+Parameters
+Tenant
+required
+string
+The name of the tenant making the request.
+Responses
+200
+List of regulatory bundles is successfully retrieved.
+400
+Bad Request.
+403
+Forbidden.
+404
+Store not found.
+500
+A generic error response.
+get
+/stores/{store_id}/regulatory-bundles
+Sandbox
+/setup
+/stores/{store_id}/regulatory-bundles
+Staging
+/setup
+/stores/{store_id}/regulatory-bundles
+Production
+/setup
+/stores/{store_id}/regulatory-bundles
+Response samples
+200
+400
+403
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"sid"
+:
+"BU5e9d0932167fd19bfef4000e0fb15e15"
+,
+"friendly_name"
+:
+"Germany Bundle"
+}
+]
+Trust Products
+Represents the trust products that are registered with Twilio, which can then be used
+when purchasing phone numbers for countries that require trust verification.
+List trust products
+Retrieves a list of trust products registered with Twilio.
+These trust products can be used when purchasing phone numbers for countries that require trust verification.
+Authorizations:
+bearerAuth
+header
+Parameters
+Tenant
+required
+string
+The name of the tenant making the request.
+Responses
+200
+List of trust products is successfully retrieved.
+400
+Bad Request.
+403
+Forbidden.
+500
+A generic error response.
+get
+/trust-products
+Sandbox
+/setup
+/trust-products
+Staging
+/setup
+/trust-products
+Production
+/setup
+/trust-products
+Response samples
+200
+400
+403
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"sid"
+:
+"BU5e9d0932167fd19bfef4000e0fb15e15"
+,
+"friendly_name"
+:
+"My Trust Product"
+}
+]
+Previous
+Studio API
+Next
+Customer Profile Admin API
+Copyright © 2025 NewStore, Inc.

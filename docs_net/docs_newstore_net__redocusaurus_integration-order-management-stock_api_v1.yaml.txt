@@ -1,0 +1,399 @@
+openapi: 3.0.0
+info:
+  title: Safety Stock API
+  version: 1.0.0
+  x-audience: internal-team
+  x-api-id: stock-062023
+  description: Represents the store's stock.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v1
+security:
+  - newStoreAccessToken: []
+paths:
+  /stock/safety_stock:
+    get:
+      summary: Get safety stock.
+      operationId: showSafetyStock
+      responses:
+        '200':
+          description: Successfully retrieved the safety stock.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                description: >-
+                  This header is set to signal the client to treat the response
+                  of the endpoint as attachement.
+                example: attachment; filename=safety_stock.csv
+            Access-Control-Expose-Headers:
+              schema:
+                type: string
+                description: >-
+                  Indicates which response header should be made available to
+                  scripts running in the browser.
+                example: Content-Disposition
+          content:
+            text/csv:
+              schema:
+                type: string
+                description: >
+                  The CSV is using comma as separator and contains the
+
+                  following three columns: "Product ID", "Location", and "Safety
+                  Stock".
+
+                  Location safety stock is indicated by an empty product_id
+                  column.
+
+                  The columns "Product ID", and "Location" may contain quoted
+                  strings.
+
+                  If a error occurs during streaming the CSV safety stock values
+                  the status code will be still 200 and the error will be
+                  returned in the response body.
+
+
+                  See this [example
+                  CSV](https://pub-b97923717dc242e893f329de9e610502.r2.dev/safety-stock.csv)
+
+                  for more information.
+              examples:
+                Product and location safety stock retrieved successfully:
+                  description: Product and location safety stock retrieved successfull.
+                  value: |
+                    Product ID,Location,Safety Stock
+                    ,US01,200
+                    ,US02,200
+                    10000101,US01,20
+                    10000101,US02,20
+                    "10000101,12",US02,20
+                Error while streaming safety stock:
+                  description: Error while streaming the product and location safety stock.
+                  value: |
+                    Product ID,Location,Safety Stock
+                    ,US01,200
+                    ,US02,200
+                    10000101,US01,20
+                    Error while creating safety stock csv data.
+        '500':
+          description: An internal error occurred.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Human readable error message
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        default:
+          description: Unexpected Error
+      description: |
+        Retrieves a CSV file with the safety stock for all products
+        across all fulfillment location(s) in your business.
+    patch:
+      summary: Set safety stock.
+      operationId: updateSafetyStock
+      requestBody:
+        content:
+          text/csv:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          description: The product safety stock was successfully saved.
+        '400':
+          description: The content of the product safety stock file is invalid.
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              examples:
+                column_doesnt_exist:
+                  summary: A required column doesn't exists
+                  description: >
+                    The provided product safety stock file is missing one of the
+                    following columns:
+
+                    - "Product ID"
+
+                    - "Location"
+
+                    - "Safety Stock"
+                  value:
+                    message: The column 'Product ID' is missing in the CSV file.
+                    request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+                fulfillment_location_doesnt_exist:
+                  summary: One of the fulfillment locations doesn't exist
+                  value:
+                    message: >-
+                      The fulfillment location 'US05' doesn't exist in the
+                      system and safety stock can't be applied.
+                    request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+                content_length_is_invalid:
+                  summary: The Content-Length header is not a valid number.
+                  value:
+                    message: The Content-Length header is not a valid number.
+                    request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+                data_row_is_invalid:
+                  summary: Invalid length of data row.
+                  value:
+                    message: Invalid length of data row 12
+                    request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+                empty_file_provided:
+                  summary: The provided safety stock file is empty.
+                  value:
+                    message: The provided safety stock file is empty.
+                    request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+                empty_safety_stock_value:
+                  summary: Empty safety stock value throws validation error
+                  value:
+                    message: >-
+                      Error converting value to integer at row 1:, error:
+                      strconv.Atoi: parsing "": invalid syntax,
+                      code=csv_validation_error
+                    request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+                unwanted_symbols:
+                  summary: Detects unwanted symbols validation error
+                  value:
+                    message: >-
+                      Error converting value to integer at row 0:, error:
+                      strconv.Atoi: parsing "1*": invalid syntax,
+                      code=csv_validation_error
+                    request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+                decimal_numbers:
+                  summary: Decimal numbers throws validation error
+                  value:
+                    message: >-
+                      Error converting value to integer at row 0:, error:
+                      strconv.Atoi: parsing "5.42": invalid syntax,
+                      code=csv_validation_error
+                    request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+                invalid_stock_value:
+                  summary: >-
+                    Not-integer characters fot safety stock throws validation
+                    error
+                  value:
+                    message: >-
+                      Error converting value to integer at row 0:, error:
+                      strconv.Atoi: parsing "54A": invalid syntax,
+                      code=csv_validation_error
+                    request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        '409':
+          description: There can only be one safety stock update in progress.
+        '411':
+          description: >-
+            The 'Content-Length' header field is required to process safety
+            stock information.
+        '413':
+          description: >-
+            The provided safety stock file is too big, the current limit is
+            10MB.
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: >-
+                  The provided safety stock file is too big, the current limit
+                  is 10485760.
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        '415':
+          description: The API allows CSV files only.
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: The Content-Type is not supported.
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        '500':
+          description: An internal error occurred.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Human readable error message
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        default:
+          description: Unexpected Error
+      description: >
+        Sets the safety stock for all products in the specified fulfillment
+        location(s).
+
+        You can also use this method to set a safety stock for specific products
+        in a fulfillment location.
+
+        The provided CSV uses "," (comma) as a separater and must contain the
+        following columns:
+
+        - "Product ID"
+
+        - "Location"
+
+        - "Safety Stock"
+
+
+        Values for "Prduct ID" and "Location" should be quoted to allow leading
+        zeros and special characters, e.g. "US-01" as location name.
+
+        Please ensure that values are not double-quoted, e.g. ""Product ID"" is
+        invalid.
+
+
+        To set safety stock for all products in a fulfillment location, leave
+        the "Product ID" value blank.
+
+
+        See this [example
+        CSV](https://pub-b97923717dc242e893f329de9e610502.r2.dev/safety-stock.csv)
+
+        for more information. You can upload a new or updated CSV file with a
+        maximum size of 10 MB.
+
+
+        Once you set the safety stock for products in a location, NewStore
+        updates the ATP
+
+        for these products and does not wait for the next stock import.
+
+
+        **Important**:
+
+        The time to update ATP depends on the size of the safety stock file, how
+        many products are affected, and if data from other fulfillment locations
+        or tenants are being processed in parallel. It can take up to multiple
+        hours.
+
+
+        To verify if the safety stock was set correctly, check the safety stock
+        levels for the specified products
+
+        in [NewStore Omnichannel Manager](/product/nomapp/nom-monitor-stock).
+
+
+        **Notes**:
+
+        1. If the safety stock file contains information for a product for which
+        we don't have ATP information,
+
+        the safety stock data will only be applied once NewStore received stock
+        import or cycle count.
+
+
+        2. If the provided safety stock CSV file contains duplicate Location or
+        Product safety stock entries, the last encountered value will be
+        applied.
+  /stock/safety_stock/status:
+    get:
+      summary: Get last safety stock update status.
+      operationId: showSafetyStockStatus
+      responses:
+        '200':
+          description: Successfully retrieved the last safety stock update status.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Schema for fetching status of the last safety stock update
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - in_progress
+                      - done
+                    minLength: 1
+                    description: Status of the last safety stock update.
+              example:
+                status: in_progress
+        '500':
+          description: An internal error occurred.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Human readable error message
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the status of the last [safety
+        stock](https://docs.newstore.com/docs/glossary#safety-stock) update.
+
+
+        To update or specify the safety stock for specific products in
+        fulfillment locations across
+
+        your business, use the `Set safety stock` method.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

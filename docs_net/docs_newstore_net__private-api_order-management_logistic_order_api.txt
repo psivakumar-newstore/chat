@@ -1,0 +1,367 @@
+Service Level API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Capture Order
+External Order API
+Sales order historic import API
+Order Injection configuration
+Order line internal APIs
+Service Level API
+Customer Care Order Support API
+Fulfillment App API
+NewStore Checkout API
+Order status notifications API
+Support API
+Sales Order Support API
+External OMS Config API
+API to manage sales order configurations
+Shopping API
+Swap products in order
+Payments
+Promotions and coupons
+Stock
+Other support APIs
+patch
+Update service level
+post
+Process conflicted order
+get
+Get routing options
+API docs by Redocly
+Service Level API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+This is an internal API for customer support to update the
+service level
+for orders in the NewStore platform.
+Update service level
+Sets a new
+service level
+for conflict items in the specified order.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+order_id
+required
+string
+The unique ID of the order. To retrieve the list of orders, use the
+List orders
+method.
+Request Body schema:
+application/json
+new_service_level
+required
+string
+non-empty
+The chosen service level identifier.
+Responses
+200
+The service level was updated successfully.
+400
+Bad Request Error.
+409
+The current order id does not contain any stuck orders.
+500
+Internal Server Error.
+patch
+/orders/{order_id}/service_level
+/v0
+/orders/{order_id}/service_level
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"new_service_level"
+:
+"GROUND"
+}
+Response samples
+400
+409
+500
+Content type
+application/json
+Copy
+{
+"error_code"
+:
+"invalid_service_level"
+,
+"message"
+:
+"The new service level field is either missing or empty."
+,
+"request_id"
+:
+"ec2f3c9bb016ba971bf6074098363"
+}
+Process conflicted order
+Process conflicted order and items. For each item, an action can be defined. Actions can be:
+reroute
+cancel
+swap
+manual_routing
+Depending on the action, different fields on items are required. They are defined in the schema
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+Application/json
+order_id
+required
+string
+= 36 characters
+The internal identifier(Sales Order UUID) of the order that we want to fix.
+items
+required
+Array of
+objects or objects or objects
+non-empty
+Complete list of items and actions to be performed on them (reroute/cancel or swap).
+post
+/orders/conflicts
+/v0
+/orders/conflicts
+Request samples
+Payload
+Content type
+Application/json
+Copy
+Expand all
+Collapse all
+{
+"order_id"
+:
+"6d56b2d9-b403-4d5f-8897-75527f54acd5"
+,
+"items"
+:
+[
+{
+"item_id"
+:
+"6e71bc7b-0dc9-4f19-820e-8ce46a15339f"
+,
+"action"
+:
+"reroute"
+}
+,
+{
+"item_id"
+:
+"1e0d1881-2cac-4e42-8390-1bf67508de7e"
+,
+"action"
+:
+"cancel"
+}
+,
+{
+"item_id"
+:
+"1e0d1881-2cac-4e42-8390-1bf67508de7e"
+,
+"action"
+:
+"swap"
+,
+"swap_to"
+:
+{
+"uuid"
+:
+"9755e5cc-17f7-4dc1-b528-353fe504eb57"
+,
+"product_id"
+:
+"ID123"
+,
+"product_sku"
+:
+"SKU123"
+,
+"product_name"
+:
+"Product name"
+,
+"shipping_weight_value"
+:
+10
+,
+"shipping_weight_unit"
+:
+"kg"
+,
+"product_hts_number"
+:
+"4901 99"
+,
+"country_of_origin"
+:
+"DE"
+,
+"material"
+:
+"Product description"
+,
+"schedule_b"
+:
+"1234567890"
+,
+"product_attributes"
+:
+{
+"variation_color_value"
+:
+"Black"
+,
+"variation_size_value"
+:
+"Small"
+,
+"variation_additional_1_value"
+:
+"Wood"
+,
+"variation_additional_2_value"
+:
+"Glass"
+}
+,
+"product_image_url"
+:
+"
+https://image.com/image.png
+"
+,
+"product_customs_category"
+:
+"Category"
+,
+"epc_list"
+:
+[
+"EPCNUMBER1"
+]
+}
+}
+,
+{
+"item_id"
+:
+"de089343-e940-4ad0-8d76-82de6102476f"
+,
+"action"
+:
+"manual_routing"
+,
+"route_to"
+:
+{
+"fulfillment_node_id"
+:
+"US1"
+}
+}
+]
+}
+Get routing options
+Get shipping options for a given routing request containing:
+delivery_destination
+routing_strategy
+products
+flat_products
+Note: The routing request is a nested dictionary object. The caller should construct the object,
+serialize it to a query string and pass it in the URL query parameters with the routing_request key.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+routing_request
+object
+A json encoded string with details for routing request
+Responses
+200
+Successfully returning routing insights for the specified order
+400
+Client sent malformed request.
+500
+An internal error occurred.
+get
+/routing/options
+/v0
+/routing/options
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"status"
+:
+"ok"
+,
+"routing_options"
+:
+[
+[
+{
+"service_level_identifier"
+:
+"ground"
+,
+"fulfillment_node_id"
+:
+"us01"
+,
+"products"
+:
+{
+"product_01"
+:
+2
+}
+,
+"type"
+:
+"regular"
+}
+]
+]
+,
+"unavailable_products"
+:
+[ ]
+}
+Previous
+Order line internal APIs
+Next
+Customer Care Order Support API
+Copyright © 2025 NewStore, Inc.

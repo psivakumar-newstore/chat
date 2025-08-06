@@ -1,0 +1,641 @@
+Shipping Provider Webhooks | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Configuration APIs
+Webhooks
+External Availability Webhook
+Custom Tax Provider Webhooks
+Fulfillment Provider Webhooks
+Shipping Provider Webhooks
+Shipping Options Webhooks
+Payment Provider Webhooks
+Gift Card Provider Webhooks
+External Order Webhook
+Event-Stream Webhooks
+New Generation APIs
+Shipments
+post
+Book shipment
+post
+Cancel shipment
+Shipping offers
+post
+Request shipping offers
+API docs by Redocly
+Shipping Provider Webhooks
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Manage deliveries or shipments in the NewStore platform using these webhooks.
+To learn how NewStore integrates with a shipping provider, see the
+guide
+.
+Shipments
+Represents the shipment(s) created once an order with delivery is being placed.
+Depending on the provider, a shipment is generally pre-booked (also called a delivery promise),
+then booked, and finally tracked.
+As an integrator, implement the methods of this resource to integrate a shipping provider
+such as UPS with NewStore Cloud.
+The integration of a shipment provider also uses the
+Shipping offers
+resource. For more
+information about the integration, see
+Integrating a shipping provider
+.
+Note:
+The validity of a shipping offer token can vary based on the shipping provider and
+shipping offer. For
+in-store pickup
+orders, a shipping offer token does not expire.
+Book shipment
+Books a shipment based on an offer received by the provider.
+Request Body schema:
+application/json
+offer
+string
+non-empty
+The serialized value used to identify the Option to be booked directly. It is the same value as returned from /shipping_offers endpoint. Your implementation must be able to use this value as it is, handling any decoding or parsing if necessary.
+rate
+required
+string
+<= 256 characters
+Identifier of the rate, examples are 'FEDEX_GROUND' or 'DHL_WUNSCHZEIT'.
+carrier_code
+required
+string
+<= 256 characters
+Identifier of the shipping carrier, examples are 'FEDEX' or 'DELIV'.
+external_order_id
+required
+string
+non-empty
+External identifier of the order to be shipped.
+booking_method
+required
+string
+Enum
+:
+"only_shipping"
+"only_return"
+"shipping_and_return"
+Type of shipments to book.
+sender_address
+required
+object
+Address of the sender.
+shipping_address
+required
+object
+Address of the consumer.
+package_option
+object
+Specifications of the package.
+items
+required
+Array of
+objects
+List of the identifiers of the products contained in the package.
+demand_location_id
+string
+<= 256 characters
+Represents the location where the order was placed, examples are 'DC01' or 'US01'.
+fulfillment_node_id
+string
+<= 256 characters
+Represents the location from where the order will be shipped, examples are 'DC02' or 'US02'.
+customs_info
+object
+Responses
+201
+The shipment was successfully booked.
+400
+Something was wrong with the request.
+post
+/shipments
+/newstore_api/v0
+/shipments
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"rate"
+:
+"FEDEX_GROUND"
+,
+"demand_location_id"
+:
+"US01"
+,
+"fulfillment_node_id"
+:
+"US02"
+,
+"carrier_code"
+:
+"FEDEX"
+,
+"external_order_id"
+:
+"981475723"
+,
+"booking_method"
+:
+"shipping_and_return"
+,
+"sender_address"
+:
+{
+"first_name"
+:
+"John"
+,
+"last_name"
+:
+"Doe"
+,
+"phone"
+:
+"202-555-0186"
+,
+"country_code"
+:
+"US"
+,
+"city"
+:
+"New York"
+,
+"zip_code"
+:
+"10001"
+,
+"address_line_1"
+:
+"2635 Simons Hollow Road"
+,
+"state"
+:
+"New York"
+}
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"James"
+,
+"last_name"
+:
+"Navarrete"
+,
+"phone"
+:
+"520-466-2640"
+,
+"country_code"
+:
+"US"
+,
+"city"
+:
+"Arizona City"
+,
+"zip_code"
+:
+"85223"
+,
+"address_line_1"
+:
+"2035 Parkway Drive"
+,
+"state"
+:
+"AZ"
+}
+,
+"items"
+:
+[
+{
+"identifier"
+:
+{
+"EPC"
+:
+"32WE4335"
+}
+}
+,
+{
+"identifier"
+:
+{
+"EPC"
+:
+"473UC75279"
+}
+,
+"price"
+:
+{
+"amount"
+:
+15.4
+,
+"currency"
+:
+"USD"
+}
+,
+"weight"
+:
+{
+"amount"
+:
+350
+,
+"unit"
+:
+"g"
+}
+}
+]
+}
+Response samples
+201
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"tracking_code"
+:
+"string"
+,
+"label_url"
+:
+"string"
+,
+"tracking_url"
+:
+"string"
+,
+"commercial_invoice_url"
+:
+"string"
+,
+"offer"
+:
+"string"
+,
+"cost"
+:
+{
+"price"
+:
+0
+,
+"currency"
+:
+"str"
+}
+,
+"return_tracking_code"
+:
+"string"
+,
+"return_label_url"
+:
+"string"
+,
+"return_tracking_url"
+:
+"string"
+,
+"return_commercial_invoice_url"
+:
+"string"
+,
+"return_offer"
+:
+"string"
+,
+"return_cost"
+:
+{
+"price"
+:
+0
+,
+"currency"
+:
+"str"
+}
+}
+Cancel shipment
+Cancels a shipment. Canceling a shipment is only possible before it reaches the
+in_transit
+status.
+To retrieve the status of the shipment, use the
+List shipments method
+.
+path
+Parameters
+tracking_code
+required
+string
+The tracking code for the delivery/shipment that needs to be cancelled. The tracking code is provided
+by the shipping provider to NewStore Omnichannel Cloud when a shipment is booked.
+Responses
+200
+DEPRECATED: use 204 instead. The shipment was successfully canceled or has already been canceled.
+204
+The shipment was successfully canceled or has already been canceled, no response body necessary.
+400
+Something was wrong with the request.
+404
+The provided tracking code could not be found.
+409
+Shipment has already been delivered and cannot be canceled.
+post
+/shipments/{tracking_code}/_cancel
+/newstore_api/v0
+/shipments/{tracking_code}/_cancel
+Response samples
+200
+400
+404
+409
+Content type
+application/json
+Copy
+{ }
+Shipping offers
+Represents the shipping offers presented to the customer during the checkout step, for example
+Standard delivery
+or
+Next-day delivery
+.
+As an integrator, implement the methods of this resource to integrate a shipping provider
+with NewStore Omnichannel Cloud.
+The integration of a shipment provider also uses the
+Shipments
+resource. For more
+information about the integration, see
+Integrating a shipping provider
+.
+Note:
+The validity of a shipping offer token can vary based on the shipping provider
+and shipping offer. For
+in-store pickup
+orders, a shipping offer token does not expire.
+Request shipping offers
+Requests shipping offers, including quotes and delivery windows.
+IMPLEMENTATION NOTE:
+both
+service_level
+and
+provider_rate
+are supposed to be of the same value
+as requested. Although it is permitted to set different values, NewStore does not apply any filtering
+at the moment.
+To guarantee that your integration will always be able to generate options in the future,
+please make sure to set those values according to the requested parameters.
+Request Body schema:
+application/json
+customs_info
+object
+used only for international shipments (ex: different sender/shipping country code, military address...)
+sender_address
+required
+object
+Address of the sender.
+shipping_address
+required
+object
+Address of the consumer.
+deliverables
+required
+Array of
+objects
+non-empty
+List containing information about the products to be shipped.
+fulfillment_node_id
+string
+Unique ID representing the pickup location of the shipment.
+ready_by
+required
+string
+<
+date-time
+>
+Estimate of the time when the package becomes ready for delivery. It considers the Service Level remorse period, the packing time duration (configuration set on delivery) and the store's business hours and earliest and latest pickup times (if defined), to determine the earliest time an order can be picked up. Use this property's value to filter shipping offers from the provider to select manageable delivery time slots.
+provider_rate
+required
+string
+<= 256 characters
+Identifier of the rate, examples are 'FEDEX_GROUND' or 'DHL_WUNSCHZEIT'.
+service_level
+required
+string
+<= 256 characters
+Identifier of the service level, examples are 'SAME DAY' or 'EXPRESS'.
+Responses
+201
+Successfully created Shipping Offers.
+400
+Something was wrong with the request.
+post
+/shipping_offers
+/newstore_api/v0
+/shipping_offers
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"sender_address"
+:
+{
+"country_code"
+:
+"US"
+,
+"city"
+:
+"New York"
+,
+"zip_code"
+:
+"10013"
+,
+"address_line_1"
+:
+"4139 Rosewood Lanesunt"
+,
+"state"
+:
+"New York"
+}
+,
+"shipping_address"
+:
+{
+"country_code"
+:
+"US"
+,
+"city"
+:
+"New York"
+,
+"zip_code"
+:
+"10001"
+,
+"address_line_1"
+:
+"2635 Simons Hollow Road"
+,
+"state"
+:
+"New York"
+}
+,
+"deliverables"
+:
+[
+{
+"quantity"
+:
+1
+,
+"item"
+:
+{
+"identifier"
+:
+{
+"product_id"
+:
+"123"
+,
+"sku"
+:
+"123"
+}
+}
+}
+,
+{
+"quantity"
+:
+1
+,
+"item"
+:
+{
+"identifier"
+:
+{
+"product_id"
+:
+"123"
+,
+"sku"
+:
+"123"
+}
+}
+}
+]
+,
+"ready_by"
+:
+"2018-03-04T10:29:05Z"
+,
+"service_level"
+:
+"sameday"
+,
+"provider_rate"
+:
+"deliv"
+}
+Response samples
+201
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+[
+{
+"offer"
+:
+"string"
+,
+"provider_rate"
+:
+"string"
+,
+"service_level"
+:
+"string"
+,
+"delivery_estimate"
+:
+{
+"starts_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"ends_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"expires_at"
+:
+"2019-08-24T14:15:22Z"
+}
+,
+"quote"
+:
+{
+"price"
+:
+0
+,
+"currency"
+:
+"str"
+}
+}
+]
+Previous
+Fulfillment Provider Webhooks
+Next
+Shipping Options Webhooks
+Copyright © 2025 NewStore, Inc.

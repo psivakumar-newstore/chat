@@ -1,0 +1,89 @@
+openapi: 3.0.0
+info:
+  title: Consumer Profile API
+  version: 0.0.1
+components:
+  schemas:
+    ConsumerProfile:
+      type: object
+    MergeProfilesResponse:
+      type: object
+      description: response for a merge-profiles request
+      properties:
+        source_profile:
+          type: object
+          description: >-
+            Source Profile model after merge - it is not changed but deleted
+            from index.
+          $ref: '#/components/schemas/ConsumerProfile'
+        target_profile:
+          type: object
+          description: >-
+            Target Profile model after merge - it may be changed and always
+            re-indexed.
+          $ref: '#/components/schemas/ConsumerProfile'
+    MergeProfilesRequest:
+      type: object
+      required:
+        - source_profile_id
+        - target_profile_id
+      properties:
+        source_profile_id:
+          type: string
+          description: ID of the source profile.
+        target_profile_id:
+          type: string
+          description: ID of the target profile.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+    description: Sandbox
+  - url: https://dodici.s.newstore.net/v0/d
+    description: Staging
+  - url: https://dodici.p.newstore.net/v0/d
+    description: Production
+security:
+  - bearerAuth: []
+paths:
+  /consumer_profiles/merge:
+    post:
+      tags:
+        - profiles-management
+      operationId: mergeProfiles
+      summary: Merge two profiles into one.
+      description: >
+        Merges data from specific fields from source profile into target
+        profile.
+
+        Mergeable fields are - `first_name`, `last_name`, `phone_number`,
+        `extended_attributes`, `addresses`.
+
+        After merging data, source profile will be deleted as a result of the
+        operation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MergeProfilesRequest'
+      responses:
+        '200':
+          description: Profiles were successfully merged.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MergeProfilesResponse'
+        '400':
+          description: >-
+            Bad Request - `source_profile_id` or `target_profile_id` are empty
+            or missing.
+        '404':
+          description: >-
+            Not found - cannot find profiles identified by `source_profile_id`
+            or `target_profile_id`.
+        '500':
+          description: A generic error response.

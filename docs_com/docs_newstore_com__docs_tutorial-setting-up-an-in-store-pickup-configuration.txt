@@ -1,0 +1,348 @@
+Tutorial: Setting up an in-store pickup configuration
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Tutorial: Setting up an in-store pickup configuration
+Updated on
+Nov 14, 2024
+Published on Oct 1, 2024
+6 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+The aim of this tutorial is to set up
+in-store pickup
+for an imaginary business based in New York City that has 2 stores.
+Prerequisites
+To enable in-store pickup, ensure that you have already created a shipping option token key pair using the
+Delivery
+API. For instructions on creating a shipping option token key pair, see the request sample of the
+Create or update a shipping option token key pair
+method.
+When you set up a store, regardless of transfer orders, in-store pickup, or any orders routed via NewStore, you have to create this key pair once for generating shipping option tokens.
+Important
+Before getting started with this tutorial, ensure that you understand how routing works at NewStore. See
+About order routing
+.
+We assume that you have an authentication token stored in the
+AUTH_TOKEN
+variable. Retrieve one with the following call:
+export AUTH_TOKEN=$(curl -s <url>/v0/token -d \
+"grant_type=password&username=<myusername>&password=<mypassword>" | jq -r.access_token)
+Creating the stores
+Before we can think of placing orders, we must set up our business's stores. To prepare a store for in-store pickup orders, we must
+provide accurate geo coordinates
+of the store during its creation, using the
+latitude
+and
+longitude
+properties. The geo coordinates of a store are at the core of the in-store pickup routing.
+Create the first store using the example provided in
+Tutorial: Setting up a store
+.
+Create a second store with a different address using the following payload:
+{
+  "active_status": true,
+  "business_hours": [
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 0
+    },
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 2
+    },
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 3
+    },
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 4
+    },
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 5
+    },
+    {
+      "from_time": "09:00",
+      "to_time": "20:00",
+      "weekday": 6
+    }
+  ],
+  "division_name": "US",
+  "pricebook": "price-us",
+  "gift_wrapping": false,
+  "label": "002_US_XYZ_Street",
+  "tax_included": true,
+  "phone_number": "202-555-2946",
+  "physical_address": {
+    "address_line_1": "33 XYZ Street",
+    "city": "New York",
+    "country_code": "US",
+    "latitude": 40.711219,
+    "longitude": -73.806230,
+    "state": "NY",
+    "zip_code": "11422"
+  },
+  "queue_prioritization": [
+    {
+      "display_priority_type": "priority",
+      "priority": 1,
+      "shipping_type": "same_day_delivery"
+    },
+    {
+      "display_priority_type": "priority",
+      "priority": 1,
+      "shipping_type": "in_store_pick_up"
+    }
+  ],
+  "shipping_address": {
+    "address_line_1": "33 XYZ Street",
+    "city": "New York",
+    "country_code": "US",
+    "state": "NY",
+    "zip_code": "11422"
+  },
+  "store_id": "store2_NYC",
+  "timezone": "America/New_York"
+}
+Adding inventory
+We have created 2 stores, let's import products that they will sell. To learn how to import master data, see
+Tutorial: Importing products
+. Ensure you import stock for both stores during the
+stock import step
+.
+Enabling in-store pickup
+Our stores are ready to process orders but they are not ready to process
+in-store pickup
+orders. To enable in-store pickup, we must use the
+in-store pickup config
+API.
+Let's create the in-store pickup config using the
+create pickup config
+method.
+This method allows us to set global options, which apply to all stores, and store-specific options. In our situation, we have defined 2 stores respectively identified by
+store1_NYC
+and
+store2_NYC
+.
+Let's choose the display name that will appear during fulfillment for in-store pickup orders. It must be as clear as possible to ensure that associates can identify the in-store pickup order. Let's use
+In-store pickup
+.
+Create a
+data.json
+file and paste the following body in it:
+{
+  "global": {
+    "display_name": "In-store pickup",
+    "grace_period": 0,
+    "default_search_radius": 5
+  },
+  "stores": {
+    "store1_NYC": {
+      "delivery_time": "Available now",
+      "delivery_time_if_not_available": "Pick up in 5-6 days",
+      "cost": {
+        "price": 0,
+        "tax_code": "FR",
+        "currency_code": "USD"
+      }
+    },
+    "store2_NYC": {
+      "delivery_time": "Available now",
+      "delivery_time_if_not_available": "Pick up in 5-6 days",
+      "cost": {
+        "price": 10,
+        "tax_code": "FR",
+        "currency_code": "USD"
+      }
+    }
+  }
+}
+Call the
+create pickup config
+method:
+curl -X POST "https://dodici.x.newstore.net/v0/d/in_store_pickup_config" \
+     -H "Authorization: Bearer $AUTH_TOKEN" \
+     -d @data.json
+Note
+You can get a token using the call at the top of
+the page
+.
+The stores now support in-store pickup orders. We can start creating in-store pickup orders.
+Retrieving stores that can fulfill an order
+In our case, let's imagine the following workflow:
+The customer adds items to a cart and proceeds to checkout.
+The customer provides their address.
+Our website automatically displays a list of stores near this address
+The customer selects a store and pays.
+We create the order in NewStore.
+To implement this workflow:
+Once we have a cart of items created by the customer and the customer's address, our E-commerce platform must call the
+Get in-store pickup options
+method.
+This method takes a reference location's coordinates. The reference location is the address provided by our customer.
+Let's assume that we have a cart with one item to be delivered to Manhattan in New York City, we can use the following payload saved in the
+data.json
+file:
+{
+   "location": {
+     "geo": {
+       "latitude": 40.817027,
+       "longitude": -73.952452
+     }
+   },
+   "bag": [
+    {
+       "product_id": "6050673",
+       "quantity": 1
+     }
+   ],
+   "options": {
+     "search_radius": 30,
+     "show_stores_without_atp": false
+   }
+}
+Note
+The search radius is in kilometers.
+Call the
+Get in-store pickup options
+method:
+curl -X POST "https://dodici.x.newstore.net/v0/d/in_store_pickup_options" \
+     -H "Authorization: Bearer $AUTH_TOKEN" \
+     -d @data.json
+The method returns an
+options
+array that contains all the stores in the search radius defined in the request, ordered by proximity to the reference location. Each store contains a
+shipping_offer_token
+that is required to request the fulfillment of our order.
+In our case, let's assume that the customer selects
+store1_NYC
+. We can now route the order to this store.
+Our E-commerce platform can create the order using the
+create order
+method. In the request, provide the shipping offer token we retrieved in the previous steps, in the
+shipping_offer_token
+property.
+Note
+For
+in-store pickup
+orders, a shipping offer token does not expire.
+The order is open. After the grace period set in the in-store config is complete, the order is sent to the
+store1_NYC
+store.
+If there is enough inventory, it is assigned to an associate that can fulfill the order. If there is insufficient inventory, the order is put
+On Hold
+. We must import inventory and reroute the order. It will get routed to the same store. An associate can also route the order manually to another store using NewStore Omnichannel Manager. See
+Managing On Hold orders with insufficient inventory
+.
+Printing documents for the in-store pickup order
+To print documents for the in-store pickup order, use the
+Create documents to print config
+method, and add the following sample payload to specify invoices to be printed in the store:
+{
+ "default": {
+   "in_store_pickup": [
+     {
+       "document_type": "invoice",
+       "number_of_copies": 1,
+       "printer_type": "document_printer"
+     },
+   ],
+  }
+ }
+For more information on configuring documents to print during order fulfillment, see
+Configuring documents for print in a store or warehouse
+.
+Related topics
+Tutorial: Importing products
+Tutorial: Setting up a store
+About order routing
+Get in-store pickup options
+In-store pickup config
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+customer
+documents
+in-store pickup
+inventory
+omnichannel manager
+onboarding
+order
+platform
+routing
+shipping
+stock on hand
+store fulfillment
+tutorial
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

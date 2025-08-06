@@ -1,0 +1,185 @@
+openapi: 3.1.0
+info:
+  title: Stock Insights Admin API
+  description: |
+    This internal stock insights API provides a way to post ATP events.
+  version: 1.0.0
+  x-audience: internal-team
+  x-api-id: stock-insights-admin-062023
+  contact:
+    name: team-order-management
+    url: https://newstoreinc.slack.com/archives/CBDLEJLTB
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+paths:
+  /stock-insights/atp-events:
+    put:
+      summary: Provide new ATP events.
+      operationId: replaceAtp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/put_atp_events'
+      responses:
+        '201':
+          description: ATP Events processed
+        '400':
+          description: Bad payload
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        default:
+          description: Unexpected error
+      description: >
+        This API endpoint accepts a list of ATP events and processes them to
+        generate an updated view
+
+        for the stock levels page.
+      parameters:
+        - in: header
+          name: Request-Id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Tenant
+          schema:
+            type: string
+components:
+  schemas:
+    put_atp_events:
+      type: object
+      required:
+        - atps
+      properties:
+        atps:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+              - product_id
+              - fulfillment_node_id
+              - atp
+              - revision
+              - details
+            properties:
+              product_id:
+                maxLength: 256
+                description: Unique Id number of the product
+                type: string
+              fulfillment_node_id:
+                minLength: 1
+                maxLength: 256
+                description: Id of the fulfillment location
+                type: string
+              atp:
+                type: integer
+                description: >-
+                  Number of items Available to Promise. Note that name of this
+                  field is `atp` unlike `availability` in other payloads. We
+                  choose `atp` as the better suiting name for this property and
+                  other payloads will be modified to use the name `atp` too.
+                  Currently is equal to 'present_atp'
+                minimum: 0
+              revision:
+                type: integer
+                description: The revision of this data.
+              details:
+                type: object
+                description: >-
+                  Contains number of allocations, reservations and on hand
+                  items. This helps to understand how the atp value is being
+                  calculated.
+                required:
+                  - on_hand
+                  - unallocated_reservations
+                  - allocations
+                  - safety_stock
+                  - is_inventory_master
+                  - present_atp
+                  - future_atp
+                  - changes
+                properties:
+                  unallocated_reservations:
+                    type: integer
+                    description: >-
+                      Number of unallocated reservations for this product Id and
+                      fulfillment node Id.
+                  allocations:
+                    type: integer
+                    description: >-
+                      Number of allocations for this product Id and fulfillment
+                      node Id.
+                  on_hand:
+                    type: integer
+                    description: >-
+                      This represents the initial imported on hand count for
+                      this combination out of product Id and fulfillment node
+                      Id.
+                  present_atp:
+                    type: integer
+                    description: >-
+                      Number of items Available to Promise. These items are used
+                      for regular orders.
+                    minimum: 0
+                  future_atp:
+                    type: integer
+                    description: >-
+                      Number of items which expect to become available soon.
+                      These items are used for pre-order and back-orders.
+                    minimum: 0
+                  future_availability_date:
+                    type:
+                      - string
+                      - 'null'
+                    format: date
+                    description: Date when future_atp is expected to become available.
+                  is_inventory_master:
+                    type: boolean
+                    description: >-
+                      Indicates whether the fulfillment node for this data is
+                      inventory master or not.
+                  changes:
+                    type: array
+                    description: >-
+                      Contains a list of changes done to the atp value which
+                      lead to the current atp update.
+                    items:
+                      type: object
+                      properties:
+                        change_reason:
+                          type: string
+                          description: The reason why the atp change happened.
+                        changed_at:
+                          type: string
+                          format: date-time
+                          description: >-
+                            Date and time when this atp changed happened inside
+                            NewStore.
+    error_response:
+      type: object
+      required:
+        - error_code
+      properties:
+        error_code:
+          type: string
+          minLength: 1
+          description: A short reference that identifies the problem type.
+        message:
+          type: string
+          minLength: 1
+          description: A short, human-readable summary of the problem type.
+        request_id:
+          type: string
+          minLength: 1
+          description: Unique identifier of the failed request.

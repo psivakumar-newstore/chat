@@ -1,0 +1,4139 @@
+openapi: 3.0.0
+paths:
+  /quotation:
+    post:
+      description: Create tax quotation for the given transaction.
+      operationId: createTaxQuotation
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_type:
+                  allOf:
+                    - type: string
+                      enum:
+                        - SALE
+                        - RETURN
+                      description: Type of the transaction.
+                      example: SALE
+                order_id:
+                  type: string
+                  description: Order identifier.
+                  example: 56bb9975-f43a-4eee-8fb2-200957eb0624
+                tax_exempt:
+                  type: boolean
+                  description: Tax exemption status of the transaction.
+                  example: false
+                exemption_number:
+                  type: string
+                  description: Tax exemption certificate number of the customer.
+                exemption_class:
+                  type: string
+                  description: Tax exemption class.
+                items:
+                  description: A list of items sold/returned in the transaction.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      index:
+                        type: integer
+                        description: >-
+                          Index of the item.
+
+                          * Will be used for mapping the items from the custom
+                          provider response.
+
+                          * Response must include items with the same index.
+                        example: 0
+                        format: int32
+                      tax_class:
+                        type: string
+                        description: Tax classification identifier for the line item.
+                        example: AAA000
+                        maxLength: 256
+                      tax_method:
+                        allOf:
+                          - type: string
+                            enum:
+                              - vat_included
+                              - vat_excluded
+                            description: The method that indicates how item tax is applied.
+                            example: vat_excluded
+                      item_price:
+                        type: number
+                        description: >-
+                          Price per item (single quantity).
+
+                          * Can be tax inclusive/exclusive depending on
+                          `tax_method`.
+                        example: 200
+                        format: double
+                      quantity:
+                        type: integer
+                        description: >-
+                          Item quantity. Positive number for sold items and
+                          negative number for returned items
+                        example: 1
+                        format: int32
+                      shipping_address:
+                        description: |-
+                          Consumer's shipping address.
+                          * For in-store orders, store address will be sent.
+                        allOf:
+                          - type: object
+                            properties:
+                              address_line_1:
+                                type: string
+                                description: Location address line 1.
+                                example: 1500 Wilson Blvd
+                              address_line_2:
+                                type: string
+                                description: Location address line 2.
+                              province:
+                                type: string
+                                description: Location province.
+                                example: Arlington
+                              state:
+                                type: string
+                                description: Location state.
+                                example: VA
+                              zip_code:
+                                type: string
+                                description: Location ZIP code.
+                                example: '22209'
+                                maxLength: 32
+                              city:
+                                type: string
+                                description: Location city.
+                                example: Arlington
+                              country_code:
+                                allOf:
+                                  - type: string
+                                    enum:
+                                      - AF
+                                      - AX
+                                      - AL
+                                      - DZ
+                                      - AS
+                                      - AD
+                                      - AO
+                                      - AI
+                                      - AQ
+                                      - AG
+                                      - AR
+                                      - AM
+                                      - AW
+                                      - AU
+                                      - AT
+                                      - AZ
+                                      - BS
+                                      - BH
+                                      - BD
+                                      - BB
+                                      - BY
+                                      - BE
+                                      - BZ
+                                      - BJ
+                                      - BM
+                                      - BT
+                                      - BO
+                                      - BA
+                                      - BW
+                                      - BV
+                                      - BR
+                                      - IO
+                                      - BN
+                                      - BG
+                                      - BF
+                                      - BI
+                                      - KH
+                                      - CM
+                                      - CA
+                                      - CV
+                                      - KY
+                                      - CF
+                                      - TD
+                                      - CL
+                                      - CN
+                                      - CX
+                                      - CC
+                                      - CO
+                                      - KM
+                                      - CG
+                                      - CD
+                                      - CK
+                                      - CR
+                                      - CI
+                                      - HR
+                                      - CU
+                                      - CY
+                                      - CZ
+                                      - DK
+                                      - DJ
+                                      - DM
+                                      - DO
+                                      - EC
+                                      - EG
+                                      - SV
+                                      - GQ
+                                      - ER
+                                      - EE
+                                      - ET
+                                      - FK
+                                      - FO
+                                      - FJ
+                                      - FI
+                                      - FR
+                                      - GF
+                                      - PF
+                                      - TF
+                                      - GA
+                                      - GM
+                                      - GE
+                                      - DE
+                                      - GH
+                                      - GI
+                                      - GR
+                                      - GL
+                                      - GD
+                                      - GP
+                                      - GU
+                                      - GT
+                                      - GG
+                                      - GN
+                                      - GW
+                                      - GY
+                                      - HT
+                                      - HM
+                                      - VA
+                                      - HN
+                                      - HK
+                                      - HU
+                                      - IS
+                                      - IN
+                                      - ID
+                                      - IR
+                                      - IQ
+                                      - IE
+                                      - IM
+                                      - IL
+                                      - IT
+                                      - JM
+                                      - JP
+                                      - JE
+                                      - JO
+                                      - KZ
+                                      - KE
+                                      - KI
+                                      - KR
+                                      - KW
+                                      - KG
+                                      - LA
+                                      - LV
+                                      - LB
+                                      - LS
+                                      - LR
+                                      - LY
+                                      - LI
+                                      - LT
+                                      - LU
+                                      - MO
+                                      - MK
+                                      - MG
+                                      - MW
+                                      - MY
+                                      - MV
+                                      - ML
+                                      - MT
+                                      - MH
+                                      - MQ
+                                      - MR
+                                      - MU
+                                      - YT
+                                      - MX
+                                      - FM
+                                      - MD
+                                      - MC
+                                      - MN
+                                      - ME
+                                      - MS
+                                      - MA
+                                      - MZ
+                                      - MM
+                                      - NA
+                                      - NR
+                                      - NP
+                                      - NL
+                                      - AN
+                                      - NC
+                                      - NZ
+                                      - NI
+                                      - NE
+                                      - NG
+                                      - NU
+                                      - NF
+                                      - MP
+                                      - 'NO'
+                                      - OM
+                                      - PK
+                                      - PW
+                                      - PS
+                                      - PA
+                                      - PG
+                                      - PY
+                                      - PE
+                                      - PH
+                                      - PN
+                                      - PL
+                                      - PT
+                                      - PR
+                                      - QA
+                                      - RE
+                                      - RO
+                                      - RU
+                                      - RW
+                                      - BL
+                                      - SH
+                                      - KN
+                                      - LC
+                                      - MF
+                                      - PM
+                                      - VC
+                                      - WS
+                                      - SM
+                                      - ST
+                                      - SA
+                                      - SN
+                                      - RS
+                                      - SC
+                                      - SL
+                                      - SG
+                                      - SK
+                                      - SI
+                                      - SB
+                                      - SO
+                                      - ZA
+                                      - GS
+                                      - ES
+                                      - LK
+                                      - SD
+                                      - SR
+                                      - SJ
+                                      - SZ
+                                      - SE
+                                      - CH
+                                      - SY
+                                      - TW
+                                      - TJ
+                                      - TZ
+                                      - TH
+                                      - TL
+                                      - TG
+                                      - TK
+                                      - TO
+                                      - TT
+                                      - TN
+                                      - TR
+                                      - TM
+                                      - TC
+                                      - TV
+                                      - UG
+                                      - UA
+                                      - AE
+                                      - GB
+                                      - US
+                                      - UM
+                                      - UY
+                                      - UZ
+                                      - VU
+                                      - VE
+                                      - VN
+                                      - VG
+                                      - VI
+                                      - WF
+                                      - EH
+                                      - YE
+                                      - ZM
+                                      - ZW
+                                    description: >-
+                                      Country code in upper-case ISO 3166
+                                      Alpha-2 format.
+                                    example: DE
+                      shipping_origin:
+                        description: |-
+                          The origin of goods address.
+                          * Example: Physical address of a store.
+                        allOf:
+                          - type: object
+                            properties:
+                              address_line_1:
+                                type: string
+                                description: Location address line 1.
+                                example: 1500 Wilson Blvd
+                              address_line_2:
+                                type: string
+                                description: Location address line 2.
+                              province:
+                                type: string
+                                description: Location province.
+                                example: Arlington
+                              state:
+                                type: string
+                                description: Location state.
+                                example: VA
+                              zip_code:
+                                type: string
+                                description: Location ZIP code.
+                                example: '22209'
+                                maxLength: 32
+                              city:
+                                type: string
+                                description: Location city.
+                                example: Arlington
+                              country_code:
+                                allOf:
+                                  - type: string
+                                    enum:
+                                      - AF
+                                      - AX
+                                      - AL
+                                      - DZ
+                                      - AS
+                                      - AD
+                                      - AO
+                                      - AI
+                                      - AQ
+                                      - AG
+                                      - AR
+                                      - AM
+                                      - AW
+                                      - AU
+                                      - AT
+                                      - AZ
+                                      - BS
+                                      - BH
+                                      - BD
+                                      - BB
+                                      - BY
+                                      - BE
+                                      - BZ
+                                      - BJ
+                                      - BM
+                                      - BT
+                                      - BO
+                                      - BA
+                                      - BW
+                                      - BV
+                                      - BR
+                                      - IO
+                                      - BN
+                                      - BG
+                                      - BF
+                                      - BI
+                                      - KH
+                                      - CM
+                                      - CA
+                                      - CV
+                                      - KY
+                                      - CF
+                                      - TD
+                                      - CL
+                                      - CN
+                                      - CX
+                                      - CC
+                                      - CO
+                                      - KM
+                                      - CG
+                                      - CD
+                                      - CK
+                                      - CR
+                                      - CI
+                                      - HR
+                                      - CU
+                                      - CY
+                                      - CZ
+                                      - DK
+                                      - DJ
+                                      - DM
+                                      - DO
+                                      - EC
+                                      - EG
+                                      - SV
+                                      - GQ
+                                      - ER
+                                      - EE
+                                      - ET
+                                      - FK
+                                      - FO
+                                      - FJ
+                                      - FI
+                                      - FR
+                                      - GF
+                                      - PF
+                                      - TF
+                                      - GA
+                                      - GM
+                                      - GE
+                                      - DE
+                                      - GH
+                                      - GI
+                                      - GR
+                                      - GL
+                                      - GD
+                                      - GP
+                                      - GU
+                                      - GT
+                                      - GG
+                                      - GN
+                                      - GW
+                                      - GY
+                                      - HT
+                                      - HM
+                                      - VA
+                                      - HN
+                                      - HK
+                                      - HU
+                                      - IS
+                                      - IN
+                                      - ID
+                                      - IR
+                                      - IQ
+                                      - IE
+                                      - IM
+                                      - IL
+                                      - IT
+                                      - JM
+                                      - JP
+                                      - JE
+                                      - JO
+                                      - KZ
+                                      - KE
+                                      - KI
+                                      - KR
+                                      - KW
+                                      - KG
+                                      - LA
+                                      - LV
+                                      - LB
+                                      - LS
+                                      - LR
+                                      - LY
+                                      - LI
+                                      - LT
+                                      - LU
+                                      - MO
+                                      - MK
+                                      - MG
+                                      - MW
+                                      - MY
+                                      - MV
+                                      - ML
+                                      - MT
+                                      - MH
+                                      - MQ
+                                      - MR
+                                      - MU
+                                      - YT
+                                      - MX
+                                      - FM
+                                      - MD
+                                      - MC
+                                      - MN
+                                      - ME
+                                      - MS
+                                      - MA
+                                      - MZ
+                                      - MM
+                                      - NA
+                                      - NR
+                                      - NP
+                                      - NL
+                                      - AN
+                                      - NC
+                                      - NZ
+                                      - NI
+                                      - NE
+                                      - NG
+                                      - NU
+                                      - NF
+                                      - MP
+                                      - 'NO'
+                                      - OM
+                                      - PK
+                                      - PW
+                                      - PS
+                                      - PA
+                                      - PG
+                                      - PY
+                                      - PE
+                                      - PH
+                                      - PN
+                                      - PL
+                                      - PT
+                                      - PR
+                                      - QA
+                                      - RE
+                                      - RO
+                                      - RU
+                                      - RW
+                                      - BL
+                                      - SH
+                                      - KN
+                                      - LC
+                                      - MF
+                                      - PM
+                                      - VC
+                                      - WS
+                                      - SM
+                                      - ST
+                                      - SA
+                                      - SN
+                                      - RS
+                                      - SC
+                                      - SL
+                                      - SG
+                                      - SK
+                                      - SI
+                                      - SB
+                                      - SO
+                                      - ZA
+                                      - GS
+                                      - ES
+                                      - LK
+                                      - SD
+                                      - SR
+                                      - SJ
+                                      - SZ
+                                      - SE
+                                      - CH
+                                      - SY
+                                      - TW
+                                      - TJ
+                                      - TZ
+                                      - TH
+                                      - TL
+                                      - TG
+                                      - TK
+                                      - TO
+                                      - TT
+                                      - TN
+                                      - TR
+                                      - TM
+                                      - TC
+                                      - TV
+                                      - UG
+                                      - UA
+                                      - AE
+                                      - GB
+                                      - US
+                                      - UM
+                                      - UY
+                                      - UZ
+                                      - VU
+                                      - VE
+                                      - VN
+                                      - VG
+                                      - VI
+                                      - WF
+                                      - EH
+                                      - YE
+                                      - ZM
+                                      - ZW
+                                    description: >-
+                                      Country code in upper-case ISO 3166
+                                      Alpha-2 format.
+                                    example: DE
+                      type:
+                        allOf:
+                          - type: string
+                            enum:
+                              - gift-card
+                              - gift-wrapping
+                              - product
+                              - shipping
+                            description: Type of the item.
+                            example: product
+                      currency_consumer:
+                        type: string
+                        description: Currency code shown and billed to the consumer.
+                        example: USD
+                      consumer_uuid:
+                        type: string
+                        description: UUID of the consumer.
+                        example: 79a78090-ba7b-4cd7-b6b6-64638788f0fd
+                      product_name:
+                        type: string
+                        description: Human-readable name of the product.
+                        example: Metallica T-shirt
+                        maxLength: 512
+                      product_sku:
+                        type: string
+                        description: SKU of the product.
+                        example: AIK-0790
+                        maxLength: 256
+                      product_id:
+                        type: string
+                        description: Unique identifier of the product.
+                        example: '123'
+                      extended_attributes:
+                        description: Extended attributes of the item.
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              description: The name of the extended attribute.
+                              example: size
+                            value:
+                              type: string
+                              description: The value of the extended attribute.
+                              example: '36'
+                          required:
+                            - name
+                            - value
+                      id:
+                        type: string
+                        description: Unique identifier of the item.
+                        example: '123'
+                      exemption_number:
+                        type: string
+                        description: >-
+                          Tax exemption certificate number of the customer on
+                          the item level.
+                      tax_exempt:
+                        type: boolean
+                        description: Defines the tax exemption status of the item.
+                        default: false
+                    required:
+                      - index
+                      - tax_class
+                      - tax_method
+                      - item_price
+                      - quantity
+                      - shipping_address
+                      - shipping_origin
+                      - type
+              required:
+                - tax_exempt
+                - items
+      responses:
+        '200':
+          description: Tax quotation response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document_id:
+                    type: string
+                    description: Optional external system UUID for the transaction.
+                    example: 3195649a-cd43-47ec-8774-c7b404df1e00
+                  items:
+                    description: >-
+                      A list of items sold/returned in the transaction enriched
+                      with tax amounts.
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        index:
+                          type: integer
+                          description: >-
+                            Index of the item.
+
+                            * Value must correspond to the index from the
+                            request.
+                          example: 0
+                          format: int32
+                        net_amount:
+                          type: number
+                          description: |-
+                            Total net amount of the item.
+                            * Amount without taxes.
+                            * Amount should cover the given quantity.
+                          example: 200
+                          format: double
+                        gross_amount:
+                          type: number
+                          description: |-
+                            Total gross amount of the item.
+                            * Amount with taxes.
+                            * Amount should cover the given quantity.
+                          example: 250
+                          format: double
+                        tax_amount:
+                          type: number
+                          description: |-
+                            Total tax amount of the item.
+                            * Amount should cover the given quantity.
+                          example: 50
+                          format: double
+                        tax_rates:
+                          description: >-
+                            Applied tax lines with rates and amounts for the
+                            item sold/returned.
+
+                            * An item can have a single or multiple tax lines.
+
+                            * Tax lines should be for a single quantity.
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              rate:
+                                type: number
+                                description: >-
+                                  Tax rate value in percentage for the current
+                                  item (`tax_rate`).
+
+                                  * Defined as percentage in decimal places.
+
+                                  * Max decimal places of 5.
+
+                                  * For example, 0.25 corresponds to 25%.
+                                example: 0.25
+                                minimum: 0
+                                maximum: 1
+                                format: double
+                              amount:
+                                type: number
+                                description: >-
+                                  Tax amount of a single item.
+
+                                  * Monetary tax amount for the unit price of
+                                  the item.
+
+                                  * Should be calculated based on the tax rate
+                                  (`rate`) of the current item (`tax_rate`).
+
+                                  * Value should be same for any quantity.
+                                example: 50
+                                format: double
+                              tax_name:
+                                type: string
+                                description: Name of the applied tax.
+                                example: State tax
+                                minLength: 1
+                              country_code:
+                                allOf:
+                                  - type: string
+                                    enum:
+                                      - AF
+                                      - AX
+                                      - AL
+                                      - DZ
+                                      - AS
+                                      - AD
+                                      - AO
+                                      - AI
+                                      - AQ
+                                      - AG
+                                      - AR
+                                      - AM
+                                      - AW
+                                      - AU
+                                      - AT
+                                      - AZ
+                                      - BS
+                                      - BH
+                                      - BD
+                                      - BB
+                                      - BY
+                                      - BE
+                                      - BZ
+                                      - BJ
+                                      - BM
+                                      - BT
+                                      - BO
+                                      - BA
+                                      - BW
+                                      - BV
+                                      - BR
+                                      - IO
+                                      - BN
+                                      - BG
+                                      - BF
+                                      - BI
+                                      - KH
+                                      - CM
+                                      - CA
+                                      - CV
+                                      - KY
+                                      - CF
+                                      - TD
+                                      - CL
+                                      - CN
+                                      - CX
+                                      - CC
+                                      - CO
+                                      - KM
+                                      - CG
+                                      - CD
+                                      - CK
+                                      - CR
+                                      - CI
+                                      - HR
+                                      - CU
+                                      - CY
+                                      - CZ
+                                      - DK
+                                      - DJ
+                                      - DM
+                                      - DO
+                                      - EC
+                                      - EG
+                                      - SV
+                                      - GQ
+                                      - ER
+                                      - EE
+                                      - ET
+                                      - FK
+                                      - FO
+                                      - FJ
+                                      - FI
+                                      - FR
+                                      - GF
+                                      - PF
+                                      - TF
+                                      - GA
+                                      - GM
+                                      - GE
+                                      - DE
+                                      - GH
+                                      - GI
+                                      - GR
+                                      - GL
+                                      - GD
+                                      - GP
+                                      - GU
+                                      - GT
+                                      - GG
+                                      - GN
+                                      - GW
+                                      - GY
+                                      - HT
+                                      - HM
+                                      - VA
+                                      - HN
+                                      - HK
+                                      - HU
+                                      - IS
+                                      - IN
+                                      - ID
+                                      - IR
+                                      - IQ
+                                      - IE
+                                      - IM
+                                      - IL
+                                      - IT
+                                      - JM
+                                      - JP
+                                      - JE
+                                      - JO
+                                      - KZ
+                                      - KE
+                                      - KI
+                                      - KR
+                                      - KW
+                                      - KG
+                                      - LA
+                                      - LV
+                                      - LB
+                                      - LS
+                                      - LR
+                                      - LY
+                                      - LI
+                                      - LT
+                                      - LU
+                                      - MO
+                                      - MK
+                                      - MG
+                                      - MW
+                                      - MY
+                                      - MV
+                                      - ML
+                                      - MT
+                                      - MH
+                                      - MQ
+                                      - MR
+                                      - MU
+                                      - YT
+                                      - MX
+                                      - FM
+                                      - MD
+                                      - MC
+                                      - MN
+                                      - ME
+                                      - MS
+                                      - MA
+                                      - MZ
+                                      - MM
+                                      - NA
+                                      - NR
+                                      - NP
+                                      - NL
+                                      - AN
+                                      - NC
+                                      - NZ
+                                      - NI
+                                      - NE
+                                      - NG
+                                      - NU
+                                      - NF
+                                      - MP
+                                      - 'NO'
+                                      - OM
+                                      - PK
+                                      - PW
+                                      - PS
+                                      - PA
+                                      - PG
+                                      - PY
+                                      - PE
+                                      - PH
+                                      - PN
+                                      - PL
+                                      - PT
+                                      - PR
+                                      - QA
+                                      - RE
+                                      - RO
+                                      - RU
+                                      - RW
+                                      - BL
+                                      - SH
+                                      - KN
+                                      - LC
+                                      - MF
+                                      - PM
+                                      - VC
+                                      - WS
+                                      - SM
+                                      - ST
+                                      - SA
+                                      - SN
+                                      - RS
+                                      - SC
+                                      - SL
+                                      - SG
+                                      - SK
+                                      - SI
+                                      - SB
+                                      - SO
+                                      - ZA
+                                      - GS
+                                      - ES
+                                      - LK
+                                      - SD
+                                      - SR
+                                      - SJ
+                                      - SZ
+                                      - SE
+                                      - CH
+                                      - SY
+                                      - TW
+                                      - TJ
+                                      - TZ
+                                      - TH
+                                      - TL
+                                      - TG
+                                      - TK
+                                      - TO
+                                      - TT
+                                      - TN
+                                      - TR
+                                      - TM
+                                      - TC
+                                      - TV
+                                      - UG
+                                      - UA
+                                      - AE
+                                      - GB
+                                      - US
+                                      - UM
+                                      - UY
+                                      - UZ
+                                      - VU
+                                      - VE
+                                      - VN
+                                      - VG
+                                      - VI
+                                      - WF
+                                      - EH
+                                      - YE
+                                      - ZM
+                                      - ZW
+                                    description: >-
+                                      Country code in upper-case ISO 3166
+                                      Alpha-2 format.
+                                    example: DE
+                              taxable_amount:
+                                type: number
+                                description: >-
+                                  The taxable item net amount on which the tax
+                                  is chargeable.
+                                example: 100
+                                format: double
+                              exempt_amount:
+                                type: number
+                                description: The item net amount which has been tax exempt.
+                                example: 100
+                                format: double
+                            required:
+                              - rate
+                              - amount
+                              - tax_name
+                              - country_code
+                      required:
+                        - index
+                        - net_amount
+                        - gross_amount
+                        - tax_amount
+                        - tax_rates
+                required:
+                  - items
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    description: HTTP status code
+                    format: int32
+                    example: 500
+                  error:
+                    type: string
+                    description: Error message
+                    example: Internal server error
+                required:
+                  - status_code
+                  - error
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    description: HTTP status code
+                    format: int32
+                    example: 500
+                  error:
+                    type: string
+                    description: Error message
+                    example: Internal server error
+                required:
+                  - status_code
+                  - error
+      security:
+        - basic: []
+      summary: Create tax quotation
+      tags:
+        - CustomV1
+        - Tax quotation
+info:
+  title: Custom Tax Provider Webhooks
+  description: >-
+    A service, for providing tax quotations for transactions, which implements
+    this API.
+  version: 1.0.0
+  contact: {}
+tags:
+  - name: Tax quotation
+    description: Actions for tax quotation.
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+components:
+  securitySchemes:
+    basic:
+      type: http
+      scheme: basic
+  schemas:
+    CustomV1ExtendedAttributeDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the extended attribute.
+          example: size
+        value:
+          type: string
+          description: The value of the extended attribute.
+          example: '36'
+      required:
+        - name
+        - value
+    TaxesCountryCode:
+      type: string
+      enum:
+        - AF
+        - AX
+        - AL
+        - DZ
+        - AS
+        - AD
+        - AO
+        - AI
+        - AQ
+        - AG
+        - AR
+        - AM
+        - AW
+        - AU
+        - AT
+        - AZ
+        - BS
+        - BH
+        - BD
+        - BB
+        - BY
+        - BE
+        - BZ
+        - BJ
+        - BM
+        - BT
+        - BO
+        - BA
+        - BW
+        - BV
+        - BR
+        - IO
+        - BN
+        - BG
+        - BF
+        - BI
+        - KH
+        - CM
+        - CA
+        - CV
+        - KY
+        - CF
+        - TD
+        - CL
+        - CN
+        - CX
+        - CC
+        - CO
+        - KM
+        - CG
+        - CD
+        - CK
+        - CR
+        - CI
+        - HR
+        - CU
+        - CY
+        - CZ
+        - DK
+        - DJ
+        - DM
+        - DO
+        - EC
+        - EG
+        - SV
+        - GQ
+        - ER
+        - EE
+        - ET
+        - FK
+        - FO
+        - FJ
+        - FI
+        - FR
+        - GF
+        - PF
+        - TF
+        - GA
+        - GM
+        - GE
+        - DE
+        - GH
+        - GI
+        - GR
+        - GL
+        - GD
+        - GP
+        - GU
+        - GT
+        - GG
+        - GN
+        - GW
+        - GY
+        - HT
+        - HM
+        - VA
+        - HN
+        - HK
+        - HU
+        - IS
+        - IN
+        - ID
+        - IR
+        - IQ
+        - IE
+        - IM
+        - IL
+        - IT
+        - JM
+        - JP
+        - JE
+        - JO
+        - KZ
+        - KE
+        - KI
+        - KR
+        - KW
+        - KG
+        - LA
+        - LV
+        - LB
+        - LS
+        - LR
+        - LY
+        - LI
+        - LT
+        - LU
+        - MO
+        - MK
+        - MG
+        - MW
+        - MY
+        - MV
+        - ML
+        - MT
+        - MH
+        - MQ
+        - MR
+        - MU
+        - YT
+        - MX
+        - FM
+        - MD
+        - MC
+        - MN
+        - ME
+        - MS
+        - MA
+        - MZ
+        - MM
+        - NA
+        - NR
+        - NP
+        - NL
+        - AN
+        - NC
+        - NZ
+        - NI
+        - NE
+        - NG
+        - NU
+        - NF
+        - MP
+        - 'NO'
+        - OM
+        - PK
+        - PW
+        - PS
+        - PA
+        - PG
+        - PY
+        - PE
+        - PH
+        - PN
+        - PL
+        - PT
+        - PR
+        - QA
+        - RE
+        - RO
+        - RU
+        - RW
+        - BL
+        - SH
+        - KN
+        - LC
+        - MF
+        - PM
+        - VC
+        - WS
+        - SM
+        - ST
+        - SA
+        - SN
+        - RS
+        - SC
+        - SL
+        - SG
+        - SK
+        - SI
+        - SB
+        - SO
+        - ZA
+        - GS
+        - ES
+        - LK
+        - SD
+        - SR
+        - SJ
+        - SZ
+        - SE
+        - CH
+        - SY
+        - TW
+        - TJ
+        - TZ
+        - TH
+        - TL
+        - TG
+        - TK
+        - TO
+        - TT
+        - TN
+        - TR
+        - TM
+        - TC
+        - TV
+        - UG
+        - UA
+        - AE
+        - GB
+        - US
+        - UM
+        - UY
+        - UZ
+        - VU
+        - VE
+        - VN
+        - VG
+        - VI
+        - WF
+        - EH
+        - YE
+        - ZM
+        - ZW
+      description: Country code in upper-case ISO 3166 Alpha-2 format.
+      example: DE
+    CustomV1TransactionAddressDto:
+      type: object
+      properties:
+        address_line_1:
+          type: string
+          description: Location address line 1.
+          example: 1500 Wilson Blvd
+        address_line_2:
+          type: string
+          description: Location address line 2.
+        province:
+          type: string
+          description: Location province.
+          example: Arlington
+        state:
+          type: string
+          description: Location state.
+          example: VA
+        zip_code:
+          type: string
+          description: Location ZIP code.
+          example: '22209'
+          maxLength: 32
+        city:
+          type: string
+          description: Location city.
+          example: Arlington
+        country_code:
+          allOf:
+            - type: string
+              enum:
+                - AF
+                - AX
+                - AL
+                - DZ
+                - AS
+                - AD
+                - AO
+                - AI
+                - AQ
+                - AG
+                - AR
+                - AM
+                - AW
+                - AU
+                - AT
+                - AZ
+                - BS
+                - BH
+                - BD
+                - BB
+                - BY
+                - BE
+                - BZ
+                - BJ
+                - BM
+                - BT
+                - BO
+                - BA
+                - BW
+                - BV
+                - BR
+                - IO
+                - BN
+                - BG
+                - BF
+                - BI
+                - KH
+                - CM
+                - CA
+                - CV
+                - KY
+                - CF
+                - TD
+                - CL
+                - CN
+                - CX
+                - CC
+                - CO
+                - KM
+                - CG
+                - CD
+                - CK
+                - CR
+                - CI
+                - HR
+                - CU
+                - CY
+                - CZ
+                - DK
+                - DJ
+                - DM
+                - DO
+                - EC
+                - EG
+                - SV
+                - GQ
+                - ER
+                - EE
+                - ET
+                - FK
+                - FO
+                - FJ
+                - FI
+                - FR
+                - GF
+                - PF
+                - TF
+                - GA
+                - GM
+                - GE
+                - DE
+                - GH
+                - GI
+                - GR
+                - GL
+                - GD
+                - GP
+                - GU
+                - GT
+                - GG
+                - GN
+                - GW
+                - GY
+                - HT
+                - HM
+                - VA
+                - HN
+                - HK
+                - HU
+                - IS
+                - IN
+                - ID
+                - IR
+                - IQ
+                - IE
+                - IM
+                - IL
+                - IT
+                - JM
+                - JP
+                - JE
+                - JO
+                - KZ
+                - KE
+                - KI
+                - KR
+                - KW
+                - KG
+                - LA
+                - LV
+                - LB
+                - LS
+                - LR
+                - LY
+                - LI
+                - LT
+                - LU
+                - MO
+                - MK
+                - MG
+                - MW
+                - MY
+                - MV
+                - ML
+                - MT
+                - MH
+                - MQ
+                - MR
+                - MU
+                - YT
+                - MX
+                - FM
+                - MD
+                - MC
+                - MN
+                - ME
+                - MS
+                - MA
+                - MZ
+                - MM
+                - NA
+                - NR
+                - NP
+                - NL
+                - AN
+                - NC
+                - NZ
+                - NI
+                - NE
+                - NG
+                - NU
+                - NF
+                - MP
+                - 'NO'
+                - OM
+                - PK
+                - PW
+                - PS
+                - PA
+                - PG
+                - PY
+                - PE
+                - PH
+                - PN
+                - PL
+                - PT
+                - PR
+                - QA
+                - RE
+                - RO
+                - RU
+                - RW
+                - BL
+                - SH
+                - KN
+                - LC
+                - MF
+                - PM
+                - VC
+                - WS
+                - SM
+                - ST
+                - SA
+                - SN
+                - RS
+                - SC
+                - SL
+                - SG
+                - SK
+                - SI
+                - SB
+                - SO
+                - ZA
+                - GS
+                - ES
+                - LK
+                - SD
+                - SR
+                - SJ
+                - SZ
+                - SE
+                - CH
+                - SY
+                - TW
+                - TJ
+                - TZ
+                - TH
+                - TL
+                - TG
+                - TK
+                - TO
+                - TT
+                - TN
+                - TR
+                - TM
+                - TC
+                - TV
+                - UG
+                - UA
+                - AE
+                - GB
+                - US
+                - UM
+                - UY
+                - UZ
+                - VU
+                - VE
+                - VN
+                - VG
+                - VI
+                - WF
+                - EH
+                - YE
+                - ZM
+                - ZW
+              description: Country code in upper-case ISO 3166 Alpha-2 format.
+              example: DE
+    TaxMethod:
+      type: string
+      enum:
+        - vat_included
+        - vat_excluded
+      description: The method that indicates how item tax is applied.
+      example: vat_excluded
+    ItemType:
+      type: string
+      enum:
+        - gift-card
+        - gift-wrapping
+        - product
+        - shipping
+      description: Type of the item.
+      example: product
+    CustomV1RequestItemDto:
+      type: object
+      properties:
+        index:
+          type: integer
+          description: >-
+            Index of the item.
+
+            * Will be used for mapping the items from the custom provider
+            response.
+
+            * Response must include items with the same index.
+          example: 0
+          format: int32
+        tax_class:
+          type: string
+          description: Tax classification identifier for the line item.
+          example: AAA000
+          maxLength: 256
+        tax_method:
+          allOf:
+            - type: string
+              enum:
+                - vat_included
+                - vat_excluded
+              description: The method that indicates how item tax is applied.
+              example: vat_excluded
+        item_price:
+          type: number
+          description: |-
+            Price per item (single quantity).
+            * Can be tax inclusive/exclusive depending on `tax_method`.
+          example: 200
+          format: double
+        quantity:
+          type: integer
+          description: >-
+            Item quantity. Positive number for sold items and negative number
+            for returned items
+          example: 1
+          format: int32
+        shipping_address:
+          description: |-
+            Consumer's shipping address.
+            * For in-store orders, store address will be sent.
+          allOf:
+            - type: object
+              properties:
+                address_line_1:
+                  type: string
+                  description: Location address line 1.
+                  example: 1500 Wilson Blvd
+                address_line_2:
+                  type: string
+                  description: Location address line 2.
+                province:
+                  type: string
+                  description: Location province.
+                  example: Arlington
+                state:
+                  type: string
+                  description: Location state.
+                  example: VA
+                zip_code:
+                  type: string
+                  description: Location ZIP code.
+                  example: '22209'
+                  maxLength: 32
+                city:
+                  type: string
+                  description: Location city.
+                  example: Arlington
+                country_code:
+                  allOf:
+                    - type: string
+                      enum:
+                        - AF
+                        - AX
+                        - AL
+                        - DZ
+                        - AS
+                        - AD
+                        - AO
+                        - AI
+                        - AQ
+                        - AG
+                        - AR
+                        - AM
+                        - AW
+                        - AU
+                        - AT
+                        - AZ
+                        - BS
+                        - BH
+                        - BD
+                        - BB
+                        - BY
+                        - BE
+                        - BZ
+                        - BJ
+                        - BM
+                        - BT
+                        - BO
+                        - BA
+                        - BW
+                        - BV
+                        - BR
+                        - IO
+                        - BN
+                        - BG
+                        - BF
+                        - BI
+                        - KH
+                        - CM
+                        - CA
+                        - CV
+                        - KY
+                        - CF
+                        - TD
+                        - CL
+                        - CN
+                        - CX
+                        - CC
+                        - CO
+                        - KM
+                        - CG
+                        - CD
+                        - CK
+                        - CR
+                        - CI
+                        - HR
+                        - CU
+                        - CY
+                        - CZ
+                        - DK
+                        - DJ
+                        - DM
+                        - DO
+                        - EC
+                        - EG
+                        - SV
+                        - GQ
+                        - ER
+                        - EE
+                        - ET
+                        - FK
+                        - FO
+                        - FJ
+                        - FI
+                        - FR
+                        - GF
+                        - PF
+                        - TF
+                        - GA
+                        - GM
+                        - GE
+                        - DE
+                        - GH
+                        - GI
+                        - GR
+                        - GL
+                        - GD
+                        - GP
+                        - GU
+                        - GT
+                        - GG
+                        - GN
+                        - GW
+                        - GY
+                        - HT
+                        - HM
+                        - VA
+                        - HN
+                        - HK
+                        - HU
+                        - IS
+                        - IN
+                        - ID
+                        - IR
+                        - IQ
+                        - IE
+                        - IM
+                        - IL
+                        - IT
+                        - JM
+                        - JP
+                        - JE
+                        - JO
+                        - KZ
+                        - KE
+                        - KI
+                        - KR
+                        - KW
+                        - KG
+                        - LA
+                        - LV
+                        - LB
+                        - LS
+                        - LR
+                        - LY
+                        - LI
+                        - LT
+                        - LU
+                        - MO
+                        - MK
+                        - MG
+                        - MW
+                        - MY
+                        - MV
+                        - ML
+                        - MT
+                        - MH
+                        - MQ
+                        - MR
+                        - MU
+                        - YT
+                        - MX
+                        - FM
+                        - MD
+                        - MC
+                        - MN
+                        - ME
+                        - MS
+                        - MA
+                        - MZ
+                        - MM
+                        - NA
+                        - NR
+                        - NP
+                        - NL
+                        - AN
+                        - NC
+                        - NZ
+                        - NI
+                        - NE
+                        - NG
+                        - NU
+                        - NF
+                        - MP
+                        - 'NO'
+                        - OM
+                        - PK
+                        - PW
+                        - PS
+                        - PA
+                        - PG
+                        - PY
+                        - PE
+                        - PH
+                        - PN
+                        - PL
+                        - PT
+                        - PR
+                        - QA
+                        - RE
+                        - RO
+                        - RU
+                        - RW
+                        - BL
+                        - SH
+                        - KN
+                        - LC
+                        - MF
+                        - PM
+                        - VC
+                        - WS
+                        - SM
+                        - ST
+                        - SA
+                        - SN
+                        - RS
+                        - SC
+                        - SL
+                        - SG
+                        - SK
+                        - SI
+                        - SB
+                        - SO
+                        - ZA
+                        - GS
+                        - ES
+                        - LK
+                        - SD
+                        - SR
+                        - SJ
+                        - SZ
+                        - SE
+                        - CH
+                        - SY
+                        - TW
+                        - TJ
+                        - TZ
+                        - TH
+                        - TL
+                        - TG
+                        - TK
+                        - TO
+                        - TT
+                        - TN
+                        - TR
+                        - TM
+                        - TC
+                        - TV
+                        - UG
+                        - UA
+                        - AE
+                        - GB
+                        - US
+                        - UM
+                        - UY
+                        - UZ
+                        - VU
+                        - VE
+                        - VN
+                        - VG
+                        - VI
+                        - WF
+                        - EH
+                        - YE
+                        - ZM
+                        - ZW
+                      description: Country code in upper-case ISO 3166 Alpha-2 format.
+                      example: DE
+        shipping_origin:
+          description: |-
+            The origin of goods address.
+            * Example: Physical address of a store.
+          allOf:
+            - type: object
+              properties:
+                address_line_1:
+                  type: string
+                  description: Location address line 1.
+                  example: 1500 Wilson Blvd
+                address_line_2:
+                  type: string
+                  description: Location address line 2.
+                province:
+                  type: string
+                  description: Location province.
+                  example: Arlington
+                state:
+                  type: string
+                  description: Location state.
+                  example: VA
+                zip_code:
+                  type: string
+                  description: Location ZIP code.
+                  example: '22209'
+                  maxLength: 32
+                city:
+                  type: string
+                  description: Location city.
+                  example: Arlington
+                country_code:
+                  allOf:
+                    - type: string
+                      enum:
+                        - AF
+                        - AX
+                        - AL
+                        - DZ
+                        - AS
+                        - AD
+                        - AO
+                        - AI
+                        - AQ
+                        - AG
+                        - AR
+                        - AM
+                        - AW
+                        - AU
+                        - AT
+                        - AZ
+                        - BS
+                        - BH
+                        - BD
+                        - BB
+                        - BY
+                        - BE
+                        - BZ
+                        - BJ
+                        - BM
+                        - BT
+                        - BO
+                        - BA
+                        - BW
+                        - BV
+                        - BR
+                        - IO
+                        - BN
+                        - BG
+                        - BF
+                        - BI
+                        - KH
+                        - CM
+                        - CA
+                        - CV
+                        - KY
+                        - CF
+                        - TD
+                        - CL
+                        - CN
+                        - CX
+                        - CC
+                        - CO
+                        - KM
+                        - CG
+                        - CD
+                        - CK
+                        - CR
+                        - CI
+                        - HR
+                        - CU
+                        - CY
+                        - CZ
+                        - DK
+                        - DJ
+                        - DM
+                        - DO
+                        - EC
+                        - EG
+                        - SV
+                        - GQ
+                        - ER
+                        - EE
+                        - ET
+                        - FK
+                        - FO
+                        - FJ
+                        - FI
+                        - FR
+                        - GF
+                        - PF
+                        - TF
+                        - GA
+                        - GM
+                        - GE
+                        - DE
+                        - GH
+                        - GI
+                        - GR
+                        - GL
+                        - GD
+                        - GP
+                        - GU
+                        - GT
+                        - GG
+                        - GN
+                        - GW
+                        - GY
+                        - HT
+                        - HM
+                        - VA
+                        - HN
+                        - HK
+                        - HU
+                        - IS
+                        - IN
+                        - ID
+                        - IR
+                        - IQ
+                        - IE
+                        - IM
+                        - IL
+                        - IT
+                        - JM
+                        - JP
+                        - JE
+                        - JO
+                        - KZ
+                        - KE
+                        - KI
+                        - KR
+                        - KW
+                        - KG
+                        - LA
+                        - LV
+                        - LB
+                        - LS
+                        - LR
+                        - LY
+                        - LI
+                        - LT
+                        - LU
+                        - MO
+                        - MK
+                        - MG
+                        - MW
+                        - MY
+                        - MV
+                        - ML
+                        - MT
+                        - MH
+                        - MQ
+                        - MR
+                        - MU
+                        - YT
+                        - MX
+                        - FM
+                        - MD
+                        - MC
+                        - MN
+                        - ME
+                        - MS
+                        - MA
+                        - MZ
+                        - MM
+                        - NA
+                        - NR
+                        - NP
+                        - NL
+                        - AN
+                        - NC
+                        - NZ
+                        - NI
+                        - NE
+                        - NG
+                        - NU
+                        - NF
+                        - MP
+                        - 'NO'
+                        - OM
+                        - PK
+                        - PW
+                        - PS
+                        - PA
+                        - PG
+                        - PY
+                        - PE
+                        - PH
+                        - PN
+                        - PL
+                        - PT
+                        - PR
+                        - QA
+                        - RE
+                        - RO
+                        - RU
+                        - RW
+                        - BL
+                        - SH
+                        - KN
+                        - LC
+                        - MF
+                        - PM
+                        - VC
+                        - WS
+                        - SM
+                        - ST
+                        - SA
+                        - SN
+                        - RS
+                        - SC
+                        - SL
+                        - SG
+                        - SK
+                        - SI
+                        - SB
+                        - SO
+                        - ZA
+                        - GS
+                        - ES
+                        - LK
+                        - SD
+                        - SR
+                        - SJ
+                        - SZ
+                        - SE
+                        - CH
+                        - SY
+                        - TW
+                        - TJ
+                        - TZ
+                        - TH
+                        - TL
+                        - TG
+                        - TK
+                        - TO
+                        - TT
+                        - TN
+                        - TR
+                        - TM
+                        - TC
+                        - TV
+                        - UG
+                        - UA
+                        - AE
+                        - GB
+                        - US
+                        - UM
+                        - UY
+                        - UZ
+                        - VU
+                        - VE
+                        - VN
+                        - VG
+                        - VI
+                        - WF
+                        - EH
+                        - YE
+                        - ZM
+                        - ZW
+                      description: Country code in upper-case ISO 3166 Alpha-2 format.
+                      example: DE
+        type:
+          allOf:
+            - type: string
+              enum:
+                - gift-card
+                - gift-wrapping
+                - product
+                - shipping
+              description: Type of the item.
+              example: product
+        currency_consumer:
+          type: string
+          description: Currency code shown and billed to the consumer.
+          example: USD
+        consumer_uuid:
+          type: string
+          description: UUID of the consumer.
+          example: 79a78090-ba7b-4cd7-b6b6-64638788f0fd
+        product_name:
+          type: string
+          description: Human-readable name of the product.
+          example: Metallica T-shirt
+          maxLength: 512
+        product_sku:
+          type: string
+          description: SKU of the product.
+          example: AIK-0790
+          maxLength: 256
+        product_id:
+          type: string
+          description: Unique identifier of the product.
+          example: '123'
+        extended_attributes:
+          description: Extended attributes of the item.
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of the extended attribute.
+                example: size
+              value:
+                type: string
+                description: The value of the extended attribute.
+                example: '36'
+            required:
+              - name
+              - value
+        id:
+          type: string
+          description: Unique identifier of the item.
+          example: '123'
+        exemption_number:
+          type: string
+          description: Tax exemption certificate number of the customer on the item level.
+        tax_exempt:
+          type: boolean
+          description: Defines the tax exemption status of the item.
+          default: false
+      required:
+        - index
+        - tax_class
+        - tax_method
+        - item_price
+        - quantity
+        - shipping_address
+        - shipping_origin
+        - type
+    TransactionType:
+      type: string
+      enum:
+        - SALE
+        - RETURN
+      description: Type of the transaction.
+      example: SALE
+    CustomV1RequestDto:
+      type: object
+      properties:
+        transaction_type:
+          allOf:
+            - type: string
+              enum:
+                - SALE
+                - RETURN
+              description: Type of the transaction.
+              example: SALE
+        order_id:
+          type: string
+          description: Order identifier.
+          example: 56bb9975-f43a-4eee-8fb2-200957eb0624
+        tax_exempt:
+          type: boolean
+          description: Tax exemption status of the transaction.
+          example: false
+        exemption_number:
+          type: string
+          description: Tax exemption certificate number of the customer.
+        exemption_class:
+          type: string
+          description: Tax exemption class.
+        items:
+          description: A list of items sold/returned in the transaction.
+          type: array
+          items:
+            type: object
+            properties:
+              index:
+                type: integer
+                description: >-
+                  Index of the item.
+
+                  * Will be used for mapping the items from the custom provider
+                  response.
+
+                  * Response must include items with the same index.
+                example: 0
+                format: int32
+              tax_class:
+                type: string
+                description: Tax classification identifier for the line item.
+                example: AAA000
+                maxLength: 256
+              tax_method:
+                allOf:
+                  - type: string
+                    enum:
+                      - vat_included
+                      - vat_excluded
+                    description: The method that indicates how item tax is applied.
+                    example: vat_excluded
+              item_price:
+                type: number
+                description: |-
+                  Price per item (single quantity).
+                  * Can be tax inclusive/exclusive depending on `tax_method`.
+                example: 200
+                format: double
+              quantity:
+                type: integer
+                description: >-
+                  Item quantity. Positive number for sold items and negative
+                  number for returned items
+                example: 1
+                format: int32
+              shipping_address:
+                description: |-
+                  Consumer's shipping address.
+                  * For in-store orders, store address will be sent.
+                allOf:
+                  - type: object
+                    properties:
+                      address_line_1:
+                        type: string
+                        description: Location address line 1.
+                        example: 1500 Wilson Blvd
+                      address_line_2:
+                        type: string
+                        description: Location address line 2.
+                      province:
+                        type: string
+                        description: Location province.
+                        example: Arlington
+                      state:
+                        type: string
+                        description: Location state.
+                        example: VA
+                      zip_code:
+                        type: string
+                        description: Location ZIP code.
+                        example: '22209'
+                        maxLength: 32
+                      city:
+                        type: string
+                        description: Location city.
+                        example: Arlington
+                      country_code:
+                        allOf:
+                          - type: string
+                            enum:
+                              - AF
+                              - AX
+                              - AL
+                              - DZ
+                              - AS
+                              - AD
+                              - AO
+                              - AI
+                              - AQ
+                              - AG
+                              - AR
+                              - AM
+                              - AW
+                              - AU
+                              - AT
+                              - AZ
+                              - BS
+                              - BH
+                              - BD
+                              - BB
+                              - BY
+                              - BE
+                              - BZ
+                              - BJ
+                              - BM
+                              - BT
+                              - BO
+                              - BA
+                              - BW
+                              - BV
+                              - BR
+                              - IO
+                              - BN
+                              - BG
+                              - BF
+                              - BI
+                              - KH
+                              - CM
+                              - CA
+                              - CV
+                              - KY
+                              - CF
+                              - TD
+                              - CL
+                              - CN
+                              - CX
+                              - CC
+                              - CO
+                              - KM
+                              - CG
+                              - CD
+                              - CK
+                              - CR
+                              - CI
+                              - HR
+                              - CU
+                              - CY
+                              - CZ
+                              - DK
+                              - DJ
+                              - DM
+                              - DO
+                              - EC
+                              - EG
+                              - SV
+                              - GQ
+                              - ER
+                              - EE
+                              - ET
+                              - FK
+                              - FO
+                              - FJ
+                              - FI
+                              - FR
+                              - GF
+                              - PF
+                              - TF
+                              - GA
+                              - GM
+                              - GE
+                              - DE
+                              - GH
+                              - GI
+                              - GR
+                              - GL
+                              - GD
+                              - GP
+                              - GU
+                              - GT
+                              - GG
+                              - GN
+                              - GW
+                              - GY
+                              - HT
+                              - HM
+                              - VA
+                              - HN
+                              - HK
+                              - HU
+                              - IS
+                              - IN
+                              - ID
+                              - IR
+                              - IQ
+                              - IE
+                              - IM
+                              - IL
+                              - IT
+                              - JM
+                              - JP
+                              - JE
+                              - JO
+                              - KZ
+                              - KE
+                              - KI
+                              - KR
+                              - KW
+                              - KG
+                              - LA
+                              - LV
+                              - LB
+                              - LS
+                              - LR
+                              - LY
+                              - LI
+                              - LT
+                              - LU
+                              - MO
+                              - MK
+                              - MG
+                              - MW
+                              - MY
+                              - MV
+                              - ML
+                              - MT
+                              - MH
+                              - MQ
+                              - MR
+                              - MU
+                              - YT
+                              - MX
+                              - FM
+                              - MD
+                              - MC
+                              - MN
+                              - ME
+                              - MS
+                              - MA
+                              - MZ
+                              - MM
+                              - NA
+                              - NR
+                              - NP
+                              - NL
+                              - AN
+                              - NC
+                              - NZ
+                              - NI
+                              - NE
+                              - NG
+                              - NU
+                              - NF
+                              - MP
+                              - 'NO'
+                              - OM
+                              - PK
+                              - PW
+                              - PS
+                              - PA
+                              - PG
+                              - PY
+                              - PE
+                              - PH
+                              - PN
+                              - PL
+                              - PT
+                              - PR
+                              - QA
+                              - RE
+                              - RO
+                              - RU
+                              - RW
+                              - BL
+                              - SH
+                              - KN
+                              - LC
+                              - MF
+                              - PM
+                              - VC
+                              - WS
+                              - SM
+                              - ST
+                              - SA
+                              - SN
+                              - RS
+                              - SC
+                              - SL
+                              - SG
+                              - SK
+                              - SI
+                              - SB
+                              - SO
+                              - ZA
+                              - GS
+                              - ES
+                              - LK
+                              - SD
+                              - SR
+                              - SJ
+                              - SZ
+                              - SE
+                              - CH
+                              - SY
+                              - TW
+                              - TJ
+                              - TZ
+                              - TH
+                              - TL
+                              - TG
+                              - TK
+                              - TO
+                              - TT
+                              - TN
+                              - TR
+                              - TM
+                              - TC
+                              - TV
+                              - UG
+                              - UA
+                              - AE
+                              - GB
+                              - US
+                              - UM
+                              - UY
+                              - UZ
+                              - VU
+                              - VE
+                              - VN
+                              - VG
+                              - VI
+                              - WF
+                              - EH
+                              - YE
+                              - ZM
+                              - ZW
+                            description: >-
+                              Country code in upper-case ISO 3166 Alpha-2
+                              format.
+                            example: DE
+              shipping_origin:
+                description: |-
+                  The origin of goods address.
+                  * Example: Physical address of a store.
+                allOf:
+                  - type: object
+                    properties:
+                      address_line_1:
+                        type: string
+                        description: Location address line 1.
+                        example: 1500 Wilson Blvd
+                      address_line_2:
+                        type: string
+                        description: Location address line 2.
+                      province:
+                        type: string
+                        description: Location province.
+                        example: Arlington
+                      state:
+                        type: string
+                        description: Location state.
+                        example: VA
+                      zip_code:
+                        type: string
+                        description: Location ZIP code.
+                        example: '22209'
+                        maxLength: 32
+                      city:
+                        type: string
+                        description: Location city.
+                        example: Arlington
+                      country_code:
+                        allOf:
+                          - type: string
+                            enum:
+                              - AF
+                              - AX
+                              - AL
+                              - DZ
+                              - AS
+                              - AD
+                              - AO
+                              - AI
+                              - AQ
+                              - AG
+                              - AR
+                              - AM
+                              - AW
+                              - AU
+                              - AT
+                              - AZ
+                              - BS
+                              - BH
+                              - BD
+                              - BB
+                              - BY
+                              - BE
+                              - BZ
+                              - BJ
+                              - BM
+                              - BT
+                              - BO
+                              - BA
+                              - BW
+                              - BV
+                              - BR
+                              - IO
+                              - BN
+                              - BG
+                              - BF
+                              - BI
+                              - KH
+                              - CM
+                              - CA
+                              - CV
+                              - KY
+                              - CF
+                              - TD
+                              - CL
+                              - CN
+                              - CX
+                              - CC
+                              - CO
+                              - KM
+                              - CG
+                              - CD
+                              - CK
+                              - CR
+                              - CI
+                              - HR
+                              - CU
+                              - CY
+                              - CZ
+                              - DK
+                              - DJ
+                              - DM
+                              - DO
+                              - EC
+                              - EG
+                              - SV
+                              - GQ
+                              - ER
+                              - EE
+                              - ET
+                              - FK
+                              - FO
+                              - FJ
+                              - FI
+                              - FR
+                              - GF
+                              - PF
+                              - TF
+                              - GA
+                              - GM
+                              - GE
+                              - DE
+                              - GH
+                              - GI
+                              - GR
+                              - GL
+                              - GD
+                              - GP
+                              - GU
+                              - GT
+                              - GG
+                              - GN
+                              - GW
+                              - GY
+                              - HT
+                              - HM
+                              - VA
+                              - HN
+                              - HK
+                              - HU
+                              - IS
+                              - IN
+                              - ID
+                              - IR
+                              - IQ
+                              - IE
+                              - IM
+                              - IL
+                              - IT
+                              - JM
+                              - JP
+                              - JE
+                              - JO
+                              - KZ
+                              - KE
+                              - KI
+                              - KR
+                              - KW
+                              - KG
+                              - LA
+                              - LV
+                              - LB
+                              - LS
+                              - LR
+                              - LY
+                              - LI
+                              - LT
+                              - LU
+                              - MO
+                              - MK
+                              - MG
+                              - MW
+                              - MY
+                              - MV
+                              - ML
+                              - MT
+                              - MH
+                              - MQ
+                              - MR
+                              - MU
+                              - YT
+                              - MX
+                              - FM
+                              - MD
+                              - MC
+                              - MN
+                              - ME
+                              - MS
+                              - MA
+                              - MZ
+                              - MM
+                              - NA
+                              - NR
+                              - NP
+                              - NL
+                              - AN
+                              - NC
+                              - NZ
+                              - NI
+                              - NE
+                              - NG
+                              - NU
+                              - NF
+                              - MP
+                              - 'NO'
+                              - OM
+                              - PK
+                              - PW
+                              - PS
+                              - PA
+                              - PG
+                              - PY
+                              - PE
+                              - PH
+                              - PN
+                              - PL
+                              - PT
+                              - PR
+                              - QA
+                              - RE
+                              - RO
+                              - RU
+                              - RW
+                              - BL
+                              - SH
+                              - KN
+                              - LC
+                              - MF
+                              - PM
+                              - VC
+                              - WS
+                              - SM
+                              - ST
+                              - SA
+                              - SN
+                              - RS
+                              - SC
+                              - SL
+                              - SG
+                              - SK
+                              - SI
+                              - SB
+                              - SO
+                              - ZA
+                              - GS
+                              - ES
+                              - LK
+                              - SD
+                              - SR
+                              - SJ
+                              - SZ
+                              - SE
+                              - CH
+                              - SY
+                              - TW
+                              - TJ
+                              - TZ
+                              - TH
+                              - TL
+                              - TG
+                              - TK
+                              - TO
+                              - TT
+                              - TN
+                              - TR
+                              - TM
+                              - TC
+                              - TV
+                              - UG
+                              - UA
+                              - AE
+                              - GB
+                              - US
+                              - UM
+                              - UY
+                              - UZ
+                              - VU
+                              - VE
+                              - VN
+                              - VG
+                              - VI
+                              - WF
+                              - EH
+                              - YE
+                              - ZM
+                              - ZW
+                            description: >-
+                              Country code in upper-case ISO 3166 Alpha-2
+                              format.
+                            example: DE
+              type:
+                allOf:
+                  - type: string
+                    enum:
+                      - gift-card
+                      - gift-wrapping
+                      - product
+                      - shipping
+                    description: Type of the item.
+                    example: product
+              currency_consumer:
+                type: string
+                description: Currency code shown and billed to the consumer.
+                example: USD
+              consumer_uuid:
+                type: string
+                description: UUID of the consumer.
+                example: 79a78090-ba7b-4cd7-b6b6-64638788f0fd
+              product_name:
+                type: string
+                description: Human-readable name of the product.
+                example: Metallica T-shirt
+                maxLength: 512
+              product_sku:
+                type: string
+                description: SKU of the product.
+                example: AIK-0790
+                maxLength: 256
+              product_id:
+                type: string
+                description: Unique identifier of the product.
+                example: '123'
+              extended_attributes:
+                description: Extended attributes of the item.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: The name of the extended attribute.
+                      example: size
+                    value:
+                      type: string
+                      description: The value of the extended attribute.
+                      example: '36'
+                  required:
+                    - name
+                    - value
+              id:
+                type: string
+                description: Unique identifier of the item.
+                example: '123'
+              exemption_number:
+                type: string
+                description: >-
+                  Tax exemption certificate number of the customer on the item
+                  level.
+              tax_exempt:
+                type: boolean
+                description: Defines the tax exemption status of the item.
+                default: false
+            required:
+              - index
+              - tax_class
+              - tax_method
+              - item_price
+              - quantity
+              - shipping_address
+              - shipping_origin
+              - type
+      required:
+        - tax_exempt
+        - items
+    CustomV1TaxRateDto:
+      type: object
+      properties:
+        rate:
+          type: number
+          description: |-
+            Tax rate value in percentage for the current item (`tax_rate`).
+            * Defined as percentage in decimal places.
+            * Max decimal places of 5.
+            * For example, 0.25 corresponds to 25%.
+          example: 0.25
+          minimum: 0
+          maximum: 1
+          format: double
+        amount:
+          type: number
+          description: >-
+            Tax amount of a single item.
+
+            * Monetary tax amount for the unit price of the item.
+
+            * Should be calculated based on the tax rate (`rate`) of the current
+            item (`tax_rate`).
+
+            * Value should be same for any quantity.
+          example: 50
+          format: double
+        tax_name:
+          type: string
+          description: Name of the applied tax.
+          example: State tax
+          minLength: 1
+        country_code:
+          allOf:
+            - type: string
+              enum:
+                - AF
+                - AX
+                - AL
+                - DZ
+                - AS
+                - AD
+                - AO
+                - AI
+                - AQ
+                - AG
+                - AR
+                - AM
+                - AW
+                - AU
+                - AT
+                - AZ
+                - BS
+                - BH
+                - BD
+                - BB
+                - BY
+                - BE
+                - BZ
+                - BJ
+                - BM
+                - BT
+                - BO
+                - BA
+                - BW
+                - BV
+                - BR
+                - IO
+                - BN
+                - BG
+                - BF
+                - BI
+                - KH
+                - CM
+                - CA
+                - CV
+                - KY
+                - CF
+                - TD
+                - CL
+                - CN
+                - CX
+                - CC
+                - CO
+                - KM
+                - CG
+                - CD
+                - CK
+                - CR
+                - CI
+                - HR
+                - CU
+                - CY
+                - CZ
+                - DK
+                - DJ
+                - DM
+                - DO
+                - EC
+                - EG
+                - SV
+                - GQ
+                - ER
+                - EE
+                - ET
+                - FK
+                - FO
+                - FJ
+                - FI
+                - FR
+                - GF
+                - PF
+                - TF
+                - GA
+                - GM
+                - GE
+                - DE
+                - GH
+                - GI
+                - GR
+                - GL
+                - GD
+                - GP
+                - GU
+                - GT
+                - GG
+                - GN
+                - GW
+                - GY
+                - HT
+                - HM
+                - VA
+                - HN
+                - HK
+                - HU
+                - IS
+                - IN
+                - ID
+                - IR
+                - IQ
+                - IE
+                - IM
+                - IL
+                - IT
+                - JM
+                - JP
+                - JE
+                - JO
+                - KZ
+                - KE
+                - KI
+                - KR
+                - KW
+                - KG
+                - LA
+                - LV
+                - LB
+                - LS
+                - LR
+                - LY
+                - LI
+                - LT
+                - LU
+                - MO
+                - MK
+                - MG
+                - MW
+                - MY
+                - MV
+                - ML
+                - MT
+                - MH
+                - MQ
+                - MR
+                - MU
+                - YT
+                - MX
+                - FM
+                - MD
+                - MC
+                - MN
+                - ME
+                - MS
+                - MA
+                - MZ
+                - MM
+                - NA
+                - NR
+                - NP
+                - NL
+                - AN
+                - NC
+                - NZ
+                - NI
+                - NE
+                - NG
+                - NU
+                - NF
+                - MP
+                - 'NO'
+                - OM
+                - PK
+                - PW
+                - PS
+                - PA
+                - PG
+                - PY
+                - PE
+                - PH
+                - PN
+                - PL
+                - PT
+                - PR
+                - QA
+                - RE
+                - RO
+                - RU
+                - RW
+                - BL
+                - SH
+                - KN
+                - LC
+                - MF
+                - PM
+                - VC
+                - WS
+                - SM
+                - ST
+                - SA
+                - SN
+                - RS
+                - SC
+                - SL
+                - SG
+                - SK
+                - SI
+                - SB
+                - SO
+                - ZA
+                - GS
+                - ES
+                - LK
+                - SD
+                - SR
+                - SJ
+                - SZ
+                - SE
+                - CH
+                - SY
+                - TW
+                - TJ
+                - TZ
+                - TH
+                - TL
+                - TG
+                - TK
+                - TO
+                - TT
+                - TN
+                - TR
+                - TM
+                - TC
+                - TV
+                - UG
+                - UA
+                - AE
+                - GB
+                - US
+                - UM
+                - UY
+                - UZ
+                - VU
+                - VE
+                - VN
+                - VG
+                - VI
+                - WF
+                - EH
+                - YE
+                - ZM
+                - ZW
+              description: Country code in upper-case ISO 3166 Alpha-2 format.
+              example: DE
+        taxable_amount:
+          type: number
+          description: The taxable item net amount on which the tax is chargeable.
+          example: 100
+          format: double
+        exempt_amount:
+          type: number
+          description: The item net amount which has been tax exempt.
+          example: 100
+          format: double
+      required:
+        - rate
+        - amount
+        - tax_name
+        - country_code
+    CustomV1ResponseItemDto:
+      type: object
+      properties:
+        index:
+          type: integer
+          description: |-
+            Index of the item.
+            * Value must correspond to the index from the request.
+          example: 0
+          format: int32
+        net_amount:
+          type: number
+          description: |-
+            Total net amount of the item.
+            * Amount without taxes.
+            * Amount should cover the given quantity.
+          example: 200
+          format: double
+        gross_amount:
+          type: number
+          description: |-
+            Total gross amount of the item.
+            * Amount with taxes.
+            * Amount should cover the given quantity.
+          example: 250
+          format: double
+        tax_amount:
+          type: number
+          description: |-
+            Total tax amount of the item.
+            * Amount should cover the given quantity.
+          example: 50
+          format: double
+        tax_rates:
+          description: |-
+            Applied tax lines with rates and amounts for the item sold/returned.
+            * An item can have a single or multiple tax lines.
+            * Tax lines should be for a single quantity.
+          type: array
+          items:
+            type: object
+            properties:
+              rate:
+                type: number
+                description: >-
+                  Tax rate value in percentage for the current item
+                  (`tax_rate`).
+
+                  * Defined as percentage in decimal places.
+
+                  * Max decimal places of 5.
+
+                  * For example, 0.25 corresponds to 25%.
+                example: 0.25
+                minimum: 0
+                maximum: 1
+                format: double
+              amount:
+                type: number
+                description: >-
+                  Tax amount of a single item.
+
+                  * Monetary tax amount for the unit price of the item.
+
+                  * Should be calculated based on the tax rate (`rate`) of the
+                  current item (`tax_rate`).
+
+                  * Value should be same for any quantity.
+                example: 50
+                format: double
+              tax_name:
+                type: string
+                description: Name of the applied tax.
+                example: State tax
+                minLength: 1
+              country_code:
+                allOf:
+                  - type: string
+                    enum:
+                      - AF
+                      - AX
+                      - AL
+                      - DZ
+                      - AS
+                      - AD
+                      - AO
+                      - AI
+                      - AQ
+                      - AG
+                      - AR
+                      - AM
+                      - AW
+                      - AU
+                      - AT
+                      - AZ
+                      - BS
+                      - BH
+                      - BD
+                      - BB
+                      - BY
+                      - BE
+                      - BZ
+                      - BJ
+                      - BM
+                      - BT
+                      - BO
+                      - BA
+                      - BW
+                      - BV
+                      - BR
+                      - IO
+                      - BN
+                      - BG
+                      - BF
+                      - BI
+                      - KH
+                      - CM
+                      - CA
+                      - CV
+                      - KY
+                      - CF
+                      - TD
+                      - CL
+                      - CN
+                      - CX
+                      - CC
+                      - CO
+                      - KM
+                      - CG
+                      - CD
+                      - CK
+                      - CR
+                      - CI
+                      - HR
+                      - CU
+                      - CY
+                      - CZ
+                      - DK
+                      - DJ
+                      - DM
+                      - DO
+                      - EC
+                      - EG
+                      - SV
+                      - GQ
+                      - ER
+                      - EE
+                      - ET
+                      - FK
+                      - FO
+                      - FJ
+                      - FI
+                      - FR
+                      - GF
+                      - PF
+                      - TF
+                      - GA
+                      - GM
+                      - GE
+                      - DE
+                      - GH
+                      - GI
+                      - GR
+                      - GL
+                      - GD
+                      - GP
+                      - GU
+                      - GT
+                      - GG
+                      - GN
+                      - GW
+                      - GY
+                      - HT
+                      - HM
+                      - VA
+                      - HN
+                      - HK
+                      - HU
+                      - IS
+                      - IN
+                      - ID
+                      - IR
+                      - IQ
+                      - IE
+                      - IM
+                      - IL
+                      - IT
+                      - JM
+                      - JP
+                      - JE
+                      - JO
+                      - KZ
+                      - KE
+                      - KI
+                      - KR
+                      - KW
+                      - KG
+                      - LA
+                      - LV
+                      - LB
+                      - LS
+                      - LR
+                      - LY
+                      - LI
+                      - LT
+                      - LU
+                      - MO
+                      - MK
+                      - MG
+                      - MW
+                      - MY
+                      - MV
+                      - ML
+                      - MT
+                      - MH
+                      - MQ
+                      - MR
+                      - MU
+                      - YT
+                      - MX
+                      - FM
+                      - MD
+                      - MC
+                      - MN
+                      - ME
+                      - MS
+                      - MA
+                      - MZ
+                      - MM
+                      - NA
+                      - NR
+                      - NP
+                      - NL
+                      - AN
+                      - NC
+                      - NZ
+                      - NI
+                      - NE
+                      - NG
+                      - NU
+                      - NF
+                      - MP
+                      - 'NO'
+                      - OM
+                      - PK
+                      - PW
+                      - PS
+                      - PA
+                      - PG
+                      - PY
+                      - PE
+                      - PH
+                      - PN
+                      - PL
+                      - PT
+                      - PR
+                      - QA
+                      - RE
+                      - RO
+                      - RU
+                      - RW
+                      - BL
+                      - SH
+                      - KN
+                      - LC
+                      - MF
+                      - PM
+                      - VC
+                      - WS
+                      - SM
+                      - ST
+                      - SA
+                      - SN
+                      - RS
+                      - SC
+                      - SL
+                      - SG
+                      - SK
+                      - SI
+                      - SB
+                      - SO
+                      - ZA
+                      - GS
+                      - ES
+                      - LK
+                      - SD
+                      - SR
+                      - SJ
+                      - SZ
+                      - SE
+                      - CH
+                      - SY
+                      - TW
+                      - TJ
+                      - TZ
+                      - TH
+                      - TL
+                      - TG
+                      - TK
+                      - TO
+                      - TT
+                      - TN
+                      - TR
+                      - TM
+                      - TC
+                      - TV
+                      - UG
+                      - UA
+                      - AE
+                      - GB
+                      - US
+                      - UM
+                      - UY
+                      - UZ
+                      - VU
+                      - VE
+                      - VN
+                      - VG
+                      - VI
+                      - WF
+                      - EH
+                      - YE
+                      - ZM
+                      - ZW
+                    description: Country code in upper-case ISO 3166 Alpha-2 format.
+                    example: DE
+              taxable_amount:
+                type: number
+                description: The taxable item net amount on which the tax is chargeable.
+                example: 100
+                format: double
+              exempt_amount:
+                type: number
+                description: The item net amount which has been tax exempt.
+                example: 100
+                format: double
+            required:
+              - rate
+              - amount
+              - tax_name
+              - country_code
+      required:
+        - index
+        - net_amount
+        - gross_amount
+        - tax_amount
+        - tax_rates
+    CustomV1ResponseDto:
+      type: object
+      properties:
+        document_id:
+          type: string
+          description: Optional external system UUID for the transaction.
+          example: 3195649a-cd43-47ec-8774-c7b404df1e00
+        items:
+          description: >-
+            A list of items sold/returned in the transaction enriched with tax
+            amounts.
+          type: array
+          items:
+            type: object
+            properties:
+              index:
+                type: integer
+                description: |-
+                  Index of the item.
+                  * Value must correspond to the index from the request.
+                example: 0
+                format: int32
+              net_amount:
+                type: number
+                description: |-
+                  Total net amount of the item.
+                  * Amount without taxes.
+                  * Amount should cover the given quantity.
+                example: 200
+                format: double
+              gross_amount:
+                type: number
+                description: |-
+                  Total gross amount of the item.
+                  * Amount with taxes.
+                  * Amount should cover the given quantity.
+                example: 250
+                format: double
+              tax_amount:
+                type: number
+                description: |-
+                  Total tax amount of the item.
+                  * Amount should cover the given quantity.
+                example: 50
+                format: double
+              tax_rates:
+                description: >-
+                  Applied tax lines with rates and amounts for the item
+                  sold/returned.
+
+                  * An item can have a single or multiple tax lines.
+
+                  * Tax lines should be for a single quantity.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    rate:
+                      type: number
+                      description: >-
+                        Tax rate value in percentage for the current item
+                        (`tax_rate`).
+
+                        * Defined as percentage in decimal places.
+
+                        * Max decimal places of 5.
+
+                        * For example, 0.25 corresponds to 25%.
+                      example: 0.25
+                      minimum: 0
+                      maximum: 1
+                      format: double
+                    amount:
+                      type: number
+                      description: >-
+                        Tax amount of a single item.
+
+                        * Monetary tax amount for the unit price of the item.
+
+                        * Should be calculated based on the tax rate (`rate`) of
+                        the current item (`tax_rate`).
+
+                        * Value should be same for any quantity.
+                      example: 50
+                      format: double
+                    tax_name:
+                      type: string
+                      description: Name of the applied tax.
+                      example: State tax
+                      minLength: 1
+                    country_code:
+                      allOf:
+                        - type: string
+                          enum:
+                            - AF
+                            - AX
+                            - AL
+                            - DZ
+                            - AS
+                            - AD
+                            - AO
+                            - AI
+                            - AQ
+                            - AG
+                            - AR
+                            - AM
+                            - AW
+                            - AU
+                            - AT
+                            - AZ
+                            - BS
+                            - BH
+                            - BD
+                            - BB
+                            - BY
+                            - BE
+                            - BZ
+                            - BJ
+                            - BM
+                            - BT
+                            - BO
+                            - BA
+                            - BW
+                            - BV
+                            - BR
+                            - IO
+                            - BN
+                            - BG
+                            - BF
+                            - BI
+                            - KH
+                            - CM
+                            - CA
+                            - CV
+                            - KY
+                            - CF
+                            - TD
+                            - CL
+                            - CN
+                            - CX
+                            - CC
+                            - CO
+                            - KM
+                            - CG
+                            - CD
+                            - CK
+                            - CR
+                            - CI
+                            - HR
+                            - CU
+                            - CY
+                            - CZ
+                            - DK
+                            - DJ
+                            - DM
+                            - DO
+                            - EC
+                            - EG
+                            - SV
+                            - GQ
+                            - ER
+                            - EE
+                            - ET
+                            - FK
+                            - FO
+                            - FJ
+                            - FI
+                            - FR
+                            - GF
+                            - PF
+                            - TF
+                            - GA
+                            - GM
+                            - GE
+                            - DE
+                            - GH
+                            - GI
+                            - GR
+                            - GL
+                            - GD
+                            - GP
+                            - GU
+                            - GT
+                            - GG
+                            - GN
+                            - GW
+                            - GY
+                            - HT
+                            - HM
+                            - VA
+                            - HN
+                            - HK
+                            - HU
+                            - IS
+                            - IN
+                            - ID
+                            - IR
+                            - IQ
+                            - IE
+                            - IM
+                            - IL
+                            - IT
+                            - JM
+                            - JP
+                            - JE
+                            - JO
+                            - KZ
+                            - KE
+                            - KI
+                            - KR
+                            - KW
+                            - KG
+                            - LA
+                            - LV
+                            - LB
+                            - LS
+                            - LR
+                            - LY
+                            - LI
+                            - LT
+                            - LU
+                            - MO
+                            - MK
+                            - MG
+                            - MW
+                            - MY
+                            - MV
+                            - ML
+                            - MT
+                            - MH
+                            - MQ
+                            - MR
+                            - MU
+                            - YT
+                            - MX
+                            - FM
+                            - MD
+                            - MC
+                            - MN
+                            - ME
+                            - MS
+                            - MA
+                            - MZ
+                            - MM
+                            - NA
+                            - NR
+                            - NP
+                            - NL
+                            - AN
+                            - NC
+                            - NZ
+                            - NI
+                            - NE
+                            - NG
+                            - NU
+                            - NF
+                            - MP
+                            - 'NO'
+                            - OM
+                            - PK
+                            - PW
+                            - PS
+                            - PA
+                            - PG
+                            - PY
+                            - PE
+                            - PH
+                            - PN
+                            - PL
+                            - PT
+                            - PR
+                            - QA
+                            - RE
+                            - RO
+                            - RU
+                            - RW
+                            - BL
+                            - SH
+                            - KN
+                            - LC
+                            - MF
+                            - PM
+                            - VC
+                            - WS
+                            - SM
+                            - ST
+                            - SA
+                            - SN
+                            - RS
+                            - SC
+                            - SL
+                            - SG
+                            - SK
+                            - SI
+                            - SB
+                            - SO
+                            - ZA
+                            - GS
+                            - ES
+                            - LK
+                            - SD
+                            - SR
+                            - SJ
+                            - SZ
+                            - SE
+                            - CH
+                            - SY
+                            - TW
+                            - TJ
+                            - TZ
+                            - TH
+                            - TL
+                            - TG
+                            - TK
+                            - TO
+                            - TT
+                            - TN
+                            - TR
+                            - TM
+                            - TC
+                            - TV
+                            - UG
+                            - UA
+                            - AE
+                            - GB
+                            - US
+                            - UM
+                            - UY
+                            - UZ
+                            - VU
+                            - VE
+                            - VN
+                            - VG
+                            - VI
+                            - WF
+                            - EH
+                            - YE
+                            - ZM
+                            - ZW
+                          description: Country code in upper-case ISO 3166 Alpha-2 format.
+                          example: DE
+                    taxable_amount:
+                      type: number
+                      description: >-
+                        The taxable item net amount on which the tax is
+                        chargeable.
+                      example: 100
+                      format: double
+                    exempt_amount:
+                      type: number
+                      description: The item net amount which has been tax exempt.
+                      example: 100
+                      format: double
+                  required:
+                    - rate
+                    - amount
+                    - tax_name
+                    - country_code
+            required:
+              - index
+              - net_amount
+              - gross_amount
+              - tax_amount
+              - tax_rates
+      required:
+        - items
+    CustomV1ErrorDto:
+      type: object
+      properties:
+        status_code:
+          type: integer
+          description: HTTP status code
+          format: int32
+          example: 500
+        error:
+          type: string
+          description: Error message
+          example: Internal server error
+      required:
+        - status_code
+        - error

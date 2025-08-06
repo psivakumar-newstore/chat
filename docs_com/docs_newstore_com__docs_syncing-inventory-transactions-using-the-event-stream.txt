@@ -1,0 +1,184 @@
+Syncing inventory transactions using the Event stream
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Syncing inventory transactions using the Event stream
+Updated on
+Nov 13, 2024
+Published on Oct 1, 2024
+2 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Use the
+Event stream
+to sync inventory back to external systems after in-store inventory management operations have been completed.
+When you sync inventory with the following transactions,
+ATP
+is updated in the NewStore platform and also on the
+Catalog > Stock Levels
+page in NewStore Omnichannel Manager:
+Receiving transactions
+Transfers
+Adjustments
+Cycle counts
+Customer returns
+Syncing inventory after a receiving transaction
+Implement the
+Publish event
+method and listen to the
+inventory_transaction.items_received
+event.
+Note
+All products received into the store are included in the event.
+Inventory is received against an order reference and/or a shipment reference such as an
+ASN
+. If the event contains items that were not in the reference, reconcile this difference in your external systems.
+For details on the event payload, see the
+Inventory transaction items received
+example in the API reference.
+Syncing stock on hand after a cycle count
+Implement the
+Publish event
+method and listen to the
+inventory_count.items_counted
+event.
+The
+stock_on_hand
+property in the event is the quantity that is on record for the product, at the location. This value is calculated by the NewStore platform. You can view the available stock on hand for your store in NewStore Omnichannel Manager.
+The
+count
+property in the event contains the actual quantity of the product physically present at the store at the time of the cycle count.
+For details on the event payload, see the
+Inventory items counted
+example in the API reference.
+Note
+You can sync inventory back to an
+ERP
+system to reconcile the
+stock on hand
+data for a retailer. Use the
+Stock on hand
+APIs to retrieve stock quantities of products from a store across all stock locations.
+Syncing inventory after a transfer transaction
+Implement the
+Publish event
+method and listen to the
+inventory_transaction.items_ready_for_handover
+and
+inventory_transaction.asn_created
+events.
+All products transferred from the store are included in the events, including the quantity of the products transferred and the destination of the transfer.
+Inventory is transferred against an order reference such as a
+transfer order
+. A transfer ASN is created, which is used to receive the transferred inventory at the destination of the transfer. Reconcile this difference in your external systems.
+For details on the event payload, see the
+Inventory transaction items ready for handover
+and
+Inventory transaction ASN created
+examples in the API reference.
+Syncing inventory after an adjustment transaction
+Implement the
+Publish event
+method and listen to the
+inventory_transaction.adjustment_created
+event. All products adjusted in the store are included in the event. These adjustment transactions may include:
+Adjustments made to the inventory.
+The quantity of products moved to or from another
+stock location
+after an adjustment transaction.
+Note
+To configure stock locations for your business, use the
+Create stock location
+method.
+Notes about the adjustment transaction.
+Inventory is adjusted against an adjustment type, such as
+Damage out
+or
+Repaired
+.
+Inventory adjustment is internal to the store, so no references are used for these transactions. Reconcile any differences in your external systems.
+For details on the event payload, see the
+Inventory transaction adjustment created
+example in the API reference.
+Related topics
+Receiving real-time data
+Was this article helpful?
+Yes
+No
+Tags
+adjustment
+api
+catalog
+cycle count
+developer
+event stream
+events
+integration
+inventory
+newstore platform
+platform
+receiving
+stock on hand
+transfer
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

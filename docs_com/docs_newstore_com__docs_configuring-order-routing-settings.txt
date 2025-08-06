@@ -1,0 +1,230 @@
+Configuring order routing settings
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Configuring order routing settings
+Updated
+Updated on
+Jul 17, 2025
+Published on Oct 1, 2024
+4 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+The way orders are routed for your business depends on a number of settings that are configurable via NewStore.
+Customizing the fulfillment configuration
+NewStore expects you to communicate your routing configuration requirements as a table, with a combination of fulfillment location priorities and shipping options, for each country and zip code that your business supports. Additionally, also give NewStore a priority for the shipping options that your shipping providers support.
+To customize the routing configuration for your business, use the order routing configuration details to update the
+fulfillment configuration
+.
+For a guide on how to set up the fulfillment configuration for your business, see
+this tutorial
+.
+Setting the reservation timeout
+When an order is placed in the platform, NewStore
+reserves
+the items specified in the order for a specified amount of time at a store or
+DC
+.
+To view the time after which reservations have been set to expire in your business, use the
+Get reservation timeout
+method.
+To specify when the reservation expires:
+Use the
+Set reservation timeout
+method.
+In the
+reservation_timeout_seconds
+property, specify the timeout value in seconds.
+Important
+A reservation can be set for a maximum of 3600 seconds (1 hour).
+An order is routed only after the grace period ends. To prevent a reservation from expiring before the grace period has ended, ensure that this value is longer than the grace period.
+Setting the safety stock
+To view the
+safety stock
+for all the products across all fulfillment locations in your business, use the
+Get safety stock
+method.
+Note
+(Optional) You can also
+manage safety stock
+across locations in your business via NewStore Omnichannel Manager.
+To set the safety stock for specific products in a fulfillment location, or for all products in a specified location, use the
+Set safety stock
+method.
+See this
+example CSV
+for more information. You can upload a new or updated CSV file with a maximum size of 10 MB.
+After you set the safety stock, NewStore updates the ATP for the specified products, and does not wait for the next stock import to the location.
+If a product has stock on hand less than
+1
+, it implies that the ATP for the product is
+0
+. When you set the safety stock for the product, NewStore does not update the ATP and does not immediately use the updated safety stock in the platform. The updated safety stock is used in the NewStore platform when the ATP and stock on hand for the product are updated, based on the next:
+Stock import
+Inventory transaction
+Manual routing
+of an order containing the product
+Note
+When setting the safety stock, if the file in the request is larger than 200 KB, you may receive a timeout error. However, the safety stock is still applied and ATP is updated for the specified products. To verify if the safety stock was set correctly, check the
+safety stock levels
+for the specified products in NewStore Omnichannel Manager.
+To update the safety stock for products in a fulfillment location, use the
+Set safety stock
+method again with the updated values. The safety stock data is overwritten.
+Setting the grace period
+At NewStore, you can set the
+grace period
+for a maximum of 3000 seconds.
+A grace period set for a specific service level in the
+fulfillment configuration
+overrides the value you set for orders. For example, if the grace period is set to 1200 seconds for all orders, and the service level
+Same day delivery
+is set to 120 seconds, the grace period for items being shipped with service level
+Same day delivery
+is always 120 seconds.
+If no grace period is defined for orders or for a service level, a default grace period of
+20
+seconds is used before an order is routed or processed further.
+Important
+An in-store purchase order has a fixed grace period of
+2
+seconds.
+For orders with multiple items or a
+mixed cart
+order, the shortest grace period applicable for any of the items is applied to the order. For example, if an order has an item being fulfilled from a
+DC
+, and another item being purchased in-store, the grace period for the in-store purchase item (which is the shortest) is applied to the order.
+To view the grace period configured for orders in your business, use the
+Get grace period for orders
+method.
+To set the grace period:
+Use the
+Create grace period for orders
+method.
+In the
+value
+property, specify the grace period in seconds. The maximum limit for grace period is 3000 seconds (50 minutes).
+Enabling order routing features
+You following properties to specify order routing features can be configured at NewStore:
+Property
+Description
+reroute_to_rejected_fulfillment_nodes
+When a fulfillment request is rejected at a location or an
+order conflict is managed <nom-onhold>
+via NewStore Omnichannel Manager using the
+Handle Exception
+button, the order is rerouted immediately. The fulfillment nodes that have rejected the fulfillment request are de-prioritized during this, and all future reroute operations.
+However, when stock becomes available at the fulfillment locations that rejected the fulfillment request, orders may be automatically routed by NewStore to these fulfillment locations. See the next row.
+enable_automatic_rerouting
+Automatically attempts to reroute on-hold orders with insufficient inventory once per hour and when relevant stock becomes available.
+By default, this is set to
+False
+. See
+Automatically routing On Hold orders
+.
+To configure these order routing features, use the following methods:
+To enable automatically routing orders to fulfillment locations that had rejected them earlier because of unavailable stock, use the
+Enable automatic routing config for orders to fulfillment locations
+method, and set
+value
+to
+true
+.
+To retrieve the current configuration, use the
+Get automatic routing config for orders to fulfillment locations
+method.
+To enable automatic routing of orders that are on hold because of insufficient stock, use the
+Enable automatic routing config for on hold orders
+method and set
+value
+to
+true
+.
+To retrieve the current configuration, use the
+Get automatic routing config for on hold orders
+method.
+Related topics
+Fulfillment config in the API reference
+About order routing
+Configuring distribution centers
+Sample data
+Was this article helpful?
+Yes
+No
+Tags
+api
+capacity based routing
+config api
+delivery
+Easypost
+grace period
+NewStore OMS
+newstore platform
+order management
+platform
+routing
+routing rules
+safety stock
+shipping
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

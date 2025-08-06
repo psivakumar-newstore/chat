@@ -1,0 +1,162 @@
+openapi: 3.0.0
+info:
+  title: Square configuration and administration API
+  version: '0'
+  description: >
+    This API will be used tools to configure and administer the square
+    integration
+servers:
+  - url: https://dodici.x.newstore.net/_/v1/org/psps/square
+paths:
+  /credentials/access_token:
+    post:
+      summary: Update the Square access token
+      operationId: postAccessToken
+      description: >
+        Update the access token used to authenticate with the Square API via
+        OAuth2 flow.
+
+        See [Square
+        documentation](https://developer.squareup.com/docs/build-basics/access-tokens)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Update Square access token
+              type: object
+              description: The access token to be used with Square API calls.
+              required:
+                - access_token
+              properties:
+                access_token:
+                  type: string
+                  minLength: 1
+                  description: The access_token as defined in the Square developer portal.
+            example:
+              access_token: some_access_token_generated_by_Square
+        required: true
+      responses:
+        '200':
+          description: OK, application ID changed
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error, retry in a little while
+  /credentials/signature_key:
+    post:
+      summary: Update the Square signature key
+      operationId: postSignatureKey
+      description: >
+        Update the signature key used by the Square webhook notifications to 
+
+        calculate the HMAC-SHA1 signature. See [square
+        documentation](https://developer.squareup.com/docs/webhooks-api/validate-notifications)
+      security:
+        - newStoreAccessToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Update Square signature key
+              type: object
+              description: The signature key to be used with Square API calls.
+              required:
+                - signature_key
+              properties:
+                signature_key:
+                  type: string
+                  minLength: 1
+                  description: >-
+                    The signature token as defined in the Square developer
+                    portal.
+            example:
+              signature_key: the_signature_key_generated_by_Square
+        required: true
+      responses:
+        '200':
+          description: OK, signature key changed
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error, retry in a little while
+  /credentials/application_id:
+    post:
+      summary: Update the Square application ID
+      operationId: postApplicationID
+      description: >
+        Update the application ID used by the Square payment App.
+
+        See [Square
+        documentation](https://developer.squareup.com/docs/in-app-payments-sdk/build-on-ios)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Update Square application ID
+              type: object
+              description: The application ID to be used with Square payment App.
+              required:
+                - application_id
+              properties:
+                application_id:
+                  type: string
+                  minLength: 1
+                  description: >-
+                    The application ID as defined in the Square developer
+                    portal.
+            example:
+              application_id: some_ID_generated_by_Square
+        required: true
+      responses:
+        '200':
+          description: OK, application ID changed
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error, retry in a little while
+components:
+  schemas:
+    PostAccessToken:
+      title: Update Square access token
+      type: object
+      description: The access token to be used with Square API calls.
+      required:
+        - access_token
+      properties:
+        access_token:
+          type: string
+          minLength: 1
+          description: The access_token as defined in the Square developer portal.
+    PostSignatureKey:
+      title: Update Square signature key
+      type: object
+      description: The signature key to be used with Square API calls.
+      required:
+        - signature_key
+      properties:
+        signature_key:
+          type: string
+          minLength: 1
+          description: The signature token as defined in the Square developer portal.
+    PostApplicationID:
+      title: Update Square application ID
+      type: object
+      description: The application ID to be used with Square payment App.
+      required:
+        - application_id
+      properties:
+        application_id:
+          type: string
+          minLength: 1
+          description: The application ID as defined in the Square developer portal.
+  responses: {}
+  parameters: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}

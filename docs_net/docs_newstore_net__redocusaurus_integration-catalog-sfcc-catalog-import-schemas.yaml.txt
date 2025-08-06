@@ -1,0 +1,422 @@
+openapi: 3.0.1
+info:
+  title: Import Schemas
+  version: 1.0.0
+  description: Import Schemas API
+  x-audience: external-public
+  x-api-id: import-schemas-gateway-3634359717
+  x-domain-gateway-integration:
+    serviceName: import-schemas
+    lambda:
+      arn: '{{.lambdaArn}}'
+  contact:
+    name: Team Products Prices Promotions
+    url: https://www.newstore.com
+    email: team-product-prices-promotions@newstore.com
+servers:
+  - url: https://catalog.s.newstore.domains/catalog
+  - url: https://catalog.p.newstore.domains/catalog
+tags:
+  - name: Import Schemas
+    description: Import Schemas
+security:
+  - oauth:
+      - catalog:import-schemas:read
+      - catalog:import-schemas:write
+paths:
+  /import-schemas:
+    post:
+      description: >
+        Create new schema object containing jsonschema of [version
+        7](https://json-schema.org/draft-07/json-schema-release-notes).
+
+        This schema is  used during import process to validate entity object
+        before persisting it in catalog indexes.
+
+        Valid jsonschema file
+          * is validated against [meta schema](https://json-schema.org/draft-07/schema)
+          * references only properties mentioned in whitelist
+          * #ref points only to local resource, e.g. external resources are not allowed.
+
+        Here is list of whitelisted fields that can be used in schema (case
+        sensitive):
+
+        - brand (string, may be null)
+
+        - title (string, may be null)
+
+        - caption (string, may be null)
+
+        - description (string, may be null)
+
+        - keywords (array of strings, may be null)
+
+        - product_id (string, max size 255, cannot contain characters `=%`)
+
+        - variant_group_id (string, max size 255)
+
+        - template_id (string, may be null)
+
+        - tax_class_id (string, may be null)
+
+        - schedule_b (string, may be null,
+        [definition](https://usacustomsclearance.com/process/hts-code-vs-hs-code))
+
+        - product_hts_number (string, may be null)
+
+        - google_category (string, may be null)
+
+        - preorder_start (time RFC 3339 string, may be null)
+
+        - online_to (time RFC 3339 string, may be null)
+
+        - online_from (time RFC 3339 string, may be null)
+
+        - country_of_origin (string, may be null)
+
+        - material (string, may be null)
+
+        - extended_attributes (array of attributes, may be null)
+          - name (string, may be null)
+          - value (string, may be null)
+        - external_identifiers (array of identifiers, may be null)
+          - type (string, may be null)
+          - value (string, may be null)
+        - filterable_attributes (array of attributes, may be null)
+          - name (string, may be null)
+          - value (string, may be null)
+        - searchable_attributes (object contain key value string pairs, may be
+        null )
+          - [string] : [string] (name of searchable attribute)
+        - shipping_dimension_unit (string, may be null)
+
+        - shipping_dimension_width (number, may be null)
+
+        - shipping_dimension_height (number, may be null)
+
+        - shipping_dimension_length (number, may be null)
+
+        - shipping_weight_value (number, may be null)
+
+        - shipping_weight_unit (string, may be null)
+
+        - variation_additional_1_name (string, may be null)
+
+        - variation_additional_2_name (string, may be null)
+
+        - variation_additional_1_value (string, may be null)
+
+        - variation_additional_2_value (string, may be null)
+
+        - variation_color_value (string, may be null)
+
+        - variation_size_gender (string, may be null)
+
+        - variation_size_system (string, may be null)
+
+        - variation_size_value (string, may be null)
+
+        - variation_size_type (string, may be null)
+      security:
+        - oauth:
+            - catalog:import-schemas:write
+      operationId: createImportSchema
+      parameters:
+        - name: id
+          in: query
+          required: false
+          description: default generated id is returned
+          schema:
+            $ref: '#/components/schemas/ImportSchemaID'
+        - name: entity
+          in: query
+          required: false
+          description: default id PRODUCTS
+          schema:
+            $ref: '#/components/schemas/ImportEntity'
+      requestBody:
+        required: true
+        content:
+          application/schema+json:
+            schema:
+              type: string
+              format: binary
+      tags:
+        - Import Schemas
+      responses:
+        '201':
+          headers:
+            Last-Modified:
+              description: Date when of schema file was lastly modified
+              schema:
+                type: string
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportSchemaCreated'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Already Exists
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          description: Unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /import-schemas/{id}:
+    get:
+      security:
+        - oauth:
+            - catalog:import-schemas:read
+      operationId: showImportSchema
+      tags:
+        - Import Schemas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImportSchemaID'
+      responses:
+        '200':
+          description: OK
+          headers:
+            Last-Modified:
+              description: Date Time when of schema file was lastly modified
+              schema:
+                type: string
+          content:
+            application/schema+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportSchemaGet'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          description: Unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    patch:
+      security:
+        - oauth:
+            - catalog:import-schemas:write
+      operationId: updateImportSchema
+      tags:
+        - Import Schemas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImportSchemaID'
+      requestBody:
+        required: true
+        content:
+          application/schema+json:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          headers:
+            Last-Modified:
+              description: Date Time when of schema file was lastly modified
+              schema:
+                type: string
+          description: Updated
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          description: Unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    delete:
+      security:
+        - oauth:
+            - catalog:import-schemas:write
+      operationId: destroyImportSchema
+      tags:
+        - Import Schemas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImportSchemaID'
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          description: Unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    Problem:
+      title: Problem
+      type: object
+      properties:
+        request_id:
+          type: string
+          minLength: 1
+          description: The identifier of the request, which can be used for tracing.
+        type:
+          type: string
+          format: uri-reference
+          description: >
+            A URI reference that uniquely identifies the problem type only in
+            the context of the provided API. Opposed to the specification in
+            RFC-7807, it is neither recommended to be dereferenceable and point
+            to a human-readable documentation nor globally unique for the
+            problem type.
+          default: about:blank
+          example: /some/uri-reference
+        title:
+          type: string
+          description: >
+            A short summary of the problem type. Written in English and readable
+            for engineers, usually not suited for non technical stakeholders and
+            not localized.
+          example: some title for the error situation
+        status:
+          type: integer
+          format: int32
+          description: >
+            The HTTP status code generated by the origin server for this
+            occurrence of the problem.
+          minimum: 100
+          maximum: 600
+          exclusiveMaximum: true
+        detail:
+          type: string
+          description: >
+            A human readable explanation specific to this occurrence of the
+            problem that is helpful to locate the problem and give advice on how
+            to proceed. Written in English and readable for engineers, usually
+            not suited for non technical stakeholders and not localized.
+          example: some description for the error situation
+        instance:
+          type: string
+          format: uri-reference
+          description: >
+            A URI reference that identifies the specific occurrence of the
+            problem, e.g. by adding a fragment identifier or sub-path to the
+            problem type. May be used to locate the root of this problem in the
+            source code.
+          example: /some/uri-reference#specific-occurrence-context
+    ImportEntity:
+      type: string
+      minLength: 1
+      enum:
+        - PRODUCTS
+    ImportSchemaID:
+      type: string
+      minLength: 1
+      maxLength: 36
+      pattern: ^[a-zA-Z0-9_-]+$
+      description: >-
+        ID of the import schema. It must be unique per tenant and contain only
+        ASCII characters. F.e UUID4, human readable name without spaces
+    Timestamp:
+      type: string
+      format: date-time
+      example: '2020-01-01T00:00:00+00:00'
+      description: |
+        Timestamp in RFC3339 format.
+    ImportSchemaGet:
+      type: object
+      required:
+        - id
+        - entity
+        - last_updated_at
+      properties:
+        id:
+          $ref: '#/components/schemas/ImportSchemaID'
+        entity:
+          $ref: '#/components/schemas/ImportEntity'
+        last_updated_at:
+          $ref: '#/components/schemas/Timestamp'
+    ImportSchemaCreated:
+      type: object
+      required:
+        - id
+        - last_updated_at
+      properties:
+        id:
+          $ref: '#/components/schemas/ImportSchemaID'
+        last_updated_at:
+          $ref: '#/components/schemas/Timestamp'
+  securitySchemes:
+    oauth:
+      flows:
+        clientCredentials:
+          scopes:
+            catalog:import-schemas:read: Grants privileges to read import schema
+            catalog:import-schemas:write: Grants privileges to write import schema
+          tokenUrl: >-
+            https://id.{stage}.newstore.net/auth/realms/{tenant}/protocol/openid-connect/token
+      type: oauth2

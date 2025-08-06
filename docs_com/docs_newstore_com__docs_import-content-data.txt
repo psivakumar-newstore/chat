@@ -1,0 +1,580 @@
+Import content data
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Import content data
+Updated on
+Dec 27, 2024
+Published on Oct 1, 2024
+13 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+The process of importing data into the NewStore platform is described in this section. This guide explains the content and formatting of content of the import.
+The import must have at least 1 file, but can also contain as many as 1000 files. However, each file is processed separately, depending on how the data is split into different files, and the dependencies between them. This can impact the whole platform and the import jobs in queue.
+Note
+NewStore always recommends merging all the information together in the same files as much as possible.
+The files submitted in an import, belong to four entities:
+product
+,
+category
+,
+price
+,
+availability
+. Each entity has a different
+json
+format. The schema and the explanation of each field is described in the following sections:
+Product
+See
+creating product data
+for a guide and example on how to create product data for your business.
+The description of product fields have been described in the following sections.
+Head
+Required fields:
+catalog
+and
+locale
+Field
+Example
+Definition
+catalog
+"storefront-catalog-en"
+The catalog to which the products belong to. It cannot begin with _ or -. It can't contain spaces, commas, :, \", *, +, /, \,
+shop
+"storefront-catalog-en"
+DEPRECATED
+The catalog to which the products belong to. It cannot begin with _ or -. It can't contain spaces, commas, :, \", *, +, /, \,
+locale
+"en-us"
+The locale for the products catalog. It should be in format en-US or only en (deprecated). Validation pattern: "(^[A-Za-z]{2}$)
+shop_display_name
+"swedish-catalog"
+A user-friendly name for the
+catalog
+, or the catalog related to the specified locale. Minimum length: 1
+internal_disable_image_processing
+true
+Defines if the product images should be uploaded to NewStore's hosting platform. If you set this field to
+true
+, ensure that you are hosting the images on a server that can handle the load. Defaults to false. Expecting a boolean.
+is_master
+false
+Defines whether the imported locale is the master locale. If this value is not provided, the imported locale is treated as master locale. Defaults to true. Expecting a boolean.
+searchable_attributes
+[{"name": "product_id","path": "$.product_id","weight": 10},{"name": "ean","path": "$.extended_attributes[?(@.name == 'ean')].value","weight": 5}]
+Defines fields that will be used in the search of a catalog. Like product title, description, product id,... Required fields, name and path. Array.
+searchable_attributes.name
+"product_id"
+Name of the attribute to be used when filtering in API. Minimum length 1.
+searchable_attributes.path
+"$.product_id"
+JSONPath of the attribute to use to search/filter with, for example
+$.material
+will get material to filter with. For more information about JSONPath check:
+http://jsonpath.com/
+. Minimum Length: 1
+searchable_attributes.weight
+1
+Weight of the attribute in the full text search, the bigger the weight the more the attribute will matter in the search result. Expecting a number.
+filterable_attributes
+[{"name": "Color","path": "$.variation_color_value"},{"name": "Size","path": "$.variation_size_value"}]
+List of attributes that will be available to filter on in the Associate App
+filterable_attributes.name
+"Color"
+Name of the attribute to be used when filtering in API. Minimum Length: 1
+filterable_attributes.path
+"$.variation_color_value"
+JSONPath of the attribute to use to search/filter with, for example
+$.material
+will get material to filter with. For more information about JSONPath check:
+http://jsonpath.com/
+. Minimum Length: 1
+Items
+Required fields:
+product_id
+and
+variant_group_id
+Field
+Example
+Definition
+product_id
+"prod-1234"
+Unique identifier of the product. This identifier is used in all NewStore APIs that are related to products. Minimal length: 1.
+variant_group_id
+"11233s11"
+The identifier of the variant group to which this product belongs. The variant group identifier groups all the variants of a product. For example, Grace Sweater Beige Size 4 and Grace Sweater Beige Size 6 are both variants of the same product and should be grouped with a single
+variant_group_id
+. If a product has only one variant, create a unique variant group for it to represent it as a variantless product. Ensure that the same product is not assigned to multiple variant groups in the same shop. Minimal length: 1.
+show_in_listing
+true
+Determines if this product is displayed in the search results and product listings returned by NewStore applications. Expecting a boolean.
+sku
+"123456789"
+DEPRECATED
+Use the 'external_identifiers' list to store the SKU. The stock keeping unit number of the product.
+title
+"TREK GTX BOOT"
+The product title. This field is user-facing.
+brand
+"Unlimited Boots Brand"
+The product's brand name. This field is user-facing.
+caption
+"Light, exceptinally durable GORE-TEX boot for treks."
+A short version of the product's description used for meta tags or thumbnails.
+description
+"A technical trekking boot for routes in challenging terrain, the TREK GTX BOOT delivers support and comfort under the load of a heavy pack."
+The product's description. This field is user-facing.
+keywords
+["boot","trek","goretex"]
+List of keywords describing the product. By default, this field has no effect in the NewStore applications. Array of strings.
+is_published
+true
+Free boolean field to be used for custom implementations. By default, this field has no effect in the NewStore applications. Expecting a boolean.
+is_active
+true
+Free boolean field to be used for custom implementations. By default, this field has no effect in the NewStore applications. Expecting a boolean.
+shipping_weight_value
+1894
+The weight of the product. Set the weight unit with 'shipping_weight_unit'. Not required during import, but this information might be required if you want to ship your products. Expecting a number.
+shipping_weight_unit
+"g"
+The weight unit of the product. Set the weight with 'shipping_weight_value'. Not required during import, but this information might be required if you want to ship your products. Accepted Values: ["g", "kg", "lb", "oz"]
+shipping_dimension_length
+39
+The length of the product. Set the unit of measurement with 'shipping_dimension_unit'. Not required during import, but this information might be required if you want to ship your products. Expecting a number.
+shipping_dimension_width
+12
+The width of the product. Set the unit of measurement with 'shipping_dimension_unit'. Not required during import, but this information might be required if you want to ship your products. Expecting a number.
+shipping_dimension_height
+26
+The height of the product. Set the unit of measurement with 'shipping_dimension_unit'. Not required during import, but this information might be required if you want to ship your products. Expecting a number.
+shipping_dimension_unit
+"cm"
+The unit of measurement for the product dimensions. Accepted Values: ["cm", "in"]
+external_identifiers
+[{"ean13":"p36665123"},{"sku":"prod-1234"}]
+The product's external identifier(s). Note that if you do not specify the SKU identifier, it is automatically set to the value of the 'product_id' field. Maximum Items: 100
+external_identifiers.type
+"ean13"
+Type of the identifier. For example 'upc', 'ean13' or 'gtin'.
+external_identifiers.value
+"p36665123"
+Value of the identifier.
+extended_attributes
+[{"name": "product_created_at","value": "2023-08-11"},{"name": "product_updated_at","value": "2023-10-05"}]
+A collection of key-value pairs for custom diversification of the product. By default, you can include a maximum of 500 extended attributes. Maximum Items: 500
+extended_attributes.name
+"product_footprint"
+The name or key of the extended attribute. By default, the length of the name can be a maximum of 250 characters.
+extended_attributes.value
+"plastic free"
+The value of the extended attribute. By default, the length of the value can be a maximum of 2000 characters.
+images
+[{"url": "http://images.company.com/565123/640x360","is_main": false},{"url": "http://images.company.com/671236/640x360","is_main": false}]
+The images of the products. One image must have the 'is_main' property set to 'true'.
+images.url
+"http://images.company.com/565123/640x360"
+Required
+Product image URL.
+images.title
+"front view"
+Product image title.
+images.identifier
+"image-top-1"
+Product image identifier.
+images.is_main
+true
+Identifies the main image. The image that is considered the 'main image' is the first image of the product that consumers/associates see in the applications. Expecting a boolean.
+images.alt_text
+"boot black front"
+The alternative text for the image, used if the image fails to be displayed.
+images.tags
+["boot","black","trek"]
+Tenant specific tags or use 'nwst::productonly' to override the main image coming from the catalog. This image is only displayed in the product overview of an order inside HQ.
+images.internal_dimension_height
+167
+The height of the image in pixels. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field. Expecting a number.
+images.internal_dimension_width
+39
+The width of the image in pixels. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field. Expecting a number.
+images.internal_dominant_color
+"black"
+The dominant color of the image. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field.
+tax_class_id
+"Basic tax rate"
+An identifier representing the tax class of the product. A
+tax_class_id
+is associated to a tax code from third-party tax calculation providers such as
+Avalara
+or
+Vertex
+. For more information on tax codes, see the
+business guide
+.
+categories
+[{"path": "Boots > Trekking","is_main": true}]
+Categories of the product. One category must have the 'is_main' property set to 'true'.
+categories.path
+Boots > Trekking
+The category path (e.g. 'Furniture > Chairs').
+categories.position
+2
+The position of the product inside the given category. Expecting a number.
+categories.is_main
+true
+Determines that this category is the main category of the product. The main category will be used if customers get deep linked to a product. Only one category can be main and an error will be thrown if two categories are assigned. Also if no category is marked as main, the products cannot be found in NOM when filtered by category. For more information, see the
+guide
+. Expecting a boolean.
+template_id
+"template_id"
+DEPRECATED
+Use extended_attributes instead. Determines a template that is used to display this product.
+variation_color_value
+"BLUE NAVY"
+Important:
+set this property or 'variation_size_value' for every product in a variant group with more than one product. The display name of the product's color.
+variation_size_value
+"XL"
+Important:
+set this property or 'variation_color_value' for every product in a variant group with more than one product. The display name of the product's size.
+variation_size_gender
+"unisex"
+The gender of the product. Accepted values: ["male", "female", "unisex"]
+google_category
+"gloves"
+The size category of the product. Accepted values: ["clothing", "shoes", "hat", "gloves", "none"]
+variation_size_type
+"regular"
+This attribute is used to indicate the cut of the product. Accepted Values: ["regular", "petite", "plus", "big and tall", "maternity"]
+variation_size_system
+"UK"
+The size system this size is in. For example 'US', 'EU' or 'SML'. Individual size systems can be defined via a size systems config.
+variation_additional_1_name
+"Material"
+Allows determining the name for an additional dimension for the diversification of the product on top of color and size.
+variation_additional_1_value
+"LEATHER"
+Allows determining the value for an additional dimension for the diversification of the product on top of color and size.
+variation_additional_2_name
+"Material"
+Allows determining the name for an additional dimension for the diversification of the product on top of color and size.
+variation_additional_2_value
+"SUEDE"
+Allows determining the value for an additional dimension for the diversification of the product on top of color and size.
+preorder_start
+"2020-03-16T05:00:14Z"
+Determines the datetime (inclusive) when the product is available for pre-order. Must be in a date-time format.
+serialized_inventory
+false
+Determines if the product inventory in NewStore is tracked using serial numbers. Expecting a boolean.
+online_from
+"2020-03-01T17:00:00Z"
+Determines the datetime (inclusive) when the product is available to be sold. When provided will show or hide the product within the date. Must be in a date-time format.
+online_to
+"2020-02-14T10:01:00Z"
+Determines the datetime (inclusive) when the product is not available anymore to be sold. When provided will show or hide the product within the date. Must be in a date-time format.
+product_hts_number
+"6403999920"
+A numerical code specified by a harmonized system for tariffs (required for international shipments). Could be 6-10 digits in length, depending on the country where the product is being classified.
+schedule_b
+"8742.09.0052"
+Classification number for exporting goods out of the United States (required for international shipments).
+country_of_origin
+"Cambodge"
+is the country of manufacture.
+material
+"leather"
+indicates the materials the product item is produced of. Maximum Length: 512
+Category
+The following sections describe the different fields for category related data for an import.
+Head
+Required fields:
+catalog
+and
+locale
+Field
+Example
+Definition
+catalog
+"storefront-catalog-en"
+The catalog to which the categories belong. It cannot begin with _ or -. It can't contain spaces, commas, :, \", *, +, /, \,
+shop
+"storefront-catalog-en"
+DEPRECATED
+The catalog to which the categories belong to. It cannot begin with _ or -. It can't contain spaces, commas, :, \", *, +, /, \,
+locale
+"en-us"
+The locale for the categories catalog. It should be in format en-US or only en (deprecated). Accepted pattern: (^[A-Za-z]{2}$)
+is_master
+false
+Defines whether the imported locale is the master one. If this value is omitted, the imported locale is treated as master locale. Expecting a number. Defaults to true.
+internal_disable_image_processing
+false
+Defines if the category images should be uploaded to NewStore's hosting platform. If you set this field to
+true
+, ensure that you are hosting the images on a server that can handle the load. Expecting a boolean. Defaults to false.
+Items
+Required fields:
+path
+Field
+Example
+Definition
+path
+"Shop > Clothing > Jackets"
+The hierarchy of the category. Categories and sub-categories must be separated by an angle bracket ([space]>[space]).
+description
+"Superb quality winter jackets"
+The description of the category.
+name
+"Jackets"
+The name of the category.
+images
+[{"url": "http://images.company.com/565123/640x360","is_main": false},{"url": "http://images.company.com/671236/640x360","is_main": false}]
+Category Image. Information about a category image. Array.
+images.url
+"http://images.company.com/565123/640x360"
+Required
+Category image URL. The server hosting the images must be available to NewStore.
+images.title
+"winter jacket sleves"
+Category image title.
+images.identifier
+"image-jacket-sleves"
+Category image identifier.
+images.is_main
+false
+Identifies the main image. The image that is considered the 'main image' is the first image of the category that consumers/associates see in the applications. Expecting a boolean.
+images.alt_text
+"jacket winter long sleves"
+The alternative text for the image, used if the image fails to be displayed.
+images.tags
+["jacket","winter","sleves"]
+Tenant-specific tags. Expecting string array
+images.internal_dimension_height
+160
+The height of the image in pixels. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field. Expecting a number.
+images.internal_dimension_width
+45
+The width of the image in pixels. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field. Expecting a number.
+images.internal_dominant_color
+cian
+The dominant color of the image. Only valid when 'internal_disable_image_processing' is set to 'true' in the import file head field.
+keywords
+["jacket","winter","sleves"]
+List of keywords describing the category. By default, this field has no effect in the NewStore applications. Expecting a string array.
+position
+5
+The position of this category in the category listing in the NewStore applications. This is used to sort the categories.
+google_category
+"clothing"
+The size category of the products in this category. Accepted values: ["clothing", "shoes", "hat", "gloves", "none"]
+extended_attributes
+[{"name": "demo_category_id","value": "2"}]
+A collection of key-value pairs for custom diversification of the product category. By default, you can include a maximum of 500 extended attributes. Array.
+extended_attributes.name
+"demo_category_id"
+The name or key of the extended attribute. By default, the length of the name can be a maximum of 250 characters.
+extended_attributes.value
+"2"
+The value of the extended attribute. By default, the length of the value can be a maximum of 2000 characters.
+online_from
+"2020-03-01T17:00:00Z"
+Determines the datetime (inclusive) when the category is available. When provided will show or hide the category within the date. Must be in a date-time format.
+online_to
+"2020-02-14T10:01:00Z"
+Determines the datetime (inclusive) when the category is not available anymore. When provided will show or hide the category within the date. Must be in a date-time format.
+Pricebook
+See
+Creating price book data
+for a guide and example on creating pricebook related data for your business.
+Head
+Required fields:
+pricebook
+,
+catalog
+and
+currency
+Field
+Example
+Definition
+pricebook
+"default-de"
+The identifier of the pricebook. All product prices for the defined catalog are included to these pricebook. The pricebook that contains the default prices must be named 'default'.
+catalog
+"storefront-catalog-de"
+The catalog to which the products in this pricebook belong to. It cannot begin with _ or -. It can't contain spaces, commas, :, \", *, +, /, \,
+currency
+"CHF"
+The currency for the prices in this pricebook. Minimum Length: 1. Maximum Length: 3.
+traits
+["trait1","trait2"]
+A trait of this pricebook. Expecting a string array.
+Items
+Required fields:
+product_id
+and
+value
+Field
+Example
+Definition
+product_id
+"prod-1234"
+The unique identifier for the product.
+value
+43.2
+Product price for the specific pricebook. Expecting a number.
+Availability
+Th following sections describe the different fields for availability related data for an import.
+Head
+Required fields:
+store_mapping
+Field
+Example
+Definition
+store_mapping
+[{"store_id": "231","fulfillment_node_id": "231"}]
+Assigns a NewStore store ID to a fulfillment node. It creates fulfillment nodes inside the NewStore. It should contain all the fulfillment nodes that are used for this particular import. Otherwise, the import item will fail. Array.
+store_mapping.fulfillment_node_id
+"231"
+Required
+Identifier of the fulfillment node in the NewStore platform. This value can be equal to the 'store_id'.
+store_mapping.store_id
+"231"
+Identifier of the store in the NewStore platform. For distribution centers leave empty string or null
+mode
+"on_hand"
+The mode of the availability import.\n On_hand: When this value is specified, the import quantity is set as the stock on hand for the product in the specified fulfillment location in the platform. Allocations for items that have not been shipped and safety stock will be deducted to calculate the ATP for the product.\nATP: When this value is specified, the import quantity is set as the ATP of the product at the fulfillment location. No adjustments are made to this value. Accepted values: ["on_hand", "atp"]
+Items
+Required fields:
+product_id
+,
+fulfillment_node_id
+and (
+quantity
+or
+future_inventory
+)
+Field
+Example
+Definition
+product_id
+"prod-1234"
+The unique identifier of the product to which this availability update applies.
+quantity
+133
+Current quantity in the specified store, as identified by the 'fulfillment_node_id'. Expecting a number. Must be greater or equal than 0.
+future_inventory
+[{"quantity":133, "date": "2020-12-25"}, {"quantity":800, "date": "2021-01-01"}]
+Sets the future inventory for the specified product at the fulfillment location. Array.
+future_inventory.quantity
+133
+Specifies the number of items that will be available on the specified 'date'. Expecting a number.
+future_inventory.date
+"2020-12-25"
+Specifies the date when the future inventory becomes available. The date has to be in the future and cannot be the current day or in the past. Use this format: 'YYYY-MM-DD'.
+distribution_location_label
+"loc1"
+DEPRECATED: Label which uniquely identifies the
+DistributionLocation
+. Maximum length: 256.
+fulfillment_node_id
+"231"
+Label which uniquely identifies the
+FulfillmentNode
+. A fulfillment node typically represents a place able to store and fulfill products. Maximum length: 256.
+revision
+1697719439997
+Revision of the current item in Unix epoch time in milliseconds. Expecting a number.
+bin_locations
+["loc1","loc2","loc3"]
+Bin Locations of items in StorageLocation. Expecting a string array.
+Related topics
+Importing data
+Salesforce Commerce Cloud (SFCC) data import FAQs
+Importing data
+Tutorial: Importing products
+Running the import
+Import jobs API
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+catalog
+category
+data import
+fulfillment
+import job
+integration
+inventory
+item
+newstore platform
+platform
+pricebook
+product
+product import
+SFCC
+stock on hand
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

@@ -1,0 +1,568 @@
+openapi: 3.0.0
+info:
+  title: Customer Profile Admin API
+  version: 0.0.1
+  description: >
+    Use this API to internally manage customers in the NewStore plaform. A
+    customer is
+
+    identified by a customer `id` in NewStore.
+
+
+    **Note:** Typically, customers are created automatically
+
+    when they place an order online or when they provide their email address
+
+    during an in-store purchase.
+
+
+    **Related resources:**
+
+    - [Customer Profile API](/newstore-cloud/customer/consumer_profile.html)
+
+    - [External orders](/newstore-cloud/newstore.html#external-orders)
+components:
+  schemas:
+    ConsumerProfile:
+      type: object
+    MergeProfilesResponse:
+      type: object
+      description: response for a merge-profiles request
+      properties:
+        source_profile:
+          type: object
+          description: >-
+            Source Profile model after merge - it is not changed but deleted
+            from index.
+        target_profile:
+          type: object
+          description: >-
+            Target Profile model after merge - it may be changed and always
+            re-indexed.
+    MergeProfilesRequest:
+      type: object
+      required:
+        - source_profile_id
+        - target_profile_id
+      properties:
+        source_profile_id:
+          type: string
+          description: ID of the source profile.
+        target_profile_id:
+          type: string
+          description: ID of the target profile.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+    description: Sandbox
+  - url: https://dodici.s.newstore.net/v0/d
+    description: Staging
+  - url: https://dodici.p.newstore.net/v0/d
+    description: Production
+tags:
+  - name: Manage customer profiles
+    description: |
+      Use this resource to manage customer profiles in the NewStore platform.
+security:
+  - bearerAuth: []
+paths:
+  /consumer_profiles/by_email/{email}:
+    get:
+      responses:
+        '200':
+          description: The customer matching the specified email is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - email
+                properties:
+                  id:
+                    type: string
+                    description: Identifier of the profile.
+                  email:
+                    oneOf:
+                      - type: string
+                        format: email
+                      - type: string
+                        maxLength: 0
+                        description: >-
+                          Empty string in order to maintain current contract and
+                          allow empty value.
+                    description: Main e-mail of the consumer.
+                  first_name:
+                    type: string
+                    description: First name of the consumer.
+                  last_name:
+                    type: string
+                    description: Last name of the consumer.
+                  phone_number:
+                    type: string
+                    description: Phone number of the consumer.
+                  country_code:
+                    type: string
+                    description: Phone number country code of the consumer.
+                  addresses:
+                    type: array
+                    description: List of all billing and shipping addresses.
+                    items:
+                      type: object
+                      allOf:
+                        - type: object
+                          properties:
+                            type:
+                              type: string
+                              enum:
+                                - billing
+                                - shipping
+                              description: >-
+                                Describes which type the address is referring
+                                to. e.g. billing or shipping address.
+                            company:
+                              type: string
+                              description: Company name.
+                            first_name:
+                              type: string
+                              description: First name.
+                            last_name:
+                              type: string
+                              description: Last name.
+                            address_1:
+                              type: string
+                              description: >-
+                                First line of the address. Typically, the street
+                                and house number.
+                            address_2:
+                              type: string
+                              description: >-
+                                Second line of the address. Typically, the
+                                apartment number or PO box
+                            zip_code:
+                              type: string
+                              description: Postal code of the address.
+                            city:
+                              type: string
+                              description: The city/town of the address.
+                            state:
+                              type: string
+                              description: State/province or region of the address.
+                            country_code:
+                              type: string
+                              description: Country code in ISO 3166-1 alpha-2 format.
+                              enum:
+                                - AD
+                                - AE
+                                - AF
+                                - AG
+                                - AI
+                                - AL
+                                - AM
+                                - AO
+                                - AQ
+                                - AR
+                                - AS
+                                - AT
+                                - AU
+                                - AW
+                                - AX
+                                - AZ
+                                - BA
+                                - BB
+                                - BD
+                                - BE
+                                - BF
+                                - BG
+                                - BH
+                                - BI
+                                - BJ
+                                - BL
+                                - BM
+                                - BN
+                                - BO
+                                - BQ
+                                - BR
+                                - BS
+                                - BT
+                                - BV
+                                - BW
+                                - BY
+                                - BZ
+                                - CA
+                                - CC
+                                - CD
+                                - CF
+                                - CG
+                                - CH
+                                - CI
+                                - CK
+                                - CL
+                                - CM
+                                - CN
+                                - CO
+                                - CR
+                                - CU
+                                - CV
+                                - CW
+                                - CX
+                                - CY
+                                - CZ
+                                - DE
+                                - DJ
+                                - DK
+                                - DM
+                                - DO
+                                - DZ
+                                - EC
+                                - EE
+                                - EG
+                                - EH
+                                - ER
+                                - ES
+                                - ET
+                                - FI
+                                - FJ
+                                - FK
+                                - FM
+                                - FO
+                                - FR
+                                - GA
+                                - GB
+                                - GD
+                                - GE
+                                - GF
+                                - GG
+                                - GH
+                                - GI
+                                - GL
+                                - GM
+                                - GN
+                                - GP
+                                - GQ
+                                - GR
+                                - GS
+                                - GT
+                                - GU
+                                - GW
+                                - GY
+                                - HK
+                                - HM
+                                - HN
+                                - HR
+                                - HT
+                                - HU
+                                - ID
+                                - IE
+                                - IL
+                                - IM
+                                - IN
+                                - IO
+                                - IQ
+                                - IR
+                                - IS
+                                - IT
+                                - JE
+                                - JM
+                                - JO
+                                - JP
+                                - KE
+                                - KG
+                                - KH
+                                - KI
+                                - KM
+                                - KN
+                                - KP
+                                - KR
+                                - KW
+                                - KY
+                                - KZ
+                                - LA
+                                - LB
+                                - LC
+                                - LI
+                                - LK
+                                - LR
+                                - LS
+                                - LT
+                                - LU
+                                - LV
+                                - LY
+                                - MA
+                                - MC
+                                - MD
+                                - ME
+                                - MF
+                                - MG
+                                - MH
+                                - MK
+                                - ML
+                                - MM
+                                - MN
+                                - MO
+                                - MP
+                                - MQ
+                                - MR
+                                - MS
+                                - MT
+                                - MU
+                                - MV
+                                - MW
+                                - MX
+                                - MY
+                                - MZ
+                                - NA
+                                - NC
+                                - NE
+                                - NF
+                                - NG
+                                - NI
+                                - NL
+                                - 'NO'
+                                - NP
+                                - NR
+                                - NU
+                                - NZ
+                                - OM
+                                - PA
+                                - PE
+                                - PF
+                                - PG
+                                - PH
+                                - PK
+                                - PL
+                                - PM
+                                - PN
+                                - PR
+                                - PS
+                                - PT
+                                - PW
+                                - PY
+                                - QA
+                                - RE
+                                - RO
+                                - RS
+                                - RU
+                                - RW
+                                - SA
+                                - SB
+                                - SC
+                                - SD
+                                - SE
+                                - SG
+                                - SH
+                                - SI
+                                - SJ
+                                - SK
+                                - SL
+                                - SM
+                                - SN
+                                - SO
+                                - SR
+                                - SS
+                                - ST
+                                - SV
+                                - SX
+                                - SY
+                                - SZ
+                                - TC
+                                - TD
+                                - TF
+                                - TG
+                                - TH
+                                - TJ
+                                - TK
+                                - TL
+                                - TM
+                                - TN
+                                - TO
+                                - TR
+                                - TT
+                                - TV
+                                - TW
+                                - TZ
+                                - UA
+                                - UG
+                                - UM
+                                - US
+                                - UY
+                                - UZ
+                                - VA
+                                - VC
+                                - VE
+                                - VG
+                                - VI
+                                - VN
+                                - VU
+                                - WF
+                                - WS
+                                - YE
+                                - YT
+                                - ZA
+                                - ZM
+                                - ZW
+                            contact_phone:
+                              type: string
+                              description: Contact phone number chosen by the consumer.
+                        - properties:
+                            id:
+                              type: string
+                              description: Identifier of the address.
+                            created_at:
+                              type: string
+                              format: date-time
+                              description: Timestamp of the address creation.
+                            updated_at:
+                              type: string
+                              nullable: true
+                              format: date-time
+                              description: Timestamp of the addresse's last update.
+                            revision:
+                              type: integer
+                  extended_attributes:
+                    type: array
+                    description: List of all extended attributes for this profile.
+                    maxItems: 20
+                    items:
+                      type: object
+                      required:
+                        - name
+                        - value
+                      maxProperties: 2
+                      properties:
+                        name:
+                          type: string
+                          description: Name of this extended attribute.
+                          minLength: 1
+                        value:
+                          type: string
+                          description: Value of this extended attribute.
+                          maxLength: 8192
+                  created_by:
+                    type: string
+                    description: Identifier of the associate who created the profile.
+                  created_by_name:
+                    type: string
+                    description: Name of the associate who created the profile.
+                  store_id:
+                    type: string
+                    description: Identifier of the store where the profile was created.
+                  store_name:
+                    type: string
+                    description: Division name of the store where the profile was created.
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp of the profile creation.
+                  updated_at:
+                    type: string
+                    nullable: true
+                    format: date-time
+                    description: Timestamp of the profile's last update.
+                  revision:
+                    type: integer
+                    description: Revision of the profile.
+                    minimum: 0
+                    multipleOf: 1
+                  display_id:
+                    type: string
+                    description: >-
+                      A retailer-specific ID for each customer profile only
+                      displayed in NewStore Omnichannel Manager.
+        '400':
+          description: Bad Request - `email` is empty or missing.
+        '404':
+          description: Not found - cannot find profile identified by `email`.
+        '500':
+          description: A generic error response.
+      description: Returns the customer matching the specified ID.
+      operationId: Get customer
+    parameters:
+      - name: email
+        in: path
+        required: true
+        schema:
+          type: string
+        description: To retrieve the customer by `email`.
+  /consumer_profiles/merge:
+    post:
+      tags:
+        - Manage customer profiles
+      operationId: mergeProfiles
+      summary: Merge profiles
+      description: >
+        Merges two customer profiles into one profile.
+
+
+        The data from specific fields from the source profile is merged into the
+        target profile using
+
+        this method.
+
+
+        The fields that can be merged include:
+
+
+        - `first_name`
+
+        - `last_name`
+
+        - `phone_number`
+
+        - `extended_attributes`
+
+        - `address`
+
+
+        When the data is merged and the operation is complete, the source
+        profile is
+
+        deleted automatically.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - source_profile_id
+                - target_profile_id
+              properties:
+                source_profile_id:
+                  type: string
+                  description: ID of the source profile.
+                target_profile_id:
+                  type: string
+                  description: ID of the target profile.
+      responses:
+        '200':
+          description: Profiles were successfully merged.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: response for a merge-profiles request
+                properties:
+                  source_profile:
+                    type: object
+                    description: >-
+                      Source Profile model after merge - it is not changed but
+                      deleted from index.
+                  target_profile:
+                    type: object
+                    description: >-
+                      Target Profile model after merge - it may be changed and
+                      always re-indexed.
+        '400':
+          description: >-
+            Bad Request - `source_profile_id` or `target_profile_id` are empty
+            or missing.
+        '404':
+          description: >-
+            Not found - cannot find profiles identified by `source_profile_id`
+            or `target_profile_id`.
+        '500':
+          description: A generic error response.

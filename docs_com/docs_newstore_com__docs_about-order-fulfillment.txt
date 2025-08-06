@@ -1,0 +1,219 @@
+About order fulfillment
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+About order fulfillment
+Updated on
+Dec 18, 2024
+Published on Oct 1, 2024
+5 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Fulfillment refers to the process of shipping one or more items in an order, to the customer. This is not applicable to in-store purchases, where products are handed over to the customer at checkout.
+How order fulfillment works
+When an order is placed, a fulfillment request is sent to the best fulfillment location, based on the
+fulfillment configuration
+. A
+store
+or a
+distribution center
+can be set up as a fulfillment location.
+Note
+Distribution centers (DCs) are created when you import stock into the NewStore platform. For help with configuring the fulfillment provider URL, the address and contact information for DCs in your business, contact the
+support team
+.
+For each fulfillment location, fulfillment requests are placed in a queue.
+Requests are sent to fulfillment associates based on each associate's availability:
+Not available
+: A fulfillment associate who has not logged on, does not receive requests. Requests are only sent to fulfillment associates who are logged in.
+Cannot fulfill requests
+: Requests are not sent to logged-in fulfillment associates if their status indicates that they cannot fulfill requests. NewStore sends the request to the next available associate at the location.
+Can fulfill requests
+: Requests are sent to fulfillment associates who are logged on and ready to fulfill requests.
+Fulfillment request priorities
+Based on the store queue priority configured in NewStore, requests are displayed to associates. The priority assigned to each shipping option and the display priority defined determine if the order is displayed in the
+Priority
+or
+Regular
+queue, in the Associate App.
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+See
+Stores
+in the API docs.
+For example,
+Same day delivery
+is assigned the highest priority and traditional delivery is assigned the next priority. An order placed at midnight with this option is sent to a location that the routing engine determines, even if the location is closed for business at midnight. When associates at the location log on when the store opens, the request is displayed on their device as a priority request that they must fulfill before they can choose to accept regular requests.
+Accepted and declined requests
+You can configure a time period within which an accepted fulfillment request must be completed. For more information, contact the
+support team
+.
+When a request is accepted, but is not completed within the configured time-period, the order is marked
+Overdue
+. For example, you can configure a 30-minute slot within which an associate must pick an item and a 15-minute slot in which the associate must pack the items in a request, print documents and complete the request. For help with this configuration, contact the
+support team
+.
+When a request is declined, it is sent to the next available associate at the location. If all the associates at a location decline the request, it stays in the queue for the fulfillment location, and is not rerouted.
+For orders fulfilled by a
+DC
+, when an item is rejected in a fulfillment request, the
+status
+of the item changes to
+On Hold
+in NewStore Omnichannel Manager. However, the rejected item is processed in NewStore Omnichannel Cloud only after all the other items in the fulfillment request have been processed.
+If a request is neither accepted nor rejected, it stays in the queue for the location, and is not rerouted. A user with permissions to the
+Sales
+section in NewStore Omnichannel Manager, can see the order when the orders are filtered by
+Routing
+or
+Pending
+status. For more information on NewStore Omnichannel Manager users, see
+Default roles and permissions
+.
+Rerouted requests
+When a fulfillment associate is unable to fulfill
+an already accepted request
+, the request is rerouted to the next best location, based on the fulfillment configuration.
+If the associate
+cannot find the item
+, the request is rerouted and the
+ATP
+for the item is set to
+0
+at the location.
+If the associate
+finds an item damaged
+, the ATP for the item at the location is reduced to exclude the damaged item. This action serves as a mechanism to report a change in the inventory. If the location has ATP for the damaged item, the request is routed to the location again immediately.
+If the associate
+finds partial inventory
+for the request, NewStore does not split the order if another location can fulfill the complete order. The complete request is rerouted to a location that has all the items in stock. If NewStore cannot find another location that meets all the routing configuration settings, the items that cannot be fulfilled at the location are rerouted to the next best location.
+Disabling locations from fulfilling orders
+You can
+disable or enable
+order fulfillment in stores via NewStore Omnichannel Manager, or use an
+API
+to programmatically disable or enable any location from fulfilling orders. Once a location is disabled, ATP for products at the location is reset to
+0
+after some time.
+The updated ATP for products is available while exporting availability data via the
+export API
+and displayed in NewStore Omnichannel Manager. However, the values calculated for stock on hand, allocations, reservations, and safety stock quantities for products at the location stay unchanged. See
+Exporting stock levels
+and
+About order routing
+.
+Note
+Orders routed to the location before it was disabled are fulfilled via the usual process. Use NewStore Associate App to reject these orders if needed.
+Using an external OMS to fulfill orders
+In some scenarios, retailers may want to continue using a legacy order management system (OMS) for primary order fulfillment tasks, and configure NewStore as the secondary OMS for their business.
+To enable or disable an external OMS for your business, use this
+External OMS API
+.
+Technical configuration
+The following section involves working with technical configurations and APIs. Contact your IT support team for more information.
+For more information, see the
+configuration guide
+.
+When NewStore is the secondary OMS for your business, it provides the following features, from the perspective of order routing and fulfillment:
+Order placement and returns via NewStore Associate App. Orders placed via the app are then routed to the external OMS for fulfillment.
+Managing payments for in-store purchase orders.
+Store fulfillment
+and handling shipping for orders fulfilled via stores.
+Inventory management in stores, as NewStore will be the
+inventory master
+in stores configured for your business.
+The external or legacy OMS is responsible for the following in your business:
+ATP
+,
+order routing
+, order modifications, and customer support.
+Rerouting rejected store fulfillment orders. See
+Rerouted requests
+.
+Handling shipping for orders fulfilled from a
+DC or warehouse
+.
+Managing payments for all order fulfillment scenarios except in-store purchases.
+Related topics
+Integrating a fulfillment provider
+Order status
+DC fulfillment BPM
+Was this article helpful?
+Yes
+No
+Tags
+DC fulfilment
+delivery
+external OMS
+fulfillment
+fulfillment configuration
+newstore platform
+order
+preorder
+routing
+shipping
+store fulfillment
+warehouse
+warehouse fulfillment
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

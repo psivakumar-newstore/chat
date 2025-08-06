@@ -1,0 +1,239 @@
+Adding a custom address completion
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Adding a custom address completion
+Updated on
+Nov 13, 2024
+Published on Oct 1, 2024
+3 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+The custom address completion solution from NewStore that uses address providers other than
+Apple Mapkit
+must be enabled first. See
+Enabling custom address completion
+.
+Custom address completion using AWS lambda functions
+You can leverage APIs from your preferred location or address providers. See the example below that demonstrates how custom address completion can be implemented via
+AWS Location Service
+.
+Important
+This is
+only an illustrative example
+of how a lambda function must be set up to support your preferred address or location provider.
+Ensure that you work with your integration partner and NewStore to make modifications to the payload based on the provider you want to integrate with.
+Setting up address completion via AWS Location Service
+Illustrative example with AWS Location Service
+import { ALBHandler, ALBEvent, ALBEventHeaders, ALBResult } from 'aws-lambda'
+import countries from 'i18n-iso-countries'
+import {
+  LocationClient,
+  SearchPlaceIndexForTextCommand,
+} from '@aws-sdk/client-location'
+
+interface FullAddress {
+  name: string
+  zip: string
+  city: string
+  cityDistrict: string
+  country: string
+  countryCode: string
+  administrativeArea: string
+  streetName: string
+  houseNumber: string
+}
+
+function getTenant(headers: ALBEventHeaders = {}): string | undefined {
+  try {
+    if (headers['X-Newstore-Tenant'] !== undefined) {
+      return headers['X-Newstore-Tenant']
+    }
+    if (headers['x-newstore-tenant'] !== undefined) {
+      return headers['x-newstore-tenant']
+    }
+    const authToken =
+      headers.Authorization?.split(' ')[1] ||
+      headers.authorization?.split(' ')[1] // for public urls
+    if (typeof authToken === 'string') {
+      const [, rawToken] = authToken.split('.')
+      const buff = Buffer.from(rawToken, 'base64')
+      const tokenData = buff.toString('utf-8')
+      const data = JSON.parse(tokenData)
+
+      if (data?.['http://newstore/tenant'] !== undefined) {
+        return data['http://newstore/tenant']
+      }
+    }
+  } catch (e) {
+    // handle error
+  }
+}
+
+function formatJsonResponse (statusCode: number, body?: unknown): ALBResult {
+  return {
+    statusCode,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }
+}
+
+const completeWithAWS = async (
+  query: string,
+  context: string,
+  locale = 'en-us',
+): Promise<FullAddress | null> => {
+  const language = locale.split('-')[0]
+
+  const client = new LocationClient({
+    region: process.env.REGION ?? 'us-east-1',
+  })
+
+  const command = new SearchPlaceIndexForTextCommand({
+    IndexName: 'address-completion',
+    Text: query + ' ' + context,
+    FilterCategories: ['AddressType', 'StreetType'],
+    Language: language,
+  })
+
+  // Send the request to location or address provider client
+  const response = await client.send(command)
+
+  if (response.Results === undefined || response.Results.length === 0)
+    return null
+
+  const firstResult = response.Results[0]
+
+  if (firstResult.Place === undefined) return null
+
+  // Return the processed address completion results within this payload
+  return {
+    name: query,
+    zip: firstResult.Place.PostalCode ?? '',
+    city: firstResult.Place.Municipality ?? '',
+    cityDistrict: firstResult.Place.Neighborhood ?? '',
+    country:
+      (firstResult.Place.Country &&
+        countries.getName(firstResult.Place.Country, language, {
+          select: 'official',
+        })) ||
+      '',
+    countryCode:
+      (firstResult.Place.Country &&
+        countries.alpha3ToAlpha2(firstResult.Place.Country)) ||
+      '',
+    administrativeArea: firstResult.Place.Region ?? '',
+    streetName: firstResult.Place.Street ?? '',
+    houseNumber: firstResult.Place.AddressNumber ?? '',
+  }
+}
+
+export const handler: ALBHandler = async (event: ALBEvent) => {
+  const tenant = getTenant(event.headers)
+
+  if (typeof tenant !== 'string') {
+    return formatJsonResponse(400, { error: 'Missing tenant header.' })
+  }
+
+  try {
+    const query = event.queryStringParameters?.query
+    const context = event.queryStringParameters?.context
+    const language = event.queryStringParameters?.lang
+
+    if (typeof query !== 'string') {
+      return formatJsonResponse(400, { error: 'Missing query parameter.' })
+    }
+
+    if (typeof context !== 'string') {
+      return formatJsonResponse(400, { error: 'Missing context parameter.' })
+    }
+
+    const address = await completeWithAWS(query, context, language)
+    if (address === null) return formatJsonResponse(404)
+    return formatJsonResponse(200, address)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    return formatJsonResponse(400, { error: message })
+  }
+}
+Related topics
+Configuring custom address completion
+Using NewStore Associate App
+Was this article helpful?
+Yes
+No
+Tags
+address completion
+api
+app customization
+Associate App
+Associate App configuration
+AWS lambda
+AWS location service
+customer
+customer profile
+customize associate app
+integration
+platform
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

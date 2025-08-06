@@ -1,0 +1,170 @@
+Web Order Injection
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Web Order Injection
+Updated on
+Jul 9, 2025
+Published on Mar 11, 2025
+3 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Before commencing web
+Order
+injection, we must first configure payment settings for e-commerce orders. For this exercise, we will not be integrating with a live payment provider. Instead, we will utilize an external payment method that lets you inject the order without having a real payment provider integration.
+Tutorial
+Refer to
+Configuring payment providers
+for guidance on integrating with live payment providers.
+To create an order, you'll need to provide basic information including customer details (email, name, address, phone),
+Product information
+, payment details, and shipping information.
+Injection API
+The create order API is documented here -
+Order Injection API
+Pass
+payments[0].processor
+as
+non_integrated
+Please pass a valid
+service_level
+from the fulfillment configuration value in
+service_level_identifier
+under
+shipments
+>
+shipping_option
+. If you need to generate the
+shipping_offer_token
+instead, then use
+Create routing options
+to generate the
+shipping_offer_token
+.
+You can find the sample payload for the order injection payload below.
+sample-ecom-order
+1.26 KB
+Upon successful order injection, the order will be routed to the designated
+Distribution center
+(DC)
+Location
+, contingent upon the
+Remorse period
+. However, if the required is unavailable for either a portion or the entire order, the order will be placed on hold, pending further action.
+Routing rules
+If the retailer wishes to enable automatic re-routing of the order once inventory becomes available, they can simply toggle on. Refer to the platform documentation on how to enable the automatic re-routing. 'enable_automatic_rerouting' switch to the 'on' position. This will allow the system to automatically re-route the order when inventory levels are replenished.
+If the retailer desires to automatically cancel orders when inventory is unavailable, please ensure that the 'cancel_on_conflict' configuration is set up with the appropriate reasons. This will enable the system to automatically cancel orders when inventory conflicts arise.
+Upon routing the order to the Distribution Center (DC) location, the DC fulfillment webhook is triggered, transmitting the order information to the DC. As a best practice, it is recommended to update the
+Fulfillment request
+status to 'Accepted' once the work order has been successfully sent to the DC or the DC has acknowledged acceptance of the fulfillment request. This ensures accurate tracking and visibility of the order's progress.
+Accept Fulfillment
+Use the
+Accept Fulfillmen
+t request to mark the fulfillment request as accepted by DC.
+Please note that this API is applicable only for DC fulfillment requests
+Upon acceptance of the fulfillment request at the Distribution Center (DC), the order can subsequently be shipped, canceled, or rejected. At this stage, the DC has acknowledged receipt of the request and is now responsible for executing the next steps in the fulfillment process.
+Fulfillment Providers
+Use the following APIs to mark the item as shipped, canceled, or rejected.
+Mark full or part of the fulfillment request as Shipped
+Mark full or part of the fulfillment request as Cancelled
+Mark full or part of the fulfillment request as Rejected
+When a fulfillment request contains multiple line items and a portion of it is rejected, the platform will await further instruction from the Distribution Center (DC) regarding the remaining items in the request. Once the platform receives a response (shipped, canceled, or rejected) from DC for the unaffected items, it will re-route the rejected line items based on the routing config and the current inventory picture.
+(Also Sales order, Sale, Purchase)
+A promise to deliver or sell goods or services. In NewStore, an order can be created via NewStore Associate App or imported from other systems. See
+Order placement
+,
+Shopping cart
+, and
+Importing orders
+.
+Information about a product offered in a channel. Product information is only related to content, and not to price and availability. In NewStore Omnichannel Cloud, a product is derived from a
+Master product
+.
+(Also DC, Warehouse)
+A location that stocks products to be redistributed to other locations in your business or directly to customers. A distribution center is a principal part of the order fulfillment process.
+A place from where the item can be fulfilled by the retailer or collected by the customer. Typically a
+Distribution center
+or a
+Retail store
+. See
+Managing locations in NewStore
+.
+(Also Grace period, Cooling-off period)
+The configurable period of time following the placement of an order, when the customer may choose to cancel the order. This is also called a remorse period or cooling-off period. In NewStore, the grace period can be configured for the business as a whole or in the
+Service level
+set in the fulfillment configuration.
+A request sent to the
+Fulfillment location
+. This request is generated in the following cases:
+DC
+fulfillment
+store fulfillment
+in-store purchase
+See
+Integrating a fulfillment provider
+.
+Was this article helpful?
+Yes
+No
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

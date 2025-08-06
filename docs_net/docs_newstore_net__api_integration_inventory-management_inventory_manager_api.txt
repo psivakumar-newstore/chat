@@ -1,0 +1,1765 @@
+Inventory Manager | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Inventory Manager
+Packages
+Stock Locations
+Store operations
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+Adjusting
+get
+List Adjustment Reasons
+post
+Create Adjustment Reason
+patch
+Update Adjustment Reason
+post
+Create Adjustment
+Configuration
+get
+Get Configuration
+patch
+Patch Configuration
+put
+Put Configuration
+Receiving
+get
+List ASNs
+post
+Create ASN
+get
+Get ASN
+post
+Execute ASN action
+Counting
+post
+Import stock quantities
+post
+Create Count Task
+Transferring
+post
+Create Transfer Order
+post
+Create Transfer
+get
+Get Transfer Shipping Configuration
+post
+Create or Update Transfer Shipping Configuration
+get
+Get Transfer
+API docs by Redocly
+Inventory Manager
+(
+0.0.0
+)
+Download OpenAPI specification
+:
+Download
+Adjusting
+List Adjustment Reasons
+Lists the reasons for inventory adjustments.
+Related methods:
+Create adjustment
+reason
+query
+Parameters
+should_include_inactive
+boolean
+(
+Should Include Inactive
+)
+Default:
+false
+Can display all adjustment reasons, including inactive ones.
+Responses
+200
+Successful Response
+422
+Validation Error
+get
+/inventory/adjustment-reasons
+/inventory/adjustment-reasons
+Response samples
+200
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"reasons"
+:
+[
+{
+"destination"
+:
+"string"
+,
+"id"
+:
+"497f6eca-6276-4993-bfeb-53cbbbba6f08"
+,
+"is_activated"
+:
+true
+,
+"origin"
+:
+"string"
+,
+"subtype"
+:
+"string"
+,
+"type"
+:
+"string"
+}
+]
+}
+Create Adjustment Reason
+Creates an adjustment reason, which can be used across all stores configured for your business.
+Use the
+type
+and
+subtype
+properties to define the adjustment type and reason for users to select on NewStore
+Associate App, when adjusting inventory in the store.
+Note: you need to pass at least one of:
+origin_stock_location
+,
+destination_stock_location
+and they need to
+be created beforehand.
+Related methods:
+List adjustment reasons
+Request Body schema:
+application/json
+destination_stock_location
+Destination Stock Location (string) or Destination Stock Location (null)
+(
+Destination Stock Location
+)
+origin_stock_location
+Origin Stock Location (string) or Origin Stock Location (null)
+(
+Origin Stock Location
+)
+subtype
+required
+string
+(
+Subtype
+)
+type
+required
+string
+(
+Type
+)
+Responses
+200
+Successful Response
+422
+Validation Error
+post
+/v0/i/inventory/adjustment_reasons
+/v0/i/inventory/adjustment_reasons
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"destination_stock_location"
+:
+"string"
+,
+"origin_stock_location"
+:
+"string"
+,
+"subtype"
+:
+"string"
+,
+"type"
+:
+"string"
+}
+Response samples
+200
+422
+Content type
+application/json
+Copy
+null
+Update Adjustment Reason
+Use this method to update
+adjustment
+reasons in your business.
+When you create adjustment reasons for your business, they are activated by default. However, if you do not want associates to
+use a specific adjustment reason to adjust inventory in the store using NewStore Associate App, deactivate it using this method.
+Note
+: Deactivating an adjustment reason does not delete it from the platform.
+If associates have used the adjustment reason before you deactivated it, the reason will still be displayed in the list of inventory
+adjustments or transactions that are associated with it.
+path
+Parameters
+reason_id
+required
+string
+<
+uuid
+>
+(
+Reason Id
+)
+Unique identifier of the adjustment reason
+Request Body schema:
+application/json
+is_activated
+Is Activated (boolean) or Is Activated (null)
+(
+Is Activated
+)
+subtype
+Subtype (string) or Subtype (null)
+(
+Subtype
+)
+type
+Type (string) or Type (null)
+(
+Type
+)
+Responses
+200
+Successful Response
+422
+Validation Error
+patch
+/v0/i/inventory/adjustment_reasons/{reason_id}
+/v0/i/inventory/adjustment_reasons/{reason_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"is_activated"
+:
+true
+,
+"subtype"
+:
+"string"
+,
+"type"
+:
+"string"
+}
+Response samples
+200
+422
+Content type
+application/json
+Copy
+null
+Create Adjustment
+Creates an adjustment
+Request Body schema:
+application/json
+external_ref
+External Ref (string) or External Ref (null)
+(
+External Ref
+)
+line_items
+required
+Array of
+objects
+(
+Line Items
+)
+location_id
+required
+string
+(
+Location Id
+)
+note
+Note (string) or Note (null)
+(
+Note
+)
+reason_id
+required
+string
+<
+uuid
+>
+(
+Reason Id
+)
+Responses
+200
+Successful Response
+422
+Validation Error
+post
+/v1/inventory/adjustments
+/v1/inventory/adjustments
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"external_ref"
+:
+"string"
+,
+"line_items"
+:
+[
+{
+"product_id"
+:
+"string"
+,
+"quantity"
+:
+0
+}
+]
+,
+"location_id"
+:
+"string"
+,
+"note"
+:
+"string"
+,
+"reason_id"
+:
+"e93b00b6-69c5-47ba-b0e6-cff780f2f878"
+}
+Response samples
+200
+422
+Content type
+application/json
+Copy
+null
+Configuration
+Get Configuration
+Retrieves the complete inventory configuration for the retailer.
+Responses
+200
+Successful Response
+get
+/v0/i/configuration
+/v0/i/configuration
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"allow_asn_overreceiving"
+:
+false
+,
+"create_cycle_count_after_mispack"
+:
+false
+,
+"create_cycle_count_after_mispick"
+:
+false
+,
+"full_count_products_counted_before_trading"
+:
+false
+}
+Patch Configuration
+Update the inventory configuration set up for the retailer.
+Request Body schema:
+application/json
+allow_asn_overreceiving
+boolean
+(
+Allow Asn Overreceiving
+)
+Default:
+true
+If it is true, allow to receive more items than specified in ASN. Default is true.
+create_cycle_count_after_mispack
+boolean
+(
+Create Cycle Count After Mispack
+)
+Default:
+false
+If it is true, create cycle count transaction after mispacked fulfillment logistic order.
+create_cycle_count_after_mispick
+boolean
+(
+Create Cycle Count After Mispick
+)
+Default:
+false
+If it is true, create cycle count transaction after mispicked fulfillment logistic order.
+full_count_products_counted_before_trading
+boolean
+(
+Full Count Products Counted Before Trading
+)
+Default:
+false
+If it is true, this means the store is counting the inventory first and then allowing trade before submission.
+if false, this means the store counts the products after the customers leave.
+NewStore advises against trading during a full count. However, if a retailer chooses to continue selling during the count, this configuration ensures the platform will compare the counted quantities with either the initial expected on-hand or the updated expected on-hand.
+Responses
+204
+Successful Response
+422
+Validation Error
+patch
+/v0/i/configuration
+/v0/i/configuration
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"allow_asn_overreceiving"
+:
+false
+,
+"create_cycle_count_after_mispack"
+:
+false
+,
+"create_cycle_count_after_mispick"
+:
+false
+,
+"full_count_products_counted_before_trading"
+:
+false
+}
+Response samples
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"detail"
+:
+[
+{
+"loc"
+:
+[
+"string"
+]
+,
+"msg"
+:
+"string"
+,
+"type"
+:
+"string"
+}
+]
+}
+Put Configuration
+Replace the inventory configuration set up for the retailer.
+Request Body schema:
+application/json
+allow_asn_overreceiving
+required
+boolean
+(
+Allow Asn Overreceiving
+)
+create_cycle_count_after_mispack
+required
+boolean
+(
+Create Cycle Count After Mispack
+)
+create_cycle_count_after_mispick
+required
+boolean
+(
+Create Cycle Count After Mispick
+)
+full_count_products_counted_before_trading
+required
+boolean
+(
+Full Count Products Counted Before Trading
+)
+Responses
+204
+Successful Response
+422
+Validation Error
+put
+/v0/i/configuration
+/v0/i/configuration
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"allow_asn_overreceiving"
+:
+true
+,
+"create_cycle_count_after_mispack"
+:
+true
+,
+"create_cycle_count_after_mispick"
+:
+true
+,
+"full_count_products_counted_before_trading"
+:
+true
+}
+Response samples
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"detail"
+:
+[
+{
+"loc"
+:
+[
+"string"
+]
+,
+"msg"
+:
+"string"
+,
+"type"
+:
+"string"
+}
+]
+}
+Receiving
+List ASNs
+List ASNs.
+query
+Parameters
+offset
+integer
+(
+Offset
+)
+Default:
+0
+Page offset
+count
+integer
+(
+Count
+)
+Default:
+10
+Page length
+search
+Search (string) or Search (null)
+(
+Search
+)
+Search terms
+start_shipment_date
+Start Shipment Date (string) or Start Shipment Date (null)
+(
+Start Shipment Date
+)
+Earliest shipping date limit
+end_shipment_date
+End Shipment Date (string) or End Shipment Date (null)
+(
+End Shipment Date
+)
+Latest shipping date limit
+status
+Array of
+strings
+(
+Status
+)
+Items
+Enum
+:
+"open"
+"partially_completed"
+"closed"
+ASN statuses
+origin_id
+Array of
+strings
+(
+Origin Id
+)
+ASN origin location identifiers
+destination_id
+Array of
+strings
+(
+Destination Id
+)
+ASN destination location identifiers
+sort
+Sort (string) or Sort (null)
+(
+Sort
+)
+Sort the resulting list.
+Responses
+200
+Successful Response
+422
+Validation Error
+get
+/v0/i/inventory/asns
+/v0/i/inventory/asns
+Response samples
+200
+422
+Content type
+application/json
+Copy
+null
+Create ASN
+Creates an ASN against which items can be received into the store's stock on hand.
+Request Body schema:
+application/json
+from_location
+required
+string
+(
+From Location
+)
+The identifier of the location ASN was shipped from.
+fulfillment_node_id
+required
+string
+(
+Fulfillment Node Id
+)
+The identifier of the fulfillment_node ASN was created for.
+items
+required
+Array of
+objects
+(
+Items
+)
+non-empty
+The expected line items to receive.
+references
+required
+object
+(
+AsnReferences
+)
+shipment_date
+required
+string
+<
+date-time
+>
+(
+Shipment Date
+)
+The shipping date for the ASN in ISO 8601 format.
+Responses
+201
+ASN successfully created.
+400
+Location or product cannot be found.
+409
+The provided shipment reference is not unique.
+422
+Validation Error
+post
+/v0/i/inventory/asns
+/v0/i/inventory/asns
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"from_location"
+:
+"testlocation"
+,
+"fulfillment_node_id"
+:
+"7809c25e-630c-42d1-aa5d-f61388b97d74"
+,
+"items"
+:
+[
+{
+"carton_id"
+:
+"c51d3c1e-8286-4df3-803b-c69394811d77"
+,
+"product_id"
+:
+"7809c25e-630c-42d1-aa5d-f61388b97d74"
+,
+"quantity"
+:
+10
+}
+,
+{
+"carton_id"
+:
+"c51d3c1e-8286-4df3-803b-c69394811d77"
+,
+"product_id"
+:
+"d7c3ed5b-0ca8-4669-9f7b-1f5b60ad8be1"
+,
+"quantity"
+:
+15
+}
+]
+,
+"references"
+:
+{
+"po_number"
+:
+"some-po-ref"
+,
+"shipment_ref"
+:
+"some-shipment-ref"
+}
+,
+"shipment_date"
+:
+"2019-03-25T22:00:00Z"
+}
+Response samples
+201
+400
+409
+422
+Content type
+application/json
+Copy
+null
+Get ASN
+Note that received items that are the same (because they were repeated on ASN creation) will get
+merged when. This means that their expected and received quantities get summed up when getting the ASN. Being the same
+means having the same product id. and carton id.; if the same product exists in multiple cartons or if it exists in a
+carton and without a carton, it won't be merged (unless it had a carton but it was received without a carton).
+path
+Parameters
+asn_id
+required
+string
+<
+uuid
+>
+(
+Asn Id
+)
+The unique identifier of the ASN
+.
+Use the
+[
+List ASNs
+]
+(
+/
+newstore
+-
+cloud
+/
+inventory
+/
+inventory_manager_api_api
+.
+html#operation
+/
+listASNs
+)
+method to retrieve the ID
+.
+Responses
+200
+Successful Response
+422
+Validation Error
+get
+/v0/i/inventory/asns/{asn_id}
+/v0/i/inventory/asns/{asn_id}
+Response samples
+200
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"completion_date"
+:
+"2019-08-24T14:15:22Z"
+,
+"force_closed_by"
+:
+"string"
+,
+"from_location"
+:
+"string"
+,
+"fulfillment_node_id"
+:
+"string"
+,
+"id"
+:
+"string"
+,
+"item_total"
+:
+0
+,
+"line_items"
+:
+[
+{
+"carton_id"
+:
+"string"
+,
+"expected_quantity"
+:
+0
+,
+"product"
+:
+{ }
+,
+"product_id"
+:
+"string"
+,
+"quantity"
+:
+0
+,
+"received_quantity"
+:
+0
+}
+]
+,
+"received_item_total"
+:
+0
+,
+"received_product_total"
+:
+0
+,
+"references"
+:
+{
+"po_number"
+:
+"string"
+,
+"shipment_ref"
+:
+"string"
+}
+,
+"revision"
+:
+0
+,
+"shipment_date"
+:
+"2019-08-24T14:15:22Z"
+,
+"status"
+:
+"open"
+,
+"to_location_label"
+:
+"string"
+,
+"updated_at"
+:
+"2019-08-24T14:15:22Z"
+}
+Execute ASN action
+Executes actions on an ASN.
+path
+Parameters
+asn_id
+required
+string
+<
+uuid
+>
+(
+Asn Id
+)
+The ASN identifier
+Request Body schema:
+application/json
+type
+required
+string
+(
+Type
+)
+Value
+:
+"CLOSE"
+Responses
+200
+Successful Response
+422
+Validation Error
+post
+/v1/inventory/receiving/asns/{asn_id}/actions
+/v1/inventory/receiving/asns/{asn_id}/actions
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"type"
+:
+"CLOSE"
+}
+Response samples
+200
+422
+Content type
+application/json
+Copy
+null
+Counting
+Import stock quantities
+Imports stock quantities for products in the specified stock location, in the specified
+store configured for your business. The uploaded file is processed asynchronously.
+Important:
+Use this method to start importing stock quantities only when NewStore is inventory master in the store.
+To import stock quantities, upload a CSV file with the quantities to import for products in this stock location. See
+this example CSV file
+for reference.
+path
+Parameters
+fulfillment_node_id
+required
+string
+(
+Fulfillment Node Id
+)
+Fulfillment node of the import
+stock_location
+required
+string
+(
+Stock Location
+)
+The name of the stock location
+.
+To retrieve the name of the stock location
+,
+use the
+[
+List stock locations
+]
+(
+/
+newstore
+-
+cloud
+/
+inventory
+/
+stock_locations
+.
+html#operation
+/
+listStockLocations
+)
+method
+.
+Request Body schema:
+multipart/form-data
+count_type
+required
+string
+Enum
+:
+"cycle_count"
+"full_count"
+An enumeration.
+external_id
+string
+A name to distinguish the import from the other ones.
+file
+required
+string
+<
+binary
+>
+The CSV file containing the stock quantities that you want to import.
+Responses
+201
+Transfer Order successfully created.
+422
+Validation Error
+post
+/v0/i/inventory/stores/{fulfillment_node_id}/stock_locations/{stock_location}/stock_import
+/v0/i/inventory/stores/{fulfillment_node_id}/stock_locations/{stock_location}/stock_import
+Response samples
+201
+422
+Content type
+application/json
+Copy
+null
+Create Count Task
+Creates a count task for the specified store.
+If you use NewStore as
+inventory
+master
+for your business,
+use this method to create a count task to count the items in a specific
+stock location
+.
+For more information on:
+Using NewStore as inventory master in the store, see
+Enabling a location as inventory master
+.
+Managing stock locations in your business, see
+Stock locations
+.
+path
+Parameters
+store_id
+required
+string
+(
+Store Id
+)
+The store identifier. Use the
+List stores method
+to get the ID.
+Request Body schema:
+application/json
+count_type
+Count Type (string) or Count Type (null)
+(
+Count Type
+)
+Default:
+"cycle_count"
+cycle_count or full_count, default value
+due_date
+required
+string
+<
+date
+>
+(
+Due Date
+)
+The date the count transaction is scheduled for in ISO 8601 format.
+external_id
+required
+string
+(
+External Id
+)
+Unique external identifier for the count task.
+product_ids
+Array of Product Ids (strings) or Product Ids (null)
+(
+Product Ids
+)
+The array of product identifiers to be counted.
+stock_location
+Stock Location (string) or Stock Location (null)
+(
+Stock Location
+)
+The stock location name
+in
+which the cycle count should be done
+.
+If no value is provided
+,
+or NewStore is not the inventory master
+for
+your business
+,
+the cycle count task is created
+for
+the default stock
+    location
+in
+the store
+.
+Responses
+201
+Count task successfully created.
+404
+Store or stock location cannot be found.
+409
+A count task with the provided external identifier already exists.
+422
+Validation Error
+post
+/v0/i/inventory/stores/{store_id}/count_tasks
+/v0/i/inventory/stores/{store_id}/count_tasks
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"due_date"
+:
+"2022-10-10"
+,
+"external_id"
+:
+"cycle-count-x"
+,
+"product_ids"
+:
+[
+"product-1"
+,
+"product-2"
+,
+"product-3"
+]
+,
+"stock_location"
+:
+"main"
+}
+Response samples
+201
+404
+409
+422
+Content type
+application/json
+Copy
+null
+Transferring
+Create Transfer Order
+Creates a transfer order that contains a list of items to be transferred from one store to another.
+If you use NewStore as
+inventory master
+for
+ your business, use this method to create a transfer order to transfer items from a specific stock location to the
+main
+or default
+stock location
+of another
+ store or DC.
+For more information on:
+Using NewStore as inventory master in the store, see Enabling a location as
+inventory master
+.
+Managing stock locations in your business, see
+Stock locations
+.
+Request Body schema:
+application/json
+due_date
+Due Date (string) or Due Date (null)
+(
+Due Date
+)
+Represents the date when the transfer order is due.
+external_ref
+required
+string
+(
+External Ref
+)
+Represents the external reference by which external system can refer to this item.
+from_location_id
+required
+string
+(
+From Location Id
+)
+The fulfillment node identifier of the location from where the transfer order is sent.
+from_stock_location
+From Stock Location (string) or From Stock Location (null)
+(
+From Stock Location
+)
+The stock location from which the items are being transferred.
+items
+required
+Array of
+objects
+(
+Items
+)
+non-empty
+Ordered product identifier with its quantity.
+order_date
+required
+string
+<
+date-time
+>
+(
+Order Date
+)
+Represents the date when the transfer order was created.
+to_location_id
+required
+string
+(
+To Location Id
+)
+The fulfillment node identifier of the location to where the transfer order is sent.
+Responses
+200
+Successful Response
+201
+Transfer order successfully created.
+400
+The origin or destination location does not exist or products do not exist.
+409
+The order with external identifier
+external_ref
+already exists.
+422
+Validation Error
+post
+/v0/i/inventory/transfer_orders
+/v0/i/inventory/transfer_orders
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"due_date"
+:
+"2019-08-24T14:15:22Z"
+,
+"external_ref"
+:
+"string"
+,
+"from_location_id"
+:
+"string"
+,
+"from_stock_location"
+:
+"string"
+,
+"items"
+:
+[
+{
+"ordered_quantity"
+:
+1
+,
+"product_id"
+:
+"string"
+}
+]
+,
+"order_date"
+:
+"2019-08-24T14:15:22Z"
+,
+"to_location_id"
+:
+"string"
+}
+Response samples
+200
+422
+Content type
+application/json
+Copy
+null
+Create Transfer
+Create and start a transfer.
+path
+Parameters
+transfer_order_id
+required
+string
+<
+uuid
+>
+(
+Transfer Order Id
+)
+The identifier of the open transfer order to create a transaction in.
+Responses
+201
+The transaction was successfully created.
+404
+The transfer order does not exist.
+409
+The transfer order is already closed.
+422
+Validation Error
+post
+/v0/i/inventory/transfer_orders/{transfer_order_id}/transfer_transactions
+/v0/i/inventory/transfer_orders/{transfer_order_id}/transfer_transactions
+Response samples
+201
+422
+Content type
+application/json
+Copy
+null
+Get Transfer Shipping Configuration
+Retrieves the transfer shipping configuration set up for your business.
+The response includes the transfer shipping configuration with a list of
+shipping routes and the service levels configured for each route.
+Responses
+200
+Successful response.
+get
+/v0/i/inventory/transfer_shipping_config
+/v0/i/inventory/transfer_shipping_config
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"transfer_shipping_configuration"
+:
+[
+{
+"from_location_id"
+:
+"ST01"
+,
+"id"
+:
+"aea51f83-97ef-4334-acd3-4314a6e6a2c2"
+,
+"service_level_ids"
+:
+[
+"GROUND"
+,
+"IN_STORE_PICKUP_US01"
+,
+"2_DAY"
+,
+"SAME_DAY_DELIVERY"
+]
+,
+"to_location_ids"
+:
+[
+"ST02"
+,
+"ST03"
+,
+"ST04"
+,
+"ST05"
+,
+"ST06"
+]
+}
+,
+{
+"from_location_id"
+:
+"ST02"
+,
+"id"
+:
+"b09c2af7-dc71-42a2-bcc8-db454615edce"
+,
+"service_level_ids"
+:
+[
+"GROUND"
+,
+"IN_STORE_PICKUP_US01"
+,
+"2_DAY"
+,
+"SAME_DAY_DELIVERY"
+]
+,
+"to_location_ids"
+:
+[
+"*"
+]
+}
+]
+}
+Create or Update Transfer Shipping Configuration
+Creates or updates a transfer shipping configuration, used for shipping
+transfer orders. A transfer order is used to send inventory from a store to another
+location (DC or store).
+When you update the configuration using this method, the response body
+contains the revision of the configuration.
+The values of the
+from_location_id
+and
+to_location_ids
+properties in
+the schema are set during the first
+stock import
+.
+The transfer configuration is related to the
+fulfillment configuration
+. The
+service levels (
+service_level_ids
+) you use in the transfer configuration:
+Must be present in your fulfillment configuration.
+Have the
+same
+service level priority as in the fulfillment
+configuration.
+For a complete example, see
+Tutorial: Setting up a transfer
+configuration
+.
+Request Body schema:
+application/json
+transfer_shipping_configuration
+required
+Array of
+objects
+(
+Transfer Shipping Configuration
+)
+Array
+from_location_id
+required
+string
+(
+From Location Id
+)
+service_level_ids
+required
+Array of
+strings
+(
+Service Level Ids
+)
+to_location_ids
+required
+Array of
+strings
+(
+To Location Ids
+)
+Responses
+200
+The transfer shipping configuration was updated successfully.
+400
+An internal error occurred.
+422
+Validation Error
+post
+/v0/i/inventory/transfer_shipping_config
+/v0/i/inventory/transfer_shipping_config
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"transfer_shipping_configuration"
+:
+[
+{
+"from_location_id"
+:
+"string"
+,
+"service_level_ids"
+:
+[
+"string"
+]
+,
+"to_location_ids"
+:
+[
+"string"
+]
+}
+]
+}
+Response samples
+200
+400
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"transfer_shipping_configuration"
+:
+[
+{
+"from_location_id"
+:
+"ST01"
+,
+"id"
+:
+"aea51f83-97ef-4334-acd3-4314a6e6a2c2"
+,
+"service_level_ids"
+:
+[
+"GROUND"
+,
+"IN_STORE_PICKUP_US01"
+,
+"2_DAY"
+,
+"SAME_DAY_DELIVERY"
+]
+,
+"to_location_ids"
+:
+[
+"ST02"
+,
+"ST03"
+,
+"ST04"
+,
+"ST05"
+,
+"ST06"
+]
+}
+,
+{
+"from_location_id"
+:
+"ST02"
+,
+"id"
+:
+"b09c2af7-dc71-42a2-bcc8-db454615edce"
+,
+"service_level_ids"
+:
+[
+"GROUND"
+,
+"IN_STORE_PICKUP_US01"
+,
+"2_DAY"
+,
+"SAME_DAY_DELIVERY"
+]
+,
+"to_location_ids"
+:
+[
+"*"
+]
+}
+]
+}
+Get Transfer
+Get the details of a Transfer.
+path
+Parameters
+transfer_id
+required
+string
+<
+uuid
+>
+(
+Transfer Id
+)
+Transfer Transaction identifier.
+Responses
+200
+The transfer was successfully returned.
+404
+The transfer does not exist.
+422
+Validation Error
+get
+/v0/i/inventory/transfer_transactions/{transfer_id}
+/v0/i/inventory/transfer_transactions/{transfer_id}
+Response samples
+200
+422
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"result"
+:
+{
+"id"
+:
+"d2940ca1-ee14-438a-9e43-4868d843bda2"
+,
+"line_items"
+:
+[
+{
+"ordered_quantity"
+:
+1
+,
+"picked_quantity"
+:
+0
+,
+"product_id"
+:
+"prod123"
+,
+"quantity"
+:
+0
+,
+"remaining_quantity"
+:
+1
+}
+]
+,
+"shipment_requested"
+:
+true
+,
+"status"
+:
+"printing"
+,
+"transfer_order"
+:
+{
+"external_ref"
+:
+"order_external_ref"
+,
+"from_location_id"
+:
+"from_id"
+,
+"id"
+:
+"53822228-3f8d-4b6b-949c-83efe2efed56"
+,
+"origin_stock_location"
+:
+"main"
+,
+"to_location_id"
+:
+"to_id"
+}
+}
+}
+Previous
+Integration APIs
+Next
+Packages
+Copyright © 2025 NewStore, Inc.

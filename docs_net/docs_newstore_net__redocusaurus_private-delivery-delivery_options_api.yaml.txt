@@ -1,0 +1,200 @@
+openapi: 3.0.0
+info:
+  title: Delivery Options API
+  description: |
+    API for creating and updating delivery options token key pair.
+    Upload an RSA key pair in PEM format.
+  version: v0
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /delivery_options/shipping_option_token_key_pair:
+    post:
+      summary: Create or update a shipping option token key pair
+      operationId: create-update-shipping-option-token-key-pair
+      description: >
+        Create or update the public/private key pair used to generate shipping
+        offer tokens.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: A shipping option public/private key pair.
+              required:
+                - public_key
+                - private_key
+              properties:
+                public_key:
+                  description: A PEM formatted RSA public key
+                  type: string
+                  minLength: 1
+                private_key:
+                  description: A PEM formatted RSA private key
+                  type: string
+                  minLength: 1
+            examples:
+              Generate public/private token key pair:
+                description: >
+                  1. Generate a private key and certificate request with the
+                  following command:
+
+                     ``openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 10000 -nodes``
+
+                  2. Extract the public key from the certificate request using
+                  the following command:
+
+                     ``openssl x509 -pubkey -noout -in cert.pem > pubkey.pem``
+
+                  3. Prepare strings to use in the ``private_key`` and
+                  ``public_key`` request body fields:
+
+                    ``cat key.pem | awk '{printf "%s\\n", $0}' | sed 's,.\{2\}$,,'`` (same for pubkey.pem)
+                value:
+                  public_key: >-
+                    -----BEGIN PUBLIC KEY-----
+
+                    MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0C4knVfllYex03XzEwV6
+
+                    V9psB6y6sm+gMaeI==
+
+                    -----END PUBLIC KEY-----
+                  private_key: (similar to public key)
+      responses:
+        '200':
+          description: Token was successfully updated.
+        '400':
+          description: The request body is invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A shipping option public/private key pair.
+                required:
+                  - message
+                  - request_id
+                  - error_code
+                properties:
+                  message:
+                    type: string
+                    minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                  error_code:
+                    type: string
+                    minLength: 1
+              example:
+                message: Invalid public/private key pair.
+                request_id: '123456'
+                error_code: invalid_key_pair
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A shipping option public/private key pair.
+                required:
+                  - message
+                  - request_id
+                  - error_code
+                properties:
+                  message:
+                    type: string
+                    minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                  error_code:
+                    type: string
+                    minLength: 1
+              example:
+                message: Internal server error.
+                request_id: '123456'
+                error_code: internal_error
+  /delivery_options/shipping_option_token_public_key:
+    get:
+      summary: Get the public key for a shipping option token
+      operationId: get-shipping-option-token-public-key
+      description: |
+        Gets the public/private key for a shipping option token
+      parameters:
+        - in: header
+          name: tenant
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: The public key was retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A shipping option token public key.
+                required:
+                  - public
+                properties:
+                  public_key:
+                    description: A PEM formatted RSA public key
+                    type: string
+                    minLength: 1
+        '404':
+          description: The key doesn't exist for the tenant
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A shipping option public/private key pair.
+                required:
+                  - message
+                  - request_id
+                  - error_code
+                properties:
+                  message:
+                    type: string
+                    minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                  error_code:
+                    type: string
+                    minLength: 1
+              example:
+                message: Unable to find the public key for the tenant
+                request_id: '123456'
+                error_code: internal_error
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A shipping option public/private key pair.
+                required:
+                  - message
+                  - request_id
+                  - error_code
+                properties:
+                  message:
+                    type: string
+                    minLength: 1
+                  request_id:
+                    type: string
+                    minLength: 1
+                  error_code:
+                    type: string
+                    minLength: 1
+              example:
+                message: Internal server error.
+                request_id: '123456'
+                error_code: internal_error

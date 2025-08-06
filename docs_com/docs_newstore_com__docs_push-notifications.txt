@@ -1,0 +1,373 @@
+Push notifications
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Push notifications
+Updated on
+Dec 20, 2024
+Published on Oct 1, 2024
+5 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Notifications are alerts that can be sent to customers or associates as push notifications, via email or SMS. This topic covers the push notifications (Apple Push and WebSocket), specifically in the fulfillment and shipping contexts. For more information about other types of notifications, see
+About customer documents and notifications
+.
+Fulfillment notifications
+You can receive 2 types of fulfillment notifications:
+Push
+: refers to Apple Push Notification, which can also be silent.
+WebSocket
+: refers to the notifications sent via the websocket communication protocol.
+Each notification belongs to a domain, each of them is described in the following table:
+Domain
+Notification name
+Notification type
+Description
+Order
+new_object
+Push
+Notifies the associate about a new incoming request.
+new_document_available
+WebSocket
+Sent when a new document is generated. Part of the transition to fulfillment packing step.
+Associate
+associate_deactivated
+Push (silent)
+Sent when the associate has been deactivated.
+Store
+store_fulfillment_queue_changed
+WebSocket
+Notifies when the store queue changes. Contains data regarding the store queue size.
+Infrastructure
+test_notification
+Push
+Used to test whether the app can receive push notifications.
+Payload details
+All the notifications follow a format where the payload contains 2 keys:
+Key
+Description
+message
+Dictionary with app custom data
+aps
+Apple Push Notification System (APNS) dictionary.
+Note
+This key only exists for non-WebSocket notifications.
+The
+message
+dictionary contains one mandatory key:
+Key
+Description
+type
+Notification type
+Notifications
+Same-day delivery and traditional carrier order placed
+{
+  "message": {
+    "type": "new_object",
+    "object": "fulfillment_logistic_order",
+    "uuid": "bf288690-f484-45bd-ab70-c4393b6bab58"
+  },
+  "aps": {
+    "alert": {
+      "loc-key": "new_logistic_order",
+      "loc-args": [
+        "Change first And last name_Coupon_Shipping_Discount",
+        "Express",
+        "FEDEX"
+      ],
+      "category": "FULFILLMENT_CATEGORY",
+      "sound": "default"
+    }
+  }
+}
+Key
+Description
+object
+Describes the entity type the notification refers to.
+uuid
+Fulfillment Logistic Order uuid.
+loc-key
+A key to an alert-message string in a
+Localizable.strings
+file for the current localization. The localized string format is
+"%@ - %@ (%@)"
+.
+loc-args
+Array of variable string values to appear in place of the format specifiers in
+loc-key
+. These values represent
+flo.consumer_name
+,
+flo.shipping_option['display_name']
+,
+flo.shipping_option['shipping_carrier']
+In-store pickup order placed
+{
+  "message": {
+    "type": "new_object",
+    "object": "fulfillment_logistic_order",
+    "uuid": "bf288690-f484-45bd-ab70-c4393b6bab58"
+  },
+  "aps": {
+    "alert": {
+      "loc-key": "new_in_store_pickup_order",
+      "loc-args": [
+        "Berlin Fashion",
+        "Collect in Store",
+        "OFFLINE"
+      ],
+      "category": "FULFILLMENT_CATEGORY",
+      "sound": "default"
+    }
+  }
+}
+Key
+Description
+object
+Describes the entity type the notification is refers to.
+uuid
+Fulfillment Logistic Order uuid
+loc-key
+A key to an alert-message string in a
+Localizable.strings
+. file for the current localization. The localized string format is
+"%@ - %@"
+.
+loc-args
+Array of variable string values to appear in place of the format specifiers in
+loc-key
+. These values represent
+flo.consumer_name
+,
+flo.shipping_option['display_name']
+,
+flo.shipping_option['shipping_carrier']
+(unused).
+Order document available
+{
+  "message": {
+    "type": "new_document_available",
+    "object": "document",
+    "uuid": "bf288690-f484-45bd-ab70-c4393b6bab58",
+    "data": {
+      "package_uuid": "42717a5f-27d3-4c94-a82b-1e45644cb4b4",
+      "document_type": "return_label",
+      "permalink": "https://dodici.v.newstore.net/v0/d/documents/bca54d17-5903-4f38-ac4d-bbd7362c7f3f",
+      "number_of_copies": 1,
+      "printer_type": "label_printer"
+    }
+  }
+}
+Key
+Description
+object
+Describes the entity type the notification is referring to.
+uuid
+Fulfillment Logistic Order uuid.
+data
+Fulfillment Logistic Order package document info dictionary.
+package_uuid
+Package identifier.
+document_type
+Document type.
+permalink
+Document permalink.
+number_of_copies
+Number of copies should be printed.
+printer_type
+Printer type where the document should be printed.
+Associate deactivated
+{
+  "message": {
+    "type": "associate_deactivated"
+  },
+  "aps": {
+    "aps": {
+      "content-available": 1
+    }
+  }
+}
+Store fulfillment queue changed
+{
+  "message": {
+    "type": "store_fulfillment_queue_changed",
+    "object": "store_fulfillment_queue_unassigned_count",
+    "data": {
+      "priority": 0,
+      "normal": 0
+    }
+  }
+}
+Key
+Description
+object
+Refers to the unassigned fulfillment orders count which are in the queue.
+data
+Dictionary representing current store queue state.
+priority
+Number of
+priority
+orders in the queue.
+normal
+Number of
+normal
+orders in the queue.
+Test notification
+{
+  "aps": {
+    "alert": {
+      "loc-key": "test_notification",
+      "loc-args": []
+    },
+    "category": "",
+    "sound": "default"
+  },
+  "message": {
+    "type": "test_notification"
+  }
+}
+Key
+Description
+loc-key
+A key to an alert-message string in a
+Localizable.strings
+file for the current localization. The english localized version of the string is
+The notification system is working as expected.
+loc-args
+Empty array.
+Shipment notifications
+Push notifications are sent to inform customers about events related to the delivery of purchased products. Each event triggers the emission of a notification with contextual parameters, those are listed below.
+Notifications
+Shipment dispatched
+This push notification is sent when the purchased product is handed over to the shipping carrier.
+Message parameters:
+'newstore_data': {
+    'title': 'Your order was dispatched!',  # Template-customizable title
+    'event_id': 'shipment_dispatched',  # identifier for all similar notifications
+    'message': 'Your product just left the store!',  # Template-customizable body
+    'params': {
+        'order_id': 'RD100000007', # order identifier
+        'items': [{
+            'product_id': '21423-640',  # identifier of the purchased product
+            'quantity': 1,  # quantity purchased
+            'product_name': 'BT-Shirt with yellow bubbles' # name of the purchased product
+        }],
+        'shipment_uuid': '3c439615-5187-43f4-bd26-c7ca3827cb3f' # unique identifier of fulfillment logistic order
+    }
+}
+Shipment in transit
+This push notification is sent when the shipping carrier is out for delivery.
+Message parameters:
+'newstore_data': {
+    'title': 'Your order is in transit!',  # Template-customizable title
+    'event_id': 'same_day_delivery.in_transit',  # Identifier for all similar notifications
+    'message': 'Your product is on its way!',  # Template-customizable body
+    'params': {
+        'order_id': 'RD100000007' # Order identifier
+    }
+}
+Shipment estimated delivery date changed
+This push notification is sent when the delivery estimation time changed.
+Message parameters:
+'newstore_data': {
+    'title': 'The estimated delivery date of your order changed!',  # Template-customizable title
+    'event_id': 'same_day_delivery.estimate_changed',  # identifier for all similar notifications
+    'message': 'The estimated delivery date of your order changed. New estimated date is 08/02/2018 12:00!',  # Template-customizable body
+    'params': {
+        'order_id': 'RD100000007' # order identifier
+    }
+}
+Shipment delivered
+This push notification is sent when the purchased product is handed over to the customer.
+Message parameters:
+'newstore_data': {
+    'title': 'Your order was delivered!',  # Template-customizable title
+    'event_id': 'shipment_delivered',  # identifier for all similar notifications
+    'message': 'Enjoy your product!',  # Template-customizable body
+    'params': {
+        'order_id': 'RD100000007', # order identifier
+        'items': [{
+            'product_id': '21423-640',  # identifier of the purchased product
+            'quantity': 1,  # quantity purchased
+            'product_name': 'BT-Shirt with yellow bubbles' # name of the purchased product
+        }],
+        'shipment_uuid': '3c439615-5187-43f4-bd26-c7ca3827cb3f' # unique identifier of fulfillment logistic order
+    }
+}
+Related topics
+About customer documents and notifications
+Was this article helpful?
+Yes
+No
+Tags
+api
+documents
+fulfillment
+integration
+notification
+order fulfillment
+platform
+receipts
+shipping
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

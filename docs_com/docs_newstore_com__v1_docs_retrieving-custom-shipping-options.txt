@@ -1,0 +1,205 @@
+Retrieving custom shipping options
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Retrieving custom shipping options
+Updated on
+Dec 17, 2024
+Published on Oct 1, 2024
+4 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+If configured for your business, you can create a custom shipping solution for orders that need custom shipping options. For example, products that need custom shipping based on their weight, dimensions, and price, or orders shipped to a PO Box address. For help with enabling custom shipping options, contact the
+support team
+.
+Before you begin, ensure that:
+Your shipping providers and provider rates are configured in NewStore Omnichannel Cloud. For help with this, contact the
+support team
+.
+All provider rates are added to your
+fulfillment configuration
+. For more information on how to define them, see
+Provider rates
+.
+Your shipping providers are integrated. See
+Integrating a shipping provider
+.
+To retrieve custom shipping options:
+To retrieve custom shipping options for orders, develop an
+adapter
+that implements the
+Shipping Options webhooks
+. To request custom shipping options for an order, NewStore Omnichannel Cloud must call the
+Get customized provider rates
+method on your adapter. In the response, send only those provider rates that can be offered for the cart.
+To request shipping options for the returned provider rate, NewStore Omnichannel Cloud must call the
+Request shipping offers
+on your shipping provider adapter. For example, if you work with multiple providers with EasyPost, NewStore Omnichannel Cloud calls your EasyPost adapter for shipping options. See
+Integrating a shipping provider
+.
+Retrieving shipping options for PO Boxes
+Note
+Ensure that your adapter returns only those provider rates that can deliver to PO Boxes. For example, if you use
+USPS_POBox
+to deliver only to a PO Box in the US, when NewStore Omnichannel Cloud calls your adapter with a PO BOX in the address, return only
+USPS_POBox
+. If the address does not contain a PO Box, exclude
+USPS
+in your response.
+Here's how the integration works:
+Retrieving custom shipping options for products
+Ensure that products are imported with weight, dimensions, and price information.
+Ensure that your adapter defines specific provider rates for products that need custom shipping options. For example, if your integrated shipping provider supports provider rates
+FedExGround
+and
+FedExNextDayAir
+. Your business offers
+FedExNextDayAir
+only if the product price is more than
+100USD
+. When NewStore calls your adapter, include only
+FedExNextDayAir
+as the provider rate in the response.
+:::
+Retrieving custom shipping prices for orders
+For non-standard orders that need you to offer customized shipping prices, you can set up a custom shipping adapter. NewStore calls the custom shipping adapter using the
+Get customized provider rates
+method to retrieve the shipping price to use.
+Note
+Ensure that products are imported with weight, dimensions, and price information.
+Important
+NewStore uses a shipping offer price based on the value of the
+use_as_customer_facing_cost
+flag in the
+fulfillment configuration
+only if:
+You have not set up a custom shipping adapter.
+The price
+source
+is not configured in your custom shipping adapter.
+The price
+source
+property in your custom shipping adapter tells NewStore which shipping price needs to be used for these custom orders. You can use one of these values for the price
+source
+property:
+customization_provider
+: Use this value when you want to use a shipping price that overrides:
+The price configured for the service level in the fulfillment configuration.
+The price returned by the shipping provider.
+See the response schema for the
+Get customized provider rates
+method.
+For example, you can use a specific price of 50 USD for the provider rate in the custom shipping adapter. NewStore uses this price and ignores any other prices configured in your fulfillment configuration or returned by your shipping provider.
+service_level
+: Use this value if you want NewStore to:
+Use the price configured for the service level in your fulfillment configuration.
+Ignore the price returned by the shipping provider.
+In this example, the shipping offer price for the service level configured in your fulfillment configuration is 100 USD. NewStore displays this price to the customer, and ignores the prices returned by the shipping provider. See
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+.
+shipping_provider
+: Use this value if you want NewStore to:
+Use the shipping offer price returned by the shipping provider configured for your business.
+Ignore the price configured for the service level in your fulfillment configuration.
+In this example, the price returned by the shipping provider is 70 USD. NewStore displays this price to the customer, and ignores the price configured for the service level in your fulfillment configuration. See
+Integrating a shipping provider
+.
+For NewStore to use the correct custom shipping price, ensure that your custom shipping adapter defines the price
+source
+for products that need custom shipping options. When NewStore calls the adapter, it should return the specific shipping offer prices for provider rates.
+For example, if your integrated shipping provider supports a specific price for provider rate
+FedExGround
+, ensure that this price is configured in the custom shipping adapter. If your business uses the price configured in your fulfillment configuration for provider rate
+FedExNextDayAir
+, set the price
+source
+property to use that price.
+Note
+If the order is split into multiple shipments, NewStore uses a
+customized shipping price
+.
+Related topics
+Integrating a shipping provider
+Shipping
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+Was this article helpful?
+Yes
+No
+Tags
+api
+delivery
+Easypost
+fulfillment configuration
+integration
+international shipping
+NewStore OMS
+newstore platform
+order fulfillment
+platform
+routing
+shipping
+warehouse
+warehouse fulfillment
+webhook
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

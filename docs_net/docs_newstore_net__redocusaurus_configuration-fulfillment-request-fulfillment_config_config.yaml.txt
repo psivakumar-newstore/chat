@@ -1,0 +1,114 @@
+openapi: 3.1.0
+info:
+  title: Shipping rules configuration API
+  description: >
+    Used to manage the configuration for uploading order routing rules via
+    spreadsheet.
+  version: v0
+  contact:
+    name: Team Routing
+    email: team-routing@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/api/v1/org/config
+security:
+  - newStoreAccessToken: []
+paths:
+  /routing/can_upload_routing_rules_csv:
+    get:
+      operationId: get-can-upload-routing-rules-csv
+      summary: Get setting for tenant feature toggle to upload routing rules csv
+      description: >
+        Retrieves the current configuration to determine whether the retailer
+        can configure routing rules
+
+        with csv upload
+      responses:
+        '200':
+          description: |
+            Successfully retrieved the config value
+          content:
+            application/json:
+              schema:
+                type: object
+                required: &ref_1
+                  - value
+                  - updated_at
+                properties: &ref_2
+                  value:
+                    type: &ref_0
+                      - boolean
+                      - 'null'
+                    description: >-
+                      Tenant-based release toggle for enabling routing rules csv
+                      upload.
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    description: >-
+                      Contains date-time in ISO8601 UTC format when config was
+                      updated at least once. Value can be null if config value
+                      has not been specified yet by the retailer.
+              example:
+                value: false
+                updated_at: '2021-07-13T20:18:25Z'
+        '404':
+          description: >-
+            Config key doesn't exist (it is not a case when key exists but just
+            not set).
+        '500':
+          description: Internal server error.
+    post:
+      operationId: set-can-upload-routing-rules-csy
+      summary: Set setting for tenant feature toggle to upload routing rules csv
+      description: >
+        Set the configuration to determine whether the retailer can configure
+        routing rules
+
+        with csv upload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: &ref_3
+                - value
+              properties: &ref_4
+                value:
+                  type: *ref_0
+                  description: >-
+                    Tenant-based release toggle for enabling routing rules csv
+                    upload.
+            example:
+              value: false
+      responses:
+        '200':
+          description: Successfully saved config value
+        '400':
+          description: |
+            Incorrect payload for config (validation failed).
+        '409':
+          description: >
+            Cannot update the configuration due to a potential race condition.
+            Please retry.
+        '500':
+          description: |
+            Internal server error.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    tenant_config_can_upload_routing_rules_csv:
+      type: *ref_0
+      description: Tenant-based release toggle for enabling routing rules csv upload.
+    tenant_config_can_upload_routing_rules_csv_response:
+      type: object
+      required: *ref_1
+      properties: *ref_2
+    tenant_config_can_upload_routing_rules_csv_request:
+      type: object
+      required: *ref_3
+      properties: *ref_4

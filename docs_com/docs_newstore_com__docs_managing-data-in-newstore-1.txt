@@ -1,0 +1,222 @@
+Managing data in NewStore
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Managing data in NewStore
+Updated on
+Feb 19, 2025
+Published on Oct 1, 2024
+6 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+NewStore has several methods that you can use to consume data emitted from the platform. This document gives guidance and best practices for which services and features to use to accommodate your business needs.
+Data can be consumed for the following purposes:
+Omnichannel Insights: Tracking business trends
+Operational activities: Take an action and see the latest status in your stores
+Send or consume data with third-party systems
+This document provides guidance for respective groups about the following features of NewStore:
+Headquarters (call center, operations, retail teams, some store managers, and executives):
+Operational reports
+Omnichannel Insights
+Stores (store managers, store associates):
+Associate App Sales Dashboard
+Service integrators and developers:
+Event Stream and GraphQL
+Application Programming Interfaces, APIs
+Reporting needs for headquarters
+Omnichannel Insights
+Omnichannel Insights
+combines all retailer data into an embedded business intelligence tool into the portal to understand
+trends
+, understand state of the business, to make adjustments to your strategy based on analytic analysis.
+Insights includes two menu items:
+Explore
+, and
+Reports
+.
+Explore
+allows data creators to:
+Search the data directly,
+Build liveboards/dashboards for other users,
+Share those reports with others in the organization either directly in Omnichannel Manager, or via email.
+Reports
+allows data consumers to track and improve a specific metric.
+Typically, an Explore user would design a report for a Reports user.
+Example: Understand trends in Store Fulfillment performance
+Operations, data teams, and retail teams can use
+Omnichannel Insights
+-
+Explore
+-
+Template
+-
+Fulfillment
+to get a quick view of store rejection rates. For that, you can filter the report by one or more fulfillment locations. Optionally, make a copy of the template and adjust the report as desired.
+Example: Track fill rate by stores to understand under-performing locations
+A retail manager or store operations manager may want to adjust the number of fulfillments a given store can handle. To understand which stores have a higher fill rate (number of fulfillments completed vs number of fulfillments rejected), Omnichannel Insights under
+Insights
+-
+Explore
+can be used to compare the
+Fill Rate
+across locations, and across how many associates are available to fulfill. This can provide an optimal number of fulfillments vs the number of available fulfillment employees, which can then be adjusted under
+Routing
+-
+Locations
+in Omnichannel Manager.
+Example: Track email capture percentage by sale location
+There may be a push for more email capture during store sales. This requires a metric to measure, a baseline of current capture rate, actions to take to improve the capture rate, and measurement to determine if the actions turned into a higher capture rate. This can be done from Omnichannel Insights by using the out-of-the-box Customer dashboard, or creating a custom dashboard to track capture rate by location. Then perform the actions desired to improve the capture rate, and view the dashboard again to understand the impact.
+Operational reporting
+Operational reports
+are tables or exports that allow you to understand the current status of events and act on them. These tables or reports contain the latest information available to NewStore about omnichannel, POS and order management system (OMS) events. They are distributed throughout NewStore Omnichannel Manager.
+Examples include the
+Sales
+-
+Orders
+table, or the
+Inventory Stock on Hand
+report.
+Example: Track and process orders that are on hold
+A call center representative may need to reach out to shoppers to request what the shopper would like to do with an order that can only be partially fulfilled, or an Operations member may want to cancel all orders that are on hold due to an inventory availability issue. This is done through the
+On Hold Orders
+page in Omnichannel Manager. All orders that are placed on hold, and may require user action are stored under
+Sales
+-
+On Hold Orders
+.
+Example: Track stock on hand for a specific store location
+An Operations member may want to understand what NewStore believes is available in a given store, to place an order for more merchandise based on what is available in the store. This is done through
+Store Operations
+-
+Stock on Hand
+in Omnichannel Manager by choosing a store, a stock location, and an on-hand threshold.
+Reporting needs for stores
+Understand sales performance
+The
+Associate App Sales Dashboard
+helps store employees understand personal and store performance for the logged-in user. The report displays what is occurring in a store for the current day. If the dashboard is enabled, users can access it under
+More
+-
+Sales Dashboard
+.
+Integrators can enable the Sales dashboard via
+Associate App
+-
+Customizations
+. Then inform sales associates and store managers where to find the dashboard. Optionally, enable the Sales dashboard in the staging environment to test and validate data before enabling it in production for associates.
+Retrieving data as integrators and developers
+Event Stream and GraphQL
+The Event Stream provides a best effort stream of events for actions that occur on the platform. Service integrators create streams of events based on a topic, such as
+refund_request.issued
+, or
+inventory_count.items_counted
+.
+Events
+may be replayed by the NewStore platform to ensure all events are eventually sent. An Event Stream integration requires some middleware to ensure duplicates are accounted for correctly and integrators must assume at-least-once delivery (i.e. potentially more than once).
+After a change occurs within the NewStore platform, events are usually published within seconds, but up to 15 minutes depending on factors.
+Events are a secondary source of data. The Event Stream is limited to providing data not older than 60 days. The intention of this 60 day retention is to accommodate downstream exceptions and lag, allowing integrators time to recover their systems. Integrations should consume events in real-time and should not leverage the 60 day retention for typical use cases.
+GraphQL takes the Event Stream and temporarily stores the data in order to be retrieved on request. GraphQL is designed to supplement an event received with additional required information by a third-party system. The same way as the Event Stream, GraphQL is a secondary source of data and should not be used as the source of truth. Use APIs over the generic GraphQL interface. Assume that the lifetime of data within GraphQL is coupled with the Event Stream.
+A correct example of using GraphQL is to look up order data when the Event Stream emits a
+payment_account.amount_refunded
+event. Do not use GraphQL to look up all refunds for the past 6 months.
+Event Stream examples
+Typical Event Stream use cases:
+Streaming events from NewStore to your ERP
+Streaming events from NewStore to your BI platform
+Streaming events from NewStore to your backup/disaster recovery solution.
+Creating a temporary integration to recover data from an outage requiring data not older than 60 days
+Do not use Event Stream for the following:
+Relying on the Event Stream as an all-in-one disaster recovery tool
+Creating reports from the Event Stream spanning more than 60 days
+Typical GraphQL use case:
+Enriching Event Stream events with additional data, such as adding order information to a shipping event
+Do not use GraphQL for:
+Scraping a non-specific set of Event Stream data
+Generating reports
+Querying as a lookup table (for example, looking up an order id by item code/sku)
+API best practices (APIs)
+APIs
+allow two applications to talk to each other. For example, NewStore may inform an ERP that inventory has moved from location A to location B. Due to the lower effort of delivering a feature in an API compared to the user interface, sometimes a configuration is available via API and not yet via Omnichannel Manager.
+There are Integration APIs, which are designed to allow NewStore to communicate with the retail ecosystem of partners. There are also Configuration APIs, which allow system level setup of NewStore such as setting up a Catalog. Configuration APIs sometimes offer the same functionality that is in Omnichannel Manager, such as the routing setup.
+NewStore is migrating APIs to a more modern generation of APIs via the
+Omnichannel API Explorer
+, designed to better document and illustrate the purpose, data models, and design of existing and new APIs. Not all APIs are available in the new Omnichannel API Explorer.
+Example: Send data to an ERP from NewStore
+Service integrators can create an Event Stream integration in NewStore, and subscribe to that stream from the ERP. If you require further contextual information, such as additional payment data when receiving an order event, prioritize using RESTful APIs as these are often the source of truth. This ensures the ERP is aware of all POS activities taking place in the platform. GraphQL may be used in cases where there is no API, but be aware that GraphQL is not a source of truth for any data, and it is eventually consistent. This means that there is a delay in data availability between the actual source system and GraphQL.
+Was this article helpful?
+Yes
+No
+Tags
+data
+data model
+event stream
+explore
+graphql
+insights
+liveboard
+reporting
+reports
+sales
+ThoughtSpot
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

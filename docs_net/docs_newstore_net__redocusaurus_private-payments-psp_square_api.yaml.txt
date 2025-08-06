@@ -1,0 +1,305 @@
+openapi: 3.0.0
+info:
+  title: Square notifications API
+  version: '0'
+  description: >
+    This API will be used by Square to send notifications related to Square
+    payments.
+
+
+    NewStore partners with Square as the
+    [PSP](https://docs.newstore.com/docs/glossary#payment-service-provider) for
+    retailers with stores in Japan. To integrate
+
+    Square with NewStore, see [Integrating
+    Square](https://docs.newstore.com/docs/integrating-square).
+
+
+    To configure Square, contact the support team.
+servers:
+  - url: https://dodici.x.newstore.net/_/v1/org/psps/square
+security: []
+paths:
+  /notifications:
+    post:
+      summary: Update payment status
+      operationId: postNotification
+      description: >
+        When this method is called by Square, the status of the payment
+        transaction is updated in
+
+        the NewStore platform.
+
+
+        Each message has a type and a data field with the event payload.
+
+        The integration should be configured in the [Square
+        portal](https://developer.squareup.com/apps/).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: Square webhook
+              required:
+                - type
+                - data
+              properties:
+                type:
+                  type: string
+                  description: >-
+                    The type of event that triggered the webhook. Example:
+                    payment.created, payment.updated
+                data:
+                  type: object
+                  required:
+                    - type
+                    - object
+                    - id
+                  properties:
+                    type:
+                      type: string
+                      description: 'Name of the affected object’s type. Example: payment'
+                    id:
+                      type: string
+                      description: ID of the affected object.
+                    object:
+                      type: object
+                      required:
+                        - payment
+                      description: >-
+                        An object containing fields and values relevant to the
+                        event.
+                      properties:
+                        payment:
+                          type: object
+                          required:
+                            - id
+                            - created_at
+                            - updated_at
+                            - total_money
+                            - status
+                            - card_details
+                            - location_id
+                            - order_id
+                            - version
+                          description: >-
+                            An object containing fields and values relevant to
+                            the event.
+                          properties:
+                            id:
+                              type: string
+                              description: Unique ID for the payment.
+                            created_at:
+                              type: string
+                              format: date-time
+                              description: >-
+                                Timestamp of when the payment was created, in
+                                RFC 3339 format.
+                            updated_at:
+                              type: string
+                              format: date-time
+                              description: >-
+                                Timestamp of when the payment was last updated,
+                                in RFC 3339 format.
+                            total_money:
+                              type: object
+                              description: The total money for the payment.
+                              required:
+                                - amount
+                                - currency
+                              properties:
+                                amount:
+                                  type: integer
+                                  description: >-
+                                    The amount of money, in the smallest
+                                    denomination of the currency indicated by
+                                    currency. For example, when currency is USD,
+                                    amount is in cents. Monetary amounts can be
+                                    positive or negative.
+                                currency:
+                                  type: string
+                                  description: The type of currency, in ISO 4217 format.
+                            status:
+                              type: string
+                              description: >-
+                                Indicates whether the payment is APPROVED,
+                                COMPLETED, CANCELED, or FAILED.
+                            card_details:
+                              type: object
+                              description: >-
+                                Non-confidential details about the source. Only
+                                populated for card payments.
+                              required:
+                                - card
+                              properties:
+                                card:
+                                  type: object
+                                  description: The credit card's non-confidential details.
+                                  required:
+                                    - card_brand
+                                    - last_4
+                                  properties:
+                                    card_brand:
+                                      type: string
+                                      description: The card's brand.
+                                    last_4:
+                                      type: string
+                                      description: The last 4 digits of the card number.
+                            location_id:
+                              type: string
+                              description: ID of the location associated with the payment.
+                            order_id:
+                              type: string
+                              description: ID of the order associated with the payment.
+                            version:
+                              type: integer
+                              description: Notification revision.
+            example:
+              type: payment.created
+              data:
+                type: payment
+                id: KkAkhdMsgzn59SM8A89WgKwekxLZY
+                object:
+                  payment:
+                    id: KkAkhdMsgzn59SM8A89WgKwekxLZY
+                    created_at: '2020-02-06T21:27:30.444Z'
+                    updated_at: '2020-02-06T21:27:30.590Z'
+                    total_money:
+                      amount: 1000
+                      currency: USD
+                    status: APPROVED
+                    card_details:
+                      card:
+                        card_brand: VISA
+                        last_4: '1111'
+                    location_id: NAQ1FHV6ZJ8YV
+                    order_id: j3WfFVLi7XdcrH3BxoV0L3EHqe4F
+                    version: 1
+        required: true
+      responses:
+        '200':
+          description: Informs Square that the message was accepted.
+components:
+  schemas:
+    PostNotification:
+      type: object
+      title: Square webhook
+      required:
+        - type
+        - data
+      properties:
+        type:
+          type: string
+          description: >-
+            The type of event that triggered the webhook. Example:
+            payment.created, payment.updated
+        data:
+          type: object
+          required:
+            - type
+            - object
+            - id
+          properties:
+            type:
+              type: string
+              description: 'Name of the affected object’s type. Example: payment'
+            id:
+              type: string
+              description: ID of the affected object.
+            object:
+              type: object
+              required:
+                - payment
+              description: An object containing fields and values relevant to the event.
+              properties:
+                payment:
+                  type: object
+                  required:
+                    - id
+                    - created_at
+                    - updated_at
+                    - total_money
+                    - status
+                    - card_details
+                    - location_id
+                    - order_id
+                    - version
+                  description: >-
+                    An object containing fields and values relevant to the
+                    event.
+                  properties:
+                    id:
+                      type: string
+                      description: Unique ID for the payment.
+                    created_at:
+                      type: string
+                      format: date-time
+                      description: >-
+                        Timestamp of when the payment was created, in RFC 3339
+                        format.
+                    updated_at:
+                      type: string
+                      format: date-time
+                      description: >-
+                        Timestamp of when the payment was last updated, in RFC
+                        3339 format.
+                    total_money:
+                      type: object
+                      description: The total money for the payment.
+                      required:
+                        - amount
+                        - currency
+                      properties:
+                        amount:
+                          type: integer
+                          description: >-
+                            The amount of money, in the smallest denomination of
+                            the currency indicated by currency. For example,
+                            when currency is USD, amount is in cents. Monetary
+                            amounts can be positive or negative.
+                        currency:
+                          type: string
+                          description: The type of currency, in ISO 4217 format.
+                    status:
+                      type: string
+                      description: >-
+                        Indicates whether the payment is APPROVED, COMPLETED,
+                        CANCELED, or FAILED.
+                    card_details:
+                      type: object
+                      description: >-
+                        Non-confidential details about the source. Only
+                        populated for card payments.
+                      required:
+                        - card
+                      properties:
+                        card:
+                          type: object
+                          description: The credit card's non-confidential details.
+                          required:
+                            - card_brand
+                            - last_4
+                          properties:
+                            card_brand:
+                              type: string
+                              description: The card's brand.
+                            last_4:
+                              type: string
+                              description: The last 4 digits of the card number.
+                    location_id:
+                      type: string
+                      description: ID of the location associated with the payment.
+                    order_id:
+                      type: string
+                      description: ID of the order associated with the payment.
+                    version:
+                      type: integer
+                      description: Notification revision.
+  responses: {}
+  parameters: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}

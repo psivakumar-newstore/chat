@@ -1,0 +1,642 @@
+openapi: 3.1.0
+info:
+  title: Service Level API
+  version: v0
+  description: >
+    This is an internal API for customer support to update the [service
+    level](https://docs.newstore.com/docs/glossary#service-level) for orders in
+    the NewStore platform.
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /orders/{order_id}/service_level:
+    patch:
+      responses:
+        '200':
+          description: The service level was updated successfully.
+        '400':
+          description: Bad Request Error.
+          content:
+            application/json:
+              example:
+                error_code: invalid_service_level
+                message: The new service level field is either missing or empty.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required: &ref_0
+                  - error_code
+                  - message
+                  - request_id
+                properties: &ref_1
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '409':
+          description: The current order id does not contain any stuck orders.
+          content:
+            application/json:
+              example:
+                error_code: no_conflicted_los_found_error
+                message: >-
+                  There are no logistic orders in a conflict state for sales
+                  order ec2f3c9bb06hd78s1bf6074098363.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: >-
+                  An unexpected internal server error occurred in request to
+                  update service level for sales order
+                  ec2f3c9bb06hd78s1bf6074098363.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+      description: >
+        Sets a new [service
+        level](https://docs.newstore.com/docs/glossary#service-level) for
+        conflict items in the specified order.
+      summary: Update service level
+      operationId: update-service-level
+      requestBody:
+        content:
+          application/json:
+            example:
+              new_service_level: GROUND
+            schema:
+              description: Request body to update service level for an order id.
+              type: object
+              required: &ref_8
+                - new_service_level
+              properties: &ref_9
+                new_service_level:
+                  type: string
+                  minLength: 1
+                  description: The chosen service level identifier.
+        required: true
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >-
+          The unique ID of the order. To retrieve the list of orders, use the
+          [List orders](/newstore-cloud/associate.html#orders-list-orders)
+          method.
+  /orders/conflicts:
+    post:
+      summary: Process conflicted order
+      description: >
+        Process conflicted order and items. For each item, an action can be
+        defined. Actions can be:
+
+        - reroute
+
+        - cancel
+
+        - swap
+
+        - manual_routing
+
+        Depending on the action, different fields on items are required. They
+        are defined in the schema
+      operationId: process-conflicted-order
+      requestBody:
+        content:
+          Application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              title: >-
+                Trigger partial cancellation or swap and reroute of logistic
+                orders that got in conflict due to no inventory or shipping
+                offer update error.
+              description: >-
+                Triggers processing of logistic orders in 'conflict' state.
+                Specific action (cancel, reroute, swap, etc) for each conflicted
+                item in order must be defined.
+              type: object
+              required: &ref_12
+                - order_id
+                - items
+              properties: &ref_13
+                order_id:
+                  type: string
+                  maxLength: 36
+                  minLength: 36
+                  description: >-
+                    The internal identifier(Sales Order UUID) of the order that
+                    we want to fix.
+                items:
+                  type: array
+                  description: >-
+                    Complete list of items and actions to be performed on them
+                    (reroute/cancel or swap).
+                  minItems: 1
+                  items:
+                    oneOf:
+                      - type: object
+                        description: >-
+                          A combination of item id (Sales Order Item UUID) and
+                          action to be taken to this item (reroute/cancel or
+                          swap).
+                        required:
+                          - item_id
+                          - action
+                        properties:
+                          item_id:
+                            type: string
+                            description: >-
+                              Identifier (Sales Order Item UUID) of a single
+                              item in logistic order.
+                          action:
+                            type: string
+                            description: ' Action to be performed with the item(reroute, cancel).'
+                            enum:
+                              - reroute
+                              - cancel
+                      - type: object
+                        description: >-
+                          A combination of item id (Sales Order Item UUID) and
+                          action to be taken to this item (reroute/cancel or
+                          swap).
+                        required:
+                          - item_id
+                          - action
+                          - swap_to
+                        properties:
+                          item_id:
+                            type: string
+                            description: >-
+                              Identifier (Sales Order Item UUID) of a single
+                              item in logistic order.
+                          action:
+                            type: string
+                            description: ' Action to be performed with the item(swap).'
+                            enum:
+                              - swap
+                          swap_to:
+                            type: object
+                            description: Properties of the new item.
+                            properties:
+                              uuid:
+                                type: string
+                                description: >-
+                                  New unique item ID(Sales Order Item UUID)
+                                  after swapping. Should be generated in
+                                  sales_order service.
+                                maxLength: 36
+                                minLength: 36
+                              product_id:
+                                description: >-
+                                  Identifier of the product that is this
+                                  SalesOrder's line item.
+                                maxLength: 256
+                                type: string
+                              product_sku:
+                                description: >-
+                                  SKU of the product that is this SalesOrder's
+                                  line item.
+                                maxLength: 256
+                                type: string
+                              product_name:
+                                description: >-
+                                  Human-readable name of the product that is
+                                  this SalesOrder's line item.
+                                maxLength: 512
+                                type: string
+                              shipping_weight_value:
+                                description: Weight of the product, numeric value.
+                                type: number
+                              shipping_weight_unit:
+                                description: The chosen weight unit (e.g. 'kg').
+                                type: string
+                              product_hts_number:
+                                description: >-
+                                  A six digit code specified by harmonized
+                                  system for tariffs (required for international
+                                  shipments).
+                                type: string
+                              country_of_origin:
+                                description: >-
+                                  The origin country code of product (required
+                                  for international shipments).
+                                type: string
+                              material:
+                                description: >-
+                                  The raw material of product (for product's
+                                  description in custom).
+                                type: string
+                              schedule_b:
+                                description: >-
+                                  a classification code for exporting goods out
+                                  of the 
+
+                                  United States. The Schedule B is used to track
+                                  the amount of trade 
+                                   goods that are being exported from the U.S. The U.S. Census Bureau
+                                   keeps records of the amount of exports by country/quantity, and
+                                   dollar amount.
+                                type: string
+                              product_attributes:
+                                description: >-
+                                  Attributes like size and color of the product
+                                  in this SalesOrder.
+                                $schema: http://json-schema.org/draft-04/schema#
+                                title: Product Attributes
+                                type: &ref_10
+                                  - object
+                                  - 'null'
+                                properties: &ref_11
+                                  variation_color_value:
+                                    type: string
+                                    maxLength: 100
+                                  variation_size_value:
+                                    type: string
+                                    maxLength: 100
+                                  variation_additional_1_value:
+                                    type: string
+                                    maxLength: 100
+                                    description: >-
+                                      An additional variation selection, e.g.
+                                      material
+                                  variation_additional_2_value:
+                                    type: string
+                                    maxLength: 100
+                                    description: >-
+                                      An additional variation selection, e.g.
+                                      material
+                              product_image_url:
+                                description: Url of the main image of the product.
+                                type: string
+                              product_customs_category:
+                                description: Product's main category subject.
+                                type: string
+                              epc_list:
+                                type: array
+                                items:
+                                  type: string
+                                  maxLength: 256
+                                  description: EPC number of the product, if available.
+                      - type: object
+                        description: >-
+                          A combination of item id (Sales Order Item UUID) and
+                          action to be taken to this item (reroute/cancel or
+                          swap).
+                        required:
+                          - item_id
+                          - action
+                          - route_to
+                        properties:
+                          item_id:
+                            type: string
+                            description: >-
+                              Identifier (Sales Order Item UUID) of a single
+                              item in logistic order.
+                          action:
+                            type: string
+                            description: ' Action to be performed with the item(manual_routing).'
+                            enum:
+                              - manual_routing
+                          route_to:
+                            type: object
+                            description: >-
+                              Contains the fulfillment node identifier where the
+                              sales order item should be routed to (used for
+                              manual routing action).
+                            required:
+                              - fulfillment_node_id
+                            properties:
+                              fulfillment_node_id:
+                                type: string
+                                minLength: 1
+                                description: >-
+                                  The fulfillment node id where the
+                                  sales_order_item should be routed to.
+            example:
+              order_id: 6d56b2d9-b403-4d5f-8897-75527f54acd5
+              items:
+                - item_id: 6e71bc7b-0dc9-4f19-820e-8ce46a15339f
+                  action: reroute
+                - item_id: 1e0d1881-2cac-4e42-8390-1bf67508de7e
+                  action: cancel
+                - item_id: 1e0d1881-2cac-4e42-8390-1bf67508de7e
+                  action: swap
+                  swap_to:
+                    uuid: 9755e5cc-17f7-4dc1-b528-353fe504eb57
+                    product_id: ID123
+                    product_sku: SKU123
+                    product_name: Product name
+                    shipping_weight_value: 10
+                    shipping_weight_unit: kg
+                    product_hts_number: 4901 99
+                    country_of_origin: DE
+                    material: Product description
+                    schedule_b: '1234567890'
+                    product_attributes:
+                      variation_color_value: Black
+                      variation_size_value: Small
+                      variation_additional_1_value: Wood
+                      variation_additional_2_value: Glass
+                    product_image_url: https://image.com/image.png
+                    product_customs_category: Category
+                    epc_list:
+                      - EPCNUMBER1
+                - item_id: de089343-e940-4ad0-8d76-82de6102476f
+                  action: manual_routing
+                  route_to:
+                    fulfillment_node_id: US1
+  /routing/options:
+    get:
+      summary: Get routing options
+      description: >
+        Get shipping options for a given routing request containing:
+
+        - delivery_destination
+
+        - routing_strategy
+
+        - products
+
+        - flat_products
+
+
+        Note: The routing request is a nested dictionary object. The caller
+        should construct the object,
+
+        serialize it to a query string and pass it in the URL query parameters
+        with the routing_request key.
+      operationId: get-shipping-options
+      parameters:
+        - in: query
+          name: routing_request
+          schema:
+            required:
+              - routing_strategy
+              - delivery_destination
+            properties:
+              flat_products:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    product_id:
+                      type: string
+                    type:
+                      type: string
+              products:
+                type: object
+                additionalProperties:
+                  type: integer
+              routing_strategy:
+                type: object
+                properties:
+                  strategy:
+                    type: string
+                  fulfillment_node_ids:
+                    type: array
+                    items:
+                      type: string
+                  service_level_identifier:
+                    type: string
+              delivery_destination:
+                type: object
+                properties:
+                  country_code:
+                    type: string
+                  zip_code:
+                    type: string
+          description: A json encoded string with details for routing request
+      responses:
+        '200':
+          description: Successfully returning routing insights for the specified order
+          content:
+            application/json:
+              example:
+                status: ok
+                routing_options:
+                  - - service_level_identifier: ground
+                      fulfillment_node_id: us01
+                      products:
+                        product_01: 2
+                      type: regular
+                unavailable_products: []
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Routing options response.
+                description: >-
+                  Represents a list of possible routing options. Also,
+                  colloquially known as the result of 'soft routing'.
+                type: object
+                required: &ref_2
+                  - status
+                  - routing_options
+                properties: &ref_3
+                  status:
+                    type: string
+                    enum:
+                      - ok
+                      - no_availability
+                      - destination_not_serviced
+                  routing_options:
+                    type: array
+                    items:
+                      $schema: http://json-schema.org/draft-04/schema#
+                      description: >-
+                        An option to route products in an order. This specifies
+                        assignments of fulfillment nodes to all products in an
+                        order with the service level at which they can be
+                        fulfilled from the fulfillment nodes.
+                      type: array
+                      items: &ref_17
+                        $schema: http://json-schema.org/draft-04/schema#
+                        description: >-
+                          A fulfillment node assigned to fulfill products in an
+                          order at a certain service level. And products which
+                          can be routed with this service level
+                        type: object
+                        required: &ref_15
+                          - service_level_identifier
+                          - fulfillment_node_id
+                          - products
+                        properties: &ref_16
+                          service_level_identifier:
+                            type: string
+                          fulfillment_node_id:
+                            type: string
+                          products:
+                            $schema: http://json-schema.org/draft-04/schema#
+                            type: object
+                            description: >-
+                              Products in the order that needs to be fulfilled.
+                              Contains map which map product_id to quantity
+                            patternProperties: &ref_14
+                              .*:
+                                type: integer
+                                description: Quantity of the products ordered.
+                          type:
+                            description: >-
+                              Shows if this FF node assignment available right
+                              now (regular), or can be fulfilled in the future
+                              (pre-order)
+                            type: string
+                            enum:
+                              - regular
+                              - pre_order
+                  unavailable_products:
+                    description: >-
+                      Contains the list of unavailable products in case of
+                      'no_availability'
+                    type: array
+                    items:
+                      description: Product IDs for unavailable products
+                      type: string
+                    uniqueItems: true
+        '400':
+          description: Client sent malformed request.
+          content:
+            application/json:
+              example:
+                error: 'An error was encountered while consuming your request: ...'
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Client Error Routing resposne
+                description: >-
+                  Routing options response for erroneous client requests. For
+                  example missing required parameters, or sending the request
+                  params as a json body etc.
+                type: object
+                required: &ref_4
+                  - error
+                properties: &ref_5
+                  error:
+                    type: string
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error: Something went wrong while calling get_options rpc method
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                title: Server Error Routing resposne
+                description: >-
+                  Routing options response for internal server errors. F.e.
+                  routing_options rpc endpoint being down, serializing issues
+                  etc.
+                type: object
+                required: &ref_6
+                  - error
+                properties: &ref_7
+                  error:
+                    type: string
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    '200':
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Routing options response.
+      description: >-
+        Represents a list of possible routing options. Also, colloquially known
+        as the result of 'soft routing'.
+      type: object
+      required: *ref_2
+      properties: *ref_3
+    '400':
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Client Error Routing resposne
+      description: >-
+        Routing options response for erroneous client requests. For example
+        missing required parameters, or sending the request params as a json
+        body etc.
+      type: object
+      required: *ref_4
+      properties: *ref_5
+    '500':
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Server Error Routing resposne
+      description: >-
+        Routing options response for internal server errors. F.e.
+        routing_options rpc endpoint being down, serializing issues etc.
+      type: object
+      required: *ref_6
+      properties: *ref_7
+    update_service_level_request:
+      description: Request body to update service level for an order id.
+      type: object
+      required: *ref_8
+      properties: *ref_9
+    update_service_level_error:
+      description: The error response.
+      type: object
+      required: *ref_0
+      properties: *ref_1
+    product_attributes:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: Product Attributes
+      type: *ref_10
+      properties: *ref_11
+    handle_conflicted_logistic_orders_request:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: >-
+        Trigger partial cancellation or swap and reroute of logistic orders that
+        got in conflict due to no inventory or shipping offer update error.
+      description: >-
+        Triggers processing of logistic orders in 'conflict' state. Specific
+        action (cancel, reroute, swap, etc) for each conflicted item in order
+        must be defined.
+      type: object
+      required: *ref_12
+      properties: *ref_13
+    order_products:
+      $schema: http://json-schema.org/draft-04/schema#
+      type: object
+      description: >-
+        Products in the order that needs to be fulfilled. Contains map which map
+        product_id to quantity
+      patternProperties: *ref_14
+    fulfillment_node_assignment:
+      $schema: http://json-schema.org/draft-04/schema#
+      description: >-
+        A fulfillment node assigned to fulfill products in an order at a certain
+        service level. And products which can be routed with this service level
+      type: object
+      required: *ref_15
+      properties: *ref_16
+    routing_option:
+      $schema: http://json-schema.org/draft-04/schema#
+      description: >-
+        An option to route products in an order. This specifies assignments of
+        fulfillment nodes to all products in an order with the service level at
+        which they can be fulfilled from the fulfillment nodes.
+      type: array
+      items: *ref_17

@@ -1,0 +1,239 @@
+Setting up universal links
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Setting up universal links
+Updated on
+Jun 26, 2025
+Published on Oct 1, 2024
+6 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+If a user that had your application installed clicks on a
+universal link
+(e.g. in a Google search's result), instead of opening your web shop the same page gets opened in the application. On Android, these links are called
+app links
+. This document refers to Android's app links as universal links.
+How do universal links work
+Universal links work the following way:
+When a user opens your application for the first time, it downloads a
+configuration file
+from your website. This file authenticates the app with your website and configures the device to redirect links that point to your website to the app.
+When next time the user selects a link that points to your website, the app makes a request to the original URL of the link and parses the webpage. It searches for a
+meta tag
+that contains the app-specific link for that webpage. If the webpage contains a valid link in a meta tag the app opens the corresponding view.
+If the webpage does not contain a meta tag with the app-specific link then a popup will be shown to the user informing them that the content could not be found. The user will then have the option to proceed to the app or continue to the web browser instead.
+Important
+When the app requests the webpage client side JavaScript will not be run. This means that adding the meta tag with client JavaScript will not work. It needs to be added by the server.
+Behavior of universal links on iOS
+In the case of iOS applications, the device may work in a different way than how you configure.
+When a user taps a universal link that you handle, iOS also examines the user's recent choices to determine whether to open your app or your website. For example, a user who has tapped a universal link to open your app can later choose to open your website in a browser by tapping a breadcrumb button in the status bar. After the user makes this choice, iOS continues to open your website in the same browser until the user chooses to open your app by tapping OPEN in the Smart App Banner on the webpage. Learn more about this behavior in
+Apple's developer docs
+.
+Supported browsers
+The following browsers support deep links, and hence universal links to your app:
+Safari
+Chrome
+Firefox
+Setting up universal links for the Shopping App
+To set up universal links, perform the following steps:
+Universal links must be configured for
+every domain
+that might redirect into your app. This includes
+email tracking domains
+.
+Example
+: If links in your marketing emails originate from
+click.email.merchant.com
+and redirect to
+www.merchant.com
+, both domains must be associated with your app.
+Upload and serve the configuration files
+on your website for both iOS and Android:
+To enable universal links for your iOS application:
+Upload the
+Apple App Site Association
+file provided by NewStore to the
+.well-known
+directory on your server.
+Serve the file with the content-type
+application/json
+.
+Serve the file with HTTPS. The file path must follow this format:
+https://yourdomain/.well-known/apple-app-site-association
+.
+To enable universal links for your Android application:
+Upload the
+Asset Links
+file provided by NewStore to the
+.well-known
+directory on your server.
+Serve the file with the content-type
+application/json
+.
+Serve the file with HTTPS. The file path must follow this format:
+https://yourdomain/.well-known/assetlinks.json
+Test if Google can access the files. To do so, use the following link:
+https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://yourdomain&relation=delegate_permission/common.handle_all_urls
+(replace
+yourdomain
+). As a result, you should see the following text:
+*********************ERRORS*********************
+Set up meta tags
+on the pages:
+Create deep links
+for each page that you want to redirect.
+When the user taps on a link, the app uses the information in the deep link to know which view to open.
+The app supports deep links to the following screens. The list uses
+hs
+as the protocol. Replace it with the protocol for your app.
+the home screen:
+hs://home
+a category product lister:
+hs://categories/123
+(replace 123 with the URL-encoded ID of the category)
+a product detail screen:
+hs://products/123
+(replace 123 with the URL-encoded ID of the product)
+the search screen:
+hs://search/query%20goes%here
+(the query at the end of the URL should be URL encoded)
+the favorites screen:
+hs://favorites
+the lookbooks overview screen:
+hs://lookbook
+the lookbook detail screen:
+hs://lookbooks/123
+(replace 123 with the URL-encoded ID of a lookbook)
+the cart:
+hs://cart
+the order history screen:
+hs://account/order
+the loyalty vouchers screen:
+hs://account/vouchers
+a content extension:
+hs://contentextension/?url=aHR0cHM6Ly93d3cubWFybGllc2Rla2tlcnMuY29tL2VuLW5sL2ZpdHRpbmctcm9vbS5odG1s&title=fitting%20room
+(the value of the URL parameter should be a base64-encoded URL, the value of the title parameter should be URL encoded)
+Note for SFCC customers: if a product is a master product, use a variation ID instead of the master ID.
+Use deep links with filters.
+You can create deep links to a category with a filter. The user will be redirected to a new product list with only products that correspond to those filters.
+Use the following parameters in the filters:
+The title parameter will be the name of the resulting product list, that will be shown in the app. This parameter is optional, if omitted the name of the selected category will be shown.
+The title of the product list, will need to be URL encoded. As you will see in one of the following examples a name as “Green and Blue” needs to be written as
+Green%20and%20Blue
+.
+The category parameter indicates the category on which the filter will be applied. This parameter is optional, if omitted the root category will be selected.
+The first parameter
+filters[$i][attribute]
+describes the attribute being filtered on.
+The additional parameters describe the acceptable value or values. At least one acceptable value is required:
+filters[$i][in][$j]=$value
+.
+Filters are numbered, starting from 0 (
+$i
+). Acceptable values
+{value}
+are also numbered, starting from 0 (
+$j
+).
+Examples
+Deep link with filter:
+hs://productlist?title={name_in_the_app}&category={category_id}&filters[0][attribute]={attribute_id}&filters[0][in][]={attribute_value}
+Deep link with filter, to show a page with Adidas products of size 2:
+hs://productlist?title=Adidas&category=2&filters[0][attribute]=brand&filters[0][in][]=ADIDAS&filters[1][attribute]=size&filters[1][in][]=2
+Deep link with filter, to show green or blue products in category 12:
+hs://productlist?title=Green%20and%20Blue&category=12&filters[0][attribute]=color&filters[0][in][0]=green&filters[0][in][1]=blue
+Test the deep links
+. To do so, open the links in a browser on a device where the application is installed.
+Tip for iOS
+If your Notes on the device syncs with your Mac, copy the deep links into a Notes entry to share them with your device.
+Add the following HTML tags
+to the HEAD of the pages:
+<meta property="al:ios:app_name" content="Store Name">
+<meta property="al:ios:app_store_id" content="{appstore_id*}">
+<meta property="al:ios:url" content="{storename}://categories/432/">
+The
+al:ios:url
+meta tag contains the deep link.
+Important
+Adding the meta tag with client JavaScript will not work. Read more about this in the first section of this article.
+Setting up universal links within Salesforce Marketing Cloud
+Emails that are sent from Salesforce Marketing Cloud (SFMC) contain links to your website such as a Product detail page, Product lister page etc. Even if you have universal links enabled, these links in the email do not open the app because the domain is an SFMC domain and not the domain of the website. This domain usually starts with
+click
+.
+For the device to know that it can open the app from these links, the following conditions need to be met:
+The SFMC domain needs to be added to the app. Get in touch with your implementation contact to do this for you.
+For Android: follow the steps described in the
+Salesforce documentation
+to set up deep links.
+For iOS: the SFMC domain needs to prove if it can be associated to the app. For that, enter the app ID provided by NewStore in the Salesforce user interface. After that, SFMC will make sure the correct configuration files are created on the SFMC domain.
+Learn more in the Salesforce documentation about how to implement iOS universal links
+.
+Was this article helpful?
+Yes
+No
+Tags
+Shopping App
+universal link
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

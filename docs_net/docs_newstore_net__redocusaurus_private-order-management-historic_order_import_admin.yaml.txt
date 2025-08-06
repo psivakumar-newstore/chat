@@ -1,0 +1,1817 @@
+openapi: 3.0.0
+info:
+  title: Sales order historic import API
+  version: 0.1.0
+  x-audience: internal-team
+  x-api-id: sales-order-historic-import-062023
+  description: >
+    Use this API to import historic order into NewStore and create a sales_order
+    object out of it. This is an internal
+
+    API and should not be used outside of OM.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /orders/import/historic:
+    post:
+      summary: >-
+        Use this API to import historical order into NewStore and create a
+        sales_order object.
+      operationId: createHistoricOrders
+      requestBody:
+        content:
+          application/json:
+            example:
+              order:
+                - external_id: HISTORIC_ORDER_123
+                  placed_at: '2018-10-08T07:06:08.067Z'
+                  channel_type: mobile
+                  channel_name: android app
+                  currency: USD
+                  customer_email: jw@example.com
+                  consumer_uuid: 63036ceb-a18c-4b7b-b507-7cdb43d4f547
+                  external_consumer_id: WX78LZ
+                  shop_locale: en-US
+                  shop: storefront-catalog-en
+                  shipping_address:
+                    first_name: Jay
+                    last_name: Doubleyou
+                    country: US
+                    zip_code: '02111'
+                    city: Boston
+                    state: Massachusetts
+                    address_line_1: 601 South Street
+                    address_line_2: ''
+                    phone: 202-555-0140
+                  billing_address:
+                    first_name: Jay
+                    last_name: Doubleyou
+                    country: US
+                    zip_code: '02111'
+                    city: Boston
+                    state: Massachusetts
+                    address_line_1: 601 South Street
+                    phone: 202-555-0140
+                  shipments:
+                    - items:
+                        - product_id: '1000011'
+                          product_name: Short sleeve T-Shirt blue
+                          status: complete
+                          external_item_id: GD-10000001
+                          price:
+                            item_price: 100.21
+                            item_list_price: 100.21
+                            item_tax_lines:
+                              - amount: 68.78
+                                rate: 0.0758
+                                name: Custom Tax
+                                country_code: DE
+                          extended_attributes:
+                            - name: key_a
+                              value: value_a
+                            - name: key_b
+                              value: value_b
+                      shipping_option:
+                        service_level_identifier: GROUND
+                        shipping_type: traditional_carrier
+                        fulfillment_node_id: DC01
+                        shipping_carrier: FedEx
+                        display_name: In store handover
+                        price: 19
+                        tax: 6.78
+                        zip_code: '81379'
+                        country_code: DE
+                  price_method: tax_excluded
+                  extended_attributes:
+                    - name: key_a
+                      value: value_a
+                    - name: key_b
+                      value: value_b
+            schema:
+              title: Import historic orders into NewStore
+              type: object
+              required:
+                - order
+              properties:
+                order:
+                  type: object
+                  description: >-
+                    An order placed in an external system, identified by its
+                    `external_id` in NewStore. An order contains a list of
+                    shipments and the products in each shipment.
+                  required:
+                    - external_id
+                    - placed_at
+                    - channel_type
+                    - channel_name
+                    - currency
+                    - customer_email
+                    - consumer_uuid
+                    - external_consumer_id
+                    - shop_locale
+                    - shop
+                    - shipping_address
+                    - billing_address
+                    - price_method
+                    - shipments
+                  properties:
+                    external_id:
+                      type: string
+                      minLength: 1
+                      maxLength: 64
+                    placed_at:
+                      type: string
+                      description: >-
+                        Date representation of when the order was placed,
+                        containing date, time and timezone as defined by
+                        https://tools.ietf.org/html/rfc3339 (ISO 8601).
+                      format: date-time
+                    store_id:
+                      type: string
+                      description: ID of the store where this order was placed.
+                      maxLength: 256
+                    channel_type:
+                      type: string
+                      enum:
+                        - web
+                        - mobile
+                        - store
+                    channel_name:
+                      type: string
+                      minLength: 1
+                      maxLength: 64
+                      description: >-
+                        A string used to distinguish between various sources of
+                        orders.
+                    currency:
+                      type: string
+                      description: >-
+                        The currency for all the prices contained within this
+                        payload.
+                      enum:
+                        - AED
+                        - AFN
+                        - ALL
+                        - AMD
+                        - ANG
+                        - AOA
+                        - ARS
+                        - AUD
+                        - AWG
+                        - AZN
+                        - BAM
+                        - BBD
+                        - BDT
+                        - BGN
+                        - BHD
+                        - BIF
+                        - BMD
+                        - BND
+                        - BOB
+                        - BOV
+                        - BRL
+                        - BSD
+                        - BTN
+                        - BWP
+                        - BYN
+                        - BZD
+                        - CAD
+                        - CDF
+                        - CHE
+                        - CHF
+                        - CHW
+                        - CLF
+                        - CLP
+                        - CNY
+                        - COP
+                        - COU
+                        - CRC
+                        - CUC
+                        - CUP
+                        - CVE
+                        - CZK
+                        - DJF
+                        - DKK
+                        - DOP
+                        - DZD
+                        - EGP
+                        - ERN
+                        - ETB
+                        - EUR
+                        - FJD
+                        - FKP
+                        - GBP
+                        - GEL
+                        - GHS
+                        - GIP
+                        - GMD
+                        - GNF
+                        - GTQ
+                        - GYD
+                        - HKD
+                        - HNL
+                        - HRK
+                        - HTG
+                        - HUF
+                        - IDR
+                        - ILS
+                        - INR
+                        - IQD
+                        - IRR
+                        - ISK
+                        - JMD
+                        - JOD
+                        - JPY
+                        - KES
+                        - KGS
+                        - KHR
+                        - KMF
+                        - KPW
+                        - KRW
+                        - KWD
+                        - KYD
+                        - KZT
+                        - LAK
+                        - LBP
+                        - LKR
+                        - LRD
+                        - LSL
+                        - LYD
+                        - MAD
+                        - MDL
+                        - MGA
+                        - MKD
+                        - MMK
+                        - MNT
+                        - MOP
+                        - MRU
+                        - MUR
+                        - MVR
+                        - MWK
+                        - MXN
+                        - MXV
+                        - MYR
+                        - MZN
+                        - NAD
+                        - NGN
+                        - NIO
+                        - NOK
+                        - NPR
+                        - NZD
+                        - OMR
+                        - PAB
+                        - PEN
+                        - PGK
+                        - PHP
+                        - PKR
+                        - PLN
+                        - PYG
+                        - QAR
+                        - RON
+                        - RSD
+                        - RUB
+                        - RWF
+                        - SAR
+                        - SBD
+                        - SCR
+                        - SDG
+                        - SEK
+                        - SGD
+                        - SHP
+                        - SLL
+                        - SOS
+                        - SRD
+                        - SSP
+                        - STN
+                        - SVC
+                        - SYP
+                        - SZL
+                        - THB
+                        - TJS
+                        - TMT
+                        - TND
+                        - TOP
+                        - TRY
+                        - TTD
+                        - TWD
+                        - TZS
+                        - UAH
+                        - UGX
+                        - USD
+                        - USN
+                        - UYI
+                        - UYU
+                        - UYW
+                        - UZS
+                        - VES
+                        - VND
+                        - VUV
+                        - WST
+                        - XAF
+                        - XAG
+                        - XAU
+                        - XBA
+                        - XBB
+                        - XBC
+                        - XBD
+                        - XCD
+                        - XDR
+                        - XOF
+                        - XPD
+                        - XPF
+                        - XPT
+                        - XSU
+                        - XTS
+                        - XUA
+                        - XXX
+                        - YER
+                        - ZAR
+                        - ZMW
+                        - ZWL
+                    customer_email:
+                      type: string
+                      format: email
+                      minLength: 1
+                      maxLength: 64
+                    consumer_uuid:
+                      type: string
+                      description: ID of the consumer who placed this SalesOrder
+                      maxLength: 72
+                      minLength: 36
+                    external_consumer_id:
+                      type: string
+                      description: >-
+                        Identifier used in external system to identify a
+                        consumer.
+                      maxLength: 256
+                    shop_locale:
+                      type: string
+                      description: >-
+                        The locale of the customer used for the shop, in RFC
+                        5646.
+                      minLength: 1
+                      maxLength: 128
+                    shop:
+                      type: string
+                      description: The shop containing the items of the order.
+                      minLength: 1
+                      maxLength: 128
+                    shipping_address:
+                      type: object
+                      required:
+                        - first_name
+                        - last_name
+                        - country
+                        - city
+                        - address_line_1
+                        - phone
+                      properties:
+                        first_name:
+                          type: string
+                          maxLength: 64
+                        last_name:
+                          type: string
+                          maxLength: 64
+                        country:
+                          description: The code of the country in the ISO ALPHA-2 format.
+                          type: string
+                          minLength: 2
+                          maxLength: 2
+                          enum:
+                            - AD
+                            - AE
+                            - AF
+                            - AG
+                            - AI
+                            - AL
+                            - AM
+                            - AO
+                            - AQ
+                            - AR
+                            - AS
+                            - AT
+                            - AU
+                            - AW
+                            - AX
+                            - AZ
+                            - BA
+                            - BB
+                            - BD
+                            - BE
+                            - BF
+                            - BG
+                            - BH
+                            - BI
+                            - BJ
+                            - BL
+                            - BM
+                            - BN
+                            - BO
+                            - BQ
+                            - BR
+                            - BS
+                            - BT
+                            - BV
+                            - BW
+                            - BY
+                            - BZ
+                            - CA
+                            - CC
+                            - CD
+                            - CF
+                            - CG
+                            - CH
+                            - CI
+                            - CK
+                            - CL
+                            - CM
+                            - CN
+                            - CO
+                            - CR
+                            - CU
+                            - CV
+                            - CW
+                            - CX
+                            - CY
+                            - CZ
+                            - DE
+                            - DJ
+                            - DK
+                            - DM
+                            - DO
+                            - DZ
+                            - EC
+                            - EE
+                            - EG
+                            - EH
+                            - ER
+                            - ES
+                            - ET
+                            - FI
+                            - FJ
+                            - FK
+                            - FM
+                            - FO
+                            - FR
+                            - GA
+                            - GB
+                            - GD
+                            - GE
+                            - GF
+                            - GG
+                            - GH
+                            - GI
+                            - GL
+                            - GM
+                            - GN
+                            - GP
+                            - GQ
+                            - GR
+                            - GS
+                            - GT
+                            - GU
+                            - GW
+                            - GY
+                            - HK
+                            - HM
+                            - HN
+                            - HR
+                            - HT
+                            - HU
+                            - ID
+                            - IE
+                            - IL
+                            - IM
+                            - IN
+                            - IO
+                            - IQ
+                            - IR
+                            - IS
+                            - IT
+                            - JE
+                            - JM
+                            - JO
+                            - JP
+                            - KE
+                            - KG
+                            - KH
+                            - KI
+                            - KM
+                            - KN
+                            - KP
+                            - KR
+                            - KW
+                            - KY
+                            - KZ
+                            - LA
+                            - LB
+                            - LC
+                            - LI
+                            - LK
+                            - LR
+                            - LS
+                            - LT
+                            - LU
+                            - LV
+                            - LY
+                            - MA
+                            - MC
+                            - MD
+                            - ME
+                            - MF
+                            - MG
+                            - MH
+                            - MK
+                            - ML
+                            - MM
+                            - MN
+                            - MO
+                            - MP
+                            - MQ
+                            - MR
+                            - MS
+                            - MT
+                            - MU
+                            - MV
+                            - MW
+                            - MX
+                            - MY
+                            - MZ
+                            - NA
+                            - NC
+                            - NE
+                            - NF
+                            - NG
+                            - NI
+                            - NL
+                            - 'NO'
+                            - NP
+                            - NR
+                            - NU
+                            - NZ
+                            - OM
+                            - PA
+                            - PE
+                            - PF
+                            - PG
+                            - PH
+                            - PK
+                            - PL
+                            - PM
+                            - PN
+                            - PR
+                            - PS
+                            - PT
+                            - PW
+                            - PY
+                            - QA
+                            - RE
+                            - RO
+                            - RS
+                            - RU
+                            - RW
+                            - SA
+                            - SB
+                            - SC
+                            - SD
+                            - SE
+                            - SG
+                            - SH
+                            - SI
+                            - SJ
+                            - SK
+                            - SL
+                            - SM
+                            - SN
+                            - SO
+                            - SR
+                            - SS
+                            - ST
+                            - SV
+                            - SX
+                            - SY
+                            - SZ
+                            - TC
+                            - TD
+                            - TF
+                            - TG
+                            - TH
+                            - TJ
+                            - TK
+                            - TL
+                            - TM
+                            - TN
+                            - TO
+                            - TR
+                            - TT
+                            - TV
+                            - TW
+                            - TZ
+                            - UA
+                            - UG
+                            - UM
+                            - US
+                            - UY
+                            - UZ
+                            - VA
+                            - VC
+                            - VE
+                            - VG
+                            - VI
+                            - VN
+                            - VU
+                            - WF
+                            - WS
+                            - YE
+                            - YT
+                            - ZA
+                            - ZM
+                            - ZW
+                        zip_code:
+                          type: string
+                          maxLength: 32
+                        city:
+                          type: string
+                          maxLength: 64
+                        state:
+                          type: string
+                          maxLength: 32
+                        address_line_1:
+                          type: string
+                          minLength: 1
+                          maxLength: 128
+                        address_line_2:
+                          type: string
+                          maxLength: 256
+                        phone:
+                          type: string
+                          maxLength: 128
+                    billing_address:
+                      type: object
+                      required:
+                        - first_name
+                        - last_name
+                        - country
+                        - city
+                        - address_line_1
+                        - phone
+                      properties:
+                        first_name:
+                          type: string
+                          maxLength: 64
+                        last_name:
+                          type: string
+                          maxLength: 64
+                        country:
+                          description: The code of the country in the ISO ALPHA-2 format.
+                          type: string
+                          minLength: 2
+                          maxLength: 2
+                          enum:
+                            - AD
+                            - AE
+                            - AF
+                            - AG
+                            - AI
+                            - AL
+                            - AM
+                            - AO
+                            - AQ
+                            - AR
+                            - AS
+                            - AT
+                            - AU
+                            - AW
+                            - AX
+                            - AZ
+                            - BA
+                            - BB
+                            - BD
+                            - BE
+                            - BF
+                            - BG
+                            - BH
+                            - BI
+                            - BJ
+                            - BL
+                            - BM
+                            - BN
+                            - BO
+                            - BQ
+                            - BR
+                            - BS
+                            - BT
+                            - BV
+                            - BW
+                            - BY
+                            - BZ
+                            - CA
+                            - CC
+                            - CD
+                            - CF
+                            - CG
+                            - CH
+                            - CI
+                            - CK
+                            - CL
+                            - CM
+                            - CN
+                            - CO
+                            - CR
+                            - CU
+                            - CV
+                            - CW
+                            - CX
+                            - CY
+                            - CZ
+                            - DE
+                            - DJ
+                            - DK
+                            - DM
+                            - DO
+                            - DZ
+                            - EC
+                            - EE
+                            - EG
+                            - EH
+                            - ER
+                            - ES
+                            - ET
+                            - FI
+                            - FJ
+                            - FK
+                            - FM
+                            - FO
+                            - FR
+                            - GA
+                            - GB
+                            - GD
+                            - GE
+                            - GF
+                            - GG
+                            - GH
+                            - GI
+                            - GL
+                            - GM
+                            - GN
+                            - GP
+                            - GQ
+                            - GR
+                            - GS
+                            - GT
+                            - GU
+                            - GW
+                            - GY
+                            - HK
+                            - HM
+                            - HN
+                            - HR
+                            - HT
+                            - HU
+                            - ID
+                            - IE
+                            - IL
+                            - IM
+                            - IN
+                            - IO
+                            - IQ
+                            - IR
+                            - IS
+                            - IT
+                            - JE
+                            - JM
+                            - JO
+                            - JP
+                            - KE
+                            - KG
+                            - KH
+                            - KI
+                            - KM
+                            - KN
+                            - KP
+                            - KR
+                            - KW
+                            - KY
+                            - KZ
+                            - LA
+                            - LB
+                            - LC
+                            - LI
+                            - LK
+                            - LR
+                            - LS
+                            - LT
+                            - LU
+                            - LV
+                            - LY
+                            - MA
+                            - MC
+                            - MD
+                            - ME
+                            - MF
+                            - MG
+                            - MH
+                            - MK
+                            - ML
+                            - MM
+                            - MN
+                            - MO
+                            - MP
+                            - MQ
+                            - MR
+                            - MS
+                            - MT
+                            - MU
+                            - MV
+                            - MW
+                            - MX
+                            - MY
+                            - MZ
+                            - NA
+                            - NC
+                            - NE
+                            - NF
+                            - NG
+                            - NI
+                            - NL
+                            - 'NO'
+                            - NP
+                            - NR
+                            - NU
+                            - NZ
+                            - OM
+                            - PA
+                            - PE
+                            - PF
+                            - PG
+                            - PH
+                            - PK
+                            - PL
+                            - PM
+                            - PN
+                            - PR
+                            - PS
+                            - PT
+                            - PW
+                            - PY
+                            - QA
+                            - RE
+                            - RO
+                            - RS
+                            - RU
+                            - RW
+                            - SA
+                            - SB
+                            - SC
+                            - SD
+                            - SE
+                            - SG
+                            - SH
+                            - SI
+                            - SJ
+                            - SK
+                            - SL
+                            - SM
+                            - SN
+                            - SO
+                            - SR
+                            - SS
+                            - ST
+                            - SV
+                            - SX
+                            - SY
+                            - SZ
+                            - TC
+                            - TD
+                            - TF
+                            - TG
+                            - TH
+                            - TJ
+                            - TK
+                            - TL
+                            - TM
+                            - TN
+                            - TO
+                            - TR
+                            - TT
+                            - TV
+                            - TW
+                            - TZ
+                            - UA
+                            - UG
+                            - UM
+                            - US
+                            - UY
+                            - UZ
+                            - VA
+                            - VC
+                            - VE
+                            - VG
+                            - VI
+                            - VN
+                            - VU
+                            - WF
+                            - WS
+                            - YE
+                            - YT
+                            - ZA
+                            - ZM
+                            - ZW
+                        zip_code:
+                          type: string
+                          maxLength: 32
+                        city:
+                          type: string
+                          maxLength: 64
+                        state:
+                          type: string
+                          maxLength: 32
+                        address_line_1:
+                          type: string
+                          minLength: 1
+                          maxLength: 128
+                        address_line_2:
+                          type: string
+                          maxLength: 256
+                        phone:
+                          type: string
+                          maxLength: 128
+                    price_method:
+                      type: string
+                      description: >-
+                        Specifies if all items and shipping prices include tax
+                        or not.
+                      enum:
+                        - tax_included
+                        - tax_excluded
+                    shipments:
+                      type: array
+                      description: ''
+                      items:
+                        type: object
+                        required:
+                          - items
+                          - shipping_option
+                        properties:
+                          items:
+                            type: array
+                            minItems: 1
+                            items:
+                              type: object
+                              required:
+                                - product_id
+                                - product_name
+                                - status
+                                - price
+                                - external_item_id
+                              properties:
+                                product_id:
+                                  type: string
+                                  minLength: 1
+                                  description: >-
+                                    The identifier of the product, this can be
+                                    any type of identifier from the external
+                                    system.
+                                product_name:
+                                  type: string
+                                  minLength: 1
+                                  description: The name of the product.
+                                status:
+                                  type: string
+                                  enum:
+                                    - complete
+                                price:
+                                  type: object
+                                  required:
+                                    - item_price
+                                    - item_list_price
+                                    - item_tax_lines
+                                  properties:
+                                    item_price:
+                                      description: >-
+                                        Price of the item, including taxes or
+                                        not, depending on the value of the
+                                        `price_method` property. Can be affected
+                                        by pricebooks and bundle pricing.
+                                      type: number
+                                      minimum: 0
+                                    item_list_price:
+                                      description: Price from the default pricebook.
+                                      type: number
+                                      minimum: 0
+                                    item_tax_lines:
+                                      description: Describes the taxes applied to the item.
+                                      type: array
+                                      minItems: 0
+                                      maxItems: 100
+                                      items:
+                                        type: object
+                                        required:
+                                          - amount
+                                          - rate
+                                        properties:
+                                          amount:
+                                            type: number
+                                            description: The tax amount.
+                                            minimum: 0
+                                          rate:
+                                            type: number
+                                            description: >-
+                                              The tax rate. Must be in form of ratio
+                                              between 0 and 1, not percentage.
+                                            minimum: 0
+                                          name:
+                                            type: string
+                                            description: A description of the tax type. Required.
+                                            maxLength: 64
+                                          country_code:
+                                            description: >-
+                                              The code of the country of the tax in
+                                              the ISO 3166 ALPHA-2 format. For
+                                              example, GB, DE or US.
+                                            type: string
+                                            maxLength: 2
+                                    item_discount_info:
+                                      type: array
+                                      description: >-
+                                        Information about item-level discounts
+                                        applied to the items.
+                                      maxItems: 1
+                                      items:
+                                        oneOf:
+                                          - required:
+                                              - discount_ref
+                                              - type
+                                              - original_value
+                                              - price_adjustment
+                                            properties:
+                                              discount_ref:
+                                                type: string
+                                                description: >-
+                                                  A string token identifying the discount,
+                                                  e.g. BLACK_FRIDAY_SALE.
+                                                minLength: 1
+                                                maxLength: 256
+                                              coupon_code:
+                                                type: string
+                                                maxLength: 64
+                                              description:
+                                                type: string
+                                                maxLength: 1024
+                                              type:
+                                                type: string
+                                                enum:
+                                                  - fixed
+                                              original_value:
+                                                description: >-
+                                                  Discount applied. In the case of an
+                                                  item_discount_info, the discount is
+                                                  applied to the item itself. In the case
+                                                  of an item_order_discount_info, the
+                                                  discount is applied to the whole order.
+                                                type: number
+                                                minimum: 0
+                                              price_adjustment:
+                                                description: >-
+                                                  Monetary discount amount applied to the
+                                                  current item.
+                                                type: number
+                                                minimum: 0
+                                          - required:
+                                              - discount_ref
+                                              - type
+                                              - original_value
+                                              - price_adjustment
+                                            properties:
+                                              discount_ref:
+                                                type: string
+                                                description: >-
+                                                  A string token identifying the discount,
+                                                  e.g. BLACK_FRIDAY_SALE.
+                                                minLength: 1
+                                                maxLength: 256
+                                              coupon_code:
+                                                type: string
+                                                maxLength: 64
+                                              description:
+                                                type: string
+                                                maxLength: 1024
+                                              type:
+                                                type: string
+                                                enum:
+                                                  - percentage
+                                              original_value:
+                                                description: >-
+                                                  Discount applied. In the case of an
+                                                  item_discount_info, the discount is
+                                                  applied to the item itself. In the case
+                                                  of an item_order_discount_info, the
+                                                  discount is applied to the whole order.
+                                                type: number
+                                                minimum: 0
+                                                maximum: 100
+                                              price_adjustment:
+                                                description: >-
+                                                  Monetary discount amount applied to the
+                                                  current item.
+                                                type: number
+                                                minimum: 0
+                                        type: object
+                                        required:
+                                          - discount_ref
+                                          - type
+                                          - original_value
+                                          - price_adjustment
+                                    item_order_discount_info:
+                                      type: array
+                                      description: >-
+                                        Information about order-level discounts
+                                        applied to the item. An order level
+                                        discount is prorated for all the items
+                                        across all shipments.
+                                      maxItems: 1
+                                      items:
+                                        oneOf:
+                                          - required:
+                                              - discount_ref
+                                              - type
+                                              - original_value
+                                              - price_adjustment
+                                            properties:
+                                              discount_ref:
+                                                type: string
+                                                description: >-
+                                                  A string token identifying the discount,
+                                                  e.g. BLACK_FRIDAY_SALE.
+                                                minLength: 1
+                                                maxLength: 256
+                                              coupon_code:
+                                                type: string
+                                                maxLength: 64
+                                              description:
+                                                type: string
+                                                maxLength: 1024
+                                              type:
+                                                type: string
+                                                enum:
+                                                  - fixed
+                                              original_value:
+                                                description: >-
+                                                  Discount applied. In the case of an
+                                                  item_discount_info, the discount is
+                                                  applied to the item itself. In the case
+                                                  of an item_order_discount_info, the
+                                                  discount is applied to the whole order.
+                                                type: number
+                                                minimum: 0
+                                              price_adjustment:
+                                                description: >-
+                                                  Monetary discount amount applied to the
+                                                  current item.
+                                                type: number
+                                                minimum: 0
+                                          - required:
+                                              - discount_ref
+                                              - type
+                                              - original_value
+                                              - price_adjustment
+                                            properties:
+                                              discount_ref:
+                                                type: string
+                                                description: >-
+                                                  A string token identifying the discount,
+                                                  e.g. BLACK_FRIDAY_SALE.
+                                                minLength: 1
+                                                maxLength: 256
+                                              coupon_code:
+                                                type: string
+                                                maxLength: 64
+                                              description:
+                                                type: string
+                                                maxLength: 1024
+                                              type:
+                                                type: string
+                                                enum:
+                                                  - percentage
+                                              original_value:
+                                                description: >-
+                                                  Discount applied. In the case of an
+                                                  item_discount_info, the discount is
+                                                  applied to the item itself. In the case
+                                                  of an item_order_discount_info, the
+                                                  discount is applied to the whole order.
+                                                type: number
+                                                minimum: 0
+                                                maximum: 100
+                                              price_adjustment:
+                                                description: >-
+                                                  Monetary discount amount applied to the
+                                                  current item.
+                                                type: number
+                                                minimum: 0
+                                        type: object
+                                        required:
+                                          - discount_ref
+                                          - type
+                                          - original_value
+                                          - price_adjustment
+                                    pricebook:
+                                      description: >-
+                                        A reference to the pricebook used to
+                                        calculate the catalog price.
+                                      type: string
+                                      default: default
+                                      maxLength: 64
+                                    group_ref:
+                                      type: string
+                                      description: >-
+                                        A reference to a group (bundle) if group
+                                        pricing was used for the item.
+                                      maxLength: 64
+                                external_item_id:
+                                  type: string
+                                  minLength: 1
+                                  maxLength: 64
+                                extended_attributes:
+                                  type: array
+                                  maxItems: 100
+                                  items:
+                                    type: object
+                                    required:
+                                      - name
+                                      - value
+                                    maxProperties: 2
+                                    properties:
+                                      name:
+                                        type: string
+                                        maxLength: 100
+                                      value:
+                                        type: string
+                                        maxLength: 8192
+                                external_identifier:
+                                  type: object
+                                  description: External identifier for the order item
+                                  maxProperties: 100
+                                  additionalProperties:
+                                    type: string
+                                    description: >-
+                                      Any external identifier as specified in
+                                      the catalog data, e.g. SKU, EAN and
+                                      others.
+                                    maxLength: 1024
+                                image_url:
+                                  type: string
+                                  description: The URL to a product image.
+                                  minLength: 1
+                                  format: uri
+                          shipping_option:
+                            type: object
+                            description: ''
+                            allOf:
+                              - oneOf:
+                                  - type: object
+                                    required:
+                                      - shipping_type
+                                    properties:
+                                      shipping_type:
+                                        type: string
+                                        enum:
+                                          - traditional_carrier
+                                          - same_day_delivery
+                                        description: Shipping type.
+                                      store_id:
+                                        type: string
+                                        description: >-
+                                          Identifier of the store preselected for
+                                          that shipment.
+                                  - type: object
+                                    required:
+                                      - shipping_type
+                                      - store_id
+                                    properties:
+                                      shipping_type:
+                                        type: string
+                                        enum:
+                                          - in_store_pick_up
+                                          - in_store_handover
+                                        description: Shipping type.
+                                      store_id:
+                                        type: string
+                                        description: >-
+                                          Identifier of the store preselected for
+                                          that shipment.
+                              - type: object
+                                required:
+                                  - service_level_identifier
+                                  - shipping_type
+                                  - fulfillment_node_id
+                                  - display_name
+                                  - zip_code
+                                  - country_code
+                                properties:
+                                  service_level_identifier:
+                                    description: >-
+                                      Service level identifier of the shipping
+                                      option. Set it to IN_STORE_HANDOVER in
+                                      case of injecting an in-store purchase
+                                      order.
+                                    type: string
+                                    minLength: 1
+                                    maxLength: 64
+                                  fulfillment_node_id:
+                                    type: string
+                                    description: >-
+                                      Identifier of the fulfillment node
+                                      preselected for that shipment.
+                                  shipping_carrier:
+                                    type: string
+                                    minLength: 1
+                                    description: >-
+                                      Shipping carrier code, e.g. 'USPS' or
+                                      'Deliv'.
+                                    default: N/A
+                                  display_name:
+                                    type: string
+                                    minLength: 1
+                                    description: Shipping option display name.
+                                  delivery_details:
+                                    type: string
+                                    description: >-
+                                      Shipping option display details, in case
+                                      of traditional carrier contains estimated
+                                      delivery time.
+                                  price:
+                                    type: number
+                                    description: >-
+                                      The price of the shipping option before
+                                      discounts. It might include taxes
+                                      depending on the tax method.
+                                    minimum: 0
+                                    default: 0
+                                  tax:
+                                    type: number
+                                    description: The tax applied to the shipping option.
+                                    minimum: 0
+                                    default: 0
+                                  discount_info:
+                                    type: array
+                                    description: >-
+                                      Information about shipping discounts
+                                      applied to the shipment.
+                                    maxItems: 1
+                                    items:
+                                      oneOf:
+                                        - required:
+                                            - discount_ref
+                                            - type
+                                            - original_value
+                                            - price_adjustment
+                                          properties:
+                                            discount_ref:
+                                              type: string
+                                              description: >-
+                                                A string token identifying the discount,
+                                                e.g. BLACK_FRIDAY_SALE.
+                                              minLength: 1
+                                              maxLength: 256
+                                            coupon_code:
+                                              type: string
+                                              maxLength: 64
+                                            description:
+                                              type: string
+                                              maxLength: 1024
+                                            type:
+                                              type: string
+                                              enum:
+                                                - fixed
+                                            original_value:
+                                              description: >-
+                                                Discount applied. In the case of an
+                                                item_discount_info, the discount is
+                                                applied to the item itself. In the case
+                                                of an item_order_discount_info, the
+                                                discount is applied to the whole order.
+                                              type: number
+                                              minimum: 0
+                                            price_adjustment:
+                                              description: >-
+                                                Monetary discount amount applied to the
+                                                current item.
+                                              type: number
+                                              minimum: 0
+                                        - required:
+                                            - discount_ref
+                                            - type
+                                            - original_value
+                                            - price_adjustment
+                                          properties:
+                                            discount_ref:
+                                              type: string
+                                              description: >-
+                                                A string token identifying the discount,
+                                                e.g. BLACK_FRIDAY_SALE.
+                                              minLength: 1
+                                              maxLength: 256
+                                            coupon_code:
+                                              type: string
+                                              maxLength: 64
+                                            description:
+                                              type: string
+                                              maxLength: 1024
+                                            type:
+                                              type: string
+                                              enum:
+                                                - percentage
+                                            original_value:
+                                              description: >-
+                                                Discount applied. In the case of an
+                                                item_discount_info, the discount is
+                                                applied to the item itself. In the case
+                                                of an item_order_discount_info, the
+                                                discount is applied to the whole order.
+                                              type: number
+                                              minimum: 0
+                                              maximum: 100
+                                            price_adjustment:
+                                              description: >-
+                                                Monetary discount amount applied to the
+                                                current item.
+                                              type: number
+                                              minimum: 0
+                                      type: object
+                                      required:
+                                        - discount_ref
+                                        - type
+                                        - original_value
+                                        - price_adjustment
+                                  zip_code:
+                                    description: Shipping origin zip code.
+                                    type: string
+                                  country_code:
+                                    type: string
+                                    description: >-
+                                      Shipping origin country code. Must be
+ISO-3166
+                                      reference
+.
+                                    enum:
+                                      - AD
+                                      - AE
+                                      - AF
+                                      - AG
+                                      - AI
+                                      - AL
+                                      - AM
+                                      - AO
+                                      - AQ
+                                      - AR
+                                      - AS
+                                      - AT
+                                      - AU
+                                      - AW
+                                      - AX
+                                      - AZ
+                                      - BA
+                                      - BB
+                                      - BD
+                                      - BE
+                                      - BF
+                                      - BG
+                                      - BH
+                                      - BI
+                                      - BJ
+                                      - BL
+                                      - BM
+                                      - BN
+                                      - BO
+                                      - BQ
+                                      - BR
+                                      - BS
+                                      - BT
+                                      - BV
+                                      - BW
+                                      - BY
+                                      - BZ
+                                      - CA
+                                      - CC
+                                      - CD
+                                      - CF
+                                      - CG
+                                      - CH
+                                      - CI
+                                      - CK
+                                      - CL
+                                      - CM
+                                      - CN
+                                      - CO
+                                      - CR
+                                      - CU
+                                      - CV
+                                      - CW
+                                      - CX
+                                      - CY
+                                      - CZ
+                                      - DE
+                                      - DJ
+                                      - DK
+                                      - DM
+                                      - DO
+                                      - DZ
+                                      - EC
+                                      - EE
+                                      - EG
+                                      - EH
+                                      - ER
+                                      - ES
+                                      - ET
+                                      - FI
+                                      - FJ
+                                      - FK
+                                      - FM
+                                      - FO
+                                      - FR
+                                      - GA
+                                      - GB
+                                      - GD
+                                      - GE
+                                      - GF
+                                      - GG
+                                      - GH
+                                      - GI
+                                      - GL
+                                      - GM
+                                      - GN
+                                      - GP
+                                      - GQ
+                                      - GR
+                                      - GS
+                                      - GT
+                                      - GU
+                                      - GW
+                                      - GY
+                                      - HK
+                                      - HM
+                                      - HN
+                                      - HR
+                                      - HT
+                                      - HU
+                                      - ID
+                                      - IE
+                                      - IL
+                                      - IM
+                                      - IN
+                                      - IO
+                                      - IQ
+                                      - IR
+                                      - IS
+                                      - IT
+                                      - JE
+                                      - JM
+                                      - JO
+                                      - JP
+                                      - KE
+                                      - KG
+                                      - KH
+                                      - KI
+                                      - KM
+                                      - KN
+                                      - KP
+                                      - KR
+                                      - KW
+                                      - KY
+                                      - KZ
+                                      - LA
+                                      - LB
+                                      - LC
+                                      - LI
+                                      - LK
+                                      - LR
+                                      - LS
+                                      - LT
+                                      - LU
+                                      - LV
+                                      - LY
+                                      - MA
+                                      - MC
+                                      - MD
+                                      - ME
+                                      - MF
+                                      - MG
+                                      - MH
+                                      - MK
+                                      - ML
+                                      - MM
+                                      - MN
+                                      - MO
+                                      - MP
+                                      - MQ
+                                      - MR
+                                      - MS
+                                      - MT
+                                      - MU
+                                      - MV
+                                      - MW
+                                      - MX
+                                      - MY
+                                      - MZ
+                                      - NA
+                                      - NC
+                                      - NE
+                                      - NF
+                                      - NG
+                                      - NI
+                                      - NL
+                                      - 'NO'
+                                      - NP
+                                      - NR
+                                      - NU
+                                      - NZ
+                                      - OM
+                                      - PA
+                                      - PE
+                                      - PF
+                                      - PG
+                                      - PH
+                                      - PK
+                                      - PL
+                                      - PM
+                                      - PN
+                                      - PR
+                                      - PS
+                                      - PT
+                                      - PW
+                                      - PY
+                                      - QA
+                                      - RE
+                                      - RO
+                                      - RS
+                                      - RU
+                                      - RW
+                                      - SA
+                                      - SB
+                                      - SC
+                                      - SD
+                                      - SE
+                                      - SG
+                                      - SH
+                                      - SI
+                                      - SJ
+                                      - SK
+                                      - SL
+                                      - SM
+                                      - SN
+                                      - SO
+                                      - SR
+                                      - SS
+                                      - ST
+                                      - SV
+                                      - SX
+                                      - SY
+                                      - SZ
+                                      - TC
+                                      - TD
+                                      - TF
+                                      - TG
+                                      - TH
+                                      - TJ
+                                      - TK
+                                      - TL
+                                      - TM
+                                      - TN
+                                      - TO
+                                      - TR
+                                      - TT
+                                      - TV
+                                      - TW
+                                      - TZ
+                                      - UA
+                                      - UG
+                                      - UM
+                                      - US
+                                      - UY
+                                      - UZ
+                                      - VA
+                                      - VC
+                                      - VE
+                                      - VG
+                                      - VI
+                                      - VN
+                                      - VU
+                                      - WF
+                                      - WS
+                                      - YE
+                                      - YT
+                                      - ZA
+                                      - ZM
+                                      - ZW
+                    extended_attributes:
+                      type: array
+                      maxItems: 100
+                      items:
+                        type: object
+                        required:
+                          - name
+                          - value
+                        maxProperties: 2
+                        properties:
+                          name:
+                            type: string
+                            maxLength: 100
+                          value:
+                            type: string
+                            maxLength: 8192
+      responses:
+        '200':
+          description: Order successfully import.
+          content:
+            application/json:
+              example:
+                sales_order_uuid: a1e3d1f0-65f2-4c52-a752-27bea25279dc
+              schema:
+                title: Import historic orders into NewStore
+                type: object
+                required:
+                  - sales_order_uuid
+                properties:
+                  sales_order_uuid:
+                    type: string
+                    minLength: 36
+                    maxLength: 36
+        '400':
+          description: Bad Request Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: bad_request
+                message: Value provided should be a string.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't process request due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        default:
+          description: Unexpected Error
+      description: >
+        Import historic orders into NewStore and creates a sales_order object
+        out of it. Other services are notified
+
+        of this imported order by emitting a event.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

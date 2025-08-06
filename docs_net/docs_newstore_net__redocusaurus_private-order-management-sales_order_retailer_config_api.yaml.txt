@@ -1,0 +1,738 @@
+openapi: 3.0.0
+info:
+  title: API to manage sales order configurations
+  version: v0
+  description: |
+    Use these APIs to manage order configurations in the NewStore platform.
+servers:
+  - url: https://dodici.x.newstore.net/v0
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /config/sales_order/sales_order_generator_sequence:
+    get:
+      description: >
+        Retrieves order ID sequence parameters, that are used to generate
+        human-readable order
+
+        identifiers. These are required for order processing, as unique IDs are
+        assigned to orders
+
+        in the NewStore platform via these parameters.
+      summary: Get order ID sequence parameters
+      operationId: get-sales-order-generator-sequence
+      responses:
+        '200':
+          description: >-
+            Parameters of the sequence used for generating human-readable order
+            identifiers.
+          content:
+            application/json:
+              example:
+                value:
+                  prefix: NS
+                  size: 16
+                  start: 1
+                  step: 2
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for setting parameters of the sequence used for
+                  generating human-readable order identifiers.
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    properties:
+                      prefix:
+                        description: Prefix for human-readable order identifiers.
+                        type: string
+                      size:
+                        description: Size of human-readable order identifiers.
+                        type: integer
+                      start:
+                        description: Start of human-readable order identifiers.
+                        type: integer
+                      step:
+                        description: Step of human-readable order identifiers.
+                        type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '404':
+          description: >-
+            Config key does not exist (it is not a case when key exists but just
+            not set)
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+    post:
+      responses:
+        '200':
+          description: >-
+            Parameters of the sequence used for generating human-readable order
+            identifiers.
+          content:
+            application/json:
+              example:
+                value:
+                  prefix: NS
+                  size: 16
+                  start: 1
+                  step: 2
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for setting parameters of the sequence used for
+                  generating human-readable order identifiers.
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    properties:
+                      prefix:
+                        description: Prefix for human-readable order identifiers.
+                        type: string
+                      size:
+                        description: Size of human-readable order identifiers.
+                        type: integer
+                      start:
+                        description: Start of human-readable order identifiers.
+                        type: integer
+                      step:
+                        description: Step of human-readable order identifiers.
+                        type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Incorrect payload for config (validation failed).
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: Update failed for config due to lost race.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+      description: >
+        Sets or creates order ID sequence parameters for the retailer, that are
+        used to generate human-readable order
+
+        identifiers. These are required for order processing, as unique IDs are
+        assigned to orders
+
+        in the NewStore platform via these parameters.
+      summary: Set order ID sequence parameters
+      operationId: set-sales-order-generator-sequence
+      requestBody:
+        content:
+          application/json:
+            example:
+              value:
+                prefix: NS
+                size: 16
+                start: 1
+                step: 2
+            schema:
+              title: >-
+                Schema for setting parameters of the sequence used for
+                generating human-readable order identifiers.
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  type: object
+                  properties:
+                    prefix:
+                      description: Prefix for human-readable order identifiers.
+                      type: string
+                    size:
+                      description: Size of human-readable order identifiers.
+                      type: integer
+                    start:
+                      description: >-
+                        Start of human-readable order identifiers, any value
+                        greater than 0.
+                      type: integer
+                    step:
+                      description: >-
+                        Step of human-readable order identifiers, any value
+                        greater than 0.
+                      type: integer
+        required: true
+  /config/sales_order/on_hold_timer_duration:
+    get:
+      description: >
+        Retrieves the [grace period](/docs/glossary.html#term-grace-period) for
+        orders in your business.
+
+        This is the duration for an on hold order in seconds, after which it is
+        routed for fulfillment.
+      summary: Get grace period for orders
+      operationId: get-on-hold-timer-duration
+      responses:
+        '200':
+          description: Timer duration for on hold orders.
+          content:
+            application/json:
+              example:
+                schema:
+                  title: Schema for setting timer duration for on hold orders
+                  type: object
+                  required:
+                    - value
+                    - updated_at
+                  properties:
+                    value:
+                      description: Timer duration in seconds
+                      type: integer
+                    updated_at:
+                      type: string
+                      format: date-time
+                value: 20
+                updated_at: '2021-07-13T20:18:25Z'
+        '404':
+          description: >-
+            Config key does not exist (This is different from when the config
+            key has not been set).
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+    post:
+      responses:
+        '200':
+          description: >-
+            Parameters of the sequence used for generating human-readable order
+            identifiers.
+          content:
+            application/json:
+              example:
+                value: 20
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: Schema for setting timer duration for on hold orders
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    description: Timer duration in seconds
+                    type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Incorrect payload for config (validation failed).
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: Update failed for config due to lost race.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+      description: >
+        Sets the [grace period](/docs/glossary.html#term-grace-period) for
+        orders in your business.
+
+        This is the duration for an on hold order in seconds, after which it is
+        routed for fulfillment.
+
+
+        **Note**: You can also set the grace period for orders via the
+
+        [fulfillment
+        configuration](/newstore-cloud/order_management/newstore_ff_config_api.html#operation/add-or-update-fulfillment-configuration)
+
+        set up for your business.
+      summary: Create grace period for orders
+      operationId: set-on-hold-timer-duration
+      requestBody:
+        content:
+          application/json:
+            example:
+              value: 20
+            schema:
+              title: Schema for setting timer duration for on hold orders
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  description: Timer duration in seconds
+                  type: integer
+        required: true
+  /config/sales_order/cancellation_allowed_from:
+    get:
+      description: >
+        Retrieves the locations from which orders in your business can be
+        canceled.
+
+
+        **Note**: By default, orders routed to stores can be canceled by all
+        retailers, unless it is
+
+        excluded from this configuration. If not specified in a configuration,
+        orders cannot be
+
+        canceled from [DCs](/docs/glossary.html#term-DC).
+      summary: List locations from which orders can be canceled
+      operationId: get-cancellation-allowed-from
+      responses:
+        '200':
+          description: Defines from which location type orders can be cancelled.
+          content:
+            application/json:
+              example:
+                schema:
+                  title: >-
+                    Schema for setting location types from which orders can be
+                    cancelled
+                  type: object
+                  required:
+                    - value
+                    - updated_at
+                  properties:
+                    value:
+                      description: >-
+                        Defines from which location type orders can be canceled.
+                        By default (if no config is set) orders routed to stores
+                        can be canceled by every tenant, unless it is excluded
+                        from this list.
+                      type: array
+                      minItems: 1
+                      items:
+                        type: string
+                        enum:
+                          - store
+                          - dc
+                    updated_at:
+                      type: string
+                      minLength: 1
+                      format: date-time
+                value:
+                  - store
+                  - dc
+                updated_at: '2021-07-13T20:18:25Z'
+        '404':
+          description: >-
+            Config key does not exist (it is not a case when key exists but just
+            not set)
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+    post:
+      responses:
+        '200':
+          description: Array of providers which allow cancellation.
+          content:
+            application/json:
+              example:
+                value:
+                  - store
+                  - dc
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for setting location types from which orders can be
+                  cancelled
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    description: >-
+                      Defines from which location type orders can be canceled.
+                      By default (if no config is set) orders routed to stores
+                      can be canceled by every tenant, unless it is excluded
+                      from this list.
+                    type: array
+                    minItems: 1
+                    items:
+                      type: string
+                      enum:
+                        - store
+                        - dc
+                  updated_at:
+                    type: string
+                    minLength: 1
+                    format: date-time
+        '400':
+          description: Incorrect payload for config (validation failed).
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: Update failed for config due to lost race.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+      description: >
+        Sets the locations from which orders in your business can be canceled.
+
+
+        **Note**: By default, orders routed to stores can be canceled by all
+        retailers, unless it is
+
+        excluded from this configuration. If not specified in a configuration,
+        orders cannot be
+
+        canceled from [DCs](/docs/glossary.html#term-DC).
+      summary: Set locations from which orders can be canceled
+      operationId: set-cancellation-allowed-from
+      requestBody:
+        content:
+          application/json:
+            example:
+              value:
+                - store
+                - dc
+            schema:
+              title: >-
+                Schema for setting location types from which orders can be
+                cancelled
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  description: >-
+                    Defines from which location type orders can be canceled. By
+                    default (if no config is set) orders routed to stores can be
+                    canceled by every tenant, unless it is excluded from this
+                    list.
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    minLength: 1
+                    enum:
+                      - store
+                      - dc
+        required: true
+  /config/sales_order/big_sales_order:
+    get:
+      description: >
+        Retrieves the order item limits that determine if the order is routed or
+        is considered a
+
+        big order and placed on hold.
+
+
+        You can set specific limits for items that orders can contain in your
+        business. For example,
+
+        you can specify the maximum number of items an order can contain (such
+        as 300 items), exceeding which
+
+        it is put on hold.
+      summary: Get limits on items for large orders
+      operationId: get-big-sales-order
+      responses:
+        '200':
+          description: >-
+            The order item limits that determine if the order is routed or is
+            considered a big order and placed on hold.
+          content:
+            application/json:
+              example:
+                value:
+                  soft_limit_for_big_orders: 300
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for setting order item limits that determine if the
+                  order is routed or is considered a big order and placed on
+                  hold.
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    properties:
+                      soft_limit_for_big_orders:
+                        description: >-
+                          The number of items which determines whether an order
+                          is routed immediately or put on hold. If the number of
+                          items is more than this limit the order will be put on
+                          hold.
+                        type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '404':
+          description: >-
+            Config key does not exist (it is not a case when key exists but just
+            not set)
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+    post:
+      responses:
+        '200':
+          description: >-
+            The order item limits that determine if the order is routed or is
+            considered a big order and placed on hold.
+          content:
+            application/json:
+              example:
+                value:
+                  soft_limit_for_big_orders: 300
+                updated_at: '2021-07-13T20:18:25Z'
+              schema:
+                title: >-
+                  Schema for setting order item limits that determine if the
+                  order is routed or is considered a big order and placed on
+                  hold.
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    properties:
+                      soft_limit_for_big_orders:
+                        description: >-
+                          The number of items which determines whether an order
+                          is routed immediately or put on hold. If the number of
+                          items is more than this limit the order will be put on
+                          hold.
+                        type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Incorrect payload for config (validation failed).
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: Update failed for config due to lost race.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                title: Internal error response while getting config
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+      description: >
+        Specifies the order item limits that determine if the order is routed or
+        is considered a big order
+
+        and placed on hold.
+
+
+        You can set specific limits for items that orders can contain in your
+        business. For example,
+
+        you can specify the maximum number of items an order can contain (such
+        as 300 items), exceeding which
+
+        it is put on hold.
+      summary: Set limits on items for large orders
+      operationId: set-big-sales-order
+      requestBody:
+        content:
+          application/json:
+            example:
+              value:
+                soft_limit_for_big_orders: 300
+            schema:
+              title: >-
+                Schema for setting order item limits that determine if the order
+                is routed or is considered a big order and placed on hold.
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  required:
+                    - soft_limit_for_big_orders
+                  properties:
+                    soft_limit_for_big_orders:
+                      description: >-
+                        The order item limits that determine if the order is
+                        routed or is considered a big order and placed on hold.
+                        If the limit if not set, 100 is used as the default
+                        value.
+                      type: integer
+        required: true

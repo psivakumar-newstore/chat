@@ -1,0 +1,578 @@
+Availabilities Export API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Availabilities Export API
+Customer Profile Updates API
+Fulfillment Provider API
+Fulfillment Request API
+Historical order import API
+Item Return API
+Item Return API
+Location API
+Manager approval
+Fulfillment Configuration API
+Manager Approval Rules API
+Order API
+Order Injection API
+Order Notes API
+Order information retrieval API
+Safety Stock API
+Availabilities API
+Stock insights API
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+post
+Start global ATP export
+post
+Start ATP export for channel
+get
+Get ATP for channel
+get
+List of fulfillment location groups
+post
+Create fulfillment location group
+put
+Update fulfillment location group
+del
+Delete fulfillment location group
+API docs by Redocly
+Availabilities Export API
+(
+1.0.0
+)
+Download OpenAPI specification
+:
+Download
+team-order-management
+:
+team-order-management@newstore.com
+Represents the available to promise (ATP) quantity for products.
+ATP is calculated by subtracting the sum of all allocations, reservations, and safety
+stock quantity, from the stock on hand. At NewStore, ATP is also the sum of the
+current ATP and future ATP.
+Use this resource to perform a global ATP export for all fulfillment locations, or export ATP for a channel
+(a group of fulfillment locations). The exported ATP for a channel is the combined ATP of all fulfillment
+locations in the channel.
+Notes
+:
+Each ATP export includes the external identifiers for the referenced product ID.
+If no value is provided for the
+last_updated_at
+property during the
+export
+,
+the ATP is recalculated from the current ATP information and exported.
+If the ATP for a product has not changed in any location after the
+last_updated_at
+value
+specified during the export, no results are returned.
+For an
+ATP export for a channel
+, if the
+ATP for a product has changed in a location after the
+last_updated_at
+value specified
+during the export, the updated ATP of the whole channel is exported, and not just the
+updated ATP of the location. See the following example.
+The
+last_updated_at
+value
+is not a timestamp
+. Instead, it is an increasing integer number which changes with every ATP update in the NewStore platform.
+For example, if the ATP for a product is
+3
+in
+Store A
+and
+4
+in
+Store B
+, the combined ATP exported by
+the resource is
+7
+. If ATP for
+Store A
+changes to
+0
+and the ATP for
+Store B
+stays the same, the exported
+ATP is
+4
+, and not
+0
+.
+This resource contains the following sub-resources:
+bulk
+: Represents an ATP export job for the channel.
+groups
+: Represents a group of fulfillment locations for which you can start an export ATP job.
+For example, a group of fulfillment locations can represent a region or a channel in your business.
+Start global ATP export
+Starts an export of the ATP quantities in all fulfillment locations.
+To retrieve the exported ATP, use the
+Get ATP for channel
+method.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+last_updated_at
+integer or null
+A full availability export is performed when this value is not provided. When this value is provided the export will not contain availabilities that were updated before the provided value. You can use the value of the 'last_updated_at' property of the response provided by the /availabilities/bulk GET method.
+Responses
+201
+Success. The response contains the identifier of the created bulk export job.
+To retrieve the exported ATP, use the
+Get ATP for channel
+method.
+400
+The body of request is invalid.
+500
+An error occurred on the server.
+default
+Unexpected Error
+post
+/availabilities/bulk
+/v0/d
+/availabilities/bulk
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"last_updated_at"
+:
+59837741
+}
+Response samples
+201
+Content type
+application/json
+Copy
+{
+"availability_export_id"
+:
+"34vj3g4i325k23hkrnekrnkq"
+}
+Start ATP export for channel
+Starts an export job of the ATP, for a group of fulfillment locations.
+To retrieve the exported ATP, use the
+Get ATP for channel
+method.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+group_name_or_availability_export_id
+required
+string
+The identifier for the fulfillment location group for which you want to start an
+ATP export. See
+Create a fulfillment location group
+.
+Request Body schema:
+application/json
+last_updated_at
+integer or null
+A full availability export is performed when this value is not provided. When this value is provided the export will not contain availabilities that were updated before the provided value. You can use the value of the 'last_updated_at' property of the response provided by the /availabilities/bulk GET method.
+Responses
+201
+Success. The response contains the
+availability_export_id
+for the created bulk export job.
+To retrieve the exported ATP, specify the
+availability_export_id
+in your request to
+Get ATP by channel
+.
+400
+The request body is invalid.
+404
+The requested group in {group_name} was not found.
+500
+An error occurred on the server.
+default
+Unexpected Error
+post
+/availabilities/bulk/{group_name_or_availability_export_id}
+/v0/d
+/availabilities/bulk/{group_name_or_availability_export_id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"last_updated_at"
+:
+59837741
+}
+Response samples
+201
+Content type
+application/json
+Copy
+{
+"availability_export_id"
+:
+"34vj3g4i325k23hkrnekrnkq"
+}
+Get ATP for channel
+Returns the result of the ATP export job for the provided
+availability_export_id
+.
+As part of the response payload, the
+link
+property contains a secure link that points to
+a zip file containing the availability data.
+The zip file contains a file named
+availabilty.json
+, which contains the availability data.
+Important:
+Copying or pasting the link may damage it. The link to the archive expires after a week.
+For a
+global ATP export
+, see the
+schema
+for the payload of the
+availabilty.json
+file.
+For an
+ATP export for a channel
+, the
+schema
+of the
+availabilty.json
+file is similar to that of a global ATP export, but also includes the
+last_updated_at
+and
+group_revision
+properties.
+The zip file has a naming pattern of
+availability_export-<export_id>
+, where
+<export_id>
+refers
+to the unique ID corresponding to the ATP export request that produced the zip file.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+group_name_or_availability_export_id
+required
+string
+The identifier for the bulk export job contained in the response to the
+Start global ATP export
+or the
+Start ATP export for channel
+methods.
+Responses
+200
+The response body contains details of the exported ATP.
+404
+The provided
+availability_export_id
+does not exist.
+default
+Unexpected Error
+get
+/availabilities/bulk/{group_name_or_availability_export_id}
+/v0/d
+/availabilities/bulk/{group_name_or_availability_export_id}
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"state"
+:
+"processing"
+,
+"received_at"
+:
+"1972-02-17T19:10:54.203Z"
+,
+"last_updated_at"
+:
+59837741
+,
+"link"
+:
+"
+https://www.example.com/availability_export-9ab5dd34-0d76-4b25-b13f-f246e5da1f75.zip
+"
+}
+List of fulfillment location groups
+Returns all fulfillment location groups for which you can start an ATP export.
+Authorizations:
+newStoreAccessToken
+Responses
+200
+Success. The response contains the identifier for the group.
+500
+An error occurred on the server.
+default
+Unexpected Error
+get
+/availabilities/groups
+/v0/d
+/availabilities/groups
+Response samples
+200
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"availability_groups"
+:
+[
+{
+"group_name"
+:
+"string"
+,
+"fulfillment_nodes"
+:
+[
+"string"
+]
+}
+]
+}
+Create fulfillment location group
+Creates a group of fulfillment locations.
+Use the
+group_name
+contained in the response, in your request to
+Start ATP export by channel
+.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+group_name
+required
+string
+^[-_0-9a-zA-Z]+$
+The identifier for the fulfillment location group that can be used to request availabilities for a group of fulfilment nodes.
+fulfillment_nodes
+required
+Array of
+strings
+non-empty
+Responses
+200
+Success.
+Use the
+group_name
+contained in the response, in your request to
+Start ATP export by channel
+.
+400
+The request body is invalid.
+409
+A group with this name already exists.
+500
+An error occurred on the server.
+default
+Unexpected Error
+post
+/availabilities/groups
+/v0/d
+/availabilities/groups
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"group_name"
+:
+"group_name"
+,
+"fulfillment_nodes"
+:
+[
+"FulfillmentNode01"
+,
+"FulfillmentNode02"
+]
+}
+Response samples
+200
+400
+409
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"group_name"
+:
+"group_name"
+,
+"fulfillment_nodes"
+:
+[
+"FulfillmentNode01"
+,
+"FulfillmentNode02"
+]
+}
+Update fulfillment location group
+Updates the details of the specified fulfillment location group.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+group_name
+required
+string
+The identifier for the fulfillment location group.
+Use the
+List fulfillment location groups method
+to retrieve the ID.
+Request Body schema:
+application/json
+fulfillment_nodes
+required
+Array of
+strings
+non-empty
+Responses
+200
+Success.
+The response contains the group with the updates.
+400
+The request body is invalid.
+404
+The requested group in {group_name} was not found.
+500
+An error occurred on the server.
+default
+Unexpected Error
+put
+/availabilities/groups/{group_name}
+/v0/d
+/availabilities/groups/{group_name}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"group_name"
+:
+"group_name"
+,
+"fulfillment_nodes"
+:
+[
+"FulfillmentNode01"
+,
+"FulfillmentNode02"
+]
+}
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"group_name"
+:
+"group_name"
+,
+"fulfillment_nodes"
+:
+[
+"FulfillmentNode01"
+,
+"FulfillmentNode02"
+]
+}
+Delete fulfillment location group
+Deletes the specified fulfillment location group.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+group_name
+required
+string
+The identifier for the fulfillment location group.
+Use the
+List fulfillment location groups method
+to retrieve the ID.
+Responses
+200
+Success.
+500
+An error occurred on the server.
+default
+Unexpected Error
+delete
+/availabilities/groups/{group_name}
+/v0/d
+/availabilities/groups/{group_name}
+Response samples
+500
+Content type
+application/problem+json
+Copy
+{
+"error_code"
+:
+"unexpected_error"
+,
+"message"
+:
+"Internal error has occurred."
+,
+"request_id"
+:
+"123.4567"
+}
+Previous
+Service levels API
+Next
+Customer Profile Updates API
+Copyright © 2025 NewStore, Inc.

@@ -1,0 +1,774 @@
+Order Injection API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Availabilities Export API
+Customer Profile Updates API
+Fulfillment Provider API
+Fulfillment Request API
+Historical order import API
+Item Return API
+Item Return API
+Location API
+Manager approval
+Fulfillment Configuration API
+Manager Approval Rules API
+Order API
+Order Injection API
+Order Notes API
+Order information retrieval API
+Safety Stock API
+Availabilities API
+Stock insights API
+Payments
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+post
+Create order
+API docs by Redocly
+Order Injection API
+(
+0.1
+)
+Download OpenAPI specification
+:
+Download
+Represents a current order or a historical order placed using an external system, identified by its
+external_id
+in NewStore. An order contains a list of shipments and the products in each shipment.
+Create order
+Creates an order in NewStore by importing an order placed via an external system.
+This is also referred as
+injecting an order
+.
+Each request creates a single order in NewStore.
+The request payload depends on the order you are creating. For example:
+A pre-routed order relies on a
+routing strategy
+defined with the
+fulfillment configuration
+.
+An in-store pickup order relies on the
+in-store configuration
+defined
+with the
+in-store pickup config resource
+.
+This method is idempotent, with regards to the
+external_id
+property. You can use the
+method multiple times to create the same order in the platform. The order itself is created
+only once, with the same response payload returned every time.
+There can be transient errors (
+500
+) when creating an order, such as a timeout when communicating
+with the shipping provider. To fix these errors, retry the method again with the same payload.
+Important
+:
+Ensure that the request payload is same when creating an order with several
+tries. A retry with the same
+external_id
+but a different payload will fail.
+Ensure that there is a small delay between each retry.
+Only the
+200
+response implies that the order has been created correctly. Therefore,
+ensure that your integration has a retry logic set up.
+For more information, see the request examples and
+Importing orders
+.
+Configuration
+There are two configuration settings that impact injection flow:
+big_sales_order
+and
+skip_soft_routing_on_injection
+. For more information, see the page with all
+order_injection configuration
+.
+Notes:
+Ensure that you specify the correct number of decimal places for monetary values of
+prices, according to the specified currency. For example, if the currency is specified as
+USD
+and the price has more than 2 decimal places, it is considered as invalid by the
+platform. For more information, see
+pricing dependencies on currency
+.
+To send payment-related metadata with the order, use the
+Create financial instrument
+method in the Payment Provider webhooks.
+The validity of a shipping offer token can vary based on the shipping
+provider and shipping offer. For
+in-store pickup
+orders, a shipping offer
+token does not expire.
+If you set
+shipments[].shipment_option.routing_strategy
+as "external" and the routing failed to communicate
+with shipping provider, the order will be cancelled. Check shipping provider integration, if you have customer 
+integration, otherwise contact team delivery for support.
+If the customer's phone number does not have a country calling code, the platform will attempt to use the
+billing address country code to derive the calling code while formatting the phone number to the E.164
+standard. If the phone number cannot be formatted, it will be placed in the extended attribute
+injected-invalid-phone-number
+on customer profile. It can be updated later, if needed.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+external_id
+required
+string
+[ 1 .. 64 ] characters
+shop
+required
+string
+[ 1 .. 128 ] characters
+The shop containing the items of the order.
+channel_type
+required
+string
+Enum
+:
+"web"
+"mobile"
+"store"
+channel_name
+required
+string
+[ 1 .. 64 ] characters
+A string used to distinguish between various sources of orders.
+store_id
+string
+<= 256 characters
+ID of the store where this order was placed.
+associate_id
+string
+<= 256 characters
+ID of the store associate who processed this order.
+customer_name
+string
+[ 1 .. 128 ] characters
+customer_email
+string
+[ 1 .. 64 ] characters
+shop_locale
+required
+string
+[ 1 .. 128 ] characters
+The locale of the customer used for the shop, in RFC 5646.
+customer_language
+string
+<= 2 characters
+Language code according to ISO 639-1 to be used in the communication with the consumer (e.g. 'de', 'en' or 'fr')
+external_customer_id
+string
+<= 64 characters
+placed_at
+string
+<
+date-time
+>
+Date representation of when the order was placed, containing date, time and timezone as defined by
+https://tools.ietf.org/html/rfc3339
+(ISO 8601).
+ip_address
+string or string
+shipping_address
+object
+shipments
+required
+Array of
+objects or objects
+[ 1 .. 5 ] items
+extended_attributes
+Array of
+objects
+<= 100 items
+[ items
+<= 2 properties
+]
+billing_address
+object
+payments
+Array of
+objects
+<= 40 items
+price_method
+string
+Enum
+:
+"tax_included"
+"tax_excluded"
+Specifies if the prices for the shipment items and shipping options include tax or not. This is used in calculating the total order price to determine if the tax price should be included in the calculation or not.
+is_preconfirmed
+boolean
+Default:
+false
+Set to true, if the customer was already notified about order being placed. This is always true for in-store orders.
+is_fulfilled
+boolean
+Default:
+false
+Set to true if the order was already fulfilled. It is either an in-store purchase, or the order was fulfilled by an external system.
+is_offline
+boolean
+Default:
+false
+Set to true if the order was handled offline. It is an in-store purchase with internet connection failure.
+is_historical
+boolean
+Default:
+false
+Set to true if the order is historical was created and fulfilled by an external system.
+notification_blacklist
+Array of
+strings
+Excludes the specified notifications from being sent to the customer.
+currency
+required
+string
+Enum
+:
+"AED"
+"AFN"
+"ALL"
+"AMD"
+"ANG"
+"AOA"
+"ARS"
+"AUD"
+"AWG"
+"AZN"
+"BAM"
+"BBD"
+"BDT"
+"BGN"
+"BHD"
+"BIF"
+"BMD"
+"BND"
+"BOB"
+"BOV"
+"BRL"
+"BSD"
+"BTN"
+"BWP"
+"BYN"
+"BZD"
+"CAD"
+"CDF"
+"CHE"
+"CHF"
+"CHW"
+"CLF"
+"CLP"
+"CNY"
+"COP"
+"COU"
+"CRC"
+"CUC"
+"CUP"
+"CVE"
+"CZK"
+"DJF"
+"DKK"
+"DOP"
+"DZD"
+"EGP"
+"ERN"
+"ETB"
+"EUR"
+"FJD"
+"FKP"
+"GBP"
+"GEL"
+"GHS"
+"GIP"
+"GMD"
+"GNF"
+"GTQ"
+"GYD"
+"HKD"
+"HNL"
+"HRK"
+"HTG"
+"HUF"
+"IDR"
+"ILS"
+"INR"
+"IQD"
+"IRR"
+"ISK"
+"JMD"
+"JOD"
+"JPY"
+"KES"
+"KGS"
+"KHR"
+"KMF"
+"KPW"
+"KRW"
+"KWD"
+"KYD"
+"KZT"
+"LAK"
+"LBP"
+"LKR"
+"LRD"
+"LSL"
+"LYD"
+"MAD"
+"MDL"
+"MGA"
+"MKD"
+"MMK"
+"MNT"
+"MOP"
+"MRU"
+"MUR"
+"MVR"
+"MWK"
+"MXN"
+"MXV"
+"MYR"
+"MZN"
+"NAD"
+"NGN"
+"NIO"
+"NOK"
+"NPR"
+"NZD"
+"OMR"
+"PAB"
+"PEN"
+"PGK"
+"PHP"
+"PKR"
+"PLN"
+"PYG"
+"QAR"
+"RON"
+"RSD"
+"RUB"
+"RWF"
+"SAR"
+"SBD"
+"SCR"
+"SDG"
+"SEK"
+"SGD"
+"SHP"
+"SLL"
+"SOS"
+"SRD"
+"SSP"
+"STN"
+"SVC"
+"SYP"
+"SZL"
+"THB"
+"TJS"
+"TMT"
+"TND"
+"TOP"
+"TRY"
+"TTD"
+"TWD"
+"TZS"
+"UAH"
+"UGX"
+"USD"
+"USN"
+"UYI"
+"UYU"
+"UYW"
+"UZS"
+"VES"
+"VND"
+"VUV"
+"WST"
+"XAF"
+"XAG"
+"XAU"
+"XBA"
+"XBB"
+"XBC"
+"XBD"
+"XCD"
+"XDR"
+"XOF"
+"XPD"
+"XPF"
+"XPT"
+"XSU"
+"XTS"
+"XUA"
+"XXX"
+"YER"
+"ZAR"
+"ZMW"
+"ZWL"
+The currency for all the prices contained within this payload.
+Responses
+200
+If the same order is sent twice, the same response is returned each time.
+If a different order with the same
+external_id
+is sent, a response identical to the response for the first order is returned.
+No modifications are made to the order after it is created.
+400
+The input data is invalid.
+Multiple shipping options are provided that are identified by service level identifiers.
+Mixed shipping option types are provided that are identified by service level identifiers and 
+ shipping offer tokens.
+Price is specified with invalid number of decimal places according to the specified currency. 
+ For example, if the currency is specified as
+USD
+and the product price has more than 2 decimal places, it is considered as invalid by the platform. 
+ For more information, see
+pricing dependencies on currency
+.
+The order's total payment amount is different from the sum of each item and shipping amount.
+ For example, if the incorrect
+price_method
+is sent or if the
+item_discount_info
+or
+item_order_discount_info
+are missing.
+500
+An internal error occurred. In most cases the error is transient and the request should be retried with the same payload.
+shipping_provider_communication_error: There was a transient error getting shipping options from the shipping providers. A retry with the same payload will likely fix the issue. If not, check your integration with the shipping providers.
+grpc_unavailable: Some part of the Newstore platform was temporarily unavailable. A retry with the same payload will likely fix the issue.
+rpc_timeout: An internal call timed out. A retry with the same payload will likely fix the issue.
+rpc_timeout for sales_order: An internal call timed out. WARNING: The order may have been partially created. The request needs to be retried with the same payload to complete the order creation in the platform.
+504
+Your order injection request is experiencing delays, possibly due to high system load or slow responses from your configured shipping providers. Even though this specific call failed, we are continuing to process your order injection in the background. If the order data is valid, an order will be automatically created, without requiring additional calls to this endpoint. To check the status of your order injection, simply retry this call. If the process is complete, you'll receive an immediate response.
+post
+/fulfill_order
+/v0/d
+/fulfill_order
+Request samples
+Payload
+Content type
+application/json
+Example
+Current order
+In-store pickup order
+Mixed order BOPIS and shipping
+Prerouted order
+Historical order
+Historical order from a POS system
+Current order
+From a mobile customer app with notifications suppressed.
+To send payment-related metadata with the order, use the
+Create financial instrument
+method.
+Copy
+Expand all
+Collapse all
+{
+"external_id"
+:
+"INJECTED_regular-123456"
+,
+"placed_at"
+:
+"2018-10-08T07:06:08.067Z"
+,
+"shop"
+:
+"storefront-catalog-en"
+,
+"store_id"
+:
+"807b05a4-5554-5302-a67f-aa3293107e92"
+,
+"associate_id"
+:
+"3045c2140d2e4a5ba0f2ddc0a27d8798"
+,
+"channel_type"
+:
+"mobile"
+,
+"channel_name"
+:
+"retailer android app"
+,
+"currency"
+:
+"USD"
+,
+"customer_name"
+:
+"Jay Doubleyou"
+,
+"customer_email"
+:
+"jw@example.com"
+,
+"shop_locale"
+:
+"en-US"
+,
+"customer_language"
+:
+"EN"
+,
+"external_customer_id"
+:
+"CON0962868711"
+,
+"notification_blacklist"
+:
+[
+"invoice_created"
+,
+"refund_note_created"
+]
+,
+"shipping_address"
+:
+{
+"first_name"
+:
+"Jay"
+,
+"last_name"
+:
+"Doubleyou"
+,
+"country"
+:
+"US"
+,
+"zip_code"
+:
+"02111"
+,
+"city"
+:
+"Boston"
+,
+"state"
+:
+"Massachusetts"
+,
+"address_line_1"
+:
+"601 South Street"
+,
+"address_line_2"
+:
+""
+,
+"phone"
+:
+987654321
+}
+,
+"billing_address"
+:
+{
+"first_name"
+:
+"Jay"
+,
+"last_name"
+:
+"Doubleyou"
+,
+"country"
+:
+"US"
+,
+"zip_code"
+:
+"02111"
+,
+"city"
+:
+"Boston"
+,
+"state"
+:
+"Massachusetts"
+,
+"address_line_1"
+:
+"601 South Street"
+,
+"phone"
+:
+"202-555-0140"
+}
+,
+"shipments"
+:
+[
+{
+"items"
+:
+[
+{
+"external_item_id"
+:
+"EXT1000761"
+,
+"product_id"
+:
+"1000761"
+,
+"price"
+:
+{
+"item_price"
+:
+50
+,
+"item_list_price"
+:
+50
+,
+"item_tax_lines"
+:
+[
+{
+"amount"
+:
+13
+,
+"rate"
+:
+0.0758
+,
+"name"
+:
+"Custom Tax"
+,
+"country_code"
+:
+"US"
+}
+]
+}
+}
+]
+,
+"shipping_option"
+:
+{
+"shipping_offer_token"
+:
+"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1dWlkIjoiYWM4Yzc5NjEtODNlNi00YTBmLWFmNjAtNjc5MjYwZjY1NjMwIiwiZnVsZmlsbG1lbnRfbm9kZV9pZCI6IlVTMDEiLCJ6aXBfY29kZSI6IjEwMDIyIiwiY291bnRyeV9jb2RlIjoiVVMiLCJzaGlwcGluZ190eXBlIjoic2FtZV9kYXlfZGVsaXZlcnkiLCJzZXJ2aWNlX2xldmVsX2lkZW50aWZpZXIiOiIyX0RBWSIsImNhcnJpZXJfY29kZSI6IkFDTUVfVFJBRElUSU9OQUwiLCJwcm92aWRlcl9yYXRlX2lkZW50aWZpZXIiOiJBQ01FXzJfREFZX0VYUFJFU1MiLCJkZWxpdmVyeV9lc3RpbWF0ZSI6eyJpZCI6ImV5SjBlWEFpT2lKS1YxUWlMQ0poYkdjaU9pSklVekkxTmlKOS5leUpqY21WaGRHVmtYMkYwSWpvaU1qQXhPQzB3TnkweU5GUXhNem8xTkRvMU15NHlOemM1T1RFaUxDSnZabVpsY2w5cFpDSTZJazFZVWxsWFdsSlJXa0pGVERaT1RrWWlmUS5UQ1NQZFRHZ2ZrRl9haGczQzR2TXZlTzhGbXRoWWNsalZ6RXp5SDJaYlY4IiwiZGVsaXZlcnlfd2luZG93Ijp7InN0YXJ0c19hdCI6IjIwMTgtMDctMjZUMDg6MDA6MDAuMDAwMDAwIiwiZW5kc19hdCI6IjIwMTgtMDctMjZUMTk6MDA6MDAuMDAwMDAwIn19fQ.T6uHXuq-lgUOhxgQudGMhYTaVrQMCsuq5P3JOxEF0BwLbhYZpi04Eaz4-F3ByCYhDyAZnrekcMz-maJtJz5R_HL4RLlB8tzNR22QFYVqYJtMvVMUJYDg96qfZ1buoXHit7DGcYgz2QX5CGYFGNMjTwe4WO1X1gBT746GabadVxuKwvTyCJWMX58UcAyYxzgQfDjdp-tZO8mcCdHOzCaP_d0099LMYMY_7P5NnyrlZrOziZH0WGtYUqqew1xeEu51uC2jEV6bhuCX42Wj4bz6q7qiETOfX1KaOxBBe5VkYUvBtBBdfKn5g10ZDCwrsINsCVVhuXdIW8kzPl5vfbWQTw"
+,
+"price"
+:
+19
+,
+"tax"
+:
+6.78
+}
+}
+]
+,
+"payments"
+:
+[
+{
+"processor"
+:
+"adyen"
+,
+"correlation_ref"
+:
+"ch_1DIsE9GMCeo3G7b40EbEjfZX"
+,
+"type"
+:
+"captured"
+,
+"amount"
+:
+68.78
+,
+"method"
+:
+"credit_card"
+,
+"processed_at"
+:
+"2018-10-08T07:06:08.067Z"
+}
+]
+,
+"price_method"
+:
+"tax_excluded"
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"schema"
+:
+{
+"external_id"
+:
+"INJECTED_6fa1c9c1-daf7-4aac-96bd-1a1436affb5d"
+,
+"id"
+:
+"c93e1a37-b5d2-41a5-a3d0-4c3756b5fa3e"
+,
+"items"
+:
+[
+{
+"external_item_id"
+:
+"EXT1000761"
+,
+"id"
+:
+"03a06f1c-4797-441e-ac15-a07a3df23a92"
+,
+"product_id"
+:
+"1000761"
+}
+]
+}
+}
+Previous
+Order API
+Next
+Order Notes API
+Copyright © 2025 NewStore, Inc.

@@ -1,0 +1,300 @@
+Configuring loyalty rewards on Associate App
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Configuring loyalty rewards on Associate App
+Updated on
+Mar 17, 2025
+Published on Oct 1, 2024
+5 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+If your business uses a retail loyalty rewards program, you can use Associate App to offer customers with loyalty reward options. For example, you can offer discounts on products for customers who have been loyal to your brand for more than 1 year.
+Important
+Currently, NewStore only allows Associate App to retrieve a list of coupons that have been configured in an external application, via a link in Associate App.
+To understand how integrating an external application with NewStore Associate App works, see
+Integrating an external app with Associate App to retrieve data
+.
+To see how loyalty rewards can be used in the app, see
+Adding loyalty reward coupons for a customer
+.
+Integrating Associate App with your loyalty system
+To configure Associate App to retrieve loyalty rewards data from your loyalty system:
+Add your deeplink URL to the Associate App configuration. See
+Enabling Associate App to offer loyalty rewards
+.
+Associate App opens either the external app with a deeplink, or a webview with your web application, depending on the configuration in the next steps (
+is_deeplink
+):
+The deeplink URL for your integration contains 4 query parameters:
+token
+,
+externalIdentity
+,
+cart
+and
+store
+:
+The
+token
+parameter contains a
+32-bit
+security token. This token must be included in the query parameters when your integrated application performs a callback to Associate App.
+The
+externalIdentity
+property allows a third-party entity to exchange an identity token issued by NewStore and use it to integrate their native apps with Associate App, without requiring the user to log into the third-party app or website.
+For more information, see
+Sending an identity token to a third-party to integrate with Associate App
+.
+The
+cart
+parameter is a string-encoded JSON blob containing the following data sent to the external application:
+Data sent
+Purpose for the external loyalty system
+Customer email address
+To identify if loyalty rewards apply to the customer
+Cart ID
+To identify the cart
+Total remaining amount of the cart
+To verify if a loyalty reward coupon is valid or not.
+For example, if the total remaining amount to be paid for an order is
+USD 30
+, a loyalty reward coupon worth
+USD 100
+cannot be applied.
+Currency
+To identify which loyalty reward coupons will be applicable for the order.
+Selected coupons
+Manually applied discount coupons that have already been applied to the cart in Associate App are sent in the form of an array. The external rewards system identifies and includes these coupons in the list of coupons sent back to the app, so the associate can remove them if needed. The order of the sent array determines the order in which the associate applied the coupons in Associate App.
+Items array
+List of items added to the cart, sent to the external loyalty rewards system in the form of an array, which includes the following objects:
+Item ID
+Item Price
+Product ID
+Grand total
+The total amount of the cart including taxes.
+subtotal
+The total amount of the cart before taxes.
+The
+store
+parameter is a string-encoded JSON blob containing the following data sent to the external application:
+Data sent
+Purpose for the external loyalty system
+Store ID
+To identify the store in which the transaction is being processed via Associate App. This information can be used downstream by the third-party entities as needed.
+Store country
+To determine the country where the store is located, where the transaction is being processed.
+Example
+external.integration.app://discount?token%3Dabcdef%26externalIdentity%3Dfghijkl%26cart%3D%7B%22items%22%3A%5B%7B%22productId%22%3A%221000071%22%2C%22itemId%22%3A%228a87355d-5153-44a5-b69e-62fb24f69dad%22%2C%22price%22%3A95%7D%5D%2C%22selectedCoupons%22%3A%5B%5D%2C%22cartId%22%3A%225716d9c8-19b0-47e3-b35b-394fefe10e0d%22%2C%22currency%22%3A%22USD%22%2C%22remainingAmount%22%3A103.44%2C%22grandTotal%22%3A103.44%2C%22subTotal%22%3A99.12%2C%22customerEmail%22%3A%22customer%40newstore.com%22%7D%26store%3D%7B%22storeId%22%3A%22store-123%22%2C%22countryCode%22%3A%22US%22%7D
+For the webview approach, follow the same process, but the data is exposed on a global object called
+window.NEWSTORE
+.
+cart
+and
+store
+will be contained in
+window.NEWSTORE.contextProps
+, besides
+window.NEWSTORE.securityToken
+and
+window.NEWSTORE.externalIdentity
+.
+Associate App then waits for your integration to send a callback to Associate App.
+Use the Associate App
+cart.more.loyalty/applyCoupons
+URL structure for the callback:
+Schema
+:
+com.newstore.associate-one://
+Domain
+:
+cart.more.loyaltyProgram
+Path
+:
+applyCoupons
+QueryParams.coupons
+:
+coupons[]=couponID-1&coupons[]=couponID-2
+QueryParams.cartId
+:
+123456
+QueryParams.token
+:
+abcdef
+Note
+This token must be identical to the one which NewStore Associate App sent to your application. See this example for the token format
+For example,
+com.newstore.associate-one://cart.more.loyaltyProgram/applyCoupons?coupons[]=couponID-1&coupons[]=couponID-2&cartId=123456&token=abcdef
+Enabling Associate App to offer loyalty rewards
+To enable Associate App to be used to offer loyalty rewards to qualifying customers in your business:
+Use the
+Update App configuration
+method.
+In
+external_integration
+>
+cart.more.loyaltyProgram
+, specify the following:
+In
+url
+, specify the URL that you have configured for your loyalty rewards application.
+Note
+Do not include the query parameters when specifying the URL.
+Set
+is_deeplink
+to:
+true
+: If you are using an external application to provide the loyalty rewards data to Associate App.
+false
+: If you are using a website.
+For
+identity_provider
+, specify the relevant value as configured in
+post_call_back_urls
+. See
+Example payload and response
+.
+The configured URL for this
+identity_provider
+is then called with the NewStore authentication token and the external identity information is received in the response payload.
+Important
+Currently, Associate App only supports a deeplink to an external application. Specifying
+false
+for the
+is_deeplink
+property does not allow Associate App to communicate with your external system.
+Sending an identity token to a third-party to integrate with Associate App
+NewStore can provide an option to define or configure a post-login callback hook in Associate App. This allows a third-party to exchange an identity token issued by NewStore and use it to integrate their native apps with Associate App, without requiring the user to log into the third-party app or website.
+You must implement an authorization service that will take a NewStore issued JWT token on input. The service needs to:
+Validate the JWT token signature to verify that it is genuine
+Parse out the claims from the JWT token
+Use any available claim data from the token to request a matching authorization token from their internal services
+Return the token to the calling entity
+In Associate App, NewStore ensures that the following is implemented:
+Ability to configure the post login callback URL for each tenant
+Store the returned token from the third-party server in the session context
+Allow the third-party token to be sent as a parameter for the selected deeplink or universal link
+Example payload and response
+To configure the callback URL for identity forwarding:
+Use the
+Update Associate App configuration method
+In
+external_integration
+>
+post_login_callback_urls
+, specify the HTTP callback URL(s) that will be called after login.
+This URL(s) is then called with the NewStore auth token and receives external identity information in the response payload.
+Example
+post_login_callback_urls: [
+ {
+     "identity_provider": 'vip-loyalty',
+     "url": "https://vip.loyalty.callback.url.com"
+ },
+ {
+     "identity_provider": 'external',
+     "url": "https://external.callback.url.com"
+ },
+ {
+     "identity_provider": 'customer-loyalty',
+     "url": "https://customer.loyalty.callback.url.com"
+ }
+]
+See the example payload for the callback URL and resulting response with the JWT token:
+POST /url/of/the/3rdparty/service
+Content-Type: application/json
+Accept: application/json
+{
+  "deviceId":"xyz”, // any metadata or information about the request origin,
+  "identity": "Content of the JWT issued by NewStore"
+}
+Response
+{
+  "external_identity":"Content of the 3rd party issued token"
+}
+Additional considerations
+To ensure that the solution works, the callback behavior should be configurable:
+Strict
+mode - Results in complete login failure if the third-party callback fails
+Optional
+mode - Possible callback errors or timeouts are ignored in the background. However, any links to third-parties that require the external identity will fail because of the missing token information.
+Related topics
+Managing order approvals
+Using NewStore Associate App
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+Associate App configuration
+config api
+configuration
+customer
+endless aisle
+external app
+loyalty rewards
+order
+store associate
+tutorial
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

@@ -1,0 +1,717 @@
+openapi: 3.0.0
+info:
+  title: Order Injection configuration
+  description: >
+    Use this API to configure and manage order injection process in the NewStore
+    platform. 
+
+
+    For more information, see the
+
+    [configuration guide](/docs/development/configuration/config-order
+    injection.html#configuring-order injection-operations).
+  contact:
+    email: team-routing@newstore.com
+  version: 1.0.0
+servers:
+  - url: https://dodici.x.newstore.net/v1/r
+tags:
+  - name: Order Injection configuration
+paths:
+  /config/order_injection:
+    parameters:
+      - name: request_id
+        in: header
+        schema:
+          type: string
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+    get:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Injection configuration
+      summary: Get order injection configuration
+      description: >
+        Retrieves the current order injection configuration set up for your
+        business. The response payload
+
+        also contains the current version of the configuration, the timestamp
+        when it was
+
+        last updated, and who updated it.
+      operationId: getConfig
+      responses:
+        '200':
+          description: Current configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    title: Order Injection Tenant Configuration
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      big_sales_order:
+                        type: object
+                        description: >-
+                          The order item limits that determine if the order is
+                          routed or is considered a big order and placed on
+                          hold.
+                        properties:
+                          hard_limit_for_big_orders:
+                            type: number
+                            description: >-
+                              The maximum number of items an injected or
+                              external order can contain for it to be placed on
+                              hold and not be canceled. For example, if this is
+                              ``800`` and ``soft_limit_for_big_orders`` is
+                              ``300``, external orders with items between
+                              ``301`` and ``800`` are placed on hold, and an
+                              external order with ``801`` items is canceled.
+                        required:
+                          - hard_limit_for_big_orders
+                      skip_soft_routing_on_injection:
+                        type: boolean
+                        description: >-
+                          When set to true, do not do the soft routing for
+                          injected orders with a service level identifier.
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+    patch:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Injection configuration
+      summary: Update order injection configuration
+      description: >
+        Updates the current order injection configuration for your business. The
+        version value in the query parameter
+
+        must match the latest version returned by the GET endpoint.
+      operationId: updateConfig
+      parameters:
+        - name: version
+          in: query
+          required: true
+          example: '1'
+          schema:
+            type: string
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            schema:
+              title: Order Injection Tenant Configuration
+              description: Tenant configuration object.
+              type: object
+              properties:
+                big_sales_order:
+                  type: object
+                  description: >-
+                    The order item limits that determine if the order is routed
+                    or is considered a big order and placed on hold.
+                  properties:
+                    hard_limit_for_big_orders:
+                      type: number
+                      description: >-
+                        The maximum number of items an injected or external
+                        order can contain for it to be placed on hold and not be
+                        canceled. For example, if this is ``800`` and
+                        ``soft_limit_for_big_orders`` is ``300``, external
+                        orders with items between ``301`` and ``800`` are placed
+                        on hold, and an external order with ``801`` items is
+                        canceled.
+                  required:
+                    - hard_limit_for_big_orders
+                skip_soft_routing_on_injection:
+                  type: boolean
+                  description: >-
+                    When set to true, do not do the soft routing for injected
+                    orders with a service level identifier.
+      responses:
+        '200':
+          description: The updated configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    title: Order Injection Tenant Configuration
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      big_sales_order:
+                        type: object
+                        description: >-
+                          The order item limits that determine if the order is
+                          routed or is considered a big order and placed on
+                          hold.
+                        properties:
+                          hard_limit_for_big_orders:
+                            type: number
+                            description: >-
+                              The maximum number of items an injected or
+                              external order can contain for it to be placed on
+                              hold and not be canceled. For example, if this is
+                              ``800`` and ``soft_limit_for_big_orders`` is
+                              ``300``, external orders with items between
+                              ``301`` and ``800`` are placed on hold, and an
+                              external order with ``801`` items is canceled.
+                        required:
+                          - hard_limit_for_big_orders
+                      skip_soft_routing_on_injection:
+                        type: boolean
+                        description: >-
+                          When set to true, do not do the soft routing for
+                          injected orders with a service level identifier.
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: invalid_request
+                messages:
+                  - Wrong datetime format
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '409':
+          description: The version key is out of date, configuration was updated
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: conflict_version
+                messages:
+                  - The version is out of date
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+    post:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Injection configuration
+      summary: Replace order injection configuration
+      description: >
+        Use this method to create a new order injection configuration or
+        completely replace the current
+
+        configuration for your business. The version value in the query
+        parameter must either be set to 1 
+
+        or it must match the latest version returned by the GET endpoint.
+      operationId: replaceConfig
+      parameters:
+        - name: version
+          in: query
+          required: true
+          example: '1'
+          schema:
+            type: string
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            schema:
+              title: Order Injection Tenant Configuration
+              description: Tenant configuration object.
+              type: object
+              properties:
+                big_sales_order:
+                  type: object
+                  description: >-
+                    The order item limits that determine if the order is routed
+                    or is considered a big order and placed on hold.
+                  properties:
+                    hard_limit_for_big_orders:
+                      type: number
+                      description: >-
+                        The maximum number of items an injected or external
+                        order can contain for it to be placed on hold and not be
+                        canceled. For example, if this is ``800`` and
+                        ``soft_limit_for_big_orders`` is ``300``, external
+                        orders with items between ``301`` and ``800`` are placed
+                        on hold, and an external order with ``801`` items is
+                        canceled.
+                  required:
+                    - hard_limit_for_big_orders
+                skip_soft_routing_on_injection:
+                  type: boolean
+                  description: >-
+                    When set to true, do not do the soft routing for injected
+                    orders with a service level identifier.
+      responses:
+        '200':
+          description: The updated configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    title: Order Injection Tenant Configuration
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      big_sales_order:
+                        type: object
+                        description: >-
+                          The order item limits that determine if the order is
+                          routed or is considered a big order and placed on
+                          hold.
+                        properties:
+                          hard_limit_for_big_orders:
+                            type: number
+                            description: >-
+                              The maximum number of items an injected or
+                              external order can contain for it to be placed on
+                              hold and not be canceled. For example, if this is
+                              ``800`` and ``soft_limit_for_big_orders`` is
+                              ``300``, external orders with items between
+                              ``301`` and ``800`` are placed on hold, and an
+                              external order with ``801`` items is canceled.
+                        required:
+                          - hard_limit_for_big_orders
+                      skip_soft_routing_on_injection:
+                        type: boolean
+                        description: >-
+                          When set to true, do not do the soft routing for
+                          injected orders with a service level identifier.
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: invalid_request
+                messages:
+                  - Wrong datetime format
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '409':
+          description: The version key is out of date, configuration was updated
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: conflict_version
+                messages:
+                  - The version is out of date
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+components:
+  schemas:
+    UpdateRequest:
+      title: Order Injection Tenant Configuration
+      description: Tenant configuration object.
+      type: object
+      properties:
+        big_sales_order:
+          type: object
+          description: >-
+            The order item limits that determine if the order is routed or is
+            considered a big order and placed on hold.
+          properties:
+            hard_limit_for_big_orders:
+              type: number
+              description: >-
+                The maximum number of items an injected or external order can
+                contain for it to be placed on hold and not be canceled. For
+                example, if this is ``800`` and ``soft_limit_for_big_orders`` is
+                ``300``, external orders with items between ``301`` and ``800``
+                are placed on hold, and an external order with ``801`` items is
+                canceled.
+          required:
+            - hard_limit_for_big_orders
+        skip_soft_routing_on_injection:
+          type: boolean
+          description: >-
+            When set to true, do not do the soft routing for injected orders
+            with a service level identifier.
+    ConfigResponse:
+      description: Update configuration response
+      type: object
+      properties:
+        value:
+          title: Order Injection Tenant Configuration
+          description: Tenant configuration object.
+          type: object
+          properties:
+            big_sales_order:
+              type: object
+              description: >-
+                The order item limits that determine if the order is routed or
+                is considered a big order and placed on hold.
+              properties:
+                hard_limit_for_big_orders:
+                  type: number
+                  description: >-
+                    The maximum number of items an injected or external order
+                    can contain for it to be placed on hold and not be canceled.
+                    For example, if this is ``800`` and
+                    ``soft_limit_for_big_orders`` is ``300``, external orders
+                    with items between ``301`` and ``800`` are placed on hold,
+                    and an external order with ``801`` items is canceled.
+              required:
+                - hard_limit_for_big_orders
+            skip_soft_routing_on_injection:
+              type: boolean
+              description: >-
+                When set to true, do not do the soft routing for injected orders
+                with a service level identifier.
+        version:
+          description: Current Configuration version
+          type: string
+        updated_at:
+          description: RFC3339 date time format with timezone
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+          example: '2021-12-31T23:59:59Z'
+        updated_by:
+          description: Internal User ID
+          type: string
+    Error:
+      description: Error message response
+      properties:
+        error_code:
+          description: |-
+            Error code value. Possible values:
+            * not_found: tenant not found, or tenant key in header is blank;
+            * internal: internal server error;
+            * invalid_request: invalid request;
+            * validation_failed: validation of request failed;
+          type: string
+        messages:
+          type: array
+          items:
+            type: string
+    datetime_tz:
+      description: RFC3339 date time format with timezone
+      type: string
+      pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+      example: '2021-12-31T23:59:59Z'
+    Config:
+      title: Order Injection Tenant Configuration
+      description: Tenant configuration object.
+      type: object
+      properties:
+        big_sales_order:
+          type: object
+          description: >-
+            The order item limits that determine if the order is routed or is
+            considered a big order and placed on hold.
+          properties:
+            hard_limit_for_big_orders:
+              type: number
+              description: >-
+                The maximum number of items an injected or external order can
+                contain for it to be placed on hold and not be canceled. For
+                example, if this is ``800`` and ``soft_limit_for_big_orders`` is
+                ``300``, external orders with items between ``301`` and ``800``
+                are placed on hold, and an external order with ``801`` items is
+                canceled.
+          required:
+            - hard_limit_for_big_orders
+        skip_soft_routing_on_injection:
+          type: boolean
+          description: >-
+            When set to true, do not do the soft routing for injected orders
+            with a service level identifier.
+    BigSalesOrder:
+      type: object
+      description: >-
+        The order item limits that determine if the order is routed or is
+        considered a big order and placed on hold.
+      properties:
+        hard_limit_for_big_orders:
+          type: number
+          description: >-
+            The maximum number of items an injected or external order can
+            contain for it to be placed on hold and not be canceled. For
+            example, if this is ``800`` and ``soft_limit_for_big_orders`` is
+            ``300``, external orders with items between ``301`` and ``800`` are
+            placed on hold, and an external order with ``801`` items is
+            canceled.
+      required:
+        - hard_limit_for_big_orders
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+x-annotation-crossOriginAllowed: true

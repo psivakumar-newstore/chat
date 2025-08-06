@@ -1,0 +1,826 @@
+Payment Accounts API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+API Explorer
+Integration APIs
+Inventory management
+Event Stream and GraphQL
+Catalog and SFCC
+Delivery
+Order management
+Payments
+Cash Drawer API
+Cash Drawer Reports API
+Cash settings
+Payment Provider Asynchronous API
+Gift Card API
+NewStore Checkout API
+NewStore Checkout Secrets API
+Payment Accounts API
+Payment Options API
+Payment troubleshoot API
+Adyen credentials API
+Refund API (order level, deprecated)
+Refund API (item level)
+Fiscalization and taxes
+Store fulfillment
+Omnichannel Manager
+Discounts and promotions
+Customer
+Shopping App
+Configuration APIs
+Webhooks
+New Generation APIs
+get
+Get Payments
+get
+Get summary of a payment account
+post
+Precalculate the payment instruments for a future refund
+post
+Historical import
+API docs by Redocly
+Payment Accounts API
+(
+0
+)
+Download OpenAPI specification
+:
+Download
+This association is done by assigning the same ID to the payment account and the entity it is linked to.
+Payments
+Represents a payment account used during order placement.
+  It has a balance and stores the transactions and the financial instruments that modified its balance.
+Use this resource to retrieve information about a payment account.
+  A payment account can also be used to track the balance and transactions of other entities
+  created by the NewStore platform. For example, a payment account can be associated with an entity such as a sales order, a customer,
+  or a shopping bag by assigning the same ID to the payment account and to the entity.
+Note
+- Currently, NewStore only supports assigning the same ID to a payment account and the related sales order.
+Get Payments
+Returns a snapshot of the account at the time of the request.
+The account balance that you retrieve is positive (> 0) whenever payments are authorized, but not captured yet.
+For example, when items are still waiting for fulfillment. If the account balance is negative, you might have over-captured the order,
+which means that you have captured an amount bigger than the requested amount.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+account_id
+required
+string
+(
+account ID
+)
+Unique ID of a payment account. It is the same ID as the entity the payment account is assigned to.
+For example, use the internal ID (
+uuid
+) of a sales order.
+Responses
+200
+The snapshot of the account at the time of the request is returned.
+404
+The account does not exist.
+get
+/payments/accounts/{account_id}
+/v0/c
+/payments/accounts/{account_id}
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"balance"
+:
+0
+,
+"transactions"
+:
+[
+{
+"transaction_id"
+:
+"string"
+,
+"correlation_id"
+:
+"string"
+,
+"debit"
+:
+0
+,
+"credit"
+:
+0
+,
+"inserted_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"currency"
+:
+"string"
+,
+"processed_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"metadata"
+:
+{ }
+}
+]
+,
+"instruments"
+:
+[
+{
+"id"
+:
+"string"
+,
+"payment_method"
+:
+"string"
+,
+"payment_wallet"
+:
+"string"
+,
+"payment_provider"
+:
+"string"
+,
+"refund_amount"
+:
+0
+,
+"capture_amount"
+:
+0
+,
+"authorize_amount"
+:
+0
+,
+"currency"
+:
+"string"
+,
+"original_transactions"
+:
+[
+{
+"instrument_id"
+:
+"string"
+,
+"payment_provider"
+:
+"string"
+,
+"payment_method"
+:
+"string"
+,
+"payment_wallet"
+:
+"string"
+,
+"transaction_id"
+:
+"string"
+,
+"correlation_id"
+:
+"string"
+,
+"reason"
+:
+"string"
+,
+"capture_amount"
+:
+0
+,
+"refund_amount"
+:
+0
+,
+"currency"
+:
+"string"
+,
+"metadata"
+:
+{ }
+}
+]
+,
+"transactions"
+:
+[
+{ }
+]
+,
+"metadata"
+:
+{ }
+}
+]
+}
+Get summary of a payment account
+Returns the summary of the account history.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+account_id
+required
+string
+(
+account ID
+)
+Unique ID of a payment account. It is the same ID as the entity the payment account is assigned to.
+For example, use the internal ID (
+uuid
+) of a sales order.
+query
+Parameters
+linked_accounts
+string
+Additional payment account identifier that should be aggregated in the response body.
+Responses
+200
+The summary of the account history is returned.
+404
+The account does not exist.
+get
+/payments/accounts/{account_id}/summary
+/v0/c
+/payments/accounts/{account_id}/summary
+Response samples
+200
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"payments"
+:
+[
+{
+"activities"
+:
+[
+{
+"correlation_id"
+:
+"string"
+,
+"created_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"processed_at"
+:
+"2019-08-24T14:15:22Z"
+,
+"name"
+:
+"string"
+,
+"metadata"
+:
+{
+"amount"
+:
+0
+,
+"currency"
+:
+"str"
+,
+"transaction_id"
+:
+"string"
+,
+"error_message"
+:
+"string"
+,
+"error_code"
+:
+"string"
+}
+}
+]
+,
+"id"
+:
+"string"
+,
+"amount"
+:
+0
+,
+"status"
+:
+"string"
+,
+"currency"
+:
+"str"
+,
+"date"
+:
+"2019-08-24T14:15:22Z"
+,
+"psp"
+:
+"string"
+,
+"method"
+:
+"string"
+,
+"wallet"
+:
+"string"
+,
+"origin"
+:
+"string"
+,
+"payment_information"
+:
+"string"
+,
+"category"
+:
+"string"
+}
+]
+}
+Precalculate the payment instruments for a future refund
+Returns a list of payment instruments and amounts for a future refund, given the account state and refund amount.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+account_id
+required
+string
+(
+account ID
+)
+Unique ID of a payment account. It is the same ID as the entity the payment account is assigned to.
+For example, use the internal ID (
+uuid
+) of a sales order.
+Request Body schema:
+application/json
+amount
+required
+number
+>= 0
+A positive amount to be refunded
+currency
+required
+string
+= 3 characters
+strategy
+string
+[ 0 .. 100 ] characters
+The strategy to apply when processing the request. If no strategy is specified the default configured strategy is used.
+Responses
+200
+The list of instruments and amounts to refund.
+400
+Refund failed due to insufficient funds or bad request data.
+404
+The account does not exist.
+500
+Refund failed due to an internal error.
+post
+/payments/accounts/{account_id}/_precalculate_refund
+/v0/c
+/payments/accounts/{account_id}/_precalculate_refund
+Request samples
+Payload
+Content type
+application/json
+Copy
+{
+"amount"
+:
+10.05
+,
+"currency"
+:
+"USD"
+}
+Response samples
+200
+400
+404
+500
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"instruments"
+:
+[
+{
+"payment_method"
+:
+"string"
+,
+"amount"
+:
+"string"
+,
+"currency"
+:
+"str"
+,
+"card_details"
+:
+{
+"brand"
+:
+"string"
+,
+"last_four_digits"
+:
+"string"
+}
+}
+]
+}
+Historical import
+Store payment data for a historical order.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+external_order_id
+required
+string
+[ 1 .. 64 ] characters
+(Previously: external_id) External order ID visible in NOM.
+account_id
+required
+string
+= 36 characters
+(Previously: sales_order_uuid) The account that this payment belongs to, usually sales_order_uuid
+placed_at
+required
+string
+<
+date-time
+>
+Date representation of when the order was placed, containing date, time and timezone as defined by
+https://tools.ietf.org/html/rfc3339
+(ISO 8601).
+store_id
+required
+string
+<= 256 characters
+ID of the store where this order was placed.
+currency
+required
+string
+Enum
+:
+"AED"
+"AFN"
+"ALL"
+"AMD"
+"ANG"
+"AOA"
+"ARS"
+"AUD"
+"AWG"
+"AZN"
+"BAM"
+"BBD"
+"BDT"
+"BGN"
+"BHD"
+"BIF"
+"BMD"
+"BND"
+"BOB"
+"BOV"
+"BRL"
+"BSD"
+"BTN"
+"BWP"
+"BYN"
+"BZD"
+"CAD"
+"CDF"
+"CHE"
+"CHF"
+"CHW"
+"CLF"
+"CLP"
+"CNY"
+"COP"
+"COU"
+"CRC"
+"CUC"
+"CUP"
+"CVE"
+"CZK"
+"DJF"
+"DKK"
+"DOP"
+"DZD"
+"EGP"
+"ERN"
+"ETB"
+"EUR"
+"FJD"
+"FKP"
+"GBP"
+"GEL"
+"GHS"
+"GIP"
+"GMD"
+"GNF"
+"GTQ"
+"GYD"
+"HKD"
+"HNL"
+"HRK"
+"HTG"
+"HUF"
+"IDR"
+"ILS"
+"INR"
+"IQD"
+"IRR"
+"ISK"
+"JMD"
+"JOD"
+"JPY"
+"KES"
+"KGS"
+"KHR"
+"KMF"
+"KPW"
+"KRW"
+"KWD"
+"KYD"
+"KZT"
+"LAK"
+"LBP"
+"LKR"
+"LRD"
+"LSL"
+"LYD"
+"MAD"
+"MDL"
+"MGA"
+"MKD"
+"MMK"
+"MNT"
+"MOP"
+"MRU"
+"MUR"
+"MVR"
+"MWK"
+"MXN"
+"MXV"
+"MYR"
+"MZN"
+"NAD"
+"NGN"
+"NIO"
+"NOK"
+"NPR"
+"NZD"
+"OMR"
+"PAB"
+"PEN"
+"PGK"
+"PHP"
+"PKR"
+"PLN"
+"PYG"
+"QAR"
+"RON"
+"RSD"
+"RUB"
+"RWF"
+"SAR"
+"SBD"
+"SCR"
+"SDG"
+"SEK"
+"SGD"
+"SHP"
+"SLL"
+"SOS"
+"SRD"
+"SSP"
+"STN"
+"SVC"
+"SYP"
+"SZL"
+"THB"
+"TJS"
+"TMT"
+"TND"
+"TOP"
+"TRY"
+"TTD"
+"TWD"
+"TZS"
+"UAH"
+"UGX"
+"USD"
+"USN"
+"UYI"
+"UYU"
+"UYW"
+"UZS"
+"VES"
+"VND"
+"VUV"
+"WST"
+"XAF"
+"XAG"
+"XAU"
+"XBA"
+"XBB"
+"XBC"
+"XBD"
+"XCD"
+"XDR"
+"XOF"
+"XPD"
+"XPF"
+"XPT"
+"XSU"
+"XTS"
+"XUA"
+"XXX"
+"YER"
+"ZAR"
+"ZMW"
+"ZWL"
+The currency for all the prices contained within this payload.
+payments
+required
+Array of
+objects
+<= 40 items
+Responses
+200
+Ok response without response payload.
+400
+Error response containing error description.
+500
+Refund failed due to an internal error.
+post
+/payments/historical
+/v0/c
+/payments/historical
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"external_order_id"
+:
+"HISTORIC_ORDER_123"
+,
+"account_id"
+:
+"547cf43d-487a-4311-b630-346880725628"
+,
+"placed_at"
+:
+"2018-10-08T07:06:08.067Z"
+,
+"store_id"
+:
+"807b05a4-5554-5302-a67f-aa3293107e92"
+,
+"currency"
+:
+"USD"
+,
+"payments"
+:
+[
+{
+"provider"
+:
+"adyen"
+,
+"instrument_id"
+:
+"ch_1DIsE9GMCeo3G7b40EbEjfZX"
+,
+"amount"
+:
+68.78
+,
+"method"
+:
+"credit_card"
+,
+"wallet"
+:
+"apple_pay"
+,
+"metadata"
+:
+{ }
+,
+"processed_at"
+:
+"2018-10-08T07:06:08.067Z"
+,
+"adyen_merchant_account"
+:
+"NewStorePOS"
+,
+"card_details"
+:
+{
+"brand"
+:
+"visa"
+,
+"last_four_digits"
+:
+"1234"
+}
+}
+,
+{
+"instrument_id"
+:
+"asdgretesg3tgdfAASdasd"
+,
+"amount"
+:
+100.21
+,
+"method"
+:
+"gift_card"
+,
+"processed_at"
+:
+"2018-10-08T07:06:08.067Z"
+}
+]
+}
+Response samples
+200
+400
+500
+Content type
+application/json
+Copy
+{
+"message"
+:
+"string"
+,
+"status"
+:
+"string"
+,
+"request_id"
+:
+"string"
+}
+Previous
+NewStore Checkout Secrets API
+Next
+Payment Options API
+Copyright © 2025 NewStore, Inc.

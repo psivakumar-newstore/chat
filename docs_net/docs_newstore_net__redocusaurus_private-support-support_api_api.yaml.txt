@@ -1,0 +1,163 @@
+openapi: 3.0.0
+info:
+  title: Support API
+  version: v0
+  description: |
+    This is an internal API for our customer support.
+
+    Changes:
+    - 01/2019 - Initial release
+    - 02/2019 - Add /orders/{order-id}/_force_cancel endpoint
+servers:
+  - url: https://dodici.x.newstore.net/_/v0/support
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /orders/{order_id}/_retry_delivery_booking:
+    post:
+      responses:
+        '202':
+          description: The requested retry was accepted.
+        '500':
+          description: An internal server error happened.
+      description: >
+        Tries to book deliveries for the given sales order. Use this method when
+        booking operation failed for the given order and cannot be retried from
+        NOM or the Fulfillment App.
+
+        You can use the [Get booking
+        status](#booking-statuses-get-booking-status) method to check the status
+        of a booking.
+      summary: Retry delivery booking
+      operationId: retry-delivery-booking
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique ID of the sales order.
+  /orders/{order_id}/booking_status:
+    get:
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              example:
+                booking_status:
+                  - fulfillment_request_id: 76ba2c90-c413-438e-8040-a3585a2db770
+                    status: pending
+                  - fulfillment_request_id: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                    status: booked
+                  - fulfillment_request_id: 27a39710-4b2d-43fd-b636-5f7aed3073a2
+                    status: failed
+                    error_type: validation_error
+                    error_description: The provided zip code is invalid.
+              schema:
+                description: Contains a list of all shipments and their booking statuses.
+                type: object
+                required:
+                  - booking_status
+                properties:
+                  booking_status:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - fulfillment_request_id
+                        - status
+                      properties:
+                        fulfillment_request_id:
+                          type: string
+                          minLength: 36
+                          maxLength: 36
+                          description: The unique ID of the fulfillment request.
+                        status:
+                          type: string
+                          enum:
+                            - booked
+                            - failed
+                            - pending
+                          description: >-
+                            The status of the delivery booking, can either be
+                            booked, failed or in_preparation, which means there
+                            was no book delivery call yet.
+                        error_type:
+                          type: string
+                          minLength: 1
+                          description: >-
+                            The type of error which caused the delivery booking
+                            to fail.
+                        error_description:
+                          type: string
+                          minLength: 1
+                          description: >-
+                            A brief description of the error which caused the
+                            delivery booking to fail.
+        '500':
+          description: An internal server error happened.
+      description: Retrieves the shipment booking status.
+      summary: Get booking status
+      operationId: get-booking-status
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique ID of the sales order.
+  /orders/{order_id}/amendment:
+    post:
+      responses:
+        '200':
+          description: The update was successful.
+        '500':
+          description: An internal server error happened.
+      description: >
+        Updates the details of an order. Use this method to update order
+        details, such as the store location
+
+        (``store_id``) where an order was originally placed, to a different
+        location.
+
+
+        The details of the order are also updated in NewStore Omnichannel
+        Manager.
+      summary: Update order details
+      operationId: update-order-details
+      requestBody:
+        content:
+          application/json:
+            example:
+              placement_location:
+                id: '0004'
+            schema:
+              description: >-
+                Updates the details of an order, such as the location where the
+                order was placed.
+              type: object
+              properties:
+                placement_location:
+                  type: object
+                  description: The store where the order was placed.
+                  required:
+                    - id
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the store in the NewStore platform.
+        required: true
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique ID of the sales order.

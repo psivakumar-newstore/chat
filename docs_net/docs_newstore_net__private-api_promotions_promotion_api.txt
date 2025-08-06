@@ -1,0 +1,790 @@
+Discount Rule API | NewStore Documentation
+Skip to main content
+🚀 User docs have moved
+to a new docs experience platform!
+.
+This site will now host ONLY the API docs
+.
+API Explorer
+Search
+Dummy API
+Associate App
+Catalog and imports
+Shopping App
+Customer and clienteling
+Shipping
+Event Stream
+Inventory and fulfillment
+Omnichannel Manager
+Order management
+Payments
+Promotions and coupons
+Coupons API
+Promotions configuration API
+Discount Rule API
+Apply Promotions To Cart
+Configuration
+Coupons
+Integration Configurations
+Automatic Promotions
+Manage loyalty programs
+Manage Stackable Coupons
+Stock
+Other support APIs
+post
+Create discount rule
+get
+List discount rules
+get
+Get discount rule
+patch
+Update discount rule
+del
+Delete discount rule
+API docs by Redocly
+Discount Rule API
+(
+v0
+)
+Download OpenAPI specification
+:
+Download
+Represents a discount rule defining a type of discount. For example, shipping is free when
+the order value reaches $70.
+A discount rule is not an applicable discount, but it is needed to create a coupon definition
+leading to a
+coupon
+. Using the coupon applies the discount. For more information,
+see the coupons
+guide
+.
+Create discount rule
+Creates a discount rule.
+Important:
+Ensure that you specify the value of the
+amount
+property correctly,
+according to the specified currency. For example, if the currency is specified as
+USD
+and the product price (
+amount
+) has more than 2 decimal places, it is considered as
+invalid by the platform.
+For more information, see
+pricing dependencies on currency
+.
+Authorizations:
+newStoreAccessToken
+Request Body schema:
+application/json
+One of
+Create discount rule request
+Create discount rule request
+label
+required
+string
+non-empty
+Unique name of the discount rule. The value is trimmed before it is stored.
+description
+string
+non-empty
+Description of the discount rule. The value is trimmed before it is stored.
+scope
+required
+string
+Enum
+:
+"order"
+"item"
+"shipping"
+Scope of the discount to be applied on, the whole order value, individual item's value or the shipping costs. In case of
+item
+scope at least one item or category identifier has to be specified in the list of
+items
+or
+categories
+.
+currency
+required
+string
+= 3 characters
+The currency code of the amount property (in case of a fixed discount) as well as the minimum_order_amount. The currency of the discount rule and the order that it should be applied on must match.
+priority
+integer
+>= 0
+Default:
+0
+Defines the priority in which the discount rules are applied. Higher values mean higher priority.
+minimum_order_amount
+number
+>= 0
+Minimum order total value in the given currency before the discount rule can be applied.
+shipping_price_limit
+number
+>= 0
+Shipping price limit, i.e. do not apply this shipping discount rule to shipping options with prices higher than this limit
+type
+required
+string
+Value
+:
+"fixed"
+amount
+required
+number
+>= 0
+Fixed amount in the given currency to be applied
+items
+Array of
+strings
+A list of product IDs. Each item included in this list is discounted by the provided amount upon checkout. The list is only taken into account for discount rules with scope
+item
+categories
+Array of
+strings
+A list of category identifiers. Each item belonging to a category specified in this list is discounted by the provided amount upon checkout. The list is only taken into account for discount rules with scope
+item
+Responses
+201
+The discount rule was successfully created.
+400
+Input data is invalid.
+Price (
+amount
+) is specified with invalid number of decimal places according to the specified currency.
+For example, if the currency is specified as
+USD
+and the product price has more
+than 2 decimal places, it is considered as invalid by the platform.
+For more information, see
+pricing dependencies on currency
+.
+409
+A discount rule with given identifier already exists.
+post
+/discount_rules
+/v0/d
+/discount_rules
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"discount_rule_fixed"
+:
+{
+"schema"
+:
+{
+"description"
+:
+"half-price"
+,
+"amount"
+:
+50
+,
+"currency"
+:
+"EUR"
+,
+"scope"
+:
+"order"
+,
+"type"
+:
+"fixed"
+,
+"priority"
+:
+10
+,
+"label"
+:
+"BOGOF2910"
+}
+}
+,
+"discount_rule_order"
+:
+{
+"schema"
+:
+{
+"description"
+:
+"30% Cyber Month"
+,
+"amount"
+:
+30
+,
+"currency"
+:
+"EUR"
+,
+"scope"
+:
+"order"
+,
+"type"
+:
+"percentage"
+,
+"priority"
+:
+10
+,
+"label"
+:
+"30%today"
+}
+}
+,
+"discount_rule_shipping"
+:
+{
+"schema"
+:
+{
+"label"
+:
+"Free Shipping"
+,
+"scope"
+:
+"shipping"
+,
+"currency"
+:
+"USD"
+,
+"priority"
+:
+59
+,
+"minimum_order_amount"
+:
+10
+,
+"shipping_price_limit"
+:
+4
+,
+"type"
+:
+"percentage"
+,
+"amount"
+:
+100
+}
+}
+}
+Response samples
+201
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"discount_rule"
+:
+{
+"schema"
+:
+{
+"amount"
+:
+30
+,
+"created_at"
+:
+"2018-10-26T09:42:30.869Z"
+,
+"currency"
+:
+"EUR"
+,
+"description"
+:
+"30% Cyber Month"
+,
+"id"
+:
+"467ad6df-eb07-4288-b8ed-ce0e5b224552"
+,
+"label"
+:
+"30%today"
+,
+"minimum_order_amount"
+:
+0
+,
+"priority"
+:
+10
+,
+"scope"
+:
+"order"
+,
+"shipping_price_limit"
+:
+0
+,
+"type"
+:
+"percentage"
+,
+"updated_at"
+:
+"2018-10-26T09:42:30.869Z"
+}
+}
+}
+List discount rules
+Retrieves a list of discount rules.
+Authorizations:
+newStoreAccessToken
+query
+Parameters
+labels
+Array of
+strings
+<= 20 items
+unique
+List of labels to filter discount rules.
+advanced_search
+string
+Any non-empty value enables advanced search with sorting, filtering and full-text queries.
+If used, fields
+items
+and
+categories
+will be excluded from discount rule item in the response.
+Responses
+200
+The list of discount rules is returned.
+400
+Input data is invalid.
+get
+/discount_rules
+/v0/d
+/discount_rules
+Response samples
+200
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"discount_rule_list"
+:
+{
+"schema"
+:
+{
+"items"
+:
+[
+{
+"amount"
+:
+30
+,
+"created_at"
+:
+"2018-10-26T09:42:30.869Z"
+,
+"currency"
+:
+"EUR"
+,
+"description"
+:
+"30% Cyber Month"
+,
+"id"
+:
+"467ad6df-eb07-4288-b8ed-ce0e5b224552"
+,
+"label"
+:
+"30%today"
+,
+"minimum_order_amount"
+:
+0
+,
+"priority"
+:
+10
+,
+"scope"
+:
+"order"
+,
+"shipping_price_limit"
+:
+0
+,
+"type"
+:
+"percentage"
+,
+"updated_at"
+:
+"2018-10-26T09:42:30.869Z"
+}
+,
+{
+"amount"
+:
+100
+,
+"created_at"
+:
+"2018-10-26T09:42:30.869Z"
+,
+"currency"
+:
+"EUR"
+,
+"description"
+:
+"100$ discount"
+,
+"id"
+:
+"467ad6df-eb07-4288-b8ed-ce0e5b224553"
+,
+"label"
+:
+"100bucks"
+,
+"minimum_order_amount"
+:
+0
+,
+"priority"
+:
+10
+,
+"scope"
+:
+"order"
+,
+"shipping_price_limit"
+:
+0
+,
+"type"
+:
+"fixed"
+,
+"updated_at"
+:
+"2018-10-26T09:42:30.869Z"
+}
+]
+,
+"pagination_info"
+:
+{
+"count"
+:
+10
+,
+"next_url"
+:
+"/discounts?count=10&locale=en-US&offset=10&sort=created_at%7Cdesc"
+,
+"offset"
+:
+0
+,
+"prev_url"
+:
+null
+,
+"total"
+:
+6032
+}
+}
+}
+}
+Get discount rule
+Retrieves the discount rule with the given ID.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The identifier of the discount rule. Use the
+List discount rules
+method to retrieve the ID.
+Responses
+200
+The discount rule is returned.
+404
+The provided ID could not be found.
+get
+/discount_rules/{id}
+/v0/d
+/discount_rules/{id}
+Response samples
+200
+Content type
+application/json
+Copy
+{
+"discount_rule"
+:
+"./examples/example_discount_rule_response.yaml"
+}
+Update discount rule
+Updates certain fields in the specified discount rule.
+Important:
+Ensure that you specify the value of the
+amount
+property correctly,
+according to the specified currency. For example, if the currency is specified as
+USD
+and the product price (
+amount
+) has more than 2 decimal places, it is considered as
+invalid by the platform.
+For more information, see
+pricing dependencies on currency
+.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The identifier of the discount rule. Use the
+List discount rules
+method to retrieve the ID.
+Request Body schema:
+application/json
+label
+string
+non-empty
+Unique name of the discount rule. The value is trimmed before it is stored.
+description
+string
+non-empty
+Description of the discount rule. The value is trimmed before it is stored.
+scope
+string
+Enum
+:
+"order"
+"item"
+"shipping"
+Scope of the discount to be applied on, the whole order value, individual item's value or the shipping costs. In case of
+item
+scope at least one item or category identifier has to be specified in the list of
+items
+or
+categories
+.
+type
+string
+Enum
+:
+"fixed"
+"percentage"
+amount
+number
+>= 0
+Fixed amount in the given currency or percentage to be applied
+priority
+integer
+>= 0
+Default:
+0
+Defines the priority in which the discount rules are applied. Higher values mean higher priority.
+minimum_order_amount
+number
+>= 0
+Minimum order total value in the given currency before the discount rule can be applied.
+shipping_price_limit
+number
+>= 0
+Shipping price limit, i.e. do not apply this shipping discount rule to shipping options with prices higher than this limit
+items
+Array of
+strings
+A list of product IDs. Each item included in this list is discounted by the provided amount upon checkout. The list is only taken into account for discount rules with scope
+item
+categories
+Array of
+strings
+A list of category identifiers. Each item belonging to a category specified in this list is discounted by the provided amount upon checkout. The list is only taken into account for discount rules with scope
+item
+currency
+string
+= 3 characters
+The currency code of the amount property (in case of a fixed discount) as well as the minimum_order_amount. The currency of the discount rule and the order that it should be applied on must match.
+Responses
+200
+The discount rule was successfully updated.
+400
+Input data is invalid.
+Price (
+amount
+) is specified with invalid number of decimal places according to the specified currency.
+For example, if the currency is specified as
+USD
+and the product price has more
+than 2 decimal places, it is considered as invalid by the platform.
+For more information, see
+pricing dependencies on currency
+.
+patch
+/discount_rules/{id}
+/v0/d
+/discount_rules/{id}
+Request samples
+Payload
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"patch_discount_rule_items"
+:
+{
+"schema"
+:
+{
+"items"
+:
+[
+"p0001"
+,
+"p0002"
+]
+}
+}
+,
+"patch_discount_rule_min_amount"
+:
+{
+"schema"
+:
+{
+"minimum_order_amount"
+:
+10
+}
+}
+}
+Response samples
+200
+400
+Content type
+application/json
+Copy
+Expand all
+Collapse all
+{
+"discount_rule"
+:
+{
+"schema"
+:
+{
+"amount"
+:
+30
+,
+"created_at"
+:
+"2018-10-26T09:42:30.869Z"
+,
+"currency"
+:
+"EUR"
+,
+"description"
+:
+"30% Cyber Month"
+,
+"id"
+:
+"467ad6df-eb07-4288-b8ed-ce0e5b224552"
+,
+"label"
+:
+"30%today"
+,
+"minimum_order_amount"
+:
+0
+,
+"priority"
+:
+10
+,
+"scope"
+:
+"order"
+,
+"shipping_price_limit"
+:
+0
+,
+"type"
+:
+"percentage"
+,
+"updated_at"
+:
+"2018-10-26T09:42:30.869Z"
+}
+}
+}
+Delete discount rule
+Deletes discount rule with the given ID.
+Authorizations:
+newStoreAccessToken
+path
+Parameters
+id
+required
+string
+The identifier of the discount rule. Use the
+List discount rules
+method to retrieve the ID.
+Responses
+204
+The discount rule was deleted.
+404
+The discount rule with the given ID could not be found.
+delete
+/discount_rules/{id}
+/v0/d
+/discount_rules/{id}
+Previous
+Promotions configuration API
+Next
+Apply Promotions To Cart
+Copyright © 2025 NewStore, Inc.

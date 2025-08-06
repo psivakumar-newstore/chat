@@ -1,0 +1,2282 @@
+openapi: 3.1.0
+info:
+  title: Manage Stackable Coupons
+  description: >
+    Use this API to manage stackable coupons for your business.
+
+
+    **Important**: This resource is different than the [legacy
+    coupons](/newstore-cloud/discounts_and_coupons/coupons-legacy.html)
+
+    resource, which is used to create legacy coupons and coupon definitions in
+    the platform.
+  termsOfService: https://www.newstore.com/terms-of-use/
+  license:
+    name: Open API Specification - OAS
+    url: https://spec.openapis.org/oas/v3.1.0
+  version: v1.0
+servers:
+  - url: http://localhost:8000/v0
+    description: The local development server
+  - url: https://dodici.x.newstore.net/v0/promotions
+paths:
+  /coupon:
+    parameters:
+      - name: x-request-id
+        in: header
+        schema:
+          type: string
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+        required: true
+    post:
+      security:
+        - newStoreAccessToken: []
+      summary: Create coupon
+      description: >
+        Use this method to create a coupon definition for your business.
+
+
+        You can create a coupon of any of the promotion types,
+
+        and they are applied via coupon codes associated to the coupon
+        definition.
+      operationId: createCoupon
+      requestBody:
+        description: a new coupon definition
+        content:
+          application/json:
+            schema:
+              description: A new coupon
+              type: object
+              properties: &ref_35
+                active:
+                  type: boolean
+                  example: true
+                  description: Indicates whether the coupon is active or not
+                name:
+                  type: string
+                  example: My Awesome Coupon
+                  description: The name of the coupon
+                description:
+                  type: string
+                  example: This coupon is awesome
+                localizedTimezone:
+                  type: boolean
+                  example: true
+                  description: >-
+                    Optional, this property determines local timezone validity
+                    for the promotion. If true, UTC is assumed with no timezone
+                    required in "validFrom" and "validTo". If false, timezone
+                    must be specified in those fields.
+                validFrom:
+                  type: string
+                  pattern: >-
+                    (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                  description: >-
+                    The date the promotion becomes valid. If localizedTimezone
+                    is false, timezone can be indicated at the end of the
+                    string.
+                  example: '2021-01-01T00:00:00+01:00'
+                validTo:
+                  type: string
+                  pattern: >-
+                    (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                  example: '2021-01-01T00:00:00+01:00'
+                  description: >-
+                    The date the promotion becomes invalid. If localizedTimezone
+                    is false, timezone can be indicated at the end of the
+                    string.
+                currencies:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        format: /\w{3}/
+                        description: A ISO4217 currency code.
+                        example: EUR
+                      minimumCartValue:
+                        type: number
+                        example: 5215432
+                singleUse:
+                  type: boolean
+                  example: true
+                  description: Indicates whether the coupon codes are single use or not.
+                category:
+                  type: object
+                  properties:
+                    kind:
+                      oneOf:
+                        - allOf: &ref_6
+                            - description: Base object for promotion categories
+                              type: object
+                              properties: &ref_0
+                                kind:
+                                  type: string
+                                  enum:
+                                    - CartLevelPercentage
+                                    - ProductLevelPercentage
+                                    - BogoPercentage
+                                    - FreeShippingPercentage
+                                    - BundlePercentage
+                                    - CartLevelFixed
+                                    - ProductLevelFixed
+                                    - BogoFixed
+                                    - BundleFixed
+                              discriminator: &ref_1
+                                propertyName: kind
+                          description: >
+                            A promotion which is applied as a % discount to the
+                            entire cart
+                          type: object
+                          required: &ref_7
+                            - kind
+                          properties: &ref_8
+                            discount:
+                              type: integer
+                              format: int32
+                              description: >-
+                                The % discount applied to the cart, from 0 to
+                                100
+                            kind:
+                              type: string
+                              pattern: ^CartLevelPercentage$
+                        - allOf: &ref_9
+                            - description: Base object for promotion categories
+                              type: object
+                              properties: *ref_0
+                              discriminator: *ref_1
+                          description: A product level percentage promotion
+                          type: object
+                          properties: &ref_10
+                            shopId:
+                              type: string
+                            locale:
+                              type: string
+                            includedCategories:
+                              type: array
+                              items:
+                                description: a product category
+                                type: object
+                                properties: &ref_2
+                                  path:
+                                    type: array
+                                    items:
+                                      type: string
+                            includedProducts:
+                              type: array
+                              items:
+                                type: string
+                            excludedProducts:
+                              type: array
+                              items:
+                                type: string
+                            discount:
+                              type: integer
+                              format: int32
+                              description: >-
+                                The % discount applied to the cart, from 0 to
+                                100
+                            kind:
+                              type: string
+                              pattern: ^ProductLevelPercentage$
+                        - allOf: &ref_11
+                            - description: Base object for promotion categories
+                              type: object
+                              properties: *ref_0
+                              discriminator: *ref_1
+                          description: >
+                            a promotion which is applied as a percentage BOGO to
+                            the cart
+                          type: object
+                          properties: &ref_12
+                            shopId:
+                              type: string
+                            locale:
+                              type: string
+                            discount:
+                              type: integer
+                              format: int32
+                              description: >-
+                                The % discount applied to the cart, from 0 to
+                                100
+                            kind:
+                              type: string
+                              pattern: ^BogoFixed$
+                            buy:
+                              description: >-
+                                base object to define buy and get conditions for
+                                BOGO
+                              type: object
+                              properties: &ref_3
+                                quantity:
+                                  type: number
+                                  description: >-
+                                    The quantity of items to satisfy the
+                                    condition
+                                includedCategories:
+                                  type: array
+                                  items:
+                                    description: a product category
+                                    type: object
+                                    properties: *ref_2
+                                includedProducts:
+                                  type: array
+                                  items:
+                                    type: string
+                                excludedProducts:
+                                  type: array
+                                  items:
+                                    type: string
+                            get:
+                              description: >-
+                                base object to define buy and get conditions for
+                                BOGO
+                              type: object
+                              properties: *ref_3
+                        - allOf: &ref_13
+                            - description: Base object for promotion categories
+                              type: object
+                              properties: *ref_0
+                              discriminator: *ref_1
+                          description: >
+                            A promotion which is applied as a fixed amount
+                            discount to the entire cart
+                          type: object
+                          properties: &ref_14
+                            discounts:
+                              type: array
+                              items:
+                                description: A fixed amount discount
+                                type: object
+                                required: &ref_4
+                                  - amount
+                                  - currency
+                                properties: &ref_5
+                                  amount:
+                                    description: >-
+                                      The amount of the discount, to 5 decimal
+                                      places of accuracy
+                                    type: number
+                                  currency:
+                                    description: The currency of the discount
+                                    type: string
+                            kind:
+                              type: string
+                              pattern: ^CartLevelFixed$
+                        - allOf: &ref_15
+                            - description: Base object for promotion categories
+                              type: object
+                              properties: *ref_0
+                              discriminator: *ref_1
+                          description: >
+                            A promotion which is applied as a fixed amount
+                            discount to the entire cart
+                          type: object
+                          properties: &ref_16
+                            shopId:
+                              type: string
+                            locale:
+                              type: string
+                            includedCategories:
+                              type: array
+                              items:
+                                description: a product category
+                                type: object
+                                properties: *ref_2
+                            includedProducts:
+                              type: array
+                              items:
+                                type: string
+                            excludedProducts:
+                              type: array
+                              items:
+                                type: string
+                            discounts:
+                              type: array
+                              items:
+                                description: A fixed amount discount
+                                type: object
+                                required: *ref_4
+                                properties: *ref_5
+                            kind:
+                              type: string
+                              pattern: ^ProductLevelFixed$
+                        - allOf: &ref_17
+                            - description: Base object for promotion categories
+                              type: object
+                              properties: *ref_0
+                              discriminator: *ref_1
+                          description: >
+                            a promotion which is applied as a fixed amount BOGO
+                            to the cart
+                          type: object
+                          properties: &ref_18
+                            shopId:
+                              type: string
+                            locale:
+                              type: string
+                            discounts:
+                              type: array
+                              items:
+                                description: A fixed amount discount
+                                type: object
+                                required: *ref_4
+                                properties: *ref_5
+                            kind:
+                              type: string
+                              pattern: ^BogoFixed$
+                            buy:
+                              description: >-
+                                base object to define buy and get conditions for
+                                BOGO
+                              type: object
+                              properties: *ref_3
+                            get:
+                              description: >-
+                                base object to define buy and get conditions for
+                                BOGO
+                              type: object
+                              properties: *ref_3
+                        - allOf: &ref_19
+                            - description: Base object for promotion categories
+                              type: object
+                              properties: *ref_0
+                              discriminator: *ref_1
+                          description: >
+                            a promotion which is applied as a FreeShipping to
+                            the cart
+                          type: object
+                          properties: &ref_20
+                            shopId:
+                              type: string
+                            locale:
+                              type: string
+                            kind:
+                              type: string
+                              pattern: ^FreeShippingPercentage$
+                            shippingOptions:
+                              type: array
+                              items:
+                                type: string
+                  discriminator:
+                    propertyName: kind
+                    mapping:
+                      CartLevelPercentage: >-
+                        ./categories/cart_level_percentage.yaml#/schema/CartLevelPercentageCategory
+                      ProductLevelPercentage: >-
+                        ./categories/product_level_percentage.yaml#/schema/ProductLevelPercentageCategory
+                      BogoPercentage: >-
+                        ./categories/bogo_percentage.yaml#/schema/BogoPercentageCategory
+                      CartLevelFixed: >-
+                        ./categories/cart_level_fixed.yaml#/schema/CartLevelFixedCategory
+                      ProductLevelFixed: >-
+                        ./categories/product_level_fixed.yaml#/schema/ProductLevelFixedCategory
+                      BogoFixed: ./categories/bogo_fixed.yaml#/schema/BogoFixedCategory
+                      FreeShippingPercentage: >-
+                        ./categories/free_shipping.yaml#/schema/FreeShippingPercentageCategory
+                stores:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - st-01
+                    - st-02
+                    - st-03
+                  description: >-
+                    Indicates in which stores the coupon can be used. A list of
+                    IDs states that the coupon can be used in the given stores
+                    while an empty array states that the coupon can be used in
+                    any store.
+                consumers:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - user-id-1
+                    - user-id-2
+                    - user-id-3
+                  description: >-
+                    Indicates by which consumers the coupon can be used. A list
+                    of IDs states that the coupon can be used by the given
+                    consumers while an empty array states that the coupon can be
+                    used by any consumers.
+              required: &ref_36
+                - name
+                - validFrom
+                - category
+            examples:
+              cart_level_percentage:
+                value: &ref_49
+                  name: Cart level percentage coupon
+                  description: A coupon with type CartLevelPercentage
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                  singleUse: false
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                    - b25fd287-90cb-421c-a2b7-27691742f55b
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                summary: Cart Level Percentage Promotion
+              product_level_percentage:
+                value: &ref_50
+                  name: Product level percentage coupon
+                  description: A coupon with type ProductLevelPercentage
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    shopId: ''
+                    locale: EN
+                    includedCategories:
+                      - path:
+                          - Clothes
+                          - Hoodies
+                    includedProducts:
+                      - P0001
+                      - P0002
+                    excludedProducts:
+                      - P0003
+                      - P0004
+                    kind: ProductLevelPercentage
+                    discount: 10
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                  singleUse: false
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                    - b25fd287-90cb-421c-a2b7-27691742f55b
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                summary: Product Level Percentage Promotion
+              bogo_percentage:
+                value: &ref_51
+                  name: BOGO percentage coupon
+                  description: A coupon with type BogoPercentage
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    shopId: ''
+                    locale: EN
+                    kind: BogoPercentage
+                    discount: 100
+                    buy:
+                      quantity: 2
+                      includedCategories:
+                        - path:
+                            - Clothes
+                            - Hoodies
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      excludedProducts:
+                        - P0003
+                        - P0004
+                    get:
+                      quantity: 1
+                      includedCategories:
+                        - path:
+                            - Clothes
+                            - Hoodies
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      excludedProducts:
+                        - P0003
+                        - P0004
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                  singleUse: false
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                    - b25fd287-90cb-421c-a2b7-27691742f55b
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                summary: BOGO Percentage Promotion
+              cart_level_fixed:
+                value: &ref_52
+                  name: Cart level fixed coupon
+                  description: A coupon with type CartLevelFixed
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: USD
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                    - code: USD
+                      minimumCartValue: 0
+                  singleUse: false
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                    - b25fd287-90cb-421c-a2b7-27691742f55b
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                summary: Cart Level Fixed Promotion
+              product_level_fixed:
+                value: &ref_53
+                  name: Product level fixed coupon
+                  description: A coupon with type ProductLevelFixed
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    shopId: ''
+                    locale: EN
+                    includedCategories:
+                      - path:
+                          - Clothes
+                          - Hoodies
+                    includedProducts:
+                      - P0001
+                      - P0002
+                    excludedProducts:
+                      - P0003
+                      - P0004
+                    kind: ProductLevelFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                      - amount: 5
+                        currency: AED
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                    - code: AED
+                      minimumCartValue: 13
+                  singleUse: false
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                    - b25fd287-90cb-421c-a2b7-27691742f55b
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                summary: Product Level Fixed Promotion
+              bogo_fixed:
+                value: &ref_54
+                  name: BOGO fixed coupon
+                  description: A coupon with type BogoFixed
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    shopId: ''
+                    locale: EN
+                    kind: BogoFixed
+                    discounts:
+                      - amount: 10
+                        currency: EUR
+                    buy:
+                      quantity: 2
+                      includedCategories:
+                        - path:
+                            - Clothes
+                            - Hoodies
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      excludedProducts:
+                        - P0003
+                        - P0004
+                    get:
+                      quantity: 1
+                      includedCategories:
+                        - path:
+                            - Clothes
+                            - Hoodies
+                      includedProducts:
+                        - P0001
+                        - P0002
+                      excludedProducts:
+                        - P0003
+                        - P0004
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                  singleUse: false
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                    - b25fd287-90cb-421c-a2b7-27691742f55b
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                summary: BOGO Fixed Promotion
+              free_shipping:
+                value: &ref_55
+                  name: FreeShipping coupon
+                  description: A coupon with type FreeShipping
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    shopId: storefront-catalog-en
+                    locale: EN
+                    kind: FreeShippingPercentage
+                    shippingOptions:
+                      - Standard
+                      - Next Day
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                    - b25fd287-90cb-421c-a2b7-27691742f55b
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                summary: FreeShipping Promotion
+      responses:
+        '201':
+          description: Coupon created successfully
+          content:
+            application/json:
+              schema:
+                description: A coupon plus HATEOAS fields
+                type: object
+                properties: &ref_23
+                  promotion:
+                    type: object
+                    description: A coupon
+                    required: &ref_32
+                      - id
+                      - active
+                      - createdAt
+                      - createdBy
+                      - updatedAt
+                      - updatedBy
+                      - tenant
+                      - version
+                      - name
+                      - validFrom
+                      - category
+                    properties: &ref_33
+                      id:
+                        type: string
+                        readOnly: true
+                      createdAt:
+                        type: string
+                        format: date-time
+                        readOnly: true
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        readOnly: true
+                      createdBy:
+                        type: string
+                        readOnly: true
+                      updatedBy:
+                        type: string
+                        readOnly: true
+                      tenant:
+                        type: string
+                      version:
+                        type: string
+                      active:
+                        type: boolean
+                        example: true
+                        description: Indicates whether the promotion is active or not
+                      name:
+                        type: string
+                        example: My Amazing Promotion
+                        description: The name of the promotion
+                      description:
+                        type: string
+                        example: This promotion is amazing
+                      localizedTimezone:
+                        type: boolean
+                        example: true
+                        description: >-
+                          Optional, this property determines local timezone
+                          validity for the promotion. If true, UTC is assumed
+                          with no timezone required in "validFrom" and
+                          "validTo". If false, timezone must be specified in
+                          those fields.
+                      validFrom:
+                        type: string
+                        pattern: >-
+                          (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                        description: >-
+                          The date the promotion becomes valid. If
+                          localizedTimezone is false, timezone can be indicated
+                          at the end of the string.
+                        example: '2021-01-01T00:00:00+01:00'
+                      validTo:
+                        type: string
+                        pattern: >-
+                          (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                        example: '2021-01-01T00:00:00+01:00'
+                        description: >-
+                          The date the promotion becomes invalid. If
+                          localizedTimezone is false, timezone can be indicated
+                          at the end of the string.
+                      currencies:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              format: /\w{3}/
+                              description: A ISO4217 currency code.
+                              example: EUR
+                            minimumCartValue:
+                              type: number
+                              example: 5215432
+                      category:
+                        type: object
+                        oneOf:
+                          - allOf: *ref_6
+                            description: >
+                              A promotion which is applied as a % discount to
+                              the entire cart
+                            type: object
+                            required: *ref_7
+                            properties: *ref_8
+                          - allOf: *ref_9
+                            description: A product level percentage promotion
+                            type: object
+                            properties: *ref_10
+                          - allOf: *ref_11
+                            description: >
+                              a promotion which is applied as a percentage BOGO
+                              to the cart
+                            type: object
+                            properties: *ref_12
+                          - allOf: *ref_13
+                            description: >
+                              A promotion which is applied as a fixed amount
+                              discount to the entire cart
+                            type: object
+                            properties: *ref_14
+                          - allOf: *ref_15
+                            description: >
+                              A promotion which is applied as a fixed amount
+                              discount to the entire cart
+                            type: object
+                            properties: *ref_16
+                          - allOf: *ref_17
+                            description: >
+                              a promotion which is applied as a fixed amount
+                              BOGO to the cart
+                            type: object
+                            properties: *ref_18
+                          - allOf: *ref_19
+                            description: >
+                              a promotion which is applied as a FreeShipping to
+                              the cart
+                            type: object
+                            properties: *ref_20
+                        discriminator:
+                          propertyName: kind
+                          mapping:
+                            CartLevelPercentage: >-
+                              ./categories/cart_level_percentage.yaml#/schema/CartLevelPercentageCategory
+                            ProductLevelPercentage: >-
+                              ./categories/product_level_percentage.yaml#/schema/ProductLevelPercentageCategory
+                            BogoPercentage: >-
+                              ./categories/bogo_percentage.yaml#/schema/BogoPercentageCategory
+                            CartLevelFixed: >-
+                              ./categories/cart_level_fixed.yaml#/schema/CartLevelFixedCategory
+                            ProductLevelFixed: >-
+                              ./categories/product_level_fixed.yaml#/schema/ProductLevelFixedCategory
+                            BogoFixed: >-
+                              ./categories/bogo_fixed.yaml#/schema/BogoFixedCategory
+                            FreeShippingPercentage: >-
+                              ./categories/free_shipping.yaml#/schema/FreeShippingPercentageCategory
+                      singleUse:
+                        type: boolean
+                        example: true
+                        description: >-
+                          Indicates whether the coupon codes associated with the
+                          coupon definition are single use
+                      stores:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - st-01
+                          - st-02
+                          - st-03
+                        description: >-
+                          Indicates in which stores the coupon can be used. A
+                          list of IDs states that the coupon can be used in the
+                          given stores while an empty array states that the
+                          coupon can be used in any store.
+                      consumers:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - user-id-1
+                          - user-id-2
+                          - user-id-3
+                        description: >-
+                          Indicates by which consumers the coupon can be used. A
+                          list of IDs states that the coupon can be used by the
+                          given consumers while an empty array states that the
+                          coupon can be used by any consumers.
+                  links:
+                    type: object
+                    description: Object links
+                    required: &ref_26
+                      - self
+                    properties: &ref_27
+                      self:
+                        type: string
+                        description: the link in object pointing to the same object
+                        readOnly: true
+              example:
+                coupon: &ref_24
+                  id: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                  active: false
+                  name: Coupon for hoodies
+                  description: A coupon for hoodies
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                  codes: []
+                  singleUse: false
+                  createdAt: '2021-12-31T00:00:00'
+                  updatedAt: '2021-12-31T00:00:00'
+                  createdBy: store-employee-1
+                  updatedBy: store-employee-1
+                  tenant: newstore
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                    - b25fd287-90cb-421c-a2b7-27691742f55b
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  version: '2'
+                links: &ref_25
+                  self: /coupon/6297992e-58ac-4000-8000-3766e65e2e3c
+        '400':
+          description: The payload was invalid and the coupon could not be created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: &ref_21
+                  - message
+                  - status
+                properties: &ref_22
+                  message:
+                    type: string
+                  status:
+                    type: integer
+                  causes:
+                    type: array
+                    items:
+                      type: string
+                  id:
+                    type: string
+                  type:
+                    type: string
+                  code:
+                    type: string
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+    get:
+      security:
+        - newStoreAccessToken: []
+      summary: List coupons
+      description: >
+        Retrieves all coupons created for your business via [NewStore
+        Omnichannel
+        Manager](https://docs.newstore.com/v1/docs/creating-automatic-promotions)
+        or the
+
+        [Create coupon](#operation/createCoupon) method.
+      operationId: getCoupons
+      parameters:
+        - name: count
+          in: query
+          description: The number of promotions to get at once
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: The page number
+          required: true
+          schema:
+            type: integer
+        - name: name
+          in: query
+          description: >-
+            The names of the coupons you want to get (it can be a list of comma
+            separated values)
+          schema:
+            type: string
+        - name: code
+          in: query
+          description: >-
+            The codes for which you want to get the coupons (it can be a list of
+            comma separated values)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A page of coupons and the links for the previous and next pages
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A Page of coupons
+                properties: &ref_34
+                  items:
+                    type: array
+                    items:
+                      description: A coupon plus HATEOAS fields
+                      type: object
+                      properties: *ref_23
+                  links:
+                    type: object
+                    description: Pagination links
+                    properties: &ref_30
+                      next:
+                        type: string
+                        description: >-
+                          the link in a pagination response pointing to the next
+                          page
+                        readOnly: true
+                      previous:
+                        type: string
+                        description: >-
+                          the link in a pagination response pointing to the
+                          previous page
+                        readOnly: true
+                  pagination:
+                    type: object
+                    description: Pagination response fields
+                    properties: &ref_31
+                      count:
+                        type: integer
+                        description: echoes the 'count' value that was used
+                      page:
+                        type: integer
+                        description: echoes the 'page' value that was used
+                      total:
+                        type: integer
+                        description: the total number of resources matching the query
+              example:
+                items:
+                  - coupon:
+                      id: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                      active: true
+                      name: Coupon for hoodies
+                      description: A coupon for hoodies
+                      localizedTimezone: false
+                      validFrom: '2022-01-01T00:00:00+01:00'
+                      validTo: '2022-04-01T00:00:00+01:00'
+                      category:
+                        kind: CartLevelPercentage
+                        discount: 5
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 10
+                      codes:
+                        - id: 628e411f-5fa1-4000-8000-7ef82f43053f
+                          name: HOODIE2022
+                          redemptions: 0
+                          active: true
+                      singleUse: false
+                      createdAt: '2021-12-31T00:00:00'
+                      updatedAt: '2021-12-31T00:00:00'
+                      createdBy: store-employee-1
+                      updatedBy: store-employee-1
+                      tenant: newstore
+                      version: '2'
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                        - b25fd287-90cb-421c-a2b7-27691742f55b
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                    links:
+                      self: /coupon/7c9f2605-9fb3-5444-8fee-47fe51608efe
+                  - coupon:
+                      id: 6cxtew5ec-9fb3-5478-9cre6-8ue3289y
+                      active: false
+                      name: Coupon for t-shirts
+                      description: A coupon for t-shirts
+                      localizedTimezone: false
+                      validFrom: '2022-01-01T00:00:00+01:00'
+                      validTo: '2022-04-01T00:00:00+01:00'
+                      category:
+                        kind: CartLevelPercentage
+                        discount: 3
+                      currencies:
+                        - code: EUR
+                          minimumCartValue: 5
+                      codes:
+                        - id: 6283d0e7-9487-4000-8000-d387d2d71138
+                          name: TSHIRT2022
+                          redemptions: 0
+                          active: true
+                      singleUse: false
+                      createdAt: '2021-11-01T00:00:00'
+                      updatedAt: '2021-11-01T00:00:00'
+                      createdBy: store-employee-2
+                      updatedBy: store-employee-2
+                      tenant: newstore
+                      version: '1'
+                      stores:
+                        - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                        - b25fd287-90cb-421c-a2b7-27691742f55b
+                      consumers:
+                        - 2dbb6700-d847-11ed-afa1-0242ac120002
+                        - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                    links:
+                      self: /coupon/6cxtew5ec-9fb3-5478-9cre6-8ue3289y
+                links:
+                  next: /coupon?count=25&page=2
+                  previous: ''
+                pagination:
+                  count: 2
+                  page: 1
+                  total: 3
+        '400':
+          description: >-
+            The request was invalid (an invalid cursor, or neither cursor nor
+            count provided)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+  /coupon/{id}:
+    parameters:
+      - name: x-request-id
+        in: header
+        schema:
+          type: string
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      security:
+        - newStoreAccessToken: []
+      summary: Get coupons
+      description: >
+        Retrieves the specified coupon definition by ID. To retrieve the coupon
+        ID,
+
+        use the [List coupons](#operation/getCoupons) method.
+      operationId: getCoupon
+      responses:
+        '200':
+          description: A coupon
+          content:
+            application/json:
+              schema:
+                description: A coupon plus HATEOAS fields
+                type: object
+                properties: *ref_23
+              example:
+                coupon:
+                  id: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                  active: false
+                  name: Promotion for hoodies
+                  description: A promotion for hoodies
+                  localizedTimezone: false
+                  validFrom: '2022-01-01T00:00:00+01:00'
+                  validTo: '2022-04-01T00:00:00+01:00'
+                  category:
+                    kind: CartLevelPercentage
+                    discount: 10
+                  currencies:
+                    - code: EUR
+                      minimumCartValue: 10
+                  codes:
+                    - id: 62839b62-80ff-4000-8000-01b47275b242
+                      name: CODE1
+                      redemptions: 0
+                      active: true
+                    - id: 6283d0e7-9487-4000-8000-d387d2d71138
+                      name: CODE2
+                      redemptions: 0
+                      active: true
+                  singleUse: true
+                  createdAt: '2021-12-31T00:00:00'
+                  updatedAt: '2021-12-31T00:00:00'
+                  createdBy: store-employee-1
+                  updatedBy: store-employee-1
+                  tenant: newstore
+                  stores:
+                    - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                    - b25fd287-90cb-421c-a2b7-27691742f55b
+                  consumers:
+                    - 2dbb6700-d847-11ed-afa1-0242ac120002
+                    - 3c8eb0de-d847-11ed-afa1-0242ac120002
+                  version: '1'
+                links:
+                  self: /coupon/7c9f2605-9fb3-5444-8fee-47fe51608efe
+        '404':
+          description: The requested coupon was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+    put:
+      security:
+        - newStoreAccessToken: []
+      summary: Update coupon
+      description: >
+        Updates the specified coupon definition with new information. Use this
+        method to switch
+
+        a coupon to an ``active`` state or change the currencies that the coupon
+        can be applied
+
+        to, and so on.
+
+
+        Given the nature of the update, the complete object needs to be passed
+        in the request.
+
+        The only property that cannot be updated is the `category`.
+
+
+        To retrieve the coupon ID, use the [List coupons](#operation/getCoupons)
+        method.
+      operationId: updateCoupon
+      requestBody:
+        description: The updated coupon
+        content:
+          application/json:
+            schema:
+              type: object
+              description: An update of a coupon
+              required: &ref_37
+                - version
+              properties: &ref_38
+                id:
+                  type: string
+                  readOnly: true
+                createdAt:
+                  type: string
+                  format: date-time
+                  readOnly: true
+                updatedAt:
+                  type: string
+                  format: date-time
+                  readOnly: true
+                createdBy:
+                  type: string
+                  readOnly: true
+                updatedBy:
+                  type: string
+                  readOnly: true
+                tenant:
+                  type: string
+                version:
+                  type: string
+                active:
+                  type: boolean
+                  example: true
+                  description: Indicates whether the coupon is active or not
+                name:
+                  type: string
+                  example: My Awesome Coupon
+                  description: The name of the coupon
+                description:
+                  type: string
+                  example: This coupon is awesome
+                localizedTimezone:
+                  type: boolean
+                  example: true
+                  description: >-
+                    Optional, this property determines local timezone validity
+                    for the promotion. If true, UTC is assumed with no timezone
+                    required in "validFrom" and "validTo". If false, timezone
+                    must be specified in those fields.
+                validFrom:
+                  type: string
+                  pattern: >-
+                    (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                  description: >-
+                    The date the promotion becomes valid. If localizedTimezone
+                    is false, timezone can be indicated at the end of the
+                    string.
+                  example: '2021-01-01T00:00:00+01:00'
+                validTo:
+                  type: string
+                  pattern: >-
+                    (?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$)|(?:^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$)
+                  example: '2021-01-01T00:00:00+01:00'
+                  description: >-
+                    The date the promotion becomes invalid. If localizedTimezone
+                    is false, timezone can be indicated at the end of the
+                    string.
+                currencies:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        format: /\w{3}/
+                        description: A ISO4217 currency code.
+                        example: EUR
+                      minimumCartValue:
+                        type: number
+                        example: 5215432
+                singleUse:
+                  type: boolean
+                  example: true
+                  description: >-
+                    Indicates whether the coupon codes associated to this coupon
+                    definition are single use or not.
+                category:
+                  type: object
+                  oneOf:
+                    - allOf: *ref_6
+                      description: >
+                        A promotion which is applied as a % discount to the
+                        entire cart
+                      type: object
+                      required: *ref_7
+                      properties: *ref_8
+                    - allOf: *ref_9
+                      description: A product level percentage promotion
+                      type: object
+                      properties: *ref_10
+                    - allOf: *ref_11
+                      description: >
+                        a promotion which is applied as a percentage BOGO to the
+                        cart
+                      type: object
+                      properties: *ref_12
+                    - allOf: *ref_13
+                      description: >
+                        A promotion which is applied as a fixed amount discount
+                        to the entire cart
+                      type: object
+                      properties: *ref_14
+                    - allOf: *ref_15
+                      description: >
+                        A promotion which is applied as a fixed amount discount
+                        to the entire cart
+                      type: object
+                      properties: *ref_16
+                    - allOf: *ref_17
+                      description: >
+                        a promotion which is applied as a fixed amount BOGO to
+                        the cart
+                      type: object
+                      properties: *ref_18
+                    - allOf: *ref_19
+                      description: >
+                        a promotion which is applied as a FreeShipping to the
+                        cart
+                      type: object
+                      properties: *ref_20
+                  discriminator:
+                    propertyName: kind
+                    mapping:
+                      CartLevelPercentage: >-
+                        ./categories/cart_level_percentage.yaml#/schema/CartLevelPercentageCategory
+                      ProductLevelPercentage: >-
+                        ./categories/product_level_percentage.yaml#/schema/ProductLevelPercentageCategory
+                      BogoPercentage: >-
+                        ./categories/bogo_percentage.yaml#/schema/BogoPercentageCategory
+                      CartLevelFixed: >-
+                        ./categories/cart_level_fixed.yaml#/schema/CartLevelFixedCategory
+                      ProductLevelFixed: >-
+                        ./categories/product_level_fixed.yaml#/schema/ProductLevelFixedCategory
+                      BogoFixed: ./categories/bogo_fixed.yaml#/schema/BogoFixedCategory
+                      FreeShippingPercentage: >-
+                        ./categories/free_shipping.yaml#/schema/FreeShippingPercentageCategory
+                stores:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - st-01
+                    - st-02
+                    - st-03
+                  description: >-
+                    Indicates in which stores the coupon can be used. A list of
+                    IDs states that the coupon can be used in the given stores
+                    while an empty array states that the coupon can be used in
+                    any store.
+                consumers:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - user-id-1
+                    - user-id-2
+                    - user-id-3
+                  description: >-
+                    Indicates by which consumers the coupon can be used. A list
+                    of IDs states that the coupon can be used by the given
+                    consumers while an empty array states that the coupon can be
+                    used by any consumers.
+            example:
+              id: 62839b62-80ff-4000-8000-01b47275b241
+              name: My Coupon
+              description: My Coupon Description
+              localizedTimezone: false
+              validFrom: '2022-01-01T00:00:00+01:00'
+              validTo: '2022-04-01T00:00:00+01:00'
+              category:
+                - kind: CartLevelPercentage
+                  discount: 10
+              active: true
+              currencies:
+                - code: EUR
+                  minimumCartValue: '0.00000'
+              version: 6f419b7b-1529-4c33-a5ba-a07762850db1
+              singleUse: false
+              stores:
+                - f9c7b6ec-b296-4eba-b083-c8b53d14407d
+                - b25fd287-90cb-421c-a2b7-27691742f55b
+              consumers:
+                - 2dbb6700-d847-11ed-afa1-0242ac120002
+                - 3c8eb0de-d847-11ed-afa1-0242ac120002
+      responses:
+        '200':
+          description: The updated coupon
+          content:
+            application/json:
+              schema:
+                description: A coupon plus HATEOAS fields
+                type: object
+                properties: *ref_23
+              example:
+                coupon: *ref_24
+                links: *ref_25
+        '400':
+          description: The proposed update is invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '404':
+          description: The call attempted to update a promotion which does not exist
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '409':
+          description: >
+            The version key is out of date and the call is attempting to update
+            a promotion
+
+            which has changed since it was last fetched by the caller
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+  /coupon/{id}/code:
+    parameters:
+      - name: x-request-id
+        in: header
+        schema:
+          type: string
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      security:
+        - newStoreAccessToken: []
+      summary: Create coupon codes
+      description: >
+        Use this method to create coupon codes associated to a coupon
+        definition. To retrieve the coupon ID,
+
+        use the [List coupons](#operation/getCoupons) method.
+
+
+        You don't need the ``Label`` property in the request payload while
+        creating coupons.
+      operationId: createCouponCodes
+      requestBody:
+        description: a list of new coupon codes
+        content:
+          application/json:
+            schema:
+              description: A list of new coupon codes
+              type: object
+              properties: &ref_40
+                codes:
+                  type: array
+                  items:
+                    type: string
+              required: &ref_41
+                - codes
+            example:
+              codes:
+                - CODE1
+                - CODE2
+      responses:
+        '201':
+          description: Coupon codes created successfully
+          content:
+            application/json:
+              schema:
+                description: A coupon codes list plus HATEOAS fields
+                type: object
+                properties: &ref_42
+                  codes:
+                    type: array
+                    items:
+                      type: object
+                      description: A coupon code
+                      properties: &ref_28
+                        id:
+                          type: string
+                          readOnly: true
+                        name:
+                          type: string
+                          pattern: ^a-zA-Z0-9-%_@&!$
+                          readOnly: true
+                        redemptions:
+                          type: number
+                          readOnly: true
+                        active:
+                          type: boolean
+                          readOnly: true
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      description: Object links
+                      required: *ref_26
+                      properties: *ref_27
+              example:
+                links:
+                  - self: >-
+                      /coupon/62839b62-80ff-4000-8000-01b47275b241/code/629868d2-58ac-4000-8000-3766e65e2e3d
+                  - self: >-
+                      /coupon/62839b62-80ff-4000-8000-01b47275b241/code/62986960-0b13-4000-8000-1a636b395759
+                codes:
+                  - id: 629868d2-58ac-4000-8000-3766e65e2e3d
+                    name: CODE1
+                    redemptions: 0
+                    active: true
+                  - id: 62986960-0b13-4000-8000-1a636b395759
+                    name: CODE2
+                    redemptions: 0
+                    active: true
+        '400':
+          description: The payload was invalid and the promotion could not be created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '404':
+          description: The coupon definition was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+    get:
+      security:
+        - newStoreAccessToken: []
+      summary: Get coupon codes
+      description: |
+        Use this method to retrieve coupon codes.    
+      operationId: getCouponCodes
+      responses:
+        '200':
+          description: A list of coupon codes
+          content:
+            application/json:
+              schema:
+                description: A list of coupon codes
+                type: object
+                properties: &ref_39
+                  codes:
+                    type: array
+                    items:
+                      type: object
+                      description: A coupon code
+                      properties: *ref_28
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      description: Object links
+                      required: *ref_26
+                      properties: *ref_27
+              example:
+                links:
+                  - self: >-
+                      /coupon/6398b3a2-9ff8-4000-8000-c557ac5c2431/code/6398b3a3-9ff8-4000-8000-c557ac5c2432
+                  - self: >-
+                      /coupon/6398b3a2-9ff8-4000-8000-c557ac5c2431/code/6398b3a3-9ff8-4000-8000-c557ac5c2433
+                  - self: >-
+                      /coupon/6398b3a2-9ff8-4000-8000-c557ac5c2431/code/6398b3a3-9ff8-4000-8000-c557ac5c2434
+                codes:
+                  - id: 6398b3a3-9ff8-4000-8000-c557ac5c2432
+                    name: TESTCODE1
+                    redemptions: 0
+                    active: true
+                  - id: 6398b3a3-9ff8-4000-8000-c557ac5c2433
+                    name: TESTCODE2
+                    redemptions: 0
+                    active: true
+                  - id: 6398b3a3-9ff8-4000-8000-c557ac5c2434
+                    name: TESTCODE3
+                    redemptions: 0
+                    active: true
+        '404':
+          description: coupon codes were not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+  /coupon/{coupon_id}/code/{code_id}:
+    parameters:
+      - name: x-request-id
+        in: header
+        schema:
+          type: string
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: coupon_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: code_id
+        in: path
+        required: true
+        schema:
+          type: string
+    patch:
+      security:
+        - newStoreAccessToken: []
+      summary: Update coupon codes
+      description: >
+        Use this method to update the specified coupon code, you can switch a
+        coupon code to an ``active`` state or not.
+      operationId: updateCouponCodes
+      requestBody:
+        description: The updated coupon codes
+        content:
+          application/json:
+            schema:
+              type: object
+              description: A coupon code
+              properties: *ref_28
+            example:
+              id: 6398b3a3-9ff8-4000-8000-c557ac5c2432
+              name: TESTCODE1
+              redemptions: 0
+              active: false
+      responses:
+        '200':
+          description: Coupon code updated successfully.
+        '400':
+          description: The request was invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+  /coupon/{id}/code/import:
+    parameters:
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+        required: true
+    post:
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the coupon.
+          required: true
+          schema:
+            type: string
+      security:
+        - newStoreAccessToken: []
+      summary: Create Coupon Codes Import
+      description: Use this method to create coupon codes by importing a CSV file.
+      operationId: postCouponCodesImport
+      requestBody:
+        description: >-
+          Create coupon codes import request by importing a CSV file containing
+          coupon codes.
+        content:
+          multipart/form-data:
+            schema:
+              description: >-
+                Create coupon codes import request by importing a CSV file
+                containing coupon codes.
+              type: object
+              properties: &ref_44
+                import:
+                  type: string
+                  description: CSV file.
+                  pattern: '[a-zA-Z0-9-%_@&!]'
+                  contentMediaType: application/octet-stream
+              required: &ref_45
+                - import
+      responses:
+        '202':
+          description: >-
+            A create coupon codes import response.It indicates the status of the
+            request and the number of processed, created, and erroneous coupon
+            code of the imported CSV file.
+          content:
+            application/json:
+              schema:
+                description: >-
+                  A create coupon codes import response.It indicates the status
+                  of the request and the number of processed, created, and
+                  erroneous coupon code of the imported CSV file.
+                properties: &ref_46
+                  codesImport:
+                    type: object
+                    title: CouponCodesImport
+                    description: A Coupon Codes Import.
+                    properties: &ref_29
+                      id:
+                        type: string
+                        description: The import ID.
+                      status:
+                        enum:
+                          - CREATED
+                          - PROCESSING
+                          - DONE
+                        description: The status of the importing coupon codes operation.
+                      processed:
+                        type: integer
+                        description: Indicates the number of processed coupon codes.
+                      created:
+                        type: integer
+                        description: Indicates the number of created coupon codes.
+                      errors:
+                        type: integer
+                        description: >-
+                          Indicates the number of coupon codes which could not
+                          be created.
+                      updatedAt:
+                        type: string
+                        description: The last update date.
+              example:
+                codesImport:
+                  id: 646b39ac-14e7-4000-8000-8fb14bc22cec
+                  status: CREATED
+                  processed: 1000
+                  created: 700
+                  errors: 300
+                  updatedAt: 2023-05-22 11:27:53.639 +0000 UTC
+        '400':
+          description: The payload was invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+    get:
+      parameters:
+        - name: count
+          in: query
+          description: The number of coupon codes imports to get at once
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: The page number
+          required: true
+          schema:
+            type: integer
+      security:
+        - newStoreAccessToken: []
+      summary: List Coupon Codes Import
+      description: Use this method to retrieve a list of coupon codes imports.
+      operationId: getCouponCodesImport
+      responses:
+        '200':
+          description: >-
+            A page of coupon codes imports response, the links for the previous
+            and next pages and pagination information. The response indicates
+            the status of the import and the number of processed, created,
+            erroneous coupon codes per import request.
+          content:
+            application/json:
+              schema:
+                description: >-
+                  A page of coupon codes imports response, the links for the
+                  previous and next pages and pagination information. The
+                  response indicates the status of the import and the number of
+                  processed, created, erroneous coupon codes per import request.
+                type: object
+                properties: &ref_43
+                  items:
+                    type: array
+                    description: An array of coupons codes import plus HATEOAS fields.
+                    items:
+                      type: object
+                      properties:
+                        links:
+                          type: object
+                          description: Object links
+                          required: *ref_26
+                          properties: *ref_27
+                        codesImport:
+                          type: object
+                          title: CouponCodesImport
+                          description: A Coupon Codes Import.
+                          properties: *ref_29
+                  links:
+                    type: object
+                    description: Pagination links
+                    properties: *ref_30
+                  pagination:
+                    type: object
+                    description: Pagination response fields
+                    properties: *ref_31
+              example:
+                items:
+                  - codesImport:
+                      id: 646b51b9-14e7-4000-8000-8fb14bc22d15
+                      status: CREATED
+                      processed: 1000
+                      created: 700
+                      errors: 300
+                      updatedAt: 2023-05-22 11:27:53.639 +0000 UTC
+                    links:
+                      self: >-
+                        /coupon/646b3cb3-14e7-4000-8000-8fb14bc22d03/code/import/646b51b9-14e7-4000-8000-8fb14bc22d15
+                  - codesImport:
+                      id: 646b51b9-14e7-4000-8000-8fb14bc22d15
+                      status: CREATED
+                      processed: 700
+                      created: 300
+                      errors: 400
+                      updatedAt: 2023-05-23 10:27:53.639 +0000 UTC
+                    links:
+                      self: >-
+                        /coupon/646b3cb3-14e7-4000-8000-8fb14bc22d03/code/import/646b46b1-14e7-4000-8000-8fb14bc22d0b
+                links:
+                  next: >-
+                    /coupon/64677e31-14e7-4000-8000-8fb14bc22ce6/code/import?count=2&page=1
+                  previous: ''
+                pagination:
+                  count: 2
+                  page: 1
+                  total: 220
+        '400':
+          description: The request was invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+  /coupon/{id}/code/import/{import_id}:
+    parameters:
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+        required: true
+    get:
+      summary: Get Coupon Codes Import
+      description: Use this method to retrieve a specified coupon codes import.
+      operationId: getCouponCodesImports
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the coupon.
+          required: true
+          schema:
+            type: string
+        - name: import_id
+          in: path
+          description: The ID of the imported coupon code.
+          required: true
+          schema:
+            type: string
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: >-
+            A coupon codes import response plus HATEOAS fields. The response
+            indicates the status of the import and the number of processed,
+            created, erroneous coupon codes in the specified coupon codes
+            import.
+          content:
+            application/json:
+              schema:
+                description: >-
+                  A coupon codes import response plus HATEOAS fields. The
+                  response indicates the status of the import and the number of
+                  processed, created, erroneous coupon codes in the specified
+                  coupon codes import.
+                type: object
+                properties: &ref_47
+                  links:
+                    type: object
+                    description: Object links
+                    required: *ref_26
+                    properties: *ref_27
+                  codesImport:
+                    type: object
+                    title: CouponCodesImport
+                    description: A Coupon Codes Import.
+                    properties: *ref_29
+              example:
+                codesImport:
+                  id: 646b51b9-14e7-4000-8000-8fb14bc22d15
+                  status: CREATED
+                  processed: 1000
+                  created: 700
+                  errors: 300
+                  updatedAt: 2023-05-22 11:27:53.639 +0000 UTC
+                links:
+                  self: >-
+                    /coupon/646b3cb3-14e7-4000-8000-8fb14bc22d03/code/import/646b51b9-14e7-4000-8000-8fb14bc22d15
+        '400':
+          description: The request was invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '404':
+          description: coupon codes import were not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+  /code/redemption:
+    post:
+      security:
+        - newStoreAccessToken: []
+      summary: Create a coupon code redemption
+      description: >
+        Use this method to redeem a coupon code. It redeem the coupon for legacy
+        or for the stackable coupons
+
+        according to the internal configuration for the given tenant.
+
+
+        This method is not idempotent and should be called when the coupon was
+        used. If the order for which
+
+        this coupon was used failes, the coupon is unredeemed automatically at a
+        later stage.
+
+
+        After a successful execution a 200 status is returned.
+      operationId: redeemCoupon
+      requestBody:
+        description: The redemption request
+        content:
+          application/json:
+            schema:
+              type: object
+              description: A redemption request
+              properties: &ref_48
+                codes:
+                  type: array
+                  items:
+                    type: string
+                consumerId:
+                  type: string
+                channelType:
+                  type: string
+                catalogTotal:
+                  type: number
+                currency:
+                  type: string
+                orderId:
+                  type: string
+            example:
+              value:
+                codes:
+                  - SUMMER2022
+                  - DRESS10
+                consumerId: consumer-id-123
+                channelType: store
+                catalogTotal: 100
+                currency: USD
+                orderId: 2b89a5e0-1f1f-4374-b6d3-272341193cc7
+      responses:
+        '200':
+          description: The redemption was created successfully
+        '400':
+          description: Provided data are not as expected
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: *ref_21
+                properties: *ref_22
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    PromotionCategory:
+      description: Base object for promotion categories
+      type: object
+      properties: *ref_0
+      discriminator: *ref_1
+    CartLevelPercentageCategory:
+      allOf: *ref_6
+      description: |
+        A promotion which is applied as a % discount to the entire cart
+      type: object
+      required: *ref_7
+      properties: *ref_8
+    ProductCategory:
+      description: a product category
+      type: object
+      properties: *ref_2
+    ProductLevelPercentageCategory:
+      allOf: *ref_9
+      description: A product level percentage promotion
+      type: object
+      properties: *ref_10
+    BogoMatch:
+      description: base object to define buy and get conditions for BOGO
+      type: object
+      properties: *ref_3
+    BogoPercentageCategory:
+      allOf: *ref_11
+      description: |
+        a promotion which is applied as a percentage BOGO to the cart
+      type: object
+      properties: *ref_12
+    FixedDiscount:
+      description: A fixed amount discount
+      type: object
+      required: *ref_4
+      properties: *ref_5
+    CartLevelFixedCategory:
+      allOf: *ref_13
+      description: >
+        A promotion which is applied as a fixed amount discount to the entire
+        cart
+      type: object
+      properties: *ref_14
+    ProductLevelFixedCategory:
+      allOf: *ref_15
+      description: >
+        A promotion which is applied as a fixed amount discount to the entire
+        cart
+      type: object
+      properties: *ref_16
+    BogoFixedCategory:
+      allOf: *ref_17
+      description: |
+        a promotion which is applied as a fixed amount BOGO to the cart
+      type: object
+      properties: *ref_18
+    FreeShippingPercentageCategory:
+      allOf: *ref_19
+      description: |
+        a promotion which is applied as a FreeShipping to the cart
+      type: object
+      properties: *ref_20
+    Coupon:
+      type: object
+      description: A coupon
+      required: *ref_32
+      properties: *ref_33
+    ObjectLinks:
+      type: object
+      description: Object links
+      required: *ref_26
+      properties: *ref_27
+    CouponResponse:
+      description: A coupon plus HATEOAS fields
+      type: object
+      properties: *ref_23
+    PageLinks:
+      type: object
+      description: Pagination links
+      properties: *ref_30
+    Pagination:
+      type: object
+      description: Pagination response fields
+      properties: *ref_31
+    CouponPage:
+      type: object
+      description: A Page of coupons
+      properties: *ref_34
+    Error:
+      type: object
+      required: *ref_21
+      properties: *ref_22
+    NewCoupon:
+      description: A new coupon
+      type: object
+      properties: *ref_35
+      required: *ref_36
+    UpdateCoupon:
+      type: object
+      description: An update of a coupon
+      required: *ref_37
+      properties: *ref_38
+    CouponCode:
+      type: object
+      description: A coupon code
+      properties: *ref_28
+    GetCouponCodesResponse:
+      description: A list of coupon codes
+      type: object
+      properties: *ref_39
+    NewCouponCodes:
+      description: A list of new coupon codes
+      type: object
+      properties: *ref_40
+      required: *ref_41
+    NewCouponCodesResponse:
+      description: A coupon codes list plus HATEOAS fields
+      type: object
+      properties: *ref_42
+    CouponCodesImport:
+      type: object
+      title: CouponCodesImport
+      description: A Coupon Codes Import.
+      properties: *ref_29
+    GetCouponCodesImportsResponse:
+      description: >-
+        A page of coupon codes imports response, the links for the previous and
+        next pages and pagination information. The response indicates the status
+        of the import and the number of processed, created, erroneous coupon
+        codes per import request.
+      type: object
+      properties: *ref_43
+    CreateCouponCodesImportRequest:
+      description: >-
+        Create coupon codes import request by importing a CSV file containing
+        coupon codes.
+      type: object
+      properties: *ref_44
+      required: *ref_45
+    CreateCouponCodesImportResponse:
+      description: >-
+        A create coupon codes import response.It indicates the status of the
+        request and the number of processed, created, and erroneous coupon code
+        of the imported CSV file.
+      properties: *ref_46
+    GetCouponCodesImportResponse:
+      description: >-
+        A coupon codes import response plus HATEOAS fields. The response
+        indicates the status of the import and the number of processed, created,
+        erroneous coupon codes in the specified coupon codes import.
+      type: object
+      properties: *ref_47
+    NewCodeRedemption:
+      type: object
+      description: A redemption request
+      properties: *ref_48
+  examples:
+    create_coupon_cart_level_percentage_request:
+      value: *ref_49
+      summary: Cart Level Percentage Promotion
+    create_coupon_product_level_percentage_request:
+      value: *ref_50
+      summary: Product Level Percentage Promotion
+    create_coupon_bogo_percentage_request:
+      value: *ref_51
+      summary: BOGO Percentage Promotion
+    create_coupon_cart_level_fixed_request:
+      value: *ref_52
+      summary: Cart Level Fixed Promotion
+    create_coupon_product_level_fixed_request:
+      value: *ref_53
+      summary: Product Level Fixed Promotion
+    create_coupon_bogo_fixed_request:
+      value: *ref_54
+      summary: BOGO Fixed Promotion
+    create_coupon_free_shipping_request:
+      value: *ref_55
+      summary: FreeShipping Promotion
+x-annotation-crossOriginAllowed: true

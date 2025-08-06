@@ -1,0 +1,1713 @@
+openapi: 3.0.0
+info:
+  title: Payment Provider Webhooks
+  version: '0'
+  description: >
+    Represents an entity that represents a source of funds.
+
+    Use a financial instrument to capture, refund, or revoke money (or money
+    equivalents).
+
+
+    Implement the methods of this resource to integrate with a PSP (payment
+    service provider). PCI compliance is
+
+    handled by the PSP.
+
+
+    For more information about the terminology, the integration procedure and
+    use cases,
+
+    see [Integrating a payment service
+    provider](/docs/development/api/guides/psp.html) in our documentation.
+
+
+    **Important:** All these requests contain an idempotency key and a retry id.
+
+    The idempotency key should be used as a correlation id and the retry id
+    should be the one used for idempotency purposes, as it is unique even on
+    re-attempted operations.
+
+
+    **Ensure that you send the same response every time you receive a request
+    with a given retry id**.
+
+
+    For example, if you receive 3 requests containing the retry id `abcd`,
+    whether the request body
+
+    has changed or not, you must give the same response to these 3 requests.
+
+
+    See the following table for a list of error codes and their descriptions,
+    which can appear during integration with the PSP:
+
+
+    | Error code         | 
+    Description                                                                                    
+    |
+
+    |--------------------|--------------------------------------------------------------------------------------------------|
+
+    | `internal_error`   | An unexpected error that cannot be recovered
+    from.                                               |
+
+    | `retry_error`      | The client needs to retry the current
+    request.                                                   |
+
+    | `instrument_error` | An error specific to the financial instrument and the
+    issuer. For example, "card declined".      |
+
+    | `fraud_error`      | An error caused by fraudulent activity. When this
+    error occurs, the PSP voids the instrument.    |
+
+    | `rate_limit`       | Used to signal that the requests are too
+    frequent.                                               |
+
+    | `failed_command`   | The PSP cannot handle the
+    command.                                                               |
+
+
+    **Note:** The defined baseUri is for illustration purposes only. Edit it as
+    needed.
+
+
+    ## Authenticating webhook requests
+
+
+    In order to authenticate the requests NewStore sends to the payment provider
+    it is possible to configure an `api_key` for each provider.
+
+
+    To achieve this add the `api_key` field to the external provider in the
+    `fat_psp` configuration. See [FAT PSP
+    configuration](/api/configuration/payment/payment_config_api#operation/getFATPSPConfiguration)
+servers:
+  - url: https://example.com/v0/d/payments
+security: []
+paths:
+  /financial_instruments:
+    x-amf-displayName: Financial instruments webhooks
+    post:
+      operationId: createFinancialInstrument
+      summary: Create financial instrument
+      description: >
+        Creates a financial instrument and reserves funds.
+
+
+        A financial instrument is created from some form of tokenized fund
+        source, depending on
+
+        the underlying payment provider, and it is initialized with a specific
+        amount.
+
+
+        The instrument to create is originally defined by NewStore via a request
+        to the considered PSP.
+
+        For example, NewStore can receive a gift card number from the customer
+        during checkout.
+
+
+        If supported, when a financial instrument is created, the initial
+        monetary amount on
+
+        the instrument is blocked until the instrument is captured fully or
+        revoked (voided).
+
+
+        An instrument can be created by three possible provider-specific types
+        of identifiers:
+
+
+        - Token: A tokenized form of a payment source. The identifier is a token
+        that can be used by the PSP to resolve to the source.
+
+        - Authorized: A pre-authorized payment source. The identifier is a
+        reference to the authorization. For example, an Adyen psp reference.
+
+        - Captured: An already captured payment source. The identifier is a
+        reference to the capture. For example, a transaction reference.
+
+
+        **Note:** When creating a financial instrument, the available-for-refund
+        amount can be non-zero,
+
+        for example in the case of pre-captured instruments.
+
+
+        The response returns the initial transaction(s) that sets the
+        *available-for-capture* and *available-for-refund*
+
+        amounts and the identifier (`instrument_id`) of the instrument generated
+        by the PSP.
+
+
+        **Note:** Two financial instruments must not have the same ID. Keep this
+        in mind when creating tests
+
+        with a mock server that might send the same ID several time.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: Create instrument operation schema
+              required:
+                - account_id
+                - idempotency_key
+                - arguments
+                - retry_id
+              properties:
+                account_id:
+                  type: string
+                  description: >-
+                    The payment account identifier that holds the financial
+                    instrument.
+                idempotency_key:
+                  type: string
+                  description: >-
+                    The request's idempotency identifier and correlation id.
+                    This field will be unique for each operation request, but
+                    will be the same for retries. The deal with always unique
+                    fields, use the retry_id instead.
+                retry_id:
+                  type: string
+                  description: >-
+                    The request's unique id. This can be used as an idempotency
+                    key, as it will be unique even for retries of a single
+                    operation.
+                arguments:
+                  type: object
+                  description: >-
+                    The arguments of the create operation. They describe the
+                    financial instrument to create.
+                  required:
+                    - instrument
+                    - amount
+                    - currency
+                    - payment_method
+                  properties:
+                    instrument:
+                      type: object
+                      required:
+                        - type
+                        - identifier
+                      properties:
+                        type:
+                          type: string
+                          enum:
+                            - token
+                            - authorized
+                            - captured
+                          description: >-
+                            The type of object used for creating the financial
+                            instrument. Token: A tokenized form of a payment
+                            source. Token that can be used by the PSP to resolve
+                            to the source. Authorized: A pre-authorized payment
+                            source. The identifier is a reference to the
+                            authorization. For example, an Adyen psp reference.
+                            Captured: An already captured payment source. The
+                            identifier is a reference to the capture. For
+                            example, a transaction reference.
+                        identifier:
+                          type: string
+                          description: >-
+                            PSP-generated identifier of the payment object. For
+                            example, a gift card number.
+                    amount:
+                      type: number
+                      description: >-
+                        The monetary amount that the instrument initially holds
+                        for capture.
+                    currency:
+                      type: string
+                      description: >-
+                        Currency in the ISO-4217-Alpha-3 character format
+.
+                      maxLength: 3
+                      minLength: 3
+                    payment_method:
+                      type: string
+                      description: >-
+                        The payment method to attach to the financial
+                        instrument. The default possible values are: 'cash',
+                        'credit_card', 'gift_card'. This value is a free field
+                        as it is ultimately the PSP's responsibility to define
+                        the available values.
+                metadata:
+                  type: object
+                  description: >-
+                    Extra information related to this instrument and its payment
+                    account. As an integrator, get in touch with your contact
+                    point at NewStore to define the metadata you require. To
+                    display payment details in NOM and the Associate App, you
+                    will need to provide
+                    `metadata->essential->instrument_metadata`, in which you can
+                    add descriptions for Credit Card and Gift Card payments. For
+                    Credit Card payments, `card_last4` and `card_brand` are used
+                    to display a description like 'Visa (**** 4312)'. For Gift
+                    Card payments, `gift_card_number` should be used instead of
+                    `card_last4` to display a description string like 'Card
+                    number: (**** 6789)'
+            examples:
+              Authorization:
+                summary: Validate Authorization with the PSP
+                value:
+                  account_id: 9c849222-3bca-4881-9c68-2e91da34ab21
+                  idempotency_key: >-
+                    authorized.987600036172980-9c849222-3bca-4881-9c68-2e91da34ab21
+                  retry_id: >-
+                    authorized.987600036172980-9c849222-3bca-4881-9c68-2e91da34ab21
+                  arguments:
+                    amount: 100
+                    currency: USD
+                    payment_method: credit_card
+                    instrument:
+                      identifier: unique-psp-instrument-identifier-1234567890
+                      type: authorized
+                  metadata: {}
+      responses:
+        '200':
+          description: >
+            The operation was successful. The response returns an ID that can be
+            used by NewStore to request a capture,
+
+            refund or revoke.
+          content:
+            application/json:
+              schema:
+                title: Schema of a successful financial operation.
+                type: array
+                description: >-
+                  A list of transactions that resulted from a successful
+                  operation. If the operation is asynchronous, this list is
+                  empty. To complete the request, use the Payment Provider
+                  Asynchronous API to notify NewStore of the outcome of the
+                  request.
+                items:
+                  title: A financial instrument transaction
+                  type: object
+                  required:
+                    - transaction_id
+                    - instrument_id
+                    - currency
+                  properties:
+                    transaction_id:
+                      type: string
+                      description: >-
+                        The unique identifier of the transaction. It is
+                        recommended to assign a PSP-generated reference to this
+                        field instead of generating you own ID. This facilitates
+                        log analyses as the value directly corresponds to the
+                        PSP-owned transaction.
+                      minLength: 1
+                    instrument_id:
+                      type: string
+                      description: >-
+                        The integrator-owned identifier of the financial
+                        instrument.
+                      minLength: 1
+                    capture_amount:
+                      type: number
+                      description: The *change* on the available-for-capture amount.
+                      multipleOf: 0.01
+                      default: 0
+                    refund_amount:
+                      type: number
+                      description: The *change* on the available-to-refund amount.
+                      multipleOf: 0.01
+                      default: 0
+                    currency:
+                      type: string
+                      description: >-
+                        Currency in the ISO-4217-Alpha-3 character format
+.
+                      maxLength: 3
+                      minLength: 3
+                    reason:
+                      type: string
+                      description: The action that triggered this transaction.
+                      enum:
+                        - authorization
+                        - revoke
+                        - refund
+                        - capture
+                    metadata:
+                      type: object
+                      description: >-
+                        Extra information related to this transaction. As an
+                        integrator, you own this information. This field is
+                        treated as an opaque object by the NewStore platform but
+                        must follow the PCI-compliance guidelines. For example,
+                        you can use this field to store a Shopify order ID, an
+                        Adyen psp reference or non-sensitive information that
+                        should be displayed in NOM.
+                    payment_method:
+                      type: string
+                      description: >-
+                        The payment method used for the transaction. The default
+                        possible values are: 'cash', 'credit_card', 'gift_card'.
+                        This value is a free field as it is ultimately the PSP's
+                        responsibility to define the available values.
+                    payment_wallet:
+                      type: string
+                      description: >-
+                        The payment walled used for the transaction. For
+                        example, Apple Pay, Android Pay.
+                    created_at:
+                      type: string
+                      format: date-time
+                      description: The timestamp when the transaction was created.
+                    processed_at:
+                      type: string
+                      format: date-time
+                      description: The timestamp when the transaction was processed.
+              examples:
+                Authorization:
+                  summary: Authorization confirmed with the PSP
+                  description: >
+                    In the following example, note the following information:
+
+
+                    - The `instrument_id` is unique across all identifier of
+                    payment and repeat itself
+                      for every new transaction done with this instrument.
+                      The `transaction_id` is unique for every transaction in this payload.
+                    - We are authorizing an instrument so we set the capture
+                    amount to a non-zero
+                      value and the refund amount to 0 since an authorized instrument cannot be refunded.
+                    - The metadata field shows the special `essential >
+                    instrument_metadata` object and its
+                      fields. This object is automatically processed.
+                      - For Credit Card payments, `card_last4` and `card_brand` are used to display a description like "Visa (**** 4312)".
+                      - For Gift Card payments, `gift_card_number` should be used instead of `card_last4` to display a description string like "Card number: (**** 6789)"
+                      Any other object in the metadata field, or any other fields are ignored by NOM.
+                  value:
+                    - payment_method: credit_card
+                      payment_wallet: Apple Pay
+                      transaction_id: >-
+                        unique-for-every-transaction-in-this-payload-authorized-12345
+                      instrument_id: unique-psp-instrument-identifier-1234567890
+                      capture_amount: 100
+                      refund_amount: 0
+                      currency: USD
+                      metadata:
+                        essential:
+                          instrument_metadata:
+                            card_brand: Visa
+                            card_last4: '0000'
+                            card_expiration_month: '11'
+                            card_expiration_year: '2030'
+                            gift_card_number: '1234567890'
+                            payer_email: johndoe@example.com
+                      reason: authorization
+                      created_at: '0001-01-01T00:00:00Z'
+                      processed_at: '0001-01-01T00:00:00Z'
+        '400':
+          description: >
+            Bad request. The request syntax/semantics is invalid. We will not
+            retry this method to resolve this error.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+        '500':
+          description: >
+            Internal server error. The request failed but retrying with the same
+            data may work.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+  /financial_instruments/{financial_instrument_id}/_capture:
+    parameters:
+      - name: financial_instrument_id
+        description: >
+          The financial instrument identifier returned by the creation request
+          above (`instrument_id` property).
+        required: true
+        in: path
+        schema:
+          title: financial instrument identifier
+          description: >
+            The financial instrument identifier returned by the creation request
+            above (`instrument_id` property).
+          type: string
+    post:
+      operationId: capture
+      summary: Capture funds
+      description: >
+        Captures the funds and transfers them from a customer to your business.
+
+
+        A transaction is returned that decreases the *available-for-capture*
+        amount and optionally
+
+        increases the *available-for-refund* amount, if the provider supports
+        it.
+
+
+        A financial instrument supports multiple capture operations up until
+        *available-for-capture* gets to zero.
+
+
+        If a capture operation results in an increase in the
+        *available-for-refund* amount, the convention is
+
+        to return it in the same transaction.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: An operation to a financial instrument
+              required:
+                - account_id
+                - transactions
+                - idempotency_key
+                - retry_id
+                - arguments
+              properties:
+                account_id:
+                  type: string
+                  description: >-
+                    The payment account identifier that holds the financial
+                    instrument.
+                instrument_id:
+                  type: string
+                  nullable: true
+                  description: >-
+                    The integrator-owned identifier of the financial instrument
+                    that the operation will modify.
+                transactions:
+                  type: array
+                  description: >-
+                    The set of transactions describing the current state of the
+                    instrument. The transactions in this array are in no
+                    particular order.
+                  items:
+                    title: A financial instrument transaction
+                    type: object
+                    required:
+                      - transaction_id
+                      - instrument_id
+                      - currency
+                    properties:
+                      transaction_id:
+                        type: string
+                        description: >-
+                          The unique identifier of the transaction. It is
+                          recommended to assign a PSP-generated reference to
+                          this field instead of generating you own ID. This
+                          facilitates log analyses as the value directly
+                          corresponds to the PSP-owned transaction.
+                        minLength: 1
+                      instrument_id:
+                        type: string
+                        description: >-
+                          The integrator-owned identifier of the financial
+                          instrument.
+                        minLength: 1
+                      capture_amount:
+                        type: number
+                        description: The *change* on the available-for-capture amount.
+                        multipleOf: 0.01
+                        default: 0
+                      refund_amount:
+                        type: number
+                        description: The *change* on the available-to-refund amount.
+                        multipleOf: 0.01
+                        default: 0
+                      currency:
+                        type: string
+                        description: >-
+                          Currency in the ISO-4217-Alpha-3 character format
+.
+                        maxLength: 3
+                        minLength: 3
+                      reason:
+                        type: string
+                        description: The action that triggered this transaction.
+                        enum:
+                          - authorization
+                          - revoke
+                          - refund
+                          - capture
+                      metadata:
+                        type: object
+                        description: >-
+                          Extra information related to this transaction. As an
+                          integrator, you own this information. This field is
+                          treated as an opaque object by the NewStore platform
+                          but must follow the PCI-compliance guidelines. For
+                          example, you can use this field to store a Shopify
+                          order ID, an Adyen psp reference or non-sensitive
+                          information that should be displayed in NOM.
+                      payment_method:
+                        type: string
+                        description: >-
+                          The payment method used for the transaction. The
+                          default possible values are: 'cash', 'credit_card',
+                          'gift_card'. This value is a free field as it is
+                          ultimately the PSP's responsibility to define the
+                          available values.
+                      payment_wallet:
+                        type: string
+                        description: >-
+                          The payment walled used for the transaction. For
+                          example, Apple Pay, Android Pay.
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: The timestamp when the transaction was created.
+                      processed_at:
+                        type: string
+                        format: date-time
+                        description: The timestamp when the transaction was processed.
+                idempotency_key:
+                  type: string
+                  description: >-
+                    The request's idempotency identifier and correlation id.
+                    This field will be unique for each operation request, but
+                    will be the same for retries. The deal with always unique
+                    fields, use the retry_id instead.
+                retry_id:
+                  type: string
+                  description: >-
+                    The request's unique id. This can be used as an idempotency
+                    key, as it will be unique even for retries of a single
+                    operation.
+                arguments:
+                  type: object
+                  description: >-
+                    The arguments of the capture/refund operation. In the case
+                    of a revoke, these arguments are not provided and the amount
+                    and currency are those of the instrument.
+                  required:
+                    - amount
+                    - currency
+                  properties:
+                    amount:
+                      type: number
+                      description: >-
+                        The monetary amount to capture/refund from the financial
+                        instrument. In the case of a revoke, this property is
+                        set to same value as the amount of the instrument.
+                    currency:
+                      type: string
+                      description: >-
+                        Currency in the ISO-4217-Alpha-3 character format
+. In
+                        the case of a revoke, this property is empty and
+                        internally set to the same currency as the instrument.
+                      maxLength: 3
+                      minLength: 3
+                metadata:
+                  type: object
+                  description: >-
+                    Extra information related to this instrument and its payment
+                    account. For gift cards, the field 'original_operation' =
+                    'refund' will always be provided. As an integrator, get in
+                    touch with your contact point at NewStore to define the
+                    metadata you require.
+            examples:
+              Capture:
+                summary: Request capture with the PSP
+                value:
+                  account_id: af8e9f4a-b6ec-4677-a9a0-1ff199a8b2ef
+                  instrument_id: unique-psp-instrument-identifier-1234567890
+                  transactions:
+                    - payment_method: credit_card
+                      payment_wallet: Apple Pay
+                      instrument_id: 0987-6543-2121-2321
+                      transaction_id: >-
+                        unique-for-every-transaction-in-this
+                        payload-authorized-12345
+                      capture_amount: 100
+                      refund_amount: 0
+                      currency: USD
+                      reason: authorization
+                      metadata:
+                        essential:
+                          instrument_metadata:
+                            card_brand: Visa
+                            card_last4: '0000'
+                            card_expiration_month: '11'
+                            card_expiration_year: '2030'
+                            gift_card_number: '1234567890'
+                            payer_email: johndoe@example.com
+                  idempotency_key: 373fa237-d70e-4177-8139-41354a21c356
+                  retry_id: 373fa237-d70e-4177-8139-41354a21c356
+                  arguments:
+                    amount: 100
+                    currency: USD
+                  metadata: {}
+      responses:
+        '200':
+          description: |
+            The operation was successful.
+          content:
+            application/json:
+              schema:
+                title: Schema of a successful financial operation.
+                type: array
+                description: >-
+                  A list of transactions that resulted from a successful
+                  operation. If the operation is asynchronous, this list is
+                  empty. To complete the request, use the Payment Provider
+                  Asynchronous API to notify NewStore of the outcome of the
+                  request.
+                items:
+                  title: A financial instrument transaction
+                  type: object
+                  required:
+                    - transaction_id
+                    - instrument_id
+                    - currency
+                  properties:
+                    transaction_id:
+                      type: string
+                      description: >-
+                        The unique identifier of the transaction. It is
+                        recommended to assign a PSP-generated reference to this
+                        field instead of generating you own ID. This facilitates
+                        log analyses as the value directly corresponds to the
+                        PSP-owned transaction.
+                      minLength: 1
+                    instrument_id:
+                      type: string
+                      description: >-
+                        The integrator-owned identifier of the financial
+                        instrument.
+                      minLength: 1
+                    capture_amount:
+                      type: number
+                      description: The *change* on the available-for-capture amount.
+                      multipleOf: 0.01
+                      default: 0
+                    refund_amount:
+                      type: number
+                      description: The *change* on the available-to-refund amount.
+                      multipleOf: 0.01
+                      default: 0
+                    currency:
+                      type: string
+                      description: >-
+                        Currency in the ISO-4217-Alpha-3 character format
+.
+                      maxLength: 3
+                      minLength: 3
+                    reason:
+                      type: string
+                      description: The action that triggered this transaction.
+                      enum:
+                        - authorization
+                        - revoke
+                        - refund
+                        - capture
+                    metadata:
+                      type: object
+                      description: >-
+                        Extra information related to this transaction. As an
+                        integrator, you own this information. This field is
+                        treated as an opaque object by the NewStore platform but
+                        must follow the PCI-compliance guidelines. For example,
+                        you can use this field to store a Shopify order ID, an
+                        Adyen psp reference or non-sensitive information that
+                        should be displayed in NOM.
+                    payment_method:
+                      type: string
+                      description: >-
+                        The payment method used for the transaction. The default
+                        possible values are: 'cash', 'credit_card', 'gift_card'.
+                        This value is a free field as it is ultimately the PSP's
+                        responsibility to define the available values.
+                    payment_wallet:
+                      type: string
+                      description: >-
+                        The payment walled used for the transaction. For
+                        example, Apple Pay, Android Pay.
+                    created_at:
+                      type: string
+                      format: date-time
+                      description: The timestamp when the transaction was created.
+                    processed_at:
+                      type: string
+                      format: date-time
+                      description: The timestamp when the transaction was processed.
+              examples:
+                Capture:
+                  summary: Capture confirmed by the PSP
+                  value:
+                    - payment_method: credit_card
+                      payment_wallet: Apple Pay
+                      transaction_id: >-
+                        unique for every transaction in this
+                        payload-captured-12345
+                      instrument_id: unique-psp-instrument-identifier-1234567890
+                      capture_amount: -100
+                      refund_amount: 100
+                      currency: USD
+                      created_at: '0001-01-01T00:00:00Z'
+                      processed_at: '0001-01-01T00:00:00Z'
+                      reason: capture
+        '400':
+          description: >
+            Bad request. The request syntax/semantics is invalid. We will not
+            retry this method to resolve this error.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+        '500':
+          description: >
+            Internal server error. The request failed but retrying with the same
+            data may work.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+  /financial_instruments/{financial_instrument_id}/_refund:
+    parameters:
+      - name: financial_instrument_id
+        description: >
+          The financial instrument identifier returned by the creation request
+          above (`instrument_id` property).
+        required: true
+        in: path
+        schema:
+          title: financial instrument identifier
+          description: >
+            The financial instrument identifier returned by the creation request
+            above (`instrument_id` property).
+          type: string
+    post:
+      operationId: refund
+      summary: Refund amount
+      description: >
+        Transfers a monetary amount from the business to the customer.
+
+
+        A transaction is returned that decreases the *available-for-refund*
+        amount for the specific instrument.
+
+
+        A financial instrument supports multiple refund operations up until
+        *available-for-refund* gets to zero.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: An operation to a financial instrument
+              required:
+                - account_id
+                - transactions
+                - idempotency_key
+                - retry_id
+                - arguments
+              properties:
+                account_id:
+                  type: string
+                  description: >-
+                    The payment account identifier that holds the financial
+                    instrument.
+                instrument_id:
+                  type: string
+                  nullable: true
+                  description: >-
+                    The integrator-owned identifier of the financial instrument
+                    that the operation will modify.
+                transactions:
+                  type: array
+                  description: >-
+                    The set of transactions describing the current state of the
+                    instrument. The transactions in this array are in no
+                    particular order.
+                  items:
+                    title: A financial instrument transaction
+                    type: object
+                    required:
+                      - transaction_id
+                      - instrument_id
+                      - currency
+                    properties:
+                      transaction_id:
+                        type: string
+                        description: >-
+                          The unique identifier of the transaction. It is
+                          recommended to assign a PSP-generated reference to
+                          this field instead of generating you own ID. This
+                          facilitates log analyses as the value directly
+                          corresponds to the PSP-owned transaction.
+                        minLength: 1
+                      instrument_id:
+                        type: string
+                        description: >-
+                          The integrator-owned identifier of the financial
+                          instrument.
+                        minLength: 1
+                      capture_amount:
+                        type: number
+                        description: The *change* on the available-for-capture amount.
+                        multipleOf: 0.01
+                        default: 0
+                      refund_amount:
+                        type: number
+                        description: The *change* on the available-to-refund amount.
+                        multipleOf: 0.01
+                        default: 0
+                      currency:
+                        type: string
+                        description: >-
+                          Currency in the ISO-4217-Alpha-3 character format
+.
+                        maxLength: 3
+                        minLength: 3
+                      reason:
+                        type: string
+                        description: The action that triggered this transaction.
+                        enum:
+                          - authorization
+                          - revoke
+                          - refund
+                          - capture
+                      metadata:
+                        type: object
+                        description: >-
+                          Extra information related to this transaction. As an
+                          integrator, you own this information. This field is
+                          treated as an opaque object by the NewStore platform
+                          but must follow the PCI-compliance guidelines. For
+                          example, you can use this field to store a Shopify
+                          order ID, an Adyen psp reference or non-sensitive
+                          information that should be displayed in NOM.
+                      payment_method:
+                        type: string
+                        description: >-
+                          The payment method used for the transaction. The
+                          default possible values are: 'cash', 'credit_card',
+                          'gift_card'. This value is a free field as it is
+                          ultimately the PSP's responsibility to define the
+                          available values.
+                      payment_wallet:
+                        type: string
+                        description: >-
+                          The payment walled used for the transaction. For
+                          example, Apple Pay, Android Pay.
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: The timestamp when the transaction was created.
+                      processed_at:
+                        type: string
+                        format: date-time
+                        description: The timestamp when the transaction was processed.
+                idempotency_key:
+                  type: string
+                  description: >-
+                    The request's idempotency identifier and correlation id.
+                    This field will be unique for each operation request, but
+                    will be the same for retries. The deal with always unique
+                    fields, use the retry_id instead.
+                retry_id:
+                  type: string
+                  description: >-
+                    The request's unique id. This can be used as an idempotency
+                    key, as it will be unique even for retries of a single
+                    operation.
+                arguments:
+                  type: object
+                  description: >-
+                    The arguments of the capture/refund operation. In the case
+                    of a revoke, these arguments are not provided and the amount
+                    and currency are those of the instrument.
+                  required:
+                    - amount
+                    - currency
+                  properties:
+                    amount:
+                      type: number
+                      description: >-
+                        The monetary amount to capture/refund from the financial
+                        instrument. In the case of a revoke, this property is
+                        set to same value as the amount of the instrument.
+                    currency:
+                      type: string
+                      description: >-
+                        Currency in the ISO-4217-Alpha-3 character format
+. In
+                        the case of a revoke, this property is empty and
+                        internally set to the same currency as the instrument.
+                      maxLength: 3
+                      minLength: 3
+                metadata:
+                  type: object
+                  description: >-
+                    Extra information related to this instrument and its payment
+                    account. For gift cards, the field 'original_operation' =
+                    'refund' will always be provided. As an integrator, get in
+                    touch with your contact point at NewStore to define the
+                    metadata you require.
+            examples:
+              Refund:
+                summary: Request refund from the PSP
+                value:
+                  account_id: af8e9f4a-b6ec-4677-a9a0-1ff199a8b2ef
+                  instrument_id: unique-psp-instrument-identifier-1234567890
+                  transactions:
+                    - payment_method: credit_card
+                      payment_wallet: Apple Pay
+                      instrument_id: unique-psp-instrument-identifier-1234567890
+                      transaction_id: >-
+                        unique-for-every-transaction-in-this-payload-authorized-12345
+                      capture_amount: 100
+                      refund_amount: 0
+                      currency: USD
+                      reason: authorization
+                      metadata:
+                        essential:
+                          instrument_metadata:
+                            card_brand: Visa
+                            card_last4: '0000'
+                            card_expiration_month: '11'
+                            card_expiration_year: '2030'
+                            gift_card_number: '1234567890'
+                            payer_email: johndoe@example.com
+                    - payment_method: credit_card
+                      payment_wallet: Apple Pay
+                      instrument_id: unique-psp-instrument-identifier-1234567890
+                      transaction_id: >-
+                        unique for every transaction in this
+                        payload-captured-12345
+                      capture_amount: -100
+                      refund_amount: 100
+                      currency: USD
+                      metadata: {}
+                      reason: capture
+                      created_at: '0001-01-01T00:00:00Z'
+                  idempotency_key: 373fa237-d70e-4177-8139-41354a21c356
+                  retry_id: 373fa237-d70e-4177-8139-41354a21c356
+                  arguments:
+                    amount: 100
+                    currency: USD
+                  metadata: {}
+      responses:
+        '200':
+          description: |
+            The operation was successful.
+          content:
+            application/json:
+              schema:
+                title: Schema of a successful financial operation.
+                type: array
+                description: >-
+                  A list of transactions that resulted from a successful
+                  operation. If the operation is asynchronous, this list is
+                  empty. To complete the request, use the Payment Provider
+                  Asynchronous API to notify NewStore of the outcome of the
+                  request.
+                items:
+                  title: A financial instrument transaction
+                  type: object
+                  required:
+                    - transaction_id
+                    - instrument_id
+                    - currency
+                  properties:
+                    transaction_id:
+                      type: string
+                      description: >-
+                        The unique identifier of the transaction. It is
+                        recommended to assign a PSP-generated reference to this
+                        field instead of generating you own ID. This facilitates
+                        log analyses as the value directly corresponds to the
+                        PSP-owned transaction.
+                      minLength: 1
+                    instrument_id:
+                      type: string
+                      description: >-
+                        The integrator-owned identifier of the financial
+                        instrument.
+                      minLength: 1
+                    capture_amount:
+                      type: number
+                      description: The *change* on the available-for-capture amount.
+                      multipleOf: 0.01
+                      default: 0
+                    refund_amount:
+                      type: number
+                      description: The *change* on the available-to-refund amount.
+                      multipleOf: 0.01
+                      default: 0
+                    currency:
+                      type: string
+                      description: >-
+                        Currency in the ISO-4217-Alpha-3 character format
+.
+                      maxLength: 3
+                      minLength: 3
+                    reason:
+                      type: string
+                      description: The action that triggered this transaction.
+                      enum:
+                        - authorization
+                        - revoke
+                        - refund
+                        - capture
+                    metadata:
+                      type: object
+                      description: >-
+                        Extra information related to this transaction. As an
+                        integrator, you own this information. This field is
+                        treated as an opaque object by the NewStore platform but
+                        must follow the PCI-compliance guidelines. For example,
+                        you can use this field to store a Shopify order ID, an
+                        Adyen psp reference or non-sensitive information that
+                        should be displayed in NOM.
+                    payment_method:
+                      type: string
+                      description: >-
+                        The payment method used for the transaction. The default
+                        possible values are: 'cash', 'credit_card', 'gift_card'.
+                        This value is a free field as it is ultimately the PSP's
+                        responsibility to define the available values.
+                    payment_wallet:
+                      type: string
+                      description: >-
+                        The payment walled used for the transaction. For
+                        example, Apple Pay, Android Pay.
+                    created_at:
+                      type: string
+                      format: date-time
+                      description: The timestamp when the transaction was created.
+                    processed_at:
+                      type: string
+                      format: date-time
+                      description: The timestamp when the transaction was processed.
+              examples:
+                Refund:
+                  summary: Refund confirmed by the PSP
+                  value:
+                    - payment_method: credit_card
+                      payment_wallet: Apple Pay
+                      transaction_id: >-
+                        unique for every transaction in this
+                        payload-refunded-12345
+                      instrument_id: unique-psp-instrument-identifier-1234567890
+                      capture_amount: 0
+                      refund_amount: -100
+                      currency: USD
+                      created_at: '0001-01-01T00:00:00Z'
+                      processed_at: '0001-01-01T00:00:00Z'
+                      reason: refund
+        '400':
+          description: >
+            Bad request. The request syntax/semantics is invalid. We will not
+            retry this method to resolve this error.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+        '500':
+          description: >
+            Internal server error. The request failed but retrying with the same
+            data may work.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+  /financial_instruments/{financial_instrument_id}/_revoke:
+    parameters:
+      - name: financial_instrument_id
+        description: >
+          The financial instrument identifier returned by the creation request
+          above (`instrument_id` property).
+        required: true
+        in: path
+        schema:
+          title: financial instrument identifier
+          description: >
+            The financial instrument identifier returned by the creation request
+            above (`instrument_id` property).
+          type: string
+    post:
+      operationId: revoke
+      summary: Void funds
+      description: >
+        This method is used to void (revoke) funds that were reserved when a
+        financial instrument
+
+        was created.
+
+
+        Releases any withheld funds back to the customer.
+
+
+        A transaction is returned that decreases the *available-for-capture*
+        amount to zero.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: An operation to a financial instrument
+              required:
+                - account_id
+                - transactions
+                - idempotency_key
+                - retry_id
+                - arguments
+              properties:
+                account_id:
+                  type: string
+                  description: >-
+                    The payment account identifier that holds the financial
+                    instrument.
+                instrument_id:
+                  type: string
+                  nullable: true
+                  description: >-
+                    The integrator-owned identifier of the financial instrument
+                    that the operation will modify.
+                transactions:
+                  type: array
+                  description: >-
+                    The set of transactions describing the current state of the
+                    instrument. The transactions in this array are in no
+                    particular order.
+                  items:
+                    title: A financial instrument transaction
+                    type: object
+                    required:
+                      - transaction_id
+                      - instrument_id
+                      - currency
+                    properties:
+                      transaction_id:
+                        type: string
+                        description: >-
+                          The unique identifier of the transaction. It is
+                          recommended to assign a PSP-generated reference to
+                          this field instead of generating you own ID. This
+                          facilitates log analyses as the value directly
+                          corresponds to the PSP-owned transaction.
+                        minLength: 1
+                      instrument_id:
+                        type: string
+                        description: >-
+                          The integrator-owned identifier of the financial
+                          instrument.
+                        minLength: 1
+                      capture_amount:
+                        type: number
+                        description: The *change* on the available-for-capture amount.
+                        multipleOf: 0.01
+                        default: 0
+                      refund_amount:
+                        type: number
+                        description: The *change* on the available-to-refund amount.
+                        multipleOf: 0.01
+                        default: 0
+                      currency:
+                        type: string
+                        description: >-
+                          Currency in the ISO-4217-Alpha-3 character format
+.
+                        maxLength: 3
+                        minLength: 3
+                      reason:
+                        type: string
+                        description: The action that triggered this transaction.
+                        enum:
+                          - authorization
+                          - revoke
+                          - refund
+                          - capture
+                      metadata:
+                        type: object
+                        description: >-
+                          Extra information related to this transaction. As an
+                          integrator, you own this information. This field is
+                          treated as an opaque object by the NewStore platform
+                          but must follow the PCI-compliance guidelines. For
+                          example, you can use this field to store a Shopify
+                          order ID, an Adyen psp reference or non-sensitive
+                          information that should be displayed in NOM.
+                      payment_method:
+                        type: string
+                        description: >-
+                          The payment method used for the transaction. The
+                          default possible values are: 'cash', 'credit_card',
+                          'gift_card'. This value is a free field as it is
+                          ultimately the PSP's responsibility to define the
+                          available values.
+                      payment_wallet:
+                        type: string
+                        description: >-
+                          The payment walled used for the transaction. For
+                          example, Apple Pay, Android Pay.
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: The timestamp when the transaction was created.
+                      processed_at:
+                        type: string
+                        format: date-time
+                        description: The timestamp when the transaction was processed.
+                idempotency_key:
+                  type: string
+                  description: >-
+                    The request's idempotency identifier and correlation id.
+                    This field will be unique for each operation request, but
+                    will be the same for retries. The deal with always unique
+                    fields, use the retry_id instead.
+                retry_id:
+                  type: string
+                  description: >-
+                    The request's unique id. This can be used as an idempotency
+                    key, as it will be unique even for retries of a single
+                    operation.
+                arguments:
+                  type: object
+                  description: >-
+                    The arguments of the capture/refund operation. In the case
+                    of a revoke, these arguments are not provided and the amount
+                    and currency are those of the instrument.
+                  required:
+                    - amount
+                    - currency
+                  properties:
+                    amount:
+                      type: number
+                      description: >-
+                        The monetary amount to capture/refund from the financial
+                        instrument. In the case of a revoke, this property is
+                        set to same value as the amount of the instrument.
+                    currency:
+                      type: string
+                      description: >-
+                        Currency in the ISO-4217-Alpha-3 character format
+. In
+                        the case of a revoke, this property is empty and
+                        internally set to the same currency as the instrument.
+                      maxLength: 3
+                      minLength: 3
+                metadata:
+                  type: object
+                  description: >-
+                    Extra information related to this instrument and its payment
+                    account. For gift cards, the field 'original_operation' =
+                    'refund' will always be provided. As an integrator, get in
+                    touch with your contact point at NewStore to define the
+                    metadata you require.
+            examples:
+              Void:
+                summary: Void of authorization (revoke) request to the PSP
+                value:
+                  account_id: af8e9f4a-b6ec-4677-a9a0-1ff199a8b2ef
+                  instrument_id: unique-psp-instrument-identifier-1234567890
+                  transactions:
+                    - payment_method: credit_card
+                      payment_wallet: Apple Pay
+                      instrument_id: unique-psp-instrument-identifier-1234567890
+                      transaction_id: >-
+                        unique-for-every-transaction-in-this-payload-authorized-12345
+                      capture_amount: 200
+                      refund_amount: 0
+                      currency: USD
+                      reason: authorization
+                      metadata:
+                        essential:
+                          instrument_metadata:
+                            card_brand: Visa
+                            card_last4: '0000'
+                            card_expiration_month: '11'
+                            card_expiration_year: '2030'
+                            gift_card_number: '1234567890'
+                            payer_email: johndoe@example.com
+                    - payment_method: credit_card
+                      payment_wallet: Apple Pay
+                      instrument_id: unique-psp-instrument-identifier-1234567890
+                      transaction_id: >-
+                        unique for every transaction in this
+                        payload-captured-12345
+                      capture_amount: -100
+                      refund_amount: 100
+                      currency: USD
+                      metadata: {}
+                      reason: capture
+                      created_at: '0001-01-01T00:00:00Z'
+                  idempotency_key: 373fa237-d70e-4177-8139-41354a21c356
+                  retry_id: 373fa237-d70e-4177-8139-41354a21c356
+                  arguments:
+                    amount: 100
+                    currency: USD
+                  metadata: {}
+      responses:
+        '200':
+          description: |
+            The operation was successful.
+          content:
+            application/json:
+              schema:
+                title: Schema of a successful financial operation.
+                type: array
+                description: >-
+                  A list of transactions that resulted from a successful
+                  operation. If the operation is asynchronous, this list is
+                  empty. To complete the request, use the Payment Provider
+                  Asynchronous API to notify NewStore of the outcome of the
+                  request.
+                items:
+                  title: A financial instrument transaction
+                  type: object
+                  required:
+                    - transaction_id
+                    - instrument_id
+                    - currency
+                  properties:
+                    transaction_id:
+                      type: string
+                      description: >-
+                        The unique identifier of the transaction. It is
+                        recommended to assign a PSP-generated reference to this
+                        field instead of generating you own ID. This facilitates
+                        log analyses as the value directly corresponds to the
+                        PSP-owned transaction.
+                      minLength: 1
+                    instrument_id:
+                      type: string
+                      description: >-
+                        The integrator-owned identifier of the financial
+                        instrument.
+                      minLength: 1
+                    capture_amount:
+                      type: number
+                      description: The *change* on the available-for-capture amount.
+                      multipleOf: 0.01
+                      default: 0
+                    refund_amount:
+                      type: number
+                      description: The *change* on the available-to-refund amount.
+                      multipleOf: 0.01
+                      default: 0
+                    currency:
+                      type: string
+                      description: >-
+                        Currency in the ISO-4217-Alpha-3 character format
+.
+                      maxLength: 3
+                      minLength: 3
+                    reason:
+                      type: string
+                      description: The action that triggered this transaction.
+                      enum:
+                        - authorization
+                        - revoke
+                        - refund
+                        - capture
+                    metadata:
+                      type: object
+                      description: >-
+                        Extra information related to this transaction. As an
+                        integrator, you own this information. This field is
+                        treated as an opaque object by the NewStore platform but
+                        must follow the PCI-compliance guidelines. For example,
+                        you can use this field to store a Shopify order ID, an
+                        Adyen psp reference or non-sensitive information that
+                        should be displayed in NOM.
+                    payment_method:
+                      type: string
+                      description: >-
+                        The payment method used for the transaction. The default
+                        possible values are: 'cash', 'credit_card', 'gift_card'.
+                        This value is a free field as it is ultimately the PSP's
+                        responsibility to define the available values.
+                    payment_wallet:
+                      type: string
+                      description: >-
+                        The payment walled used for the transaction. For
+                        example, Apple Pay, Android Pay.
+                    created_at:
+                      type: string
+                      format: date-time
+                      description: The timestamp when the transaction was created.
+                    processed_at:
+                      type: string
+                      format: date-time
+                      description: The timestamp when the transaction was processed.
+              examples:
+                Void:
+                  summary: Void of authorization confirmed by the PSP
+                  value:
+                    - payment_method: credit_card
+                      payment_wallet: Apple Pay
+                      transaction_id: >-
+                        unique for every transaction in this
+                        payload-revoke-12345
+                      instrument_id: unique-psp-instrument-identifier-1234567890
+                      capture_amount: -100
+                      refund_amount: 0
+                      currency: USD
+                      created_at: '0001-01-01T00:00:00Z'
+                      processed_at: '0001-01-01T00:00:00Z'
+                      reason: revoke
+        '400':
+          description: >
+            Bad request. The request syntax/semantics is invalid. We will not
+            retry this method to resolve this error.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+        '500':
+          description: >
+            Internal server error. The request failed but retrying with the same
+            data may work.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Provides information on errors raised when processing
+                  requests.
+                type: object
+                required:
+                  - error_code
+                  - message
+                properties:
+                  error_code:
+                    description: >-
+                      An error type. You can use it to aggregate classes of
+                      errors.
+                    type: string
+                    enum:
+                      - internal_error
+                      - retry_error
+                      - instrument_error
+                      - fraud_error
+                      - rate_limit
+                      - failed_command
+                      - psp_api_error
+                    minLength: 1
+                  message:
+                    description: Human readable message explaining the error.
+                    type: string
+                    minLength: 1
+                  details:
+                    description: >-
+                      Metadata information that might be useful for debugging an
+                      error.
+                    type: object
+components: {}

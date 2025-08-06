@@ -1,0 +1,106 @@
+openapi: 3.0.0
+info:
+  title: NewStore Checkout Secrets API
+  version: '0'
+  description: >
+    Use this API to store secrets required by [NewStore
+    Checkout](https://docs.newstore.com/docs/glossary#newstore-checkout),
+
+    such as ApplePay merchant identity certificate.
+
+
+    For more information on configuring Newstore Checkout as a payment method,
+
+    see [the
+    documentation](https://docs.newstore.com/docs/setting-up-newstore-checkout-with-adyen-pay-by-link).
+servers:
+  - url: https://dodici.x.newstore.net/_/v1/payment/credentials/newstore_checkout
+security: []
+paths:
+  /apple_pay:
+    put:
+      summary: Update the ApplePay merchant identity certificate
+      operationId: postAppleCertificate
+      description: >
+        Update the ApplePay merchant identity certificate and private key for
+        use with NewStore Checkout.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Update ApplePay merchant identity certificate
+              type: object
+              description: >-
+                The ApplePay merchant identity certificate to be used with
+                ApplePay API calls.
+              required:
+                - private_key
+                - certificate
+              properties:
+                private_key:
+                  description: Base 64 encoded string containing the private key.
+                  type: string
+                  minLength: 1
+                certificate:
+                  description: Base 64 encoded string containing the certificate.
+                  type: string
+                  minLength: 1
+            example:
+              certificate: |
+                -----BEGIN CERTIFICATE-----
+                MIIB0zCCAX2gAwIBAgIJAI/M7BYjwB+uMA0GCSqGSIb3DQEBBQUAMEUxCzAJBgNV
+                BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
+                aWRnaXRzIFB0eSBMdGQwHhcNMTIwOTEyMjE1MjAyWhcNMTUwOTEyMjE1MjAyWjBF
+                MQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50
+                ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANLJ
+                hPHhITqQbPklG3ibCVxwGMRfp/v4XqhfdQHdcVfHap6NQ5Wok/4xIA+ui35/MmNa
+                rtNuC+BdZ1tMuVCPFZcCAwEAAaNQME4wHQYDVR0OBBYEFJvKs8RfJaXTH08W+SGv
+                zQyKn0H8MB8GA1UdIwQYMBaAFJvKs8RfJaXTH08W+SGvzQyKn0H8MAwGA1UdEwQF
+                MAMBAf8wDQYJKoZIhvcNAQEFBQADQQBJlffJHybjDGxRMqaRmDhX0+6v02TUKZsW
+                r5QuVbpQhH6u+0UgcW0jp9QwpxoPTLTWGXEWBBBurxFwiCBhkQ+V
+                -----END CERTIFICATE-----
+              private_key: |
+                -----BEGIN EXAMPLE KEY-----
+                MIIBOwIBAAJBANLJhPHhITqQbPklG3ibCVxwGMRfp/v4XqhfdQHdcVfHap6NQ5Wo
+                k/4xIA+ui35/MmNartNuC+BdZ1tMuVCPFZcCAwEAAQJAEJ2N+zsR0Xn8/Q6twa4G
+                6OB1M1WO+k+ztnX/1SvNeWu8D6GImtupLTYgjZcHufykj09jiHmjHx8u8ZZB/o1N
+                MQIhAPW+eyZo7ay3lMz1V01WVjNKK9QSn1MJlb06h/LuYv9FAiEA25WPedKgVyCW
+                SmUwbPw8fnTcpqDWE3yTO3vKcebqMSsCIBF3UmVue8YU3jybC3NxuXq3wNm34R8T
+                xVLHwDXh/6NJAiEAl2oHGGLz64BuAfjKrqwz7qMYr9HCLIe/YsoWq/olzScCIQDi
+                D2lWusoe2/nEqfDVVWGWlyJ7yOmqaVm/iNUN9B2N2g==
+                -----END EXAMPLE KEY-----
+        required: true
+      responses:
+        '200':
+          description: OK, successfully updated
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error, retry in a little while
+x-crossOriginAllowed: true
+components:
+  schemas:
+    ApplePayRequest:
+      title: Update ApplePay merchant identity certificate
+      type: object
+      description: >-
+        The ApplePay merchant identity certificate to be used with ApplePay API
+        calls.
+      required:
+        - private_key
+        - certificate
+      properties:
+        private_key:
+          description: Base 64 encoded string containing the private key.
+          type: string
+          minLength: 1
+        certificate:
+          description: Base 64 encoded string containing the certificate.
+          type: string
+          minLength: 1
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}

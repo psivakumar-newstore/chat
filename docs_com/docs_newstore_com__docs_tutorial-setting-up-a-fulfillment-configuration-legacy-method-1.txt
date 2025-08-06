@@ -1,0 +1,743 @@
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Tutorial: Setting up a fulfillment configuration (Legacy method)
+Updated on
+Nov 14, 2024
+Published on Oct 1, 2024
+18 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+Important
+This guide focuses on using the
+older alternative
+to set up your fulfillment configuration. To set up a fulfillment configuration via the
+Routing ruleset
+and
+Service levels
+APIs, see this
+guide
+instead.
+If you have started using the new APIs for your fulfillment configuration, values provided in the old configuration will be superseded by values in the new API payloads, with the only exception of provider rates and their priority.
+To migrate to the new fulfillment configuration, see the
+migration guide
+.
+The aim of this tutorial is to set up a basic fulfillment strategy for an imaginary business based in New York City that has the following characteristics:
+One store located in New York City, whose
+fulfillment_node_id
+is
+store1_NYC
+.
+One DC, whose
+fulfillment_node_id
+is
+DC01
+.
+Domestic delivery.
+(Optional) International delivery.
+(Optional) Transfers from the store to the DC.
+No in-store pickup orders.
+A fulfillment configuration cannot manage in-store pickup orders. To enable in-store pickup, see
+Tutorial: Setting up an in-store pickup configuration
+.
+The business offers the following shipping methods:
+Same-day and traditional delivery from the store to New York City addresses.
+Traditional delivery from the DC to the USA, including New York City.
+International delivery from the store to Germany and France.
+Traditional delivery for transferred inventory from the store to the DC.
+Important
+Before getting started with this tutorial, ensure that you:
+Understand how routing works at NewStore. See
+About order routing
+.
+Created a store. See
+Tutorial: Setting up a store
+.
+Imported master data in your store and DC. See
+Tutorial: Importing products
+.
+Setting up the strategy
+First, let's define the shipping strategy for our business. You can see another example of shipping strategy in
+About order routing
+.
+In the case of our small business, the shipping strategy is:
+Country
+Zip code
+Fulfillment node id
+Supported shipping options
+US
+10*
+store1_NYC
+Same-day and traditional
+US
+*
+DC01
+Traditional
+DE
+*
+store1_NYC
+International
+FR
+*
+store1_NYC
+International
+Developing an adapter
+Since we know the shipping methods we want to offer, we can choose the shipping provider(s) that supports these shipping methods amongst all the shipping providers on the market. In our case, let's imagine that UPS can perform both traditional and same-day shipping and has been selected as our provider.
+We must develop an adapter to allow integration between UPS and NewStore. This adapter enables NewStore to get shipping offers, book them, cancel them, etc. Both our store and our DC will receive shipment offers from this adapter.
+To learn more about shipping adapters, see
+Integrating a shipping provider
+.
+Note
+If you are working with several shipping providers, create an adapter for each of them.
+Once you have developed the adapter, send its URL and the name of the shipping provider to NewStore.
+When the retailer sends you the URL of the shipping adapter,
+add it via the API
+Creating a shipping options token
+For shipping orders other than
+transfer
+s, ensure that you have already created a shipping option token key pair using the
+Delivery
+API. For instructions on creating a shipping option token key pair, see the request sample of the
+Create or update a shipping option token key pair
+method.
+Creating the fulfillment configuration
+A fulfillment configuration represents your shipping strategy in NewStore. To create one, we use the
+Add fulfillment configuration
+method.
+This method allows us to create
+service levels
+,
+provider rates
+and
+routes
+in one call. To learn more about each of these concepts, See
+Fulfillment configuration
+. First, let's define each part separately then put them together when are ready to call the method.
+If inventory transfers are enabled for your business, you can create a shipping configuration for transfer orders based on your fulfillment configuration. see
+Shipping transfer orders
+.
+Service levels
+A
+service level
+is a shipping method that the user can select during the checkout process.
+Let's define our shipping methods as follows:
+{
+    "service_levels": {
+        "SAME_DAY_DELIVERY": {
+            "price": 15,
+            "tax_code": "",
+            "display_name": "Same day delivery",
+            "currency_code": "USD",
+            "delivery_time": "Today, if order is placed by 2pm.",
+            "remorse_period": 120,
+            "delivery_time_after_cutoff_hour": "Tomorrow"
+        },
+        "TRADITIONAL": {
+            "price": 0,
+            "tax_code": "",
+            "display_name": "Traditional delivery",
+            "currency_code": "USD",
+            "delivery_time": "3-7 business days",
+            "delivery_time_after_cutoff_hour": "4-8 business days"
+        }
+    },
+    "sl_levels_priority": ["SAME_DAY_DELIVERY", "TRADITIONAL"]
+}
+Note
+The business hours defined for your store have an influence on order routing. See
+Store configuration
+.
+Important
+If inventory transfers are enabled for your business, the service levels that you define here are also used for shipping inventory transfers. See
+Shipping transfer orders
+.
+Provider rates
+A
+provider rate
+represents the shipping providers offering the service levels we just defined. All service levels must be connected to a provider rate.
+Note
+If the value for the flag
+use_as_customer_facing_cost
+is true, NewStore uses the quote from the shipping provider. The service level cost defined in the fulfillment configuration is ignored, and the shipping provider cost is displayed to the customer. See
+Retrieving custom shipping prices for orders
+.
+In our case, we have created 2 service levels:
+SAME_DAY_DELIVERY
+and
+TRADITIONAL
+are both managed by UPS.
+When defining provider rates, we can specify the priority in which the provider rates are used to route orders.
+To enable prioritization of provider rates, see
+Enabling prioritization of provider rates
+.
+According to the
+Add fulfillment configuration
+method, let's define our provider rates as follows:
+{
+  "provider_rates":{
+    "UPS_SAME_DAY_RATE":{
+      "service_level":"SAME_DAY_DELIVERY",
+      "shipping_type":"same_day_delivery",
+      "return_provider_rate":"",
+      "shipping_carrier_name":"UPS",
+      "use_as_customer_facing_cost":false,
+      "carrier_defined_service_level":"ExpressPlus"
+    },
+    "UPS_TRADITIONAL_RATE":{
+      "service_level":"TRADITIONAL",
+      "shipping_type":"traditional_delivery",
+      "return_provider_rate":"",
+      "shipping_carrier_name":"UPS",
+      "use_as_customer_facing_cost":false,
+      "carrier_defined_service_level":"Ground"
+    }
+  }
+}
+{
+"provider_rates_priority":{
+    "*":{
+      "*":{
+          "SAME_DAY_DELIVERY":[
+            "UPS_SAME_DAY_RATE"
+          ],
+          "TRADITIONAL":[
+            "UPS_TRADITIONAL_RATE"
+          ]
+      }
+    },
+    "US":{
+      "*":{
+          "SAME_DAY_DELIVERY":[
+            "UPS_SAME_DAY_RATE"
+          ],
+          "TRADITIONAL":[
+            "UPS_TRADITIONAL_RATE"
+          ]
+      },
+      "DC01":{
+          "SAME_DAY_DELIVERY":[
+            "UPS_SAME_DAY_RATE"
+          ],
+          "TRADITIONAL":[
+            "UPS_TRADITIONAL_RATE"
+          ]
+        }
+      }
+  }
+}
+In our case we have created service levels for only 1 shipping provider (UPS). Therefore, when routing same day delivery and traditional orders:
+In the US, all fulfillment locations, including the store (
+store1_NYC
+) and DC (
+DC01
+), consider the provider rates
+UPS_SAME_DAY_RATE
+and
+UPS_TRADITIONAL_RATE
+as highest priority by default.
+In all other countries, for all fulfillment locations, the provider rates
+UPS_SAME_DAY_RATE
+and
+UPS_TRADITIONAL_RATE
+have highest priority by default.
+Important
+When defining provider rates with the same shipping provider, ensure that the
+carrier_defined_service_level
+is unique for each provider rate. For example, you cannot specify
+ExpressPlus
+as the
+carrier_defined_service_level
+for both
+UPS_SAME_DAY_RATE
+and
+UPS_TRADITIONAL_RATE
+.
+For a detailed list of prioritized provider rates from multiple shipping providers, see the
+Fulfillment configuration payload example
+.
+Routes
+Now that we have defined the service levels and the provider rates related to them, we can define the routes. A route represents one row of the table containing the
+shipping strategy we defined earlier
+. In other words, it represents the relation between provider rates, shipping zones, and fulfillment node identifiers.
+{
+    "routes": [
+        {
+            "fulfilled_by": {
+                "SAME_DAY_DELIVERY": [
+                    {
+                        "provider_rate": "UPS_SAME_DAY_RATE",
+                        "fulfillment_node_id": "store1_NYC"
+                    }
+                ],
+                "TRADITIONAL": [
+                    {
+                        "provider_rate": "UPS_TRADITIONAL_RATE",
+                        "fulfillment_node_id": "store1_NYC"
+                    }
+                ]
+            },
+            "destination_region": {
+                "countries": ["US"],
+                "zip_codes": ["10*"]
+            }
+        },
+        {
+            "fulfilled_by": {
+                "TRADITIONAL": [
+                    {
+                        "provider_rate": "UPS_TRADITIONAL_rate",
+                        "fulfillment_node_id": "DC01"
+                    }
+                ]
+            },
+            "destination_region": {
+                "countries": ["US"],
+                "zip_codes": ["*"]
+            }
+        }
+    ]
+}
+Important
+Ensure that shipping zones with specific zip codes have higher priority than shipping zones with a wide range of zip codes. For example, if you are fulfilling orders in USA, a shipping zone that fulfills orders to zip codes starting with
+10
+(
+10*
+) must be higher in the list of
+routes
+than a shipping zone that fulfills orders to all zip codes in the US (
+*
+).
+Final payload
+Putting these 3 parts together, we have the final payload for the fulfillment configuration:
+{
+    "fulfillment_config": {
+        "routes": [
+            {
+                "fulfilled_by": {
+                    "SAME_DAY_DELIVERY": [
+                        {
+                            "provider_rate": "UPS_SAME_DAY_RATE",
+                            "fulfillment_node_id": "store1_NYC"
+                        }
+                    ],
+                    "TRADITIONAL": [
+                        {
+                            "provider_rate": "UPS_TRADITIONAL_RATE",
+                            "fulfillment_node_id": "store1_NYC"
+                        }
+                    ]
+                },
+                "destination_region": {
+                    "countries": ["US"],
+                    "zip_codes": ["10*"]
+                }
+            },
+            {
+                "fulfilled_by": {
+                    "TRADITIONAL": [
+                        {
+                            "provider_rate": "UPS_TRADITIONAL_RATE",
+                            "fulfillment_node_id": "DC01"
+                        }
+                    ]
+                },
+                "destination_region": {
+                    "countries": ["US"],
+                    "zip_codes": ["*"]
+                }
+            }
+        ],
+        "provider_rates": {
+            "UPS_SAME_DAY_RATE": {
+                "service_level": "SAME_DAY_DELIVERY",
+                "shipping_type": "same_day_delivery",
+                "return_provider_rate": "",
+                "shipping_carrier_name": "UPS",
+                "use_as_customer_facing_cost": false,
+                "carrier_defined_service_level": "ExpressPlus"
+            },
+            "UPS_TRADITIONAL_RATE": {
+                "service_level": "TRADITIONAL",
+                "shipping_type": "traditional_delivery",
+                "return_provider_rate": "",
+                "shipping_carrier_name": "UPS",
+                "use_as_customer_facing_cost": false,
+                "carrier_defined_service_level": "Ground"
+            }
+        },
+        "service_levels": {
+            "SAME_DAY_DELIVERY": {
+                "price": 15,
+                "tax_code": "",
+                "display_name": "Same day delivery",
+                "currency_code": "USD",
+                "delivery_time": "Place order by 2pm.",
+                "remorse_period": 120,
+                "delivery_time_after_cutoff_hour": "Place order by 2pm."
+            },
+            "TRADITIONAL": {
+                "price": 0,
+                "tax_code": "",
+                "display_name": "Traditional delivery",
+                "currency_code": "USD",
+                "delivery_time": "3-7 business days",
+                "delivery_time_after_cutoff_hour": ""
+            }
+        },
+        "sl_levels_priority": ["SAME_DAY_DELIVERY", "TRADITIONAL"],
+        "provider_rates_priority": {
+            "*": {
+                "*": {
+                    "SAME_DAY_DELIVERY": ["UPS_SAME_DAY_RATE"],
+                    "TRADITIONAL": ["UPS_TRADITIONAL_RATE"]
+                }
+            },
+            "US": {
+                "*": {
+                    "SAME_DAY_DELIVERY": ["UPS_SAME_DAY_RATE"],
+                    "TRADITIONAL": ["UPS_TRADITIONAL_RATE"]
+                },
+                "DC01": {
+                    "SAME_DAY_DELIVERY": ["UPS_SAME_DAY_RATE"],
+                    "TRADITIONAL": ["UPS_TRADITIONAL_RATE"]
+                }
+            }
+        }
+    }
+}
+Once you call the
+Add fulfillment configuration
+, orders are routed according to your strategy.
+Note
+If you want to enable in-store pickup orders, see
+Tutorial: Setting up an in-store pickup configuration
+.
+We have completed creating the fulfillment configuration. We can now:
+Update the fulfillment configuration to enable shipping international orders from the store. See
+*(Optional)* Shipping orders internationally
+.
+Create an
+optional
+transfer configuration. If you do not want to transfer inventory between stores, you do not need a transfer configuration. see
+Tutorial: Setting up a transfer configuration
+.
+(Optional) Shipping orders internationally
+You can set up stores in your business to ship orders internationally, using
+EasyPost
+. To enable international shipments from your store, set up and configure an adapter with EasyPost.
+To develop the adapter and configure EasyPost for shipping orders in your business, contact the
+support team
+.
+To learn more about shipping adapters, see
+Integrating a shipping provider
+.
+Defining the strategy
+Based on
+the strategy
+we created for our business, we have already set up a DC, a store, and a fulfillment configuration.
+We can now enable international shipments from our store (
+store1_NYC
+) to Germany and France.
+Updating the fulfillment configuration
+Create a new
+service level <tuto-ff-conf-service-levels>
+, say
+INTERNATIONAL_EXPRESS
+. Specify applicable pricing and other details.
+Note
+Delivery times can vary, as they are returned by
+EasyPost
+.
+Let's define our international service level as follows:
+{
+    "service_levels": {
+        "INTERNATIONAL_EXPRESS": {
+            "price": 100,
+            "tax_code": "",
+            "display_name": "International delivery",
+            "currency_code": "USD",
+            "delivery_time": "2 weeks, if order is placed today.",
+            "remorse_period": 120,
+            "delivery_time_after_cutoff_hour": "3 weeks"
+        },
+        "sl_levels_priority": ["SAME_DAY_DELIVERY", "TRADITIONAL", "INTERNATIONAL_EXPRESS"]
+    }
+}
+See the
+EasyPost guide
+for provider rates that can fulfill the service level you just defined for international shipments.
+The service level we defined,
+INTERNATIONAL EXPRESS
+, is managed by FedEx. Let's define our provider rate for international shipping as follows:
+{
+    "provider_rates": {
+        "INTERNATIONAL_PRIORITY": {
+            "service_level": "INTERNATIONAL_EXPRESS",
+            "shipping_type": "traditional_carrier",
+            "return_provider_rate": "",
+            "shipping_carrier_name": "FedEx",
+            "use_as_customer_facing_cost": false
+        }
+    }
+}
+Create routes for the service level and provider rates, using the same process as described in
+Routes
+, with the following additions:
+In
+destination_region
+, specify the countries you want to ship to. For example,
+DE
+and
+FR
+.
+Specify the
+fulfillment_node_id
+of the stores that can fulfill international orders.
+Let's define the route as follows:
+{
+    "routes": [
+        {
+            "fulfilled_by": {
+                "INTERNATIONAL_EXPRESS": [
+                    {
+                        "provider_rate": "INTERNATIONAL_PRIORITY",
+                        "fulfillment_node_id": "store1_NYC"
+                    }
+                ]
+            },
+            "destination_region": {
+                "countries": ["DE", "FR"],
+                "zip_codes": ["*"]
+            }
+        }
+    ]
+}
+Final updated payload
+The final payload for the
+updated
+fulfillment configuration looks like this:
+{
+  "fulfillment_config":{
+    "routes":[
+      {
+        "fulfilled_by":{
+          "SAME_DAY_DELIVERY":[
+            {
+              "provider_rate":"UPS_SAME_DAY_RATE",
+              "fulfillment_node_id":"store1_NYC"
+            }
+          ]
+          "TRADITIONAL": [
+            {
+              "provider_rate": "UPS_TRADITIONAL_RATE",
+              "fulfillment_node_id": "store1_NYC"
+            }
+          ]
+        },
+        "destination_region":{
+          "countries":[
+            "US"
+          ],
+          "zip_codes":[
+            "10*"
+          ]
+        }
+      },
+      {
+        "fulfilled_by":{
+          "TRADITIONAL":[
+            {
+              "provider_rate":"UPS_TRADITIONAL_RATE",
+              "fulfillment_node_id":"DC01"
+            }
+          ]
+        },
+        "destination_region":{
+          "countries":[
+            "US"
+          ],
+          "zip_codes":[
+            "*"
+          ]
+        }
+      },
+      {
+        "fulfilled_by":{
+          "INTERNATIONAL_EXPRESS":[
+            {
+              "provider_rate":"INTERNATIONAL_PRIORITY",
+              "fulfillment_node_id":"store1_NYC"
+            }
+          ]
+        },
+        "destination_region":{
+          "countries":[
+            "DE",
+            "FR"
+          ],
+          "zip_codes":[
+            "*"
+          ]
+        }
+      }
+    ],
+    "provider_rates":{
+      "UPS_SAME_DAY_RATE":{
+        "service_level":"SAME_DAY_DELIVERY",
+        "shipping_type":"same_day_delivery",
+        "return_provider_rate":"",
+        "shipping_carrier_name":"UPS",
+        "use_as_customer_facing_cost":false
+      },
+      "UPS_TRADITIONAL_RATE":{
+        "service_level":"TRADITIONAL",
+        "shipping_type":"same_day_delivery",
+        "return_provider_rate":"",
+        "shipping_carrier_name":"UPS",
+        "use_as_customer_facing_cost":false
+      },
+      "INTERNATIONAL_PRIORITY":{
+        "service_level":"INTERNATIONAL_EXPRESS",
+        "shipping_type":"traditional_carrier",
+        "return_provider_rate":"",
+        "shipping_carrier_name":"FedEx",
+        "use_as_customer_facing_cost":false
+      },
+    },
+    "service_levels":{
+      "SAME_DAY_DELIVERY":{
+        "price":15,
+        "tax_code":"",
+        "display_name":"Same day delivery",
+        "currency_code":"USD",
+        "delivery_time":"Place order by 2pm.",
+        "remorse_period":120,
+        "delivery_time_after_cutoff_hour":"Place order by 2pm."
+      },
+      "TRADITIONAL":{
+        "price":0,
+        "tax_code":"",
+        "display_name":"Traditional delivery",
+        "currency_code":"USD",
+        "delivery_time":"3-7 business days",
+        "delivery_time_after_cutoff_hour":""
+      },
+      "INTERNATIONAL_EXPRESS":{
+      "price":100,
+      "tax_code":"",
+      "display_name":"International delivery",
+      "currency_code":"USD",
+      "delivery_time":"2 weeks, if order is placed today.",
+      "remorse_period":120,
+      "delivery_time_after_cutoff_hour":"3 weeks"
+      }
+    },
+    "sl_levels_priority":[
+      "SAME_DAY_DELIVERY",
+      "TRADITIONAL",
+      "INTERNATIONAL_EXPRESS"
+    ]
+  }
+}
+We have completed updating the fulfillment config. Before we can start shipping orders internationally, there are some pre-requisites for your business that must be fulfilled. See
+*(Optional)* Booking an international shipment
+.
+If you want to transfer inventory between stores, create an
+optional
+transfer config. See
+Tutorial: Setting up a transfer configuration
+.
+Related topics
+Tutorial: Setting up a transfer configuration
+Tutorial: Setting up a store
+Tutorial: Setting up an in-store pickup configuration
+Shipping transfer orders
+Migrating from the legacy fulfillment configuration to the new fulfillment configuration
+Was this article helpful?
+Yes
+No
+Tags
+api
+Associate App
+dellivery
+Easypost
+fulfillment
+fulfillment configuration
+integration
+international shipping
+newstore platform
+onboarding
+order fulfillment
+platform
+preorder
+provider rates
+routing
+routing rules
+shipping
+stock on hand
+store fulfillment
+tutorial
+warehouse fulfillment
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use

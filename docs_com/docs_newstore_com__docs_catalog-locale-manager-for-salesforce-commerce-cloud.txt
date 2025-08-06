@@ -1,0 +1,297 @@
+Catalog Locale Manager for Salesforce Commerce Cloud
+NewStore Introduction
+NewStore basics
+Business process models
+Hardware and software
+Glossary
+Mobile POS
+Get to know your mPOS
+Set up your mPOS
+Set up omnichannel services
+Engage your customers
+Use your mPOS
+Manage your mPOS
+OMS
+Get to know your OMS
+Set up your OMS
+Expand your OMS
+Dashboards and analytics
+Shopping App
+Get to know your Shopping App
+Customize your Shopping App
+Developer Resources
+Managing data in NewStore
+Data reconciliation and completeness playbook
+Get started with NewStore APIs
+Event consumption and handling
+Build custom integrations
+API Reference
+Omnichannel Manager tools
+Platform onboarding guide
+End-User Guides
+Associate App User Guide
+Omnichannel Manager User Guide
+Search or ask anything
+EXPLORE ARTICLES
+Catalog Locale Manager for Salesforce Commerce Cloud
+Updated on
+Nov 12, 2024
+Published on Oct 1, 2024
+5 minute(s) read
+Listen
+Export PDF
+Print
+Prev
+Next
+You can use the Catalog Locale Manager to import a singe multi-locale SFCC Catalog XML file into NewStore, by specifying the locales that are to be imported into the platform for each SFCC catalog.
+Use the
+SFCC catalog locale manager
+API to create, retrieve, and delete the locale configurations.
+The examples in this section help you to set up the multi-locale catalog configuration for your business. See
+Setting up the catalog locale configuration
+.
+Locale configuration example
+This example configuration transforms the
+xyz-navigation-emea-newstore
+SFCC Catalog XML file into 8 different locale-specific NewStore catalogs.
+{
+  "catalog_name": "xyz-navigation-emea-newstore",
+  "import_configuration": [
+      {
+          "is_master": true,
+          "newstore_catalog_id": "storefront-retail-emea-de-ch",
+          "master_catalog": "xyz-navigation-emea-newstore",
+          "default_locale": "x-default",
+          "locale": "de-CH"
+      },
+      {
+          "is_master": true,
+          "newstore_catalog_id": "storefront-retail-emea-de-de",
+          "master_catalog": "xyz-navigation-emea-newstore",
+          "default_locale": "x-default",
+          "locale": "de-DE"
+      },
+      {
+          "is_master": true,
+          "newstore_catalog_id": "storefront-retail-emea-en-us",
+          "master_catalog": "xyz-navigation-emea-newstore",
+          "default_locale": "x-default",
+          "locale": "en-US"
+      },
+      {
+          "is_master": true,
+          "newstore_catalog_id": "storefront-retail-emea-es-es",
+          "master_catalog": "xyz-navigation-emea-newstore",
+          "default_locale": "x-default",
+          "locale": "es-ES"
+      },
+      {
+          "is_master": true,
+          "newstore_catalog_id": "storefront-retail-emea-fr-ch",
+          "master_catalog": "xyz-navigation-emea-newstore",
+          "default_locale": "x-default",
+          "locale": "fr-CH"
+      },
+      {
+          "is_master": true,
+          "newstore_catalog_id": "storefront-retail-emea-fr-fr",
+          "master_catalog": "xyz-navigation-emea-newstore",
+          "default_locale": "x-default",
+          "locale": "fr-FR"
+      },
+      {
+          "is_master": true,
+          "newstore_catalog_id": "storefront-retail-emea-it-it",
+          "master_catalog": "xyz-navigation-emea-newstore",
+          "default_locale": "x-default",
+          "locale": "it-IT"
+      },
+      {
+          "is_master": true,
+          "newstore_catalog_id": "storefront-retail-emea-pt-pt",
+          "master_catalog": "xyz-navigation-emea-newstore",
+          "default_locale": "x-default",
+          "locale": "pt-PT"
+      }
+  ]
+}
+Updating the SFCC catalog mapping configuration
+The SFCC catalog export process (
+SFCC catalog export job
+) uses a mapping configuration, which is provided with the
+SFCC catalog mapping config
+API.
+You have to define placeholders for the process to work with the Catalog Locale Manager and transform multiple locales.
+In the following example of a catalog export mapping configuration, placeholders are defined within the
+{{ }}
+parameters, and each one will be replaced with the corresponding values from your locale configuration.
+{
+  "sfcc_catalog_id": "xyz-navigation-emea-newstore",
+  "config": {
+  "categories": {
+      "assign_unassigned_to_root": true
+  },
+  "header": {
+      "categories": {
+          "is_master": "{{is_master}}",
+          "locale": "{{locale}}",
+          "shop": "{{newstore_catalog_id}}"
+      },
+      "products": {
+          "catalog_id": "{{newstore_catalog_id}}",
+          "filterable_attributes": [],
+          "internal_disable_image_processing": false,
+          "is_master": "{{is_master}}",
+          "locale": "{{locale}}",
+          "searchable_attributes": []
+      }
+  },
+  "images": {
+      "include": [
+          "zoom",
+          "swatch",
+          "1774"
+      ],
+      "is_swatch_view_type": "swatch",
+      "pathTemplate": "https://dummyimage.com/600x400/807b80/060a1a.png&text={{.}}",
+      "placeHolder": {
+          "is_color_swatch": false,
+          "is_main": false,
+          "url": "http://via.placeholder.com/640x360"
+      }
+  },
+  "languagesPriority": [
+      "{{locale}}",
+      "{{default_locale}}",
+      "x-default"
+  ],
+  "properties_mapping": {
+      "caption": "@langTextVal(master.display-name)",
+      "description": "@htmlToText(@concatSpace(@langTextVal(master.long-description))",
+      "extended_attributes": [
+          {
+              "innerDocument": "!",
+              "mappings": {
+                  "name": ">>subBrand",
+                  "value": "@customAttr(master.custom-attributes|>>subBrand)"
+              },
+              "output": [],
+              "required": [
+                  "value"
+              ]
+          },
+          {
+              "innerDocument": "!",
+              "mappings": {
+                  "name": ">>model",
+                  "value": "@customAttr(master.custom-attributes|>>model)"
+              },
+              "output": [],
+              "required": [
+                  "value"
+              ]
+          },
+          {
+              "innerDocument": "!",
+              "mappings": {
+                  "name": ">>modelName",
+                  "value": "@customAttr(master.custom-attributes|>>modelName)"
+              },
+              "output": [],
+              "required": [
+                  "value"
+              ]
+          }
+      ],
+      "external_identifiers": [],
+      "images": "@variantImages(master.images|master.variations|variant.custom-attributes)",
+      "is_active": "@falsyOr(@siteSpecificVal(variant.online-flag)|@siteSpecificVal(master.online-flag)|meta.variantWithoutMaster)",
+      "is_published": "@boolOr(@siteSpecificVal(variant.sitemap-included-flag)|@siteSpecificVal(master.sitemap-included-flag)|@negate(meta.variantWithoutMaster))",
+      "product_id": "variant.product-id",
+      "shipping_weight_unit": ">>kg",
+      "shipping_weight_value": "@defOrToNumber(@customAttr(variant.custom-attributes,>>GrossWeight)|@customAttr(master.custom-attributes,>>GrossWeight))",
+      "show_in_listing": "@siteSpecificVal(master.searchable-flag)",
+      "tax_class_id": "@defOr(@customAttr(variant.custom-attributes,>>productTaxCode)|@customAttr(master.custom-attributes,>>productTaxCode))",
+      "title": "@langTextVal(master.display-name)",
+      "variant_group_id": "master.product-id",
+      "variation_color_value": "@customAttr(variant.custom-attributes|>>colorName)",
+      "variation_size_value": "@customAttr(variant.custom-attributes|>>sizeName)"
+  },
+    "sitesPriority": [
+      "RefArch"
+    ]
+  }
+}
+Setting up the catalog locale configuration
+Note
+We assume that a catalog mapping configuration already exists, which is required to enable the multi-locale feature.
+Identify the current mapping configuration (
+SFCC catalog mapping config
+) in use.
+For help with retrieving your current configuration, contact the
+SFCC team
+or the
+support team
+.
+Follow the
+example
+and replace the placeholders with actual values from your local configuration.
+Define the multi-locale catalog configuration using this
+example
+. Identify the `sfcc_catalog_id` and use it as the `catalog_name`.
+In case the.zip file provided to the pre-signed URL returned from
+SFCC catalog export job
+is a group of
+master + storefront
+catalogs, use the name of the
+storefront catalog
+.
+Using the
+SFCC catalog import job details
+method, verify if multiple catalog import jobs are executed effectively by uploading only
+one
+.zip file to the pre-signed URL returned by the
+SFCC catalog export job
+method.
+Was this article helpful?
+Yes
+No
+Tags
+api
+catalog
+data import
+integration
+inventory
+newstore platform
+order management
+platform
+product import
+SFCC
+About Us
+Newsroom
+Careers
+Platform
+Mobile POS
+Omnichannel OMS
+Shopping App
+Hardware and Software
+Stories
+Point of Sale
+Mobile Checkout
+Endless Aisle
+Clienteling
+Developers
+API Reference
+Developer Portal
+API updates
+Deprecation notices
+Support
+Support Portal
+Status
+Still have questions?
+We’re here to help you!
+Follow Us
+Platform Status
+Privacy Notice for Applicants
+Privacy Policy
+Terms of Use
