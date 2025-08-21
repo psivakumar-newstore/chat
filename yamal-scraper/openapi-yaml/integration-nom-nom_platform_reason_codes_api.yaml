@@ -1,0 +1,263 @@
+openapi: 3.0.1
+info:
+  contact:
+    email: team-web-platform@newstore.com
+    name: Team Web Platform
+    url: https://backstage.p.newstore.io/catalog/default/group/team-web-platform
+  description: Reason Codes Api
+  title: Reason Codes
+  version: 2.0.0
+  x-api-id: reason-codes
+  x-audience: internal-company
+  x-domain-gateway-integration:
+    serviceName: reason-codes
+components:
+  securitySchemes:
+    oauth:
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.p.newstore.domains/oauth2/token
+          scopes:
+            web-platform:reason-codes:read: Read reason codes
+            web-platform:reason-codes:write: Write or update reason codes
+      type: oauth2
+  schemas:
+    Reason:
+      additionalProperties:
+        type: string
+      type: object
+      example:
+        en: Too small
+        de: Zu klein
+    ReasonCode:
+      properties:
+        code:
+          type: integer
+          format: int32
+        created_at:
+          type: string
+        created_by:
+          type: string
+        reason:
+          $ref: '#/components/schemas/Reason'
+        updated_at:
+          type: string
+        updated_by:
+          type: string
+      required:
+        - code
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+        - reason
+      type: object
+    ReasonCodeDto:
+      properties:
+        code:
+          description: The unique code of the reason for a specific type.
+          type: integer
+          format: int32
+        reason:
+          $ref: '#/components/schemas/Reason'
+      required:
+        - code
+        - reason
+      type: object
+    ReasonCodeResponse:
+      properties:
+        metadata:
+          type: object
+        reason_codes:
+          items:
+            $ref: '#/components/schemas/ReasonCode'
+          type: array
+      required:
+        - metadata
+        - reason_codes
+      type: object
+paths:
+  /reason-code-types/{type}/reason-codes:
+    get:
+      description: Retrieves all the reason codes of the provided reason code type.
+      operationId: listReasonCodes
+      parameters:
+        - description: Tenant name
+          in: header
+          name: tenant
+          schema:
+            type: string
+        - in: path
+          name: type
+          required: true
+          schema:
+            enum:
+              - returns
+              - cancellations
+              - refunds
+              - exchanges
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReasonCodeResponse'
+          description: List of reason codes
+        '400':
+          description: Bad Request
+        '403':
+          description: Access Denied
+        '500':
+          description: Server Error
+      security:
+        - oauth:
+            - web-platform:reason-codes:read
+      summary: Get reason codes by type and tenant
+      tags:
+        - Reason Codes
+    post:
+      description: >-
+        Creates a new reason code in the provided reason code type. Once a
+        reason code is added, users must log out from their app and log in again
+        to see the new reason codes.
+      operationId: createReasonCode
+      parameters:
+        - description: Tenant name
+          in: header
+          name: tenant
+          schema:
+            type: string
+        - in: path
+          name: type
+          required: true
+          schema:
+            enum:
+              - returns
+              - cancellations
+              - refunds
+              - exchanges
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonCodeDto'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReasonCode'
+          description: ''
+        '403':
+          description: Access Denied
+        '409':
+          description: Reason Code already exists
+        '500':
+          description: ''
+      security:
+        - oauth:
+            - web-platform:reason-codes:write
+      summary: Create reason code
+      tags:
+        - Reason Codes
+  /reason-code-types/{type}/reason-codes/{code}:
+    delete:
+      description: Deletes the provided reason code.
+      operationId: destroyReasonCode
+      parameters:
+        - description: Tenant name
+          in: header
+          name: tenant
+          schema:
+            type: string
+        - in: path
+          name: type
+          required: true
+          schema:
+            enum:
+              - returns
+              - cancellations
+              - refunds
+              - exchanges
+            type: string
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+        '204':
+          description: ''
+        '403':
+          description: Access Denied
+        '404':
+          description: Reason Code not found
+      security:
+        - oauth:
+            - web-platform:reason-codes:write
+      summary: Delete reason code
+      tags:
+        - Reason Codes
+    put:
+      description: Updates the provided reason code.
+      operationId: replaceReasonCode
+      parameters:
+        - description: Tenant name
+          in: header
+          name: tenant
+          schema:
+            type: string
+        - in: path
+          name: type
+          required: true
+          schema:
+            enum:
+              - returns
+              - cancellations
+              - refunds
+              - exchanges
+            type: string
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonCodeDto'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReasonCode'
+          description: ''
+        '400':
+          description: ''
+        '403':
+          description: Access Denied
+        '404':
+          description: Reason Code not found
+      security:
+        - oauth:
+            - web-platform:reason-codes:write
+      summary: Update reason code
+      tags:
+        - Reason Codes
+servers:
+  - url: https://web-platform.s.newstore.domains/{basePath}
+    description: Staging environment
+    variables:
+      basePath:
+        default: /reason-codes
+tags:
+  - description: Reason Codes Api
+    name: Reason Codes

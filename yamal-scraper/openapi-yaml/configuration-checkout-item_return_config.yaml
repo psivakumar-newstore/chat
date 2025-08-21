@@ -1,0 +1,316 @@
+openapi: 3.0.0
+info:
+  title: Item Return Configuration API
+  version: '1.0'
+  description: >
+    Use this API to configure how returns work in the NewStore platform. This
+    includes:
+
+
+    - Configuring the return window, which indicates the number of days within
+    which the item can be returned from
+      the date of purchase.
+    - Configuring the return fee, which indicates the amount the customer has to
+    pay to return
+      an item in the order.
+    - Configuring if shipping cost should be refunded when all the products in
+    the order are returned.
+
+
+    For more information, see the
+
+    [configuration
+    guide](/developers/configuration/config-financial-communication/#config-financial-docs).
+servers:
+  - url: https://dodici.x.newstore.net/v0/c
+paths:
+  /item-return/config:
+    get:
+      summary: Get item return configuration
+      security:
+        - newStoreAccessToken: []
+      description: |
+        Retrieves the current configuration of returns set up in the NewStore
+        platform. The response payload also includes metadata such as
+        who updated the configuration and when.
+
+        For more information, see the [parent resource](#itemreturn).
+      operationId: GetConfiguration
+      responses:
+        '200':
+          description: Current configuration
+          content:
+            application/json:
+              schema:
+                description: Returns configuration for item return
+                type: object
+                required:
+                  - value
+                  - updated_by
+                  - updated_at
+                properties:
+                  value:
+                    type: object
+                    description: Configuration as key-value pairs.
+                    properties:
+                      return_window:
+                        type: number
+                        minimum: 0
+                        description: >-
+                          Number of days after the purchase when it is possible
+                          to return the products.
+                      return_fee:
+                        type: number
+                        minimum: 0
+                        description: >-
+                          Monetary amount the customer pays to return a product.
+                          Assumes the currency of the order that is returned.
+                      refund_shipping_cost:
+                        type: boolean
+                        description: >-
+                          Set this parameter to `true` to refund the shipping
+                          cost after all the products of the order are returned.
+                      return_with_lla_support:
+                        type: boolean
+                        description: >-
+                          Set this parameter to `true` to enable the Line Level
+                          Appeasement for In-Store returns (default: false).
+                    additionalProperties: false
+                  updated_by:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The email of the user who was the last one to update the
+                      configuration values.
+                  updated_at:
+                    type: string
+                    description: The timestamp of the last change.
+              example:
+                value:
+                  return_window: 90
+                  return_fee: 0
+                  refund_shipping_cost: false
+                updated_by: user@example.com
+                updated_at: '2021-11-04T10:11:44Z'
+        '500':
+          description: An internal error occurred
+    patch:
+      summary: Update item return configuration
+      security:
+        - newStoreAccessToken: []
+      description: >
+        Updates the current configuration set up for returning items in your
+        business.
+      operationId: updateConfig
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            example:
+              return_window: 90
+            schema:
+              type: object
+              properties:
+                return_window:
+                  type: number
+                  minimum: 0
+                  description: >-
+                    Number of days after the purchase when it is possible to
+                    return the products.
+                return_fee:
+                  type: number
+                  minimum: 0
+                  description: >-
+                    Monetary amount the customer pays to return a product.
+                    Assumes the currency of the order that is returned.
+                refund_shipping_cost:
+                  type: boolean
+                  description: >-
+                    Set this parameter to `true` to refund the shipping cost
+                    after all the products of the order are returned.
+                return_with_lla_support:
+                  type: boolean
+                  description: >-
+                    Set this parameter to `true` to enable the Line Level
+                    Appeasement for In-Store returns (default: false).
+              additionalProperties: false
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              example:
+                value:
+                  return_window: 90
+                  return_fee: 0
+                  refund_shipping_cost: false
+                updated_by: user@retailer.com
+                updated_at: '2021-11-04T10:11:44Z'
+              schema:
+                description: Returns configuration for item return
+                type: object
+                required:
+                  - value
+                  - updated_by
+                  - updated_at
+                properties:
+                  value:
+                    type: object
+                    description: Configuration as key-value pairs.
+                    properties:
+                      return_window:
+                        type: number
+                        minimum: 0
+                        description: >-
+                          Number of days after the purchase when it is possible
+                          to return the products.
+                      return_fee:
+                        type: number
+                        minimum: 0
+                        description: >-
+                          Monetary amount the customer pays to return a product.
+                          Assumes the currency of the order that is returned.
+                      refund_shipping_cost:
+                        type: boolean
+                        description: >-
+                          Set this parameter to `true` to refund the shipping
+                          cost after all the products of the order are returned.
+                      return_with_lla_support:
+                        type: boolean
+                        description: >-
+                          Set this parameter to `true` to enable the Line Level
+                          Appeasement for In-Store returns (default: false).
+                    additionalProperties: false
+                  updated_by:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The email of the user who was the last one to update the
+                      configuration values.
+                  updated_at:
+                    type: string
+                    description: The timestamp of the last change.
+        '400':
+          description: Invalid request
+        '500':
+          description: Internal Server Error.
+    post:
+      summary: Create or replace item return configuration
+      security:
+        - newStoreAccessToken: []
+      description: >
+        Use this method to create a new configuration, or replace the current
+        configuration,
+
+        for returning items in your business. For more information, see the
+
+        [parent resource](#itemreturn).
+      operationId: ReplaceConfiguration
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            example:
+              return_window: 90
+              return_fee: 0
+              refund_shipping_cost: false
+            schema:
+              type: object
+              properties:
+                return_window:
+                  type: number
+                  minimum: 0
+                  description: >-
+                    Number of days after the purchase when it is possible to
+                    return the products.
+                return_fee:
+                  type: number
+                  minimum: 0
+                  description: >-
+                    Monetary amount the customer pays to return a product.
+                    Assumes the currency of the order that is returned.
+                refund_shipping_cost:
+                  type: boolean
+                  description: >-
+                    Set this parameter to `true` to refund the shipping cost
+                    after all the products of the order are returned.
+                return_with_lla_support:
+                  type: boolean
+                  description: >-
+                    Set this parameter to `true` to enable the Line Level
+                    Appeasement for In-Store returns (default: false).
+              additionalProperties: false
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              example:
+                value:
+                  return_window: 90
+                  return_fee: 0
+                  refund_shipping_cost: false
+                updated_by: user@retailer.com
+                updated_at: '2021-11-04T10:11:44Z'
+              schema:
+                description: Returns configuration for item return
+                type: object
+                required:
+                  - value
+                  - updated_by
+                  - updated_at
+                properties:
+                  value:
+                    type: object
+                    description: Configuration as key-value pairs.
+                    properties:
+                      return_window:
+                        type: number
+                        minimum: 0
+                        description: >-
+                          Number of days after the purchase when it is possible
+                          to return the products.
+                      return_fee:
+                        type: number
+                        minimum: 0
+                        description: >-
+                          Monetary amount the customer pays to return a product.
+                          Assumes the currency of the order that is returned.
+                      refund_shipping_cost:
+                        type: boolean
+                        description: >-
+                          Set this parameter to `true` to refund the shipping
+                          cost after all the products of the order are returned.
+                      return_with_lla_support:
+                        type: boolean
+                        description: >-
+                          Set this parameter to `true` to enable the Line Level
+                          Appeasement for In-Store returns (default: false).
+                    additionalProperties: false
+                  updated_by:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The email of the user who was the last one to update the
+                      configuration values.
+                  updated_at:
+                    type: string
+                    description: The timestamp of the last change.
+        '400':
+          description: Invalid request
+        '500':
+          description: An internal error occurred
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}

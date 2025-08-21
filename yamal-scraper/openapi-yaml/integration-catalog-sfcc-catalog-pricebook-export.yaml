@@ -1,0 +1,173 @@
+openapi: 3.0.1
+info:
+  title: Pricebook Export
+  version: 1.0.0
+  description: Pricebook Export API
+  x-audience: external-public
+  x-api-id: catalog-pricebook-export-gateway-3634359716
+  x-domain-gateway-integration:
+    serviceName: pricebook-export
+    lambda:
+      arn: '{{.lambdaArn}}'
+  contact:
+    name: Team Products Prices Promotions
+    url: https://www.newstore.com
+    email: team-product-prices-promotions@newstore.com
+servers:
+  - url: https://catalog.s.newstore.domains/catalog
+  - url: https://catalog.p.newstore.domains/catalog
+tags:
+  - name: Pricebook export
+    description: Pricebook Export
+security:
+  - oauth:
+      - catalog:pricebook-export:read
+paths:
+  /exports/catalogs/{catalog}/pricebooks/{pricebook}:
+    get:
+      description: >
+        Use this resource to export a specific price book. The export can be
+        requested in CSV or SQLite format.
+
+        The export contains the following fields:
+
+
+        | product_id (string) | price (float32) | currency_code (string) |
+
+        |---|---|---|
+
+        |  prod1 | 16.99  |  USD |
+
+
+        Export API are not immediately scheduling new export.
+
+        Exports are automatically scheduled daily. Usually at 8:00 UTC. They are
+        usually finished before 9:00 UTC.
+
+        API can be used to retrieve max 1 day old snapshot of pricing data.
+
+
+        Response header `Last-Modified` can be used to determine when file was
+        updated last time (example value `Mon, 18 Dec 2023 08:00:21 GMT`).
+
+        Response header `ETag` can be used to determine whether version you
+        already downloaded before match current one. (example value
+        `"2ad5ba4e24fe1c0d225e9a94049f142d"`)
+
+        Please use it with combination with `If-None-Match` request header to
+        download file only when something changed.
+      security:
+        - oauth:
+            - catalog:pricebook-export:read
+      operationId: showPricebookExport
+      tags:
+        - Pricebook export
+      parameters:
+        - in: path
+          name: catalog
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The catalog the pricebook, the user wants to export, belongs to.
+        - in: path
+          name: pricebook
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The pricebook the user wants to export.
+        - in: query
+          name: format
+          description: The desired response format, defaults to 'csv'.
+          schema:
+            type: string
+            enum:
+              - csv
+              - sqlite
+            default: csv
+      responses:
+        '302':
+          description: Temporary redirect to actual export file, stored in S3.
+          headers:
+            Location:
+              required: true
+              description: >-
+                The S3 presigned URL to redirect to, to access the requested
+                priceook export.
+              schema:
+                type: string
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden, authentication scope did not met requirements
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          headers:
+            Retry-After:
+              required: true
+              description: The time in seconds after the request can be retried.
+              schema:
+                type: string
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - messages
+        - error_code
+        - request_id
+      properties:
+        request_id:
+          type: string
+        messages:
+          type: array
+          items:
+            type: string
+            example: export not found
+        error_code:
+          type: string
+      example:
+        request_id: request1234
+        messages:
+          - 'format parameter should be one of: csv, sqlite'
+        error_code: '400'
+  securitySchemes:
+    oauth:
+      flows:
+        clientCredentials:
+          scopes:
+            catalog:pricebook-export:read: Grants privileges to export pricebook data
+          tokenUrl: >-
+            https://id.{stage}.newstore.net/auth/realms/{tenant}/protocol/openid-connect/token
+      type: oauth2

@@ -1,0 +1,172 @@
+openapi: 3.0.0
+info:
+  title: External Availability Webhook
+  version: 0.1.0
+  x-audience: external-public
+  x-api-id: external-availability-webhook-062023
+  description: >
+    Requests availability information from an external system.
+
+
+    A typical use case for this webhook is when NewStore is being used as Tier 2
+    OMS and doesn't maintain ATP.
+
+
+    **Note:** When the request can't be processed, either by the server
+    implementing this webhook or the external system,
+
+    the platform will assume none of the items are available.
+
+
+    **Important:** As of now only product identifiers are supported as external
+    identifiers in the platform.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://example.com/newstore_api/v0
+paths:
+  /availabilities:
+    post:
+      summary: Request availabilities
+      operationId: createAvailabilities
+      requestBody:
+        content:
+          application/json:
+            example:
+              products:
+                - product_id: '1000061'
+                  external_identifier: '1000061'
+                - product_id: '10000211'
+                  external_identifier: '10000211'
+              fulfillment_locations:
+                - US01
+                - US02
+                - DC01
+            schema:
+              title: Request body for getting availabilities from an external system.
+              type: object
+              required:
+                - products
+                - fulfillment_locations
+              properties:
+                products:
+                  type: array
+                  minLength: 1
+                  description: >-
+                    List of all availabilities per product and fulfillment
+                    location
+                  items:
+                    type: object
+                    required:
+                      - product_id
+                      - external_identifier
+                    properties:
+                      product_id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the product.
+                      external_identifier:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier used in the external system to match a
+                          product.
+                fulfillment_locations:
+                  type: array
+                  minLength: 1
+                  description: >-
+                    The list of fulfillment locations we want to request
+                    availabilities from.
+                  items:
+                    type: string
+                    minLength: 1
+        required: true
+      responses:
+        '200':
+          description: The list of availabilities provided by the external system.
+          content:
+            application/json:
+              example:
+                availabilities:
+                  - product_id: '1000061'
+                    external_identifier: '1000061'
+                    fulfillment_location: US01
+                    atp: 10
+                  - product_id: '1000061'
+                    external_identifier: '1000061'
+                    fulfillment_location: US02
+                    atp: 0
+                  - product_id: '10000211'
+                    external_identifier: '10000211'
+                    fulfillment_location: US01
+                    atp: 10
+                  - product_id: '10000211'
+                    external_identifier: '10000211'
+                    fulfillment_location: US02
+                    atp: 0
+              schema:
+                title: >-
+                  Response body for getting availabilities from an external
+                  system.
+                type: object
+                required:
+                  - availabilities
+                properties:
+                  availabilities:
+                    type: array
+                    description: >-
+                      List of all availabilities per product and fulfillment
+                      location
+                    items:
+                      type: object
+                      required:
+                        - product_id
+                        - external_identifier
+                        - fulfillment_location
+                        - atp
+                      properties:
+                        product_id:
+                          type: string
+                          minLength: 1
+                          description: The identifier of the product.
+                        external_identifier:
+                          type: string
+                          minLength: 1
+                          description: >-
+                            The identifier used in the external system to match
+                            a product.
+                        fulfillment_location:
+                          type: string
+                          minLength: 1
+                          description: The location where the items are available.
+                        atp:
+                          type: integer
+                          description: >-
+                            The available to promise number. If it is negative
+                            NewStore will treat it as 0.
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/problem+json:
+              schema:
+                title: Error returned from the adapter.
+                type: object
+                required:
+                  - data
+                  - message
+                properties:
+                  message:
+                    description: The error reason.
+                    type: string
+                  data:
+                    description: Object containing the error information.
+                    type: object
+        '500':
+          description: Something went wrong on the server when requesting availabilities.
+        default:
+          description: Unexpected Error
+      description: >-
+        Requests availability information for a given list of products for a
+        list of fulfillment locations.
+components: {}

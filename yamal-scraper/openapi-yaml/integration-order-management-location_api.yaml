@@ -1,0 +1,4023 @@
+openapi: 3.0.0
+info:
+  title: Location API
+  version: v0
+  description: >
+    This API represents a physical location in NewStore, such as a DC or a
+    store, that you can operate from.
+
+
+    **Important:** Do not confuse this resource with the [Stock
+    locations](https://docs.newstore.com/docs/stock-locations)
+
+    resource, which represents [virtual or physical stock
+    locations](https://docs.newstore.com/docs/glossary#stock-location).
+
+    Use this resource to manage inventory or calculate stock on hand in your
+    store, when NewStore
+
+    is enabled as [inventory
+    master](https://docs.newstore.com/docs/glossary#inventory-master) for the
+    store.
+
+
+    Locations are created during a [stock
+    import](/newstore-cloud/catalog/import-api.html#operation/stock)
+
+    using the `fulfillment_node_id` property. For a guide on creating locations
+    (such as stores),
+
+    see this [tutorial](/docs/development/tutorials/create-store.html).
+
+
+
+
+    **Important:**  Location type(DC or Store), location ID, or location
+    store_id can't be updated after location creation. 
+
+    So, please ensure that the locations you are creating have the correct data.
+
+
+    **Note:** When you create a location for your business, the main [stock
+    location](/newstore-cloud/inventory/stock_locations.html)
+
+    is created for the location by default.
+
+
+    When working with a store in your business, you can use this resource to
+    enable NewStore as
+
+    the inventory master for the store, instead of an ERP. To understand the
+    difference between
+
+    an ERP and NewStore as inventory master, see [Choosing your inventory
+    master](https://docs.newstore.com/docs/choosing-your-inventory-master).
+
+
+    You can also choose to stop a location from [fulfilling
+    orders](https://docs.newstore.com/docs/about-order-fulfillment) using this
+    resource. See
+
+    [Disabling locations](#operation/disable-location).
+
+
+    **Note:** Only stores can use NewStore as inventory master, not DCs.
+servers:
+  - url: https://dodici.x.newstore.net/v0
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /locations:
+    get:
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example:
+                locations:
+                  - id: US01
+                    is_inventory_master: false
+                    is_enabled: false
+                    type: store
+                  - id: US02
+                    is_inventory_master: true
+                    is_enabled: true
+                    type: store
+                  - id: DC01
+                    is_inventory_master: false
+                    is_enabled: true
+                    type: dc
+              schema:
+                description: The list of all configured locations.
+                type: object
+                oneOf:
+                  - required:
+                      - locations
+                    properties:
+                      locations:
+                        type: array
+                        description: The list of all configured locations.
+                        items:
+                          description: The location.
+                          type: object
+                          required:
+                            - id
+                            - is_inventory_master
+                            - type
+                            - store_id
+                          properties:
+                            id:
+                              type: string
+                              minLength: 1
+                              description: The identifier of the fulfillment location.
+                            is_inventory_master:
+                              type: boolean
+                              description: >-
+                                Specifies if the fulfillment location is the
+                                inventory master.
+                            is_enabled:
+                              type: boolean
+                              description: >-
+                                Specifies if the location is enabled/disabled
+                                for fulfillment.
+                            store_id:
+                              oneOf:
+                                - type: string
+                                - type: 'null'
+                              description: >-
+                                Store ID of this location, if location is a
+                                store
+                            type:
+                              type: string
+                              enum:
+                                - dc
+                                - store
+                              description: >-
+                                The type of the location, can be either `store`
+                                or `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: >-
+                  Couldn't retrieve the list of locations due to an internal
+                  error.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The list of all configured locations.
+                type: object
+                oneOf:
+                  - required:
+                      - locations
+                    properties:
+                      locations:
+                        type: array
+                        description: The list of all configured locations.
+                        items:
+                          description: The location.
+                          type: object
+                          required:
+                            - id
+                            - is_inventory_master
+                            - type
+                            - store_id
+                          properties:
+                            id:
+                              type: string
+                              minLength: 1
+                              description: The identifier of the fulfillment location.
+                            is_inventory_master:
+                              type: boolean
+                              description: >-
+                                Specifies if the fulfillment location is the
+                                inventory master.
+                            is_enabled:
+                              type: boolean
+                              description: >-
+                                Specifies if the location is enabled/disabled
+                                for fulfillment.
+                            store_id:
+                              oneOf:
+                                - type: string
+                                - type: 'null'
+                              description: >-
+                                Store ID of this location, if location is a
+                                store
+                            type:
+                              type: string
+                              enum:
+                                - dc
+                                - store
+                              description: >-
+                                The type of the location, can be either `store`
+                                or `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+      description: >
+        Retrieves a list of locations configured for your business. The maximum
+        number of locations returned by this method is 2000.
+      summary: List locations
+      operationId: list-locations
+  /locations/{id}/inventory_master/_enable:
+    post:
+      responses:
+        '200':
+          description: >
+            Successfully enabled or the specified location was already inventory
+            master.
+          content:
+            application/json:
+              example:
+                id: US01
+                is_inventory_master: true
+                is_enabled: true
+                type: store
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '404':
+          description: |
+            The location with the specified ID was not found.
+          content:
+            application/json:
+              example:
+                error_code: location_not_found
+                message: Location 'US01' couldn't be found.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '405':
+          description: >
+            The location does not support being inventory master. Ensure that
+            the location is a store.
+          content:
+            application/json:
+              example:
+                error_code: location_cannot_be_inventory_master
+                message: Location 'DC01' is a DC, which can't be inventory master.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '409':
+          description: >
+            The location couldn't be updated because of a concurrent update of
+            the resource.
+          content:
+            application/json:
+              example:
+                error_code: location_not_updated
+                message: >-
+                  Location 'DC01' couldn't be updated due to a concurrent update
+                  of the resource. Please try again.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: >-
+                  Couldn't enable location as inventory master due to an
+                  internal error.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+      description: >
+        Enables the specified location as [inventory
+        master](https://docs.newstore.com/docs/glossary#inventory-master).
+
+
+        When you enable a location as inventory master, NewStore is the
+        inventory master in the store. NewStore manages
+
+        all inventory-related operations and data for the store, instead of an
+        ERP. This includes calculating stock on
+
+        hand for the store using [stock
+        locations](/newstore-cloud/inventory/stock_locations.html).
+
+
+        **Important**: NewStore does not support reverting to an ERP after you
+        have enabled NewStore
+
+        as inventory master in the store. Ensure that you want to use NewStore
+        as inventory master
+
+        before you switch from an ERP.
+
+
+        **Related methods:**
+
+        - [Export stock on hand for
+        store](/newstore-cloud/inventory/stock_locations.html#operation/startStockOnHandExport)
+
+        - [Get stock on
+        hand](/newstore-cloud/inventory/stock_locations.html#operation/listStockLocations)
+      summary: Enable location as inventory master
+      operationId: enable-location-as-inventory-master
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The unique identifier of the location. The location ID is the same
+          value that is provided for the
+
+          `fulfillment_node_id` property during the [stock
+          import](/newstore-cloud/catalog/import-api.html#operation/stock).
+
+
+          If the location ID contains special characters like spaces, encode the
+          ID before using it.
+
+
+          For example, encode the location ID `US 01` as `US%2001`.
+  /locations/{id}/_enable:
+    post:
+      responses:
+        '200':
+          description: |
+            Successfully enabled or the specified location was already enabled.
+          content:
+            application/json:
+              example:
+                id: US01
+                is_inventory_master: true
+                is_enabled: true
+                type: store
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '404':
+          description: |
+            The location with the specified ID was not found.
+          content:
+            application/json:
+              example:
+                error_code: location_not_found
+                message: Location 'US01' couldn't be found.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '409':
+          description: >
+            The location couldn't be updated because of a concurrent update of
+            the resource.
+          content:
+            application/json:
+              example:
+                error_code: location_not_updated
+                message: >-
+                  Location 'DC01' couldn't be updated due to a concurrent update
+                  of the resource. Please try again.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't enable/disable location due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+      description: |
+        Enables a specific location to start fulfilling orders.
+
+        When a location is enabled:
+          - Orders are routed to the location for fulfillment.
+          - ATP for products at the location are calculated again and displayed in [NOM](https://docs.newstore.com/v1/docs/en/about-order-fulfillment-1#rerouted-requests)
+            and for [availability exports](/newstore-cloud/newstore.html#availabilities).
+
+        **Note:** To stop a location from fulfilling orders, use the
+        [Disable location](#operation/disable-location) method.
+      summary: Enable location
+      operationId: enable-location
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The unique identifier of the location. The location ID is the same
+          value that is provided for the
+
+          `fulfillment_node_id` property during the [stock
+          import](/newstore-cloud/catalog/import-api.html#operation/stock).
+
+
+          If the location ID contains special characters like spaces, encode the
+          ID before using it.
+
+
+          For example, encode the location ID `US 01` as `US%2001`.
+  /locations/{id}/_disable:
+    post:
+      responses:
+        '200':
+          description: >
+            Successfully disabled or the specified location was already
+            disabled.
+          content:
+            application/json:
+              example:
+                id: US01
+                is_inventory_master: true
+                is_enabled: false
+                type: store
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '404':
+          description: |
+            The location with the specified ID was not found.
+          content:
+            application/json:
+              example:
+                error_code: location_not_found
+                message: Location 'US01' couldn't be found.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '409':
+          description: >
+            The location couldn't be updated because of a concurrent update of
+            the resource.
+          content:
+            application/json:
+              example:
+                error_code: location_not_updated
+                message: >-
+                  Location 'DC01' couldn't be updated due to a concurrent update
+                  of the resource. Please try again.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't enable/disable location due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The updated location.
+                oneOf:
+                  - description: The location.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+      description: >
+        Disables a specific location from fulfilling orders.
+
+
+        When a location is disabled:
+          - Orders are not routed to the location for fulfillment.
+          - ATP for products at this location is set to ``0`` in [NOM](https://docs.newstore.com/v1/docs/en/about-order-fulfillment-1#rerouted-requests)
+            and for [availability exports](/newstore-cloud/newstore.html#availabilities).
+            However, the values calculated for
+            stock on hand, allocations, reservations, and safety stock quantities for products at
+            the location stay unchanged.
+
+            **Important:** The change in ATP for products in the location that was disabled may
+            take some time to be displayed in NOM and the availability export data.
+
+        **Note:** Orders routed to the location before it was disabled are
+        fulfilled via
+
+        the usual process. Use [NewStore Fulfillment
+        App](https://docs.newstore.com/v1/docs/en/about-order-fulfillment-1#rerouted-requests)
+
+        to reject these orders if needed.
+      summary: Disable location
+      operationId: disable-location
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The unique identifier of the location. The location ID is the same
+          value that is provided for the
+
+          `fulfillment_node_id` property during the [stock
+          import](/newstore-cloud/catalog/import-api.html#operation/stock).
+
+
+          If the location ID contains special characters like spaces, encode the
+          ID before using it.
+
+
+          For example, encode the location ID `US 01` as `US%2001`.\
+  /locations/{id}:
+    get:
+      responses:
+        '200':
+          description: >
+            Successful response. Any missing or empty fields in a DC
+            configuration will be omitted in the response.
+          content:
+            application/json:
+              examples:
+                get_dc_location:
+                  summary: Successfully returned DC location
+                  value:
+                    id: DC01
+                    is_inventory_master: false
+                    is_enabled: true
+                    type: dc
+                    address:
+                      address_line_1: 60 Middle St
+                      address_line_2: Suite 10
+                      city: Boston
+                      country_code: US
+                      phone: 502 921 0565
+                      state: MA
+                      zip_code: '02111'
+                      first_name: Boston Warehouse
+                get_store_location:
+                  summary: Successfully returned store location
+                  value:
+                    id: US01
+                    is_inventory_master: false
+                    is_enabled: true
+                    type: store
+              schema:
+                description: The requested location.
+                oneOf:
+                  - description: >-
+                      The location object. For now we only maintain addresses
+                      for locations of type 'dc'.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - is_enabled
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                      address:
+                        description: The address of the location.
+                        type: object
+                        required:
+                          - address_line_1
+                          - city
+                          - country_code
+                        properties:
+                          address_line_1:
+                            type: string
+                            minLength: 1
+                            description: First line of DC address.
+                          address_line_2:
+                            type: string
+                            minLength: 1
+                            description: Second line of DC address.
+                          city:
+                            type: string
+                            minLength: 1
+                            description: City of DC address.
+                          state:
+                            type: string
+                            minLength: 1
+                            description: State of DC address.
+                          country_code:
+                            type: string
+                            minLength: 1
+                            enum:
+                              - AD
+                              - AE
+                              - AF
+                              - AG
+                              - AI
+                              - AL
+                              - AM
+                              - AO
+                              - AQ
+                              - AR
+                              - AS
+                              - AT
+                              - AU
+                              - AW
+                              - AX
+                              - AZ
+                              - BA
+                              - BB
+                              - BD
+                              - BE
+                              - BF
+                              - BG
+                              - BH
+                              - BI
+                              - BJ
+                              - BL
+                              - BM
+                              - BN
+                              - BO
+                              - BQ
+                              - BR
+                              - BS
+                              - BT
+                              - BV
+                              - BW
+                              - BY
+                              - BZ
+                              - CA
+                              - CC
+                              - CD
+                              - CF
+                              - CG
+                              - CH
+                              - CI
+                              - CK
+                              - CL
+                              - CM
+                              - CN
+                              - CO
+                              - CR
+                              - CU
+                              - CV
+                              - CW
+                              - CX
+                              - CY
+                              - CZ
+                              - DE
+                              - DJ
+                              - DK
+                              - DM
+                              - DO
+                              - DZ
+                              - EC
+                              - EE
+                              - EG
+                              - EH
+                              - ER
+                              - ES
+                              - ET
+                              - FI
+                              - FJ
+                              - FK
+                              - FM
+                              - FO
+                              - FR
+                              - GA
+                              - GB
+                              - GD
+                              - GE
+                              - GF
+                              - GG
+                              - GH
+                              - GI
+                              - GL
+                              - GM
+                              - GN
+                              - GP
+                              - GQ
+                              - GR
+                              - GS
+                              - GT
+                              - GU
+                              - GW
+                              - GY
+                              - HK
+                              - HM
+                              - HN
+                              - HR
+                              - HT
+                              - HU
+                              - ID
+                              - IE
+                              - IL
+                              - IM
+                              - IN
+                              - IO
+                              - IQ
+                              - IR
+                              - IS
+                              - IT
+                              - JE
+                              - JM
+                              - JO
+                              - JP
+                              - KE
+                              - KG
+                              - KH
+                              - KI
+                              - KM
+                              - KN
+                              - KP
+                              - KR
+                              - KW
+                              - KY
+                              - KZ
+                              - LA
+                              - LB
+                              - LC
+                              - LI
+                              - LK
+                              - LR
+                              - LS
+                              - LT
+                              - LU
+                              - LV
+                              - LY
+                              - MA
+                              - MC
+                              - MD
+                              - ME
+                              - MF
+                              - MG
+                              - MH
+                              - MK
+                              - ML
+                              - MM
+                              - MN
+                              - MO
+                              - MP
+                              - MQ
+                              - MR
+                              - MS
+                              - MT
+                              - MU
+                              - MV
+                              - MW
+                              - MX
+                              - MY
+                              - MZ
+                              - NA
+                              - NC
+                              - NE
+                              - NF
+                              - NG
+                              - NI
+                              - NL
+                              - 'NO'
+                              - NP
+                              - NR
+                              - NU
+                              - NZ
+                              - OM
+                              - PA
+                              - PE
+                              - PF
+                              - PG
+                              - PH
+                              - PK
+                              - PL
+                              - PM
+                              - PN
+                              - PR
+                              - PS
+                              - PT
+                              - PW
+                              - PY
+                              - QA
+                              - RE
+                              - RO
+                              - RS
+                              - RU
+                              - RW
+                              - SA
+                              - SB
+                              - SC
+                              - SD
+                              - SE
+                              - SG
+                              - SH
+                              - SI
+                              - SJ
+                              - SK
+                              - SL
+                              - SM
+                              - SN
+                              - SO
+                              - SR
+                              - SS
+                              - ST
+                              - SV
+                              - SX
+                              - SY
+                              - SZ
+                              - TC
+                              - TD
+                              - TF
+                              - TG
+                              - TH
+                              - TJ
+                              - TK
+                              - TL
+                              - TM
+                              - TN
+                              - TO
+                              - TR
+                              - TT
+                              - TV
+                              - TW
+                              - TZ
+                              - UA
+                              - UG
+                              - UM
+                              - US
+                              - UY
+                              - UZ
+                              - VA
+                              - VC
+                              - VE
+                              - VG
+                              - VI
+                              - VN
+                              - VU
+                              - WF
+                              - WS
+                              - YE
+                              - YT
+                              - ZA
+                              - ZM
+                              - ZW
+                            description: Country code in 3166-1 alpha-2 format.
+                          zip_code:
+                            type: string
+                            minLength: 1
+                            description: Zip code of DC address.
+                          phone:
+                            type: string
+                            minLength: 1
+                            description: Phone number of DC.
+                          first_name:
+                            type: string
+                            minLength: 1
+                            description: The fist name of the recipient.
+                          last_name:
+                            type: string
+                            minLength: 1
+                            description: The last name of the recipient.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '404':
+          description: The location with the specified ID was not found.
+          content:
+            application/json:
+              example:
+                error_code: location_not_found
+                message: Location 'US01' couldn't be found.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The requested location.
+                oneOf:
+                  - description: >-
+                      The location object. For now we only maintain addresses
+                      for locations of type 'dc'.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - is_enabled
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                      address:
+                        description: The address of the location.
+                        type: object
+                        required:
+                          - address_line_1
+                          - city
+                          - country_code
+                        properties:
+                          address_line_1:
+                            type: string
+                            minLength: 1
+                            description: First line of DC address.
+                          address_line_2:
+                            type: string
+                            minLength: 1
+                            description: Second line of DC address.
+                          city:
+                            type: string
+                            minLength: 1
+                            description: City of DC address.
+                          state:
+                            type: string
+                            minLength: 1
+                            description: State of DC address.
+                          country_code:
+                            type: string
+                            minLength: 1
+                            enum:
+                              - AD
+                              - AE
+                              - AF
+                              - AG
+                              - AI
+                              - AL
+                              - AM
+                              - AO
+                              - AQ
+                              - AR
+                              - AS
+                              - AT
+                              - AU
+                              - AW
+                              - AX
+                              - AZ
+                              - BA
+                              - BB
+                              - BD
+                              - BE
+                              - BF
+                              - BG
+                              - BH
+                              - BI
+                              - BJ
+                              - BL
+                              - BM
+                              - BN
+                              - BO
+                              - BQ
+                              - BR
+                              - BS
+                              - BT
+                              - BV
+                              - BW
+                              - BY
+                              - BZ
+                              - CA
+                              - CC
+                              - CD
+                              - CF
+                              - CG
+                              - CH
+                              - CI
+                              - CK
+                              - CL
+                              - CM
+                              - CN
+                              - CO
+                              - CR
+                              - CU
+                              - CV
+                              - CW
+                              - CX
+                              - CY
+                              - CZ
+                              - DE
+                              - DJ
+                              - DK
+                              - DM
+                              - DO
+                              - DZ
+                              - EC
+                              - EE
+                              - EG
+                              - EH
+                              - ER
+                              - ES
+                              - ET
+                              - FI
+                              - FJ
+                              - FK
+                              - FM
+                              - FO
+                              - FR
+                              - GA
+                              - GB
+                              - GD
+                              - GE
+                              - GF
+                              - GG
+                              - GH
+                              - GI
+                              - GL
+                              - GM
+                              - GN
+                              - GP
+                              - GQ
+                              - GR
+                              - GS
+                              - GT
+                              - GU
+                              - GW
+                              - GY
+                              - HK
+                              - HM
+                              - HN
+                              - HR
+                              - HT
+                              - HU
+                              - ID
+                              - IE
+                              - IL
+                              - IM
+                              - IN
+                              - IO
+                              - IQ
+                              - IR
+                              - IS
+                              - IT
+                              - JE
+                              - JM
+                              - JO
+                              - JP
+                              - KE
+                              - KG
+                              - KH
+                              - KI
+                              - KM
+                              - KN
+                              - KP
+                              - KR
+                              - KW
+                              - KY
+                              - KZ
+                              - LA
+                              - LB
+                              - LC
+                              - LI
+                              - LK
+                              - LR
+                              - LS
+                              - LT
+                              - LU
+                              - LV
+                              - LY
+                              - MA
+                              - MC
+                              - MD
+                              - ME
+                              - MF
+                              - MG
+                              - MH
+                              - MK
+                              - ML
+                              - MM
+                              - MN
+                              - MO
+                              - MP
+                              - MQ
+                              - MR
+                              - MS
+                              - MT
+                              - MU
+                              - MV
+                              - MW
+                              - MX
+                              - MY
+                              - MZ
+                              - NA
+                              - NC
+                              - NE
+                              - NF
+                              - NG
+                              - NI
+                              - NL
+                              - 'NO'
+                              - NP
+                              - NR
+                              - NU
+                              - NZ
+                              - OM
+                              - PA
+                              - PE
+                              - PF
+                              - PG
+                              - PH
+                              - PK
+                              - PL
+                              - PM
+                              - PN
+                              - PR
+                              - PS
+                              - PT
+                              - PW
+                              - PY
+                              - QA
+                              - RE
+                              - RO
+                              - RS
+                              - RU
+                              - RW
+                              - SA
+                              - SB
+                              - SC
+                              - SD
+                              - SE
+                              - SG
+                              - SH
+                              - SI
+                              - SJ
+                              - SK
+                              - SL
+                              - SM
+                              - SN
+                              - SO
+                              - SR
+                              - SS
+                              - ST
+                              - SV
+                              - SX
+                              - SY
+                              - SZ
+                              - TC
+                              - TD
+                              - TF
+                              - TG
+                              - TH
+                              - TJ
+                              - TK
+                              - TL
+                              - TM
+                              - TN
+                              - TO
+                              - TR
+                              - TT
+                              - TV
+                              - TW
+                              - TZ
+                              - UA
+                              - UG
+                              - UM
+                              - US
+                              - UY
+                              - UZ
+                              - VA
+                              - VC
+                              - VE
+                              - VG
+                              - VI
+                              - VN
+                              - VU
+                              - WF
+                              - WS
+                              - YE
+                              - YT
+                              - ZA
+                              - ZM
+                              - ZW
+                            description: Country code in 3166-1 alpha-2 format.
+                          zip_code:
+                            type: string
+                            minLength: 1
+                            description: Zip code of DC address.
+                          phone:
+                            type: string
+                            minLength: 1
+                            description: Phone number of DC.
+                          first_name:
+                            type: string
+                            minLength: 1
+                            description: The fist name of the recipient.
+                          last_name:
+                            type: string
+                            minLength: 1
+                            description: The last name of the recipient.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't retrieve location 'DC01' due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The requested location.
+                oneOf:
+                  - description: >-
+                      The location object. For now we only maintain addresses
+                      for locations of type 'dc'.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - is_enabled
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                      address:
+                        description: The address of the location.
+                        type: object
+                        required:
+                          - address_line_1
+                          - city
+                          - country_code
+                        properties:
+                          address_line_1:
+                            type: string
+                            minLength: 1
+                            description: First line of DC address.
+                          address_line_2:
+                            type: string
+                            minLength: 1
+                            description: Second line of DC address.
+                          city:
+                            type: string
+                            minLength: 1
+                            description: City of DC address.
+                          state:
+                            type: string
+                            minLength: 1
+                            description: State of DC address.
+                          country_code:
+                            type: string
+                            minLength: 1
+                            enum:
+                              - AD
+                              - AE
+                              - AF
+                              - AG
+                              - AI
+                              - AL
+                              - AM
+                              - AO
+                              - AQ
+                              - AR
+                              - AS
+                              - AT
+                              - AU
+                              - AW
+                              - AX
+                              - AZ
+                              - BA
+                              - BB
+                              - BD
+                              - BE
+                              - BF
+                              - BG
+                              - BH
+                              - BI
+                              - BJ
+                              - BL
+                              - BM
+                              - BN
+                              - BO
+                              - BQ
+                              - BR
+                              - BS
+                              - BT
+                              - BV
+                              - BW
+                              - BY
+                              - BZ
+                              - CA
+                              - CC
+                              - CD
+                              - CF
+                              - CG
+                              - CH
+                              - CI
+                              - CK
+                              - CL
+                              - CM
+                              - CN
+                              - CO
+                              - CR
+                              - CU
+                              - CV
+                              - CW
+                              - CX
+                              - CY
+                              - CZ
+                              - DE
+                              - DJ
+                              - DK
+                              - DM
+                              - DO
+                              - DZ
+                              - EC
+                              - EE
+                              - EG
+                              - EH
+                              - ER
+                              - ES
+                              - ET
+                              - FI
+                              - FJ
+                              - FK
+                              - FM
+                              - FO
+                              - FR
+                              - GA
+                              - GB
+                              - GD
+                              - GE
+                              - GF
+                              - GG
+                              - GH
+                              - GI
+                              - GL
+                              - GM
+                              - GN
+                              - GP
+                              - GQ
+                              - GR
+                              - GS
+                              - GT
+                              - GU
+                              - GW
+                              - GY
+                              - HK
+                              - HM
+                              - HN
+                              - HR
+                              - HT
+                              - HU
+                              - ID
+                              - IE
+                              - IL
+                              - IM
+                              - IN
+                              - IO
+                              - IQ
+                              - IR
+                              - IS
+                              - IT
+                              - JE
+                              - JM
+                              - JO
+                              - JP
+                              - KE
+                              - KG
+                              - KH
+                              - KI
+                              - KM
+                              - KN
+                              - KP
+                              - KR
+                              - KW
+                              - KY
+                              - KZ
+                              - LA
+                              - LB
+                              - LC
+                              - LI
+                              - LK
+                              - LR
+                              - LS
+                              - LT
+                              - LU
+                              - LV
+                              - LY
+                              - MA
+                              - MC
+                              - MD
+                              - ME
+                              - MF
+                              - MG
+                              - MH
+                              - MK
+                              - ML
+                              - MM
+                              - MN
+                              - MO
+                              - MP
+                              - MQ
+                              - MR
+                              - MS
+                              - MT
+                              - MU
+                              - MV
+                              - MW
+                              - MX
+                              - MY
+                              - MZ
+                              - NA
+                              - NC
+                              - NE
+                              - NF
+                              - NG
+                              - NI
+                              - NL
+                              - 'NO'
+                              - NP
+                              - NR
+                              - NU
+                              - NZ
+                              - OM
+                              - PA
+                              - PE
+                              - PF
+                              - PG
+                              - PH
+                              - PK
+                              - PL
+                              - PM
+                              - PN
+                              - PR
+                              - PS
+                              - PT
+                              - PW
+                              - PY
+                              - QA
+                              - RE
+                              - RO
+                              - RS
+                              - RU
+                              - RW
+                              - SA
+                              - SB
+                              - SC
+                              - SD
+                              - SE
+                              - SG
+                              - SH
+                              - SI
+                              - SJ
+                              - SK
+                              - SL
+                              - SM
+                              - SN
+                              - SO
+                              - SR
+                              - SS
+                              - ST
+                              - SV
+                              - SX
+                              - SY
+                              - SZ
+                              - TC
+                              - TD
+                              - TF
+                              - TG
+                              - TH
+                              - TJ
+                              - TK
+                              - TL
+                              - TM
+                              - TN
+                              - TO
+                              - TR
+                              - TT
+                              - TV
+                              - TW
+                              - TZ
+                              - UA
+                              - UG
+                              - UM
+                              - US
+                              - UY
+                              - UZ
+                              - VA
+                              - VC
+                              - VE
+                              - VG
+                              - VI
+                              - VN
+                              - VU
+                              - WF
+                              - WS
+                              - YE
+                              - YT
+                              - ZA
+                              - ZM
+                              - ZW
+                            description: Country code in 3166-1 alpha-2 format.
+                          zip_code:
+                            type: string
+                            minLength: 1
+                            description: Zip code of DC address.
+                          phone:
+                            type: string
+                            minLength: 1
+                            description: Phone number of DC.
+                          first_name:
+                            type: string
+                            minLength: 1
+                            description: The fist name of the recipient.
+                          last_name:
+                            type: string
+                            minLength: 1
+                            description: The last name of the recipient.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+      description: |
+        Retrieves all information about a location.
+      summary: Retrieve location
+      operationId: retrieve-location
+    put:
+      responses:
+        '204':
+          description: Successfully updated the address of the location.
+        '400':
+          description: |
+            The provided data is malformed and the update can't be performed
+          content:
+            application/json:
+              example:
+                error_code: invalid_data
+                message: '''address_line_1'' is blank.'
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: There was an error updating the location.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '404':
+          description: |
+            The location with the specified ID was not found.
+          content:
+            application/json:
+              example:
+                error_code: location_not_found
+                message: Location 'US01' couldn't be found.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: There was an error updating the location.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '405':
+          description: >
+            The location does not support addresses. Ensure that the location is
+            a DC.
+          content:
+            application/json:
+              example:
+                error_code: location_does_not_support_update
+                message: Location 'US01' is a store, which can't be updated currently.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: There was an error updating the location.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '409':
+          description: >
+            The location couldn't be updated because of a concurrent update of
+            the resource.
+          content:
+            application/json:
+              example:
+                error_code: location_not_updated
+                message: >-
+                  Location 'DC01' couldn't be updated due to a concurrent update
+                  of the resource. Please try again.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: There was an error updating the location.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: >-
+                  Couldn't update the address of the location due to an internal
+                  error.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: There was an error updating the location.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+      description: >
+        Updates the information of an existing location. As of now only updates
+        to locations of type 'dc' are allowed.
+
+
+        If you want to create a new location, please use the availability import
+        first.
+      summary: Update DC location
+      operationId: update-dc-location
+      requestBody:
+        content:
+          application/json:
+            example:
+              address:
+                address_line_1: 60 Middle St
+                address_line_2: Suite 10
+                city: Boston
+                country_code: US
+                phone: 502 921 0565
+                state: MA
+                zip_code: '02111'
+                first_name: Boston Warehouse
+            schema:
+              description: Defines the request schema for updating a location.
+              type: object
+              required:
+                - address
+              properties:
+                address:
+                  description: The address of the location.
+                  type: object
+                  required:
+                    - address_line_1
+                    - city
+                    - country_code
+                  properties:
+                    address_line_1:
+                      type: string
+                      minLength: 1
+                      description: First line of DC address.
+                    address_line_2:
+                      type: string
+                      minLength: 1
+                      description: Second line of DC address.
+                    city:
+                      type: string
+                      minLength: 1
+                      description: City of DC address.
+                    state:
+                      type: string
+                      minLength: 1
+                      description: State of DC address.
+                    country_code:
+                      type: string
+                      minLength: 1
+                      enum:
+                        - AD
+                        - AE
+                        - AF
+                        - AG
+                        - AI
+                        - AL
+                        - AM
+                        - AO
+                        - AQ
+                        - AR
+                        - AS
+                        - AT
+                        - AU
+                        - AW
+                        - AX
+                        - AZ
+                        - BA
+                        - BB
+                        - BD
+                        - BE
+                        - BF
+                        - BG
+                        - BH
+                        - BI
+                        - BJ
+                        - BL
+                        - BM
+                        - BN
+                        - BO
+                        - BQ
+                        - BR
+                        - BS
+                        - BT
+                        - BV
+                        - BW
+                        - BY
+                        - BZ
+                        - CA
+                        - CC
+                        - CD
+                        - CF
+                        - CG
+                        - CH
+                        - CI
+                        - CK
+                        - CL
+                        - CM
+                        - CN
+                        - CO
+                        - CR
+                        - CU
+                        - CV
+                        - CW
+                        - CX
+                        - CY
+                        - CZ
+                        - DE
+                        - DJ
+                        - DK
+                        - DM
+                        - DO
+                        - DZ
+                        - EC
+                        - EE
+                        - EG
+                        - EH
+                        - ER
+                        - ES
+                        - ET
+                        - FI
+                        - FJ
+                        - FK
+                        - FM
+                        - FO
+                        - FR
+                        - GA
+                        - GB
+                        - GD
+                        - GE
+                        - GF
+                        - GG
+                        - GH
+                        - GI
+                        - GL
+                        - GM
+                        - GN
+                        - GP
+                        - GQ
+                        - GR
+                        - GS
+                        - GT
+                        - GU
+                        - GW
+                        - GY
+                        - HK
+                        - HM
+                        - HN
+                        - HR
+                        - HT
+                        - HU
+                        - ID
+                        - IE
+                        - IL
+                        - IM
+                        - IN
+                        - IO
+                        - IQ
+                        - IR
+                        - IS
+                        - IT
+                        - JE
+                        - JM
+                        - JO
+                        - JP
+                        - KE
+                        - KG
+                        - KH
+                        - KI
+                        - KM
+                        - KN
+                        - KP
+                        - KR
+                        - KW
+                        - KY
+                        - KZ
+                        - LA
+                        - LB
+                        - LC
+                        - LI
+                        - LK
+                        - LR
+                        - LS
+                        - LT
+                        - LU
+                        - LV
+                        - LY
+                        - MA
+                        - MC
+                        - MD
+                        - ME
+                        - MF
+                        - MG
+                        - MH
+                        - MK
+                        - ML
+                        - MM
+                        - MN
+                        - MO
+                        - MP
+                        - MQ
+                        - MR
+                        - MS
+                        - MT
+                        - MU
+                        - MV
+                        - MW
+                        - MX
+                        - MY
+                        - MZ
+                        - NA
+                        - NC
+                        - NE
+                        - NF
+                        - NG
+                        - NI
+                        - NL
+                        - 'NO'
+                        - NP
+                        - NR
+                        - NU
+                        - NZ
+                        - OM
+                        - PA
+                        - PE
+                        - PF
+                        - PG
+                        - PH
+                        - PK
+                        - PL
+                        - PM
+                        - PN
+                        - PR
+                        - PS
+                        - PT
+                        - PW
+                        - PY
+                        - QA
+                        - RE
+                        - RO
+                        - RS
+                        - RU
+                        - RW
+                        - SA
+                        - SB
+                        - SC
+                        - SD
+                        - SE
+                        - SG
+                        - SH
+                        - SI
+                        - SJ
+                        - SK
+                        - SL
+                        - SM
+                        - SN
+                        - SO
+                        - SR
+                        - SS
+                        - ST
+                        - SV
+                        - SX
+                        - SY
+                        - SZ
+                        - TC
+                        - TD
+                        - TF
+                        - TG
+                        - TH
+                        - TJ
+                        - TK
+                        - TL
+                        - TM
+                        - TN
+                        - TO
+                        - TR
+                        - TT
+                        - TV
+                        - TW
+                        - TZ
+                        - UA
+                        - UG
+                        - UM
+                        - US
+                        - UY
+                        - UZ
+                        - VA
+                        - VC
+                        - VE
+                        - VG
+                        - VI
+                        - VN
+                        - VU
+                        - WF
+                        - WS
+                        - YE
+                        - YT
+                        - ZA
+                        - ZM
+                        - ZW
+                      description: Country code in 3166-1 alpha-2 format.
+                    zip_code:
+                      type: string
+                      minLength: 1
+                      description: Zip code of DC address.
+                    phone:
+                      type: string
+                      minLength: 1
+                      description: Phone number of DC.
+                    first_name:
+                      type: string
+                      minLength: 1
+                      description: The fist name of the recipient.
+                    last_name:
+                      type: string
+                      minLength: 1
+                      description: The last name of the recipient.
+        required: true
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The unique identifier of the location. The location ID is the same
+          value that is provided for the
+
+          `fulfillment_node_id` property during the [stock
+          import](/newstore-cloud/catalog/import-api.html#operation/stock).
+
+
+          If the location ID contains special characters like spaces, encode the
+          ID before using it.
+
+
+          For example, encode the location ID `US 01` as `US%2001`.
+  /locations/store/{store_id}:
+    get:
+      responses:
+        '200':
+          description: >
+            Successful response. Any missing or empty fields will be ommitted in
+            the response.
+          content:
+            application/json:
+              example:
+                id: US01
+                is_inventory_master: false
+                is_enabled: true
+                type: store
+              schema:
+                description: The requested location.
+                oneOf:
+                  - description: >-
+                      The location object. For now we only maintain addresses
+                      for locations of type 'dc'.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - is_enabled
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                      address:
+                        description: The address of the location.
+                        type: object
+                        required:
+                          - address_line_1
+                          - city
+                          - country_code
+                        properties:
+                          address_line_1:
+                            type: string
+                            minLength: 1
+                            description: First line of DC address.
+                          address_line_2:
+                            type: string
+                            minLength: 1
+                            description: Second line of DC address.
+                          city:
+                            type: string
+                            minLength: 1
+                            description: City of DC address.
+                          state:
+                            type: string
+                            minLength: 1
+                            description: State of DC address.
+                          country_code:
+                            type: string
+                            minLength: 1
+                            enum:
+                              - AD
+                              - AE
+                              - AF
+                              - AG
+                              - AI
+                              - AL
+                              - AM
+                              - AO
+                              - AQ
+                              - AR
+                              - AS
+                              - AT
+                              - AU
+                              - AW
+                              - AX
+                              - AZ
+                              - BA
+                              - BB
+                              - BD
+                              - BE
+                              - BF
+                              - BG
+                              - BH
+                              - BI
+                              - BJ
+                              - BL
+                              - BM
+                              - BN
+                              - BO
+                              - BQ
+                              - BR
+                              - BS
+                              - BT
+                              - BV
+                              - BW
+                              - BY
+                              - BZ
+                              - CA
+                              - CC
+                              - CD
+                              - CF
+                              - CG
+                              - CH
+                              - CI
+                              - CK
+                              - CL
+                              - CM
+                              - CN
+                              - CO
+                              - CR
+                              - CU
+                              - CV
+                              - CW
+                              - CX
+                              - CY
+                              - CZ
+                              - DE
+                              - DJ
+                              - DK
+                              - DM
+                              - DO
+                              - DZ
+                              - EC
+                              - EE
+                              - EG
+                              - EH
+                              - ER
+                              - ES
+                              - ET
+                              - FI
+                              - FJ
+                              - FK
+                              - FM
+                              - FO
+                              - FR
+                              - GA
+                              - GB
+                              - GD
+                              - GE
+                              - GF
+                              - GG
+                              - GH
+                              - GI
+                              - GL
+                              - GM
+                              - GN
+                              - GP
+                              - GQ
+                              - GR
+                              - GS
+                              - GT
+                              - GU
+                              - GW
+                              - GY
+                              - HK
+                              - HM
+                              - HN
+                              - HR
+                              - HT
+                              - HU
+                              - ID
+                              - IE
+                              - IL
+                              - IM
+                              - IN
+                              - IO
+                              - IQ
+                              - IR
+                              - IS
+                              - IT
+                              - JE
+                              - JM
+                              - JO
+                              - JP
+                              - KE
+                              - KG
+                              - KH
+                              - KI
+                              - KM
+                              - KN
+                              - KP
+                              - KR
+                              - KW
+                              - KY
+                              - KZ
+                              - LA
+                              - LB
+                              - LC
+                              - LI
+                              - LK
+                              - LR
+                              - LS
+                              - LT
+                              - LU
+                              - LV
+                              - LY
+                              - MA
+                              - MC
+                              - MD
+                              - ME
+                              - MF
+                              - MG
+                              - MH
+                              - MK
+                              - ML
+                              - MM
+                              - MN
+                              - MO
+                              - MP
+                              - MQ
+                              - MR
+                              - MS
+                              - MT
+                              - MU
+                              - MV
+                              - MW
+                              - MX
+                              - MY
+                              - MZ
+                              - NA
+                              - NC
+                              - NE
+                              - NF
+                              - NG
+                              - NI
+                              - NL
+                              - 'NO'
+                              - NP
+                              - NR
+                              - NU
+                              - NZ
+                              - OM
+                              - PA
+                              - PE
+                              - PF
+                              - PG
+                              - PH
+                              - PK
+                              - PL
+                              - PM
+                              - PN
+                              - PR
+                              - PS
+                              - PT
+                              - PW
+                              - PY
+                              - QA
+                              - RE
+                              - RO
+                              - RS
+                              - RU
+                              - RW
+                              - SA
+                              - SB
+                              - SC
+                              - SD
+                              - SE
+                              - SG
+                              - SH
+                              - SI
+                              - SJ
+                              - SK
+                              - SL
+                              - SM
+                              - SN
+                              - SO
+                              - SR
+                              - SS
+                              - ST
+                              - SV
+                              - SX
+                              - SY
+                              - SZ
+                              - TC
+                              - TD
+                              - TF
+                              - TG
+                              - TH
+                              - TJ
+                              - TK
+                              - TL
+                              - TM
+                              - TN
+                              - TO
+                              - TR
+                              - TT
+                              - TV
+                              - TW
+                              - TZ
+                              - UA
+                              - UG
+                              - UM
+                              - US
+                              - UY
+                              - UZ
+                              - VA
+                              - VC
+                              - VE
+                              - VG
+                              - VI
+                              - VN
+                              - VU
+                              - WF
+                              - WS
+                              - YE
+                              - YT
+                              - ZA
+                              - ZM
+                              - ZW
+                            description: Country code in 3166-1 alpha-2 format.
+                          zip_code:
+                            type: string
+                            minLength: 1
+                            description: Zip code of DC address.
+                          phone:
+                            type: string
+                            minLength: 1
+                            description: Phone number of DC.
+                          first_name:
+                            type: string
+                            minLength: 1
+                            description: The fist name of the recipient.
+                          last_name:
+                            type: string
+                            minLength: 1
+                            description: The last name of the recipient.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '404':
+          description: The location with the specified STORE ID was not found.
+          content:
+            application/json:
+              example:
+                error_code: location_not_found
+                message: Location 'US01' couldn't be found.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The requested location.
+                oneOf:
+                  - description: >-
+                      The location object. For now we only maintain addresses
+                      for locations of type 'dc'.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - is_enabled
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                      address:
+                        description: The address of the location.
+                        type: object
+                        required:
+                          - address_line_1
+                          - city
+                          - country_code
+                        properties:
+                          address_line_1:
+                            type: string
+                            minLength: 1
+                            description: First line of DC address.
+                          address_line_2:
+                            type: string
+                            minLength: 1
+                            description: Second line of DC address.
+                          city:
+                            type: string
+                            minLength: 1
+                            description: City of DC address.
+                          state:
+                            type: string
+                            minLength: 1
+                            description: State of DC address.
+                          country_code:
+                            type: string
+                            minLength: 1
+                            enum:
+                              - AD
+                              - AE
+                              - AF
+                              - AG
+                              - AI
+                              - AL
+                              - AM
+                              - AO
+                              - AQ
+                              - AR
+                              - AS
+                              - AT
+                              - AU
+                              - AW
+                              - AX
+                              - AZ
+                              - BA
+                              - BB
+                              - BD
+                              - BE
+                              - BF
+                              - BG
+                              - BH
+                              - BI
+                              - BJ
+                              - BL
+                              - BM
+                              - BN
+                              - BO
+                              - BQ
+                              - BR
+                              - BS
+                              - BT
+                              - BV
+                              - BW
+                              - BY
+                              - BZ
+                              - CA
+                              - CC
+                              - CD
+                              - CF
+                              - CG
+                              - CH
+                              - CI
+                              - CK
+                              - CL
+                              - CM
+                              - CN
+                              - CO
+                              - CR
+                              - CU
+                              - CV
+                              - CW
+                              - CX
+                              - CY
+                              - CZ
+                              - DE
+                              - DJ
+                              - DK
+                              - DM
+                              - DO
+                              - DZ
+                              - EC
+                              - EE
+                              - EG
+                              - EH
+                              - ER
+                              - ES
+                              - ET
+                              - FI
+                              - FJ
+                              - FK
+                              - FM
+                              - FO
+                              - FR
+                              - GA
+                              - GB
+                              - GD
+                              - GE
+                              - GF
+                              - GG
+                              - GH
+                              - GI
+                              - GL
+                              - GM
+                              - GN
+                              - GP
+                              - GQ
+                              - GR
+                              - GS
+                              - GT
+                              - GU
+                              - GW
+                              - GY
+                              - HK
+                              - HM
+                              - HN
+                              - HR
+                              - HT
+                              - HU
+                              - ID
+                              - IE
+                              - IL
+                              - IM
+                              - IN
+                              - IO
+                              - IQ
+                              - IR
+                              - IS
+                              - IT
+                              - JE
+                              - JM
+                              - JO
+                              - JP
+                              - KE
+                              - KG
+                              - KH
+                              - KI
+                              - KM
+                              - KN
+                              - KP
+                              - KR
+                              - KW
+                              - KY
+                              - KZ
+                              - LA
+                              - LB
+                              - LC
+                              - LI
+                              - LK
+                              - LR
+                              - LS
+                              - LT
+                              - LU
+                              - LV
+                              - LY
+                              - MA
+                              - MC
+                              - MD
+                              - ME
+                              - MF
+                              - MG
+                              - MH
+                              - MK
+                              - ML
+                              - MM
+                              - MN
+                              - MO
+                              - MP
+                              - MQ
+                              - MR
+                              - MS
+                              - MT
+                              - MU
+                              - MV
+                              - MW
+                              - MX
+                              - MY
+                              - MZ
+                              - NA
+                              - NC
+                              - NE
+                              - NF
+                              - NG
+                              - NI
+                              - NL
+                              - 'NO'
+                              - NP
+                              - NR
+                              - NU
+                              - NZ
+                              - OM
+                              - PA
+                              - PE
+                              - PF
+                              - PG
+                              - PH
+                              - PK
+                              - PL
+                              - PM
+                              - PN
+                              - PR
+                              - PS
+                              - PT
+                              - PW
+                              - PY
+                              - QA
+                              - RE
+                              - RO
+                              - RS
+                              - RU
+                              - RW
+                              - SA
+                              - SB
+                              - SC
+                              - SD
+                              - SE
+                              - SG
+                              - SH
+                              - SI
+                              - SJ
+                              - SK
+                              - SL
+                              - SM
+                              - SN
+                              - SO
+                              - SR
+                              - SS
+                              - ST
+                              - SV
+                              - SX
+                              - SY
+                              - SZ
+                              - TC
+                              - TD
+                              - TF
+                              - TG
+                              - TH
+                              - TJ
+                              - TK
+                              - TL
+                              - TM
+                              - TN
+                              - TO
+                              - TR
+                              - TT
+                              - TV
+                              - TW
+                              - TZ
+                              - UA
+                              - UG
+                              - UM
+                              - US
+                              - UY
+                              - UZ
+                              - VA
+                              - VC
+                              - VE
+                              - VG
+                              - VI
+                              - VN
+                              - VU
+                              - WF
+                              - WS
+                              - YE
+                              - YT
+                              - ZA
+                              - ZM
+                              - ZW
+                            description: Country code in 3166-1 alpha-2 format.
+                          zip_code:
+                            type: string
+                            minLength: 1
+                            description: Zip code of DC address.
+                          phone:
+                            type: string
+                            minLength: 1
+                            description: Phone number of DC.
+                          first_name:
+                            type: string
+                            minLength: 1
+                            description: The fist name of the recipient.
+                          last_name:
+                            type: string
+                            minLength: 1
+                            description: The last name of the recipient.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't retrieve location 'DC01' due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The requested location.
+                oneOf:
+                  - description: >-
+                      The location object. For now we only maintain addresses
+                      for locations of type 'dc'.
+                    type: object
+                    required:
+                      - id
+                      - is_inventory_master
+                      - is_enabled
+                      - type
+                      - store_id
+                    properties:
+                      id:
+                        type: string
+                        minLength: 1
+                        description: The identifier of the fulfillment location.
+                      is_inventory_master:
+                        type: boolean
+                        description: >-
+                          Specifies if the fulfillment location is the inventory
+                          master.
+                      is_enabled:
+                        type: boolean
+                        description: >-
+                          Specifies if the location is enabled/disabled for
+                          fulfillment.
+                      store_id:
+                        oneOf:
+                          - type: string
+                          - type: 'null'
+                        description: Store ID of this location, if location is a store
+                      type:
+                        type: string
+                        enum:
+                          - dc
+                          - store
+                        description: >-
+                          The type of the location, can be either `store` or
+                          `dc`.
+                      address:
+                        description: The address of the location.
+                        type: object
+                        required:
+                          - address_line_1
+                          - city
+                          - country_code
+                        properties:
+                          address_line_1:
+                            type: string
+                            minLength: 1
+                            description: First line of DC address.
+                          address_line_2:
+                            type: string
+                            minLength: 1
+                            description: Second line of DC address.
+                          city:
+                            type: string
+                            minLength: 1
+                            description: City of DC address.
+                          state:
+                            type: string
+                            minLength: 1
+                            description: State of DC address.
+                          country_code:
+                            type: string
+                            minLength: 1
+                            enum:
+                              - AD
+                              - AE
+                              - AF
+                              - AG
+                              - AI
+                              - AL
+                              - AM
+                              - AO
+                              - AQ
+                              - AR
+                              - AS
+                              - AT
+                              - AU
+                              - AW
+                              - AX
+                              - AZ
+                              - BA
+                              - BB
+                              - BD
+                              - BE
+                              - BF
+                              - BG
+                              - BH
+                              - BI
+                              - BJ
+                              - BL
+                              - BM
+                              - BN
+                              - BO
+                              - BQ
+                              - BR
+                              - BS
+                              - BT
+                              - BV
+                              - BW
+                              - BY
+                              - BZ
+                              - CA
+                              - CC
+                              - CD
+                              - CF
+                              - CG
+                              - CH
+                              - CI
+                              - CK
+                              - CL
+                              - CM
+                              - CN
+                              - CO
+                              - CR
+                              - CU
+                              - CV
+                              - CW
+                              - CX
+                              - CY
+                              - CZ
+                              - DE
+                              - DJ
+                              - DK
+                              - DM
+                              - DO
+                              - DZ
+                              - EC
+                              - EE
+                              - EG
+                              - EH
+                              - ER
+                              - ES
+                              - ET
+                              - FI
+                              - FJ
+                              - FK
+                              - FM
+                              - FO
+                              - FR
+                              - GA
+                              - GB
+                              - GD
+                              - GE
+                              - GF
+                              - GG
+                              - GH
+                              - GI
+                              - GL
+                              - GM
+                              - GN
+                              - GP
+                              - GQ
+                              - GR
+                              - GS
+                              - GT
+                              - GU
+                              - GW
+                              - GY
+                              - HK
+                              - HM
+                              - HN
+                              - HR
+                              - HT
+                              - HU
+                              - ID
+                              - IE
+                              - IL
+                              - IM
+                              - IN
+                              - IO
+                              - IQ
+                              - IR
+                              - IS
+                              - IT
+                              - JE
+                              - JM
+                              - JO
+                              - JP
+                              - KE
+                              - KG
+                              - KH
+                              - KI
+                              - KM
+                              - KN
+                              - KP
+                              - KR
+                              - KW
+                              - KY
+                              - KZ
+                              - LA
+                              - LB
+                              - LC
+                              - LI
+                              - LK
+                              - LR
+                              - LS
+                              - LT
+                              - LU
+                              - LV
+                              - LY
+                              - MA
+                              - MC
+                              - MD
+                              - ME
+                              - MF
+                              - MG
+                              - MH
+                              - MK
+                              - ML
+                              - MM
+                              - MN
+                              - MO
+                              - MP
+                              - MQ
+                              - MR
+                              - MS
+                              - MT
+                              - MU
+                              - MV
+                              - MW
+                              - MX
+                              - MY
+                              - MZ
+                              - NA
+                              - NC
+                              - NE
+                              - NF
+                              - NG
+                              - NI
+                              - NL
+                              - 'NO'
+                              - NP
+                              - NR
+                              - NU
+                              - NZ
+                              - OM
+                              - PA
+                              - PE
+                              - PF
+                              - PG
+                              - PH
+                              - PK
+                              - PL
+                              - PM
+                              - PN
+                              - PR
+                              - PS
+                              - PT
+                              - PW
+                              - PY
+                              - QA
+                              - RE
+                              - RO
+                              - RS
+                              - RU
+                              - RW
+                              - SA
+                              - SB
+                              - SC
+                              - SD
+                              - SE
+                              - SG
+                              - SH
+                              - SI
+                              - SJ
+                              - SK
+                              - SL
+                              - SM
+                              - SN
+                              - SO
+                              - SR
+                              - SS
+                              - ST
+                              - SV
+                              - SX
+                              - SY
+                              - SZ
+                              - TC
+                              - TD
+                              - TF
+                              - TG
+                              - TH
+                              - TJ
+                              - TK
+                              - TL
+                              - TM
+                              - TN
+                              - TO
+                              - TR
+                              - TT
+                              - TV
+                              - TW
+                              - TZ
+                              - UA
+                              - UG
+                              - UM
+                              - US
+                              - UY
+                              - UZ
+                              - VA
+                              - VC
+                              - VE
+                              - VG
+                              - VI
+                              - VN
+                              - VU
+                              - WF
+                              - WS
+                              - YE
+                              - YT
+                              - ZA
+                              - ZM
+                              - ZW
+                            description: Country code in 3166-1 alpha-2 format.
+                          zip_code:
+                            type: string
+                            minLength: 1
+                            description: Zip code of DC address.
+                          phone:
+                            type: string
+                            minLength: 1
+                            description: Phone number of DC.
+                          first_name:
+                            type: string
+                            minLength: 1
+                            description: The fist name of the recipient.
+                          last_name:
+                            type: string
+                            minLength: 1
+                            description: The last name of the recipient.
+                  - description: The error response.
+                    type: object
+                    required:
+                      - error_code
+                      - message
+                      - request_id
+                    properties:
+                      error_code:
+                        type: string
+                        minLength: 1
+                        description: The specific code of the error.
+                      message:
+                        type: string
+                        minLength: 1
+                        description: A message explaining the error.
+                      request_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the request, which can be used for
+                          tracing.
+      description: |
+        Retrieves all information about a location with a given STORE ID.
+      summary: Retrieve location by store id
+      operationId: retrieve-location-by-store-id
+    parameters:
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          A unique identifier for a store.
+
+
+          This `store_id` is defined during the [store
+          creation](newstore-cloud/store_operations/store.html#operation/createStore).

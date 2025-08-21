@@ -1,0 +1,180 @@
+openapi: 3.0.0
+info:
+  title: Availabilities API
+  version: 0.1.0
+  x-audience: external-public
+  x-api-id: availabilities-062023
+  description: >
+    Represents the
+    [ATP](https://docs.newstore.com/docs/glossary#available-to-promise) of
+    products in a fulfillment location (store or DC).
+
+    Use this API to retrieve the ATP for products across your fulfillment
+    locations.
+
+
+    ATP is calculated by subtracting the sum of all allocations, reservations,
+    and safety stock
+
+    quantity, from the stock on hand. At NewStore, ATP is also the sum of the
+    current ATP and
+
+    [future ATP](https://docs.newstore.com/docs/glossary#future-atp).
+
+
+    For example, use it to get the ATP of the products in a store, to perform a
+    reconciliation with
+
+    your ERP.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /availabilities:
+    post:
+      summary: List ATP information
+      operationId: createAvailabilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: Get availabilities request.
+              description: Use this API to fetch ATP information, filtered by ATPKeys.
+              required:
+                - atp_keys
+              properties:
+                atp_keys:
+                  type: array
+                  minItems: 1
+                  maxItems: 2000
+                  items:
+                    type: object
+                    description: >-
+                      ATP key is the combination of product id and fulfillment
+                      node id.
+                    required:
+                      - product_id
+                      - fulfillment_node_id
+                    properties:
+                      product_id:
+                        type: string
+                        description: The id of the product.
+                        minLength: 1
+                      fulfillment_node_id:
+                        type: string
+                        description: The id of the fulfillment node.
+                        minLength: 1
+            example:
+              atp_keys:
+                - product_id: 1000012
+                  fulfillment_node_id: US01
+                - product_id: 1000012
+                  fulfillment_node_id: DC01
+      responses:
+        '200':
+          description: ATP information for the provided ATP keys.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Get availabilities request.
+                description: >-
+                  Response of valid request for fetching availabilities,
+                  filtered by ATPKeys.
+                required:
+                  - items
+                properties:
+                  items:
+                    type: array
+                    maxItems: 2000
+                    items:
+                      type: object
+                      required:
+                        - product_id
+                        - fulfillment_node_id
+                        - atp
+                      properties:
+                        product_id:
+                          type: string
+                          description: The id of the product for this unallocated count.
+                        fulfillment_node_id:
+                          type: string
+                          description: >-
+                            The id of the fulfillment node for this unallocated
+                            count.
+                        atp:
+                          type: number
+                          description: The number of items available to promise.
+                          minimum: 0
+                          multipleOf: 1
+              example:
+                items:
+                  - product_id: 1000012
+                    fulfillment_node_id: US01
+                    atp: 35
+                  - product_id: 1000012
+                    fulfillment_node_id: DC01
+                    atp: 100
+        '400':
+          description: Something was wrong with the request
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Product ID is empty
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        '500':
+          description: An internal error occurred.
+          content:
+            application/problem+json:
+              schema:
+                title: Response for any erroneous request
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+              example:
+                message: Human readable error message
+                request_id: 1235a3d3-1884-4e95-9926-d7253edb4f7f
+        default:
+          description: Unexpected Error
+      description: >
+        Use this method to retrieve
+        [ATP](https://docs.newstore.com/docs/glossary#available-to-promise)
+        information for the specified
+
+        products and fulfillment locations.
+
+
+        In this request, each ATP key (``atp_keys``) is defined as a combination
+        of a product ID
+
+        and a fulfillment location set up in your business.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,267 @@
+openapi: 3.1.0
+info:
+  title: Printers API
+  description: >
+    Use this API to retrieve, create, update, or delete printers for stores in
+    your business.
+
+
+    Associate App uses this API for printer management, but the API can also be
+    used for printer
+
+    management for support operations.
+  version: v1
+servers:
+  - url: https://dodici.s.newstore.net/api/v1/associate-app/store/{storeId}
+    variables:
+      storeId:
+        default: '12345'
+paths:
+  /printers:
+    get:
+      operationId: getPrinters
+      description: Lists all printers for the specified store, using the store ID.
+      summary: List printers in a store
+      security: []
+      responses:
+        '200':
+          description: Lists printers assigned to a store.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/schema'
+        '400':
+          description: Something went wrong when looking for printers.
+    post:
+      operationId: postPrinter
+      description: Creates a new printer configuration for the specified store ID.
+      summary: Create printer in a store
+      security:
+        - newStoreAccessToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/schema'
+      responses:
+        '201':
+          description: Set up a new printer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schema'
+        '400':
+          description: Something went wrong setting up a new printer.
+        '422':
+          description: >-
+            Invalid schema. Received printer information is not valid against
+            the schema.
+  /printers/{$printerId}:
+    get:
+      operationId: getPrinter
+      description: >-
+        Retrieves information about the specified printer configuration
+        available in a specified store.
+      summary: Get printer in a store
+      security: []
+      responses:
+        '200':
+          description: Lists a printer assigned to a store.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schema'
+        '400':
+          description: Something went wrong when looking for printers.
+    put:
+      operationId: putPrinter
+      description: Updates the printer configuration for the specified printer.
+      summary: Update printer
+      security:
+        - newStoreAccessToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/schema'
+      responses:
+        '200':
+          description: Returns the new value of the configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schema'
+        '400':
+          description: Something went wrong updating the printer.
+        '422':
+          description: >-
+            Invalid schema. Received printer information is not valid against
+            the schema.
+    delete:
+      operationId: deletePrinter
+      description: Deletes the printer with the specified ID.
+      summary: Delete printer
+      security:
+        - newStoreAccessToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/schema'
+      responses:
+        '200':
+          description: Deletes the printer with the given ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schema'
+        '400':
+          description: >-
+            Invalid JSON. Received printer information could not properly
+            parsed.
+        '422':
+          description: >-
+            Invalid schema. Received printer information is not valid against
+            the configuration schema.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    schema:
+      type: object
+      required:
+        - manufacturer
+        - documentTypes
+        - model
+      additionalProperties: false
+      minProperties: 3
+      properties:
+        manufacturer:
+          type: string
+          enum:
+            - airPrint
+            - epson
+            - epsonFiscal
+            - posnetFiscal
+            - star
+            - zebra
+          description: Describes the manufacturer of the printer.
+        name:
+          type: string
+          description: The name of the printer.
+        documentTypes:
+          type: array
+          description: Describes the document types supported by the printer.
+          items:
+            anyOf:
+              - type: string
+                enum:
+                  - salesReceipt
+                  - returnReceipt
+                  - exchangeReceipt
+                  - giftReceipt
+                  - invoice
+                  - commercialInvoice
+                  - returnLabel
+                  - returnForm
+                  - shippingLabel
+                  - packingSlip
+                  - transferPackingList
+                  - inStorePickupLabel
+                  - hangTag
+                  - fiscalDocument
+        model:
+          type: string
+          description: Describes model name of the printer.
+        macAddress:
+          type: string
+          description: Describes the Mac Address of a Epson receipt printer.
+        ipAddress:
+          type: string
+          description: >-
+            Describes the IP Address of a Epson/Posnet fiscal, Epson receipt or
+            Zebra printer.
+        port:
+          type: number
+          description: Describes the port of a Epson/Posnet fiscal printer.
+        serialNumber:
+          type: string
+          description: Describes the serial number of a Epson/Posnet fiscal printer.
+        scalingFactor:
+          type: number
+          description: >-
+            Describes a factor to scale to printing size for a document on Epson
+            printers.
+        offsetTop:
+          type: number
+          description: Sets the offset from top for any print for a Zebra printer.
+        offsetLeft:
+          type: number
+          description: Sets the offset from top for any print for a Zebra printer.
+        interfaceType:
+          type: string
+          description: Describes the interface type of a Star printer.
+        identifier:
+          type: string
+          description: Describes the identifier of a Star printer.
+        paperWidth:
+          type: number
+          description: Sets the paper width being used at a Star printer.
+        networkName:
+          type: string
+          description: Describes the network name of an Airprint printer.
+        url:
+          type: string
+          description: Describes the url of an Airprint printer.
+      allOf:
+        - if:
+            properties:
+              manufacturer:
+                const: zebra
+          then:
+            required:
+              - ipAddress
+              - offsetTop
+              - offsetLeft
+        - if:
+            properties:
+              manufacturer:
+                const: epson
+          then:
+            required:
+              - ipAddress
+              - macAddress
+              - scalingFactor
+        - if:
+            properties:
+              manufacturer:
+                const: star
+          then:
+            required:
+              - identifier
+              - interfaceType
+              - paperWidth
+        - if:
+            properties:
+              manufacturer:
+                const: airPrint
+          then:
+            required:
+              - networkName
+              - url
+        - if:
+            properties:
+              manufacturer:
+                anyOf:
+                  - const: epsonFiscal
+                  - const: posnetFiscal
+          then:
+            required:
+              - ipAddress
+              - port
+              - serialNumber

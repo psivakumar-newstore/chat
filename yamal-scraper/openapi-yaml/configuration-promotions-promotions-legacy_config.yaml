@@ -1,0 +1,587 @@
+openapi: 3.0.0
+info:
+  title: Deprecated promotions Configuration API
+  description: >
+    Use this to manage configurations related to promotions in the NewStore
+    platform.
+
+
+    **Important**: This API is now deprecated and will not be available anymore
+    from August 15th, 2023 onwards.
+
+
+    To manage global exclusion list configuration with new API, check [this
+    link](/api/integration/discounts-promos/promotions_configuration_api).
+  version: 1.0.0
+  license:
+    name: Open API Specification - OAS
+    url: https://spec.openapis.org/oas/v3.1.0
+servers:
+  - url: http://localhost:8000
+    description: The local development server
+  - url: https://dodici.x.newstore.net/v1/c
+    description: The sandbox server
+tags:
+  - name: Promotions configuration
+    description: >-
+      Configuration to set up promotions for use by retailers and SI partners
+      with NewStore.
+paths:
+  /config/promotion:
+    parameters:
+      - name: request_id
+        in: header
+        schema:
+          type: string
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+    get:
+      deprecated: true
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Promotions configuration
+      summary: Get promotion configuration
+      description: >
+        Returns the full configuration object for your business, with the
+        following
+
+        metadata: Current version and when and by whom the configuration was
+        updated
+
+        last time.
+      operationId: getConfig
+      responses:
+        '200':
+          description: Current configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      not_discountable_products:
+                        type: array
+                        items:
+                          type: string
+                          description: >-
+                            List of not discountable Product IDs. Note that you
+                            can only exclude a maximum of 50 products.
+                    title: Promotion Configuration
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+    patch:
+      deprecated: true
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Promotions configuration
+      summary: Update promotion configuration
+      description: >
+        Updates current configuration with specified JSON value,
+
+        returns full configuration object for current tenant.
+
+
+        **Important**: when setting up products to be excluded from promotions,
+        note that
+
+        you can only exclude a maximum of **50** products.
+      operationId: updateConfig
+      parameters:
+        - name: version
+          in: query
+          schema:
+            type: string
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            schema:
+              description: Tenant configuration object.
+              type: object
+              properties:
+                not_discountable_products:
+                  type: array
+                  items:
+                    type: string
+                    description: >-
+                      List of not discountable Product IDs. Note that you can
+                      only exclude a maximum of 50 products.
+              title: Promotion Configuration
+      responses:
+        '200':
+          description: The updated configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      not_discountable_products:
+                        type: array
+                        items:
+                          type: string
+                          description: >-
+                            List of not discountable Product IDs. Note that you
+                            can only exclude a maximum of 50 products.
+                    title: Promotion Configuration
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: invalid_request
+                messages:
+                  - Wrong datetime format
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '409':
+          description: The version key is out of date, configuration was updated
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: conflict_version
+                messages:
+                  - The version is out of date
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+    post:
+      deprecated: true
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Promotions configuration
+      summary: Replace promotion configuration
+      description: >
+        Replaces the current configuration with the specified JSON value,
+
+        and returns the full configuration object for your business.
+
+
+        **Important**: when setting up products to be excluded from promotions,
+        note that
+
+        you can only exclude a maximum of **50** products.
+      operationId: replaceConfig
+      parameters:
+        - name: version
+          in: query
+          schema:
+            type: string
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            schema:
+              description: Tenant configuration object.
+              type: object
+              properties:
+                not_discountable_products:
+                  type: array
+                  items:
+                    type: string
+                    description: >-
+                      List of not discountable Product IDs. Note that you can
+                      only exclude a maximum of 50 products.
+              title: Promotion Configuration
+      responses:
+        '200':
+          description: The updated configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      not_discountable_products:
+                        type: array
+                        items:
+                          type: string
+                          description: >-
+                            List of not discountable Product IDs. Note that you
+                            can only exclude a maximum of 50 products.
+                    title: Promotion Configuration
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: invalid_request
+                messages:
+                  - Wrong datetime format
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '409':
+          description: The version key is out of date, configuration was updated
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: conflict_version
+                messages:
+                  - The version is out of date
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+components:
+  schemas:
+    UpdateRequest:
+      description: Tenant configuration object.
+      type: object
+      properties:
+        not_discountable_products:
+          type: array
+          items:
+            type: string
+            description: >-
+              List of not discountable Product IDs. Note that you can only
+              exclude a maximum of 50 products.
+      title: Promotion Configuration
+    ConfigResponse:
+      description: Update configuration response
+      type: object
+      properties:
+        value:
+          description: Tenant configuration object.
+          type: object
+          properties:
+            not_discountable_products:
+              type: array
+              items:
+                type: string
+                description: >-
+                  List of not discountable Product IDs. Note that you can only
+                  exclude a maximum of 50 products.
+          title: Promotion Configuration
+        version:
+          description: Current Configuration version
+          type: string
+        updated_at:
+          description: RFC3339 date time format with timezone
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+          example: '2021-12-31T23:59:59Z'
+        updated_by:
+          description: Internal User ID
+          type: string
+    Error:
+      description: Error message response
+      properties:
+        error_code:
+          description: |-
+            Error code value. Possible values:
+            * not_found: tenant not found, or tenant key in header is blank;
+            * internal: internal server error;
+            * invalid_request: invalid request;
+            * validation_failed: validation of request failed;
+          type: string
+        messages:
+          type: array
+          items:
+            type: string
+    datetime_tz:
+      description: RFC3339 date time format with timezone
+      type: string
+      pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+      example: '2021-12-31T23:59:59Z'
+    Config:
+      description: Tenant configuration object.
+      type: object
+      properties:
+        not_discountable_products:
+          type: array
+          items:
+            type: string
+            description: >-
+              List of not discountable Product IDs. Note that you can only
+              exclude a maximum of 50 products.
+      title: Promotion Configuration
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+x-annotation-crossOriginAllowed: true

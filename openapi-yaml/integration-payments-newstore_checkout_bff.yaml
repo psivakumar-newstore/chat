@@ -1,0 +1,736 @@
+openapi: 3.0.0
+info:
+  title: NewStore Checkout API
+  version: '0'
+  description: >
+    Use this API to enable [NewStore
+    Checkout](https://docs.newstore.com/docs/glossary#newstore-checkout) to pay
+
+    for the cart created by an associate on NewStore Associate App. Customers
+    can use NewStore
+
+    Checkout to pay with their phones using an electronic wallet such as Apple
+    Pay, Google Pay, or PayPal.
+
+
+    For more information on configuring Newstore Checkout as a payment method,
+
+    see [the
+    documentation](https://docs.newstore.com/docs/setting-up-newstore-checkout-with-adyen-pay-by-link).
+servers:
+  - url: https://dodici.x.newstore.net/_/v0
+security: []
+paths:
+  /newstorecheckout/carts/{cart_id}:
+    get:
+      parameters:
+        - name: cart_id
+          description: |
+            The cart ID of the shopping cart being paid.
+          required: true
+          in: path
+          schema:
+            title: Cart ID
+            description: ID of the shopping cart.
+            type: string
+            example: 7e44748c-5a6d-4b7a-b705-9b5711e47777
+      operationId: GetCart
+      summary: Get shopping cart
+      description: >
+        Returns the read-only shopping cart information that matches the
+        specified shopping cart ID.
+      responses:
+        '200':
+          description: The cart as checked out by the associate.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Get cart response
+                required:
+                  - cart
+                  - configuration
+                properties:
+                  cart:
+                    type: object
+                    properties:
+                      balance_due:
+                        type: object
+                        properties:
+                          amount:
+                            type: number
+                            description: The amount that needs to be paid.
+                          currency:
+                            type: string
+                            description: The currency code in ISO-4217 format.
+                  configuration:
+                    type: object
+                    properties:
+                      tenant_url:
+                        type: string
+                        description: >-
+                          The URL of the tenant website displayed to the
+                          customer when the payment completes.
+                      tenant_url_label:
+                        type: string
+                        description: >-
+                          The label that should be used instead of the website
+                          URL for the link when the payment completes.
+                      web_drop_in:
+                        type: object
+                        required:
+                          - enabled
+                        properties:
+                          enabled:
+                            type: boolean
+                            description: >-
+                              Indicates whether the Adyen Web DropIn should be
+                              used.
+                          payment_methods:
+                            type: object
+                            description: >-
+                              Opaque object with the payment method
+                              configuration for the drop in.
+                          locale:
+                            type: string
+                            description: >-
+                              The locale that should be used to render the web
+                              drop in component. Example: en-US.
+                          country_code:
+                            type: string
+                            description: >-
+                              Country code used in the drop in component. Must
+                              be <a
+                              href='http://www.iso.org/iso/country_codes.htm'>ISO-3166
+                              reference</a>.
+                          origin_key:
+                            type: string
+                            description: >-
+                              A client-side key that is used to validate Adyen's
+                              JavaScript component library.
+                          environment:
+                            type: string
+                            description: >-
+                              The provider environment to use, can be 'test' or
+                              'live'.
+                            enum:
+                              - test
+                              - live
+                          merchant_account:
+                            type: string
+                            description: >-
+                              The Adyen merchant account used for web drop in
+                              payments.
+                          apple_pay:
+                            type: object
+                            description: ApplePay specific configuration.
+                            properties:
+                              merchant_id:
+                                type: string
+                                description: >-
+                                  The merchant identifier configured on Apple's
+                                  website.
+                              supported_networks:
+                                type: array
+                                description: >-
+                                  The list of payment networks supported by the
+                                  tenant. Example: amex, visa.
+                                items:
+                                  type: string
+                                  description: The supported payment network.
+                          google_pay:
+                            type: object
+                            description: GooglePay specific configuration.
+                            properties:
+                              merchant_id:
+                                type: string
+                                description: >-
+                                  The merchant identifier configured on Google
+                                  Pay's business console.
+                          paypal:
+                            type: object
+                            description: PayPal specific configuration.
+                            properties:
+                              merchant_id:
+                                type: string
+                                description: The merchant identifier configured on PayPal.
+                          scheme:
+                            type: object
+                            description: Scheme specific configuration.
+                            properties:
+                              capture_billing_address:
+                                type: boolean
+                                description: >-
+                                  Defines if the shopper will be required to
+                                  fill the address when paying with cards.
+              example:
+                cart:
+                  balance_due:
+                    amount: 25.22
+                    currency: USD
+                configuration:
+                  tenant_url: https://example.com
+                  tenant_url_label: Example Fashion Website
+                  web_drop_in:
+                    enabled: true
+                    locale: en-US
+                    country_code: US
+                    environment: test
+                    merchant_account: ExamplePOS
+                    apple_pay:
+                      merchant_id: an_apple_pay_merchant_id
+                      supported_networks:
+                        - visa
+                        - amex
+                    google_pay:
+                      merchant_id: a_google_pay_merchant_id
+                    paypal:
+                      merchant_id: a_paypal_merchant_id
+        '404':
+          description: Cart not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains a description of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+              example:
+                error_code: cart_not_found_error
+                message: >-
+                  Order for cart 7e44748c-5a6d-4b7a-b705-9b5711e47777 was not
+                  found.
+                request_id: XXX-YYYY-ZZZZ-XYZ-XYZ
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains a description of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+              example:
+                error_code: unmigrated_error
+                message: error retrieving configuration
+                request_id: XXX-YYYY-ZZZZ-XYZ-XYZ
+  /newstorecheckout/carts/{cart_id}/payment_sessions:
+    x-amf-displayName: Session
+    parameters:
+      - name: cart_id
+        description: |
+          The cart ID of the shopping cart being paid.
+        required: true
+        in: path
+        schema:
+          title: Cart ID
+          description: ID of the shopping cart.
+          type: string
+          example: 7e44748c-5a6d-4b7a-b705-9b5711e47777
+    post:
+      operationId: CreatePaymentSession
+      summary: Create payment session
+      description: |
+        Creates a session on a digital wallet for the cart to be checked out.
+
+        **Important:** You must create a session before you can
+        [initiate and process a payment](#operation/ProcessPayment).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: Open session request
+              required:
+                - payment_wallet
+              properties:
+                payment_wallet:
+                  type: string
+                  enum:
+                    - APPLE_PAY
+                    - PAYPAL
+                  description: 'Source of the payment. Example: APPLE_PAY.'
+            example:
+              payment_wallet: APPLE_PAY
+      responses:
+        '200':
+          description: Session data from the digital wallet provider.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Open session response
+                properties:
+                  payment_wallet_session:
+                    type: object
+              examples:
+                ApplePaySession:
+                  summary: Apple Pay session
+                  value:
+                    merchantSessionIdentifier: SSH0B04032167A04B0BA994927C24
+                    epochTimestamp: 1560946702269
+                    merchantIdentifier: 6962377928D9A9E689AD95BF65
+                    signature: 308006092a8643d049c000000000000
+                    displayName: ''
+                    domainName: newstorecheckout.example.com
+                    nonce: e3beeae6
+                    expiresAt: 1560950302269
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Bad request error payload
+                description: >-
+                  Error response sent if a request doesn't conform to the
+                  schema.
+                required:
+                  - request_id
+                  - messages
+                properties:
+                  messages:
+                    description: List of failures.
+                    type: array
+                    items:
+                      type: string
+                      description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+              example:
+                request_id: XXX-YYYY-ZZZZ-XYZ-XYZ
+                messages:
+                  - >-
+                    payment_wallet.payment_wallet: payment_wallet must be one of
+                    the following: APPLE_PAY, PAYPAL
+        '404':
+          description: Cart not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains a description of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+              example:
+                error_code: cart_not_found_error
+                message: >-
+                  Order for cart 7e44748c-5a6d-4b7a-b705-9b5711e47777 was not
+                  found.
+                request_id: XXX-YYYY-ZZZZ-XYZ-XYZ
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains a description of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+              example:
+                error_code: apple_session_error
+                message: could not request an apple session
+                request_id: XXX-YYYY-ZZZZ-XYZ-XYZ
+  /newstorecheckout/carts/{cart_id}/_pay:
+    parameters:
+      - name: cart_id
+        description: |
+          The cart ID of the shopping cart being paid.
+        required: true
+        in: path
+        schema:
+          title: Cart ID
+          description: ID of the shopping cart.
+          type: string
+          example: 7e44748c-5a6d-4b7a-b705-9b5711e47777
+    post:
+      operationId: ProcessPayment
+      summary: Process payment
+      description: >
+        Initiates a payment process for the cart created by the associate
+
+        in NewStore Associate App.
+
+
+        **Important:** Ensure that you [create a payment
+        session](#operation/CreatePaymentSession) first.
+
+
+        The payment is authorized and possibly captured, depending on the
+        configuration of
+
+        [PSP](/docs/glossary.html#term-PSP). To see how a PSP is integrated with
+        the NewStore
+
+        platform, see [the integration
+        guide](https://docs.newstore.com/docs/glossary#payment-service-provider).
+
+
+        The payment is then added to the cart in NewStore Associate App.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: Pay for the cart
+              required:
+                - payment_token
+                - payment_provider
+                - payment_wallet
+                - amount
+                - currency
+              properties:
+                payment_token:
+                  type: string
+                  description: Token which represents the right to perform payment.
+                payment_provider:
+                  type: string
+                  enum:
+                    - ADYEN
+                  description: 'The payment service provider. Example: ADYEN.'
+                payment_wallet:
+                  type: string
+                  enum:
+                    - APPLE_PAY
+                    - DIRECT
+                    - GOOGLE_PAY
+                    - PAYPAL
+                  description: 'Source of the payment. Example: APPLE_PAY.'
+                amount:
+                  type: number
+                  description: The amount that needs to be paid.
+                currency:
+                  type: string
+                  description: The currency code in ISO-4217 format.
+                customer:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                      description: The email address of the customer.
+                    name:
+                      type: string
+                      description: The Name of the customer.
+                    phone:
+                      type: string
+                      description: Phone number of the customer.
+                    billing_address:
+                      type: object
+                      required:
+                        - street
+                        - house_number
+                        - postal_code
+                        - city
+                        - country
+                      description: Contains the billing address of the shopper.
+                      properties:
+                        street:
+                          type: string
+                          description: Name of the street.
+                        house_number:
+                          type: string
+                          description: House number or name.
+                        postal_code:
+                          type: string
+                          description: Postal code.
+                        city:
+                          type: string
+                          description: City name.
+                        state:
+                          type: string
+                          description: State or province.
+                        country:
+                          type: string
+                          description: >-
+                            Country code in the ISO 3166 ALPHA-2 format. For
+                            example, GB, DE or US.
+                billing_address:
+                  type: object
+                  description: >-
+                    Deprecated billing address field, only used by the old
+                    version of NSC.
+                  properties:
+                    name:
+                      type: string
+                      description: The Name of the customer.
+                    city:
+                      type: string
+                      maxLength: 64
+                    state:
+                      type: string
+                      description: State.
+                      maxLength: 32
+                    zip_code:
+                      type: string
+                      description: Zip code.
+                      maxLength: 32
+                    country:
+                      description: >-
+                        The code of the country in the ISO 3166 ALPHA-2 format.
+                        For example, GB, DE or US.
+                      type: string
+                      minLength: 2
+                      maxLength: 2
+                    address_line_1:
+                      type: string
+                      description: First line of the address.
+                      minLength: 1
+                      maxLength: 128
+                    address_line_2:
+                      type: string
+                      description: Second line of the address.
+                      maxLength: 256
+                    phone:
+                      type: string
+                      description: Phone number.
+                      maxLength: 128
+                metadata:
+                  type: object
+                  description: >-
+                    Additional information about the payment to be sent to the
+                    provider
+            example:
+              amount: 25.22
+              currency: USD
+              payment_token: A-PAYMENT-TOKEN
+              payment_provider: ADYEN
+              payment_wallet: APPLE_PAY
+      responses:
+        '200':
+          description: Successfully paid for the cart.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Bad request error payload
+                description: >-
+                  Error response sent if a request doesn't conform to the
+                  schema.
+                required:
+                  - request_id
+                  - messages
+                properties:
+                  messages:
+                    description: List of failures.
+                    type: array
+                    items:
+                      type: string
+                      description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+              example:
+                request_id: XXX-YYYY-ZZZZ-XYZ-XYZ
+                messages:
+                  - >-
+                    payment_wallet.payment_wallet: payment_wallet must be one of
+                    the following: APPLE_PAY, PAYPAL
+        '404':
+          description: Cart not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains a description of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+              example:
+                error_code: cart_not_found_error
+                message: >-
+                  Order for cart 7e44748c-5a6d-4b7a-b705-9b5711e47777 was not
+                  found.
+                request_id: XXX-YYYY-ZZZZ-XYZ-XYZ
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains a description of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+              example:
+                error_code: adyen_error
+                message: adyen didn't approve the authorization
+                request_id: XXX-YYYY-ZZZZ-XYZ-XYZ
+x-crossOriginAllowed: true
+components:
+  schemas: {}
+  responses:
+    404CartNotFound:
+      description: Cart not found.
+      content:
+        application/json:
+          schema:
+            type: object
+            title: Error Response
+            description: Error response sent if a request failed.
+            required:
+              - error_code
+              - request_id
+            properties:
+              error_code:
+                type: string
+                description: Custom error code which provides more details about the error.
+              message:
+                type: string
+                description: Contains a description of the error.
+              request_id:
+                type: string
+                description: >-
+                  Unique request identifier. Can be used to further debug the
+                  root causes of this error.
+          example:
+            error_code: cart_not_found_error
+            message: Order for cart 7e44748c-5a6d-4b7a-b705-9b5711e47777 was not found.
+            request_id: XXX-YYYY-ZZZZ-XYZ-XYZ
+    400BadRequest:
+      description: Bad request.
+      content:
+        application/json:
+          schema:
+            type: object
+            title: Bad request error payload
+            description: Error response sent if a request doesn't conform to the schema.
+            required:
+              - request_id
+              - messages
+            properties:
+              messages:
+                description: List of failures.
+                type: array
+                items:
+                  type: string
+                  description: Contains the reason of the error.
+              request_id:
+                type: string
+                description: >-
+                  Unique request identifier. Can be used to further debug the
+                  root causes of this error.
+          example:
+            request_id: XXX-YYYY-ZZZZ-XYZ-XYZ
+            messages:
+              - >-
+                payment_wallet.payment_wallet: payment_wallet must be one of the
+                following: APPLE_PAY, PAYPAL
+  parameters:
+    CartID:
+      name: cart_id
+      description: |
+        The cart ID of the shopping cart being paid.
+      required: true
+      in: path
+      schema:
+        title: Cart ID
+        description: ID of the shopping cart.
+        type: string
+        example: 7e44748c-5a6d-4b7a-b705-9b5711e47777
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}

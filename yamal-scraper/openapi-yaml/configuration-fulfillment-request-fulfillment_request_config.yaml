@@ -1,0 +1,136 @@
+openapi: 3.1.0
+info:
+  title: Fulfillment request config API
+  version: v0
+  description: >
+    Use this API to manage configurations related to updating the status of
+    fulfillment requests
+
+    in an order via NOM.
+
+
+    For more information, see the
+    [guide](https://docs.newstore.com/docs/monitoring-orders#updating-the-shipment-status-for-external-orders).
+  contact:
+    name: Team Routing
+    email: team-routing@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /config/routing/can_update_ffr_processed_externally:
+    get:
+      operationId: get-can-update-ffr-processed-externally
+      summary: Get setting to update shipment status for order
+      description: >
+        Retrieves the current configuration to determine if you can update
+
+        the status for fulfillment requests that were processed outside of the
+        NewStore platform,
+
+        because of possible issues with fulfillment or shipping status updates.
+
+
+        For more information, see the
+
+        [guide](https://docs.newstore.com/docs/monitoring-orders#updating-the-shipment-status-for-external-orders).
+      responses:
+        '200':
+          description: |
+            Successfully retrieved the config value
+          content:
+            application/json:
+              schema:
+                type: object
+                required: &ref_1
+                  - value
+                  - updated_at
+                properties: &ref_2
+                  value:
+                    type: &ref_0
+                      - boolean
+                      - 'null'
+                    description: >-
+                      Tenant-based release toggle for updating the status of a
+                      fulfillment request in NOM.
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    description: >-
+                      Contains date-time in ISO8601 UTC format when config was
+                      updated at least once. Value can be null if config value
+                      has not been specified yet by the retailer.
+              example:
+                value: false
+                updated_at: '2021-07-13T20:18:25Z'
+        '404':
+          description: >-
+            Config key doesn't exist (it is not a case when key exists but just
+            not set).
+        '500':
+          description: Internal server error.
+    post:
+      operationId: set-can-update-ffr-processed-externally
+      summary: Enable setting to update shipment status for order
+      description: >
+        Enables the configuration to allow you to update
+
+        the status for fulfillment requests that were processed outside of the
+        NewStore platform,
+
+        because of possible issues with fulfillment or shipping status updates.
+
+
+        For more information, see the
+
+        [guide](https://docs.newstore.com/docs/monitoring-orders#updating-the-shipment-status-for-external-orders).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: &ref_3
+                - value
+              properties: &ref_4
+                value:
+                  type: *ref_0
+                  description: >-
+                    Tenant-based release toggle for updating the status of a
+                    fulfillment request in NOM.
+            example:
+              value: false
+      responses:
+        '200':
+          description: Successfully saved config value
+        '400':
+          description: |
+            Incorrect payload for config (validation failed).
+        '409':
+          description: >
+            Cannot update the configuration due to a potential race condition.
+            Please retry.
+        '500':
+          description: |
+            Internal server error.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    tenant_config_can_update_processed_externally:
+      type: *ref_0
+      description: >-
+        Tenant-based release toggle for updating the status of a fulfillment
+        request in NOM.
+    tenant_config_can_update_processed_externally_response:
+      type: object
+      required: *ref_1
+      properties: *ref_2
+    tenant_config_can_update_processed_externally_request:
+      type: object
+      required: *ref_3
+      properties: *ref_4

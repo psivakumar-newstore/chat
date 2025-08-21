@@ -1,0 +1,293 @@
+openapi: 3.0.3
+info:
+  title: Config API
+  version: '1.0'
+  description: >-
+    The API to request, add and change configurations of Team Web Platform's
+    services.
+  contact:
+    name: Team Web Platform
+    url: https://docs.newstore.net/
+tags:
+  - name: email
+    description: Endpoints for managing email configuration.
+  - name: nom
+    description: Endpoints for managing NOM configuration.
+servers:
+  - url: https://dodici.x.newstore.net/api/v1/org/config
+paths:
+  /email:
+    get:
+      summary: Retrieve configuration options for the email service.
+      description: >-
+        The values `smtp_pass` and `smtp_user` are considered as secrets and
+        will always be returned as `***********`.
+      operationId: getEmailConfig
+      tags:
+        - email
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/configuration'
+        '404':
+          description: |
+            One or more configuration options are not set for this tenant.
+            Set the values for configuration options before retrieving them.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage'
+        '500':
+          description: >
+            Could not retrieve email service configuration due to a server
+            error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage'
+    put:
+      summary: Change configuration for the email service.
+      description: >-
+        Email configuration can be created or updated. It is possible to just
+        set a subset of the configuration values.
+      operationId: putEmailConfig
+      tags:
+        - email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/email'
+      responses:
+        '200':
+          description: Configuration options updated/created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/successMessage'
+        '400':
+          description: |
+            The configuration change request is malformed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage'
+        '500':
+          description: |
+            Could not update email service configuration due to a server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage'
+  /nom:
+    get:
+      summary: Retrieve configuration options for NOM.
+      description: >
+        There are many configurations for managing NOM. This is a list of all
+        NOM configurations that currently
+
+        have not been assigned to a particular domain. This is not an
+        exceptional list, other NOM configurations
+
+        can be found in coresponding domains (order management, checkout, etc.)
+      operationId: getNOMConfig
+      tags:
+        - nom
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/configuration'
+        '404':
+          description: |
+            One or more configuration options are not set for this tenant.
+            Set the values for configuration options before retrieving them.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage'
+        '500':
+          description: |
+            Could not retrieve NOM configuration due to a server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage'
+    put:
+      summary: Change configuration options for NOM.
+      description: >
+        When you send a request to change configuration for a specific key, it
+        replaces the previous value, not patches it.
+         So you cannot set individual keys inside top-level options since it will delete the other keys inside this option,
+         you need to provide the whole value of the top-level option to change an individual key inside it.
+        The exception is "releaseToggles": you can set individual options inside
+        "releaseToggles" without replacing values
+         for other options inside.
+      operationId: putNOMConfig
+      tags:
+        - nom
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/nom'
+      responses:
+        '200':
+          description: Configuration options updated/created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/successMessage'
+        '400':
+          description: |
+            The configuration change request is malformed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage'
+        '500':
+          description: |
+            Could not update NOM configuration due to a server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage'
+components:
+  schemas:
+    configuration:
+      type: object
+      properties:
+        configuration_options:
+          type: array
+          description: A list of configuration options
+          items:
+            type: object
+            description: A configuration option along with its metadata
+            properties:
+              name:
+                description: The name of the configuration option
+                type: string
+              value:
+                description: >-
+                  The value of the configuration option. Can be of any valid
+                  JSON type.
+    errorMessage:
+      type: object
+      properties:
+        message:
+          type: string
+        request_id:
+          type: string
+    successMessage:
+      type: object
+      properties:
+        message:
+          type: string
+    email:
+      title: Validation schema for email configuration options
+      type: object
+      properties:
+        feature_toggle:
+          type: string
+          enum:
+            - enabled
+            - disabled
+          description: >-
+            Toggle to turn email sending on or off, if missing it is turned on
+            by default.
+        smtp_port:
+          type: string
+          minLength: 1
+          description: The SMTP port used to send email.
+        from_address:
+          type: string
+          minLength: 1
+          description: The address of the sender that appears in the sent messages.
+        from_name:
+          type: string
+          minLength: 1
+          description: The name of the sender that appears in the sent messages.
+        smtp_user:
+          type: string
+          description: The username required to access the SMTP server.
+        smtp_host:
+          type: string
+          minLength: 1
+          description: The host of the SMTP server.
+        smtp_pass:
+          type: string
+          description: The password for 'smtp_user' (the user to access the server).
+      additionalProperties: false
+    nom:
+      title: Validation schema for NOM configuration options
+      type: object
+      properties:
+        userLocalTimezone:
+          type: boolean
+          description: >-
+            Defines if date/time values are displayed in NOM according to the
+            user's local timezone (true), or the tenant's configured timezone
+            (false). Defaults to false.
+          default: false
+        timezone:
+          type: string
+          description: The timezone used for NOM, defaults to 'America/New_York'.
+          default: America/New_York
+        currency:
+          type: string
+          description: Currency code shown and used in NOM, defaults to 'USD'.
+          maxLength: 3
+          default: USD
+        cognitoFormsURL:
+          type: string
+          description: CognitoForms URL of support case submission form.
+        cognitoFormsID:
+          type: string
+          description: CognitoForms ID of support case submission form.
+        releaseToggles:
+          type: object
+          description: >-
+            Defines if certain features of NOM should be activated for a tenant
+            or not.
+          properties:
+            canSubmitSupportCases:
+              type: boolean
+              description: >-
+                Defines if a Support Case can be submitted via NOM, defaults to
+                false.
+              default: false
+            enableLocalizableReasonCodes:
+              type: boolean
+              description: >-
+                Defines if reason codes can be localizable. When enabled there
+                will be options to add translations for pre-configured languages
+                for the reason codes.
+              default: false
+            useRoleBasedFilters:
+              type: boolean
+              description: >-
+                Defines if certain data views are filtered for specified roles.
+                Filters can be configured in users & roles > roles for each of
+                the roles.
+              default: false
+            viewSystemSettings:
+              type: boolean
+              description: >-
+                If true, users with the required permissions will have access to
+                a federated page where system settings can be edited.
+              default: false
+          additionalProperties: false
+        idleTimeout:
+          type: integer
+          description: >-
+            Defines the amount of seconds of idle time before users are
+            automatically logged out of NOM.
+          default: 1800
+      additionalProperties: false

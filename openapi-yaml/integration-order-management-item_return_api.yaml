@@ -1,0 +1,731 @@
+openapi: 3.0.0
+info:
+  title: Item Return API
+  version: '0.1'
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+paths:
+  /orders/{order_id}/returns:
+    get:
+      summary: List returns for order
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                items:
+                  type: object
+                  required:
+                    - refunded_amount
+                    - return_id
+                    - return_items
+                    - currency
+                  properties:
+                    refunded_amount:
+                      type: number
+                      minimum: 0
+                      description: The amount refunded to the customer.
+                    total_refund_amount:
+                      type: number
+                      minimum: 0
+                      description: The total refund amount related to this return.
+                    return_id:
+                      type: string
+                      minLength: 36
+                      maxLength: 36
+                      description: The identifier of the newly created return.
+                    currency:
+                      type: string
+                      minLength: 3
+                      maxLength: 3
+                      description: The currency of the return.
+                    returned_from:
+                      type: string
+                      description: >-
+                        The fulfillment_node_id or store_id of the location to
+                        which the item was returned. It is the identifier
+                        provided in the 'returned_from' field of the 'Create
+                        return' request.
+                    consumer_email:
+                      type: string
+                      description: >-
+                        Contains the email address of the consumer who bought
+                        the items.
+                    consumer_uuid:
+                      type: string
+                      minLength: 1
+                      description: Contains the identifier of the consumer profile.
+                    return_items:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        required:
+                          - product_id
+                        properties:
+                          item_type:
+                            type: string
+                            description: >-
+                              Type of the returned item. Can be product or
+                              shipping.
+                            enum:
+                              - product
+                              - shipping
+                          product_id:
+                            type: string
+                            description: >-
+                              The identifier of the returned product, for
+                              example an SKU number.
+                          product_name:
+                            type: string
+                            description: Name of the corresponding product.
+                          price_catalog:
+                            type: number
+                            description: >-
+                              Price of the item from the catalog before the
+                              discounts.
+                            minimum: 0
+                          tax_class:
+                            type: string
+                            description: Tax class of the product.
+                          tax_lines:
+                            description: Describes the taxes applied to the item.
+                            type: array
+                            minItems: 0
+                            maxItems: 100
+                            items:
+                              type: object
+                              required:
+                                - amount
+                                - rate
+                              properties:
+                                amount:
+                                  type: number
+                                  description: The tax amount.
+                                  minimum: 0
+                                rate:
+                                  type: number
+                                  description: >-
+                                    The tax rate. Must be in form of ratio
+                                    between 0 and 1, not percentage.
+                                  minimum: 0
+                                name:
+                                  type: string
+                                  description: A description of the tax type. Required.
+                                country_code:
+                                  description: >-
+                                    The code of the country of the tax in the
+                                    ISO 3166 ALPHA-2 format. For example, GB, DE
+                                    or US.
+                                  type: string
+                                  maxLength: 2
+                          item_condition:
+                            type: string
+                            description: >-
+                              The condition of the item, checked during quality
+                              inspection.
+                          return_reason:
+                            type: string
+                            description: The reason why this item was returned.
+                          return_code:
+                            type: integer
+                            nullable: true
+                            description: The corresponding code of the return reason.
+                          condition_code:
+                            type: integer
+                            nullable: true
+                            description: >-
+                              The corresponding code of the item condition
+                              option.
+                    extended_attributes:
+                      type: array
+                      maxItems: 100
+                      description: >-
+                        This is a list of read-only objects that can be used to
+                        display additional information.
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            minLength: 1
+                            maxLength: 100
+                          value:
+                            type: string
+                            maxLength: 8192
+                    is_historical:
+                      type: boolean
+                      description: >-
+                        Set to true, if the return is historical, i.e. it was
+                        processed by an external system.
+                    is_tax_exempt:
+                      type: boolean
+                      description: If true, the return order is tax exempt.
+                type: array
+              example:
+                - refunded_amount: 775.19
+                  return_id: 1fc4d366-40ca-4e36-b38f-66393bda517a
+                  returned_from: 27a39710-4b2d-43fd-b636-5f7aed3073a2
+                  currency: USD
+                  return_items:
+                    - product_id: '1000031'
+                - refunded_amount: 666.32
+                  return_id: 97fada4f-8eaf-4e91-aebd-c289c10c3311
+                  returned_from: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                  currency: USD
+                  return_items:
+                    - product_id: '1000001'
+        '500':
+          description: Internal Server Error.
+      description: |
+        Retrieves the list of all returns for the order.
+
+        **Related methods:**
+
+        - [Get return](#/{return_id}-get-return)
+      operationId: ListReturnsForOrder
+    post:
+      summary: Create return (legacy)
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '201':
+          description: The return was successfully created.
+          content:
+            application/json:
+              schema:
+                title: An item return
+                type: object
+                required:
+                  - refunded_amount
+                  - return_id
+                  - return_items
+                  - currency
+                properties:
+                  refunded_amount:
+                    type: number
+                    minimum: 0
+                    description: The amount refunded to the customer.
+                  total_refund_amount:
+                    type: number
+                    minimum: 0
+                    description: The total refund amount related to this return.
+                  return_id:
+                    type: string
+                    minLength: 36
+                    maxLength: 36
+                    description: The identifier of the newly created return.
+                  currency:
+                    type: string
+                    minLength: 3
+                    maxLength: 3
+                    description: The currency of the return.
+                  returned_from:
+                    type: string
+                    description: >-
+                      The fulfillment_node_id or store_id of the location to
+                      which the item was returned. It is the identifier provided
+                      in the 'returned_from' field of the 'Create return'
+                      request.
+                  consumer_email:
+                    type: string
+                    description: >-
+                      Contains the email address of the consumer who bought the
+                      items.
+                  consumer_uuid:
+                    type: string
+                    minLength: 1
+                    description: Contains the identifier of the consumer profile.
+                  return_items:
+                    type: array
+                    minItems: 1
+                    items:
+                      type: object
+                      required:
+                        - product_id
+                      properties:
+                        item_type:
+                          type: string
+                          description: >-
+                            Type of the returned item. Can be product or
+                            shipping.
+                          enum:
+                            - product
+                            - shipping
+                        product_id:
+                          type: string
+                          description: >-
+                            The identifier of the returned product, for example
+                            an SKU number.
+                        product_name:
+                          type: string
+                          description: Name of the corresponding product.
+                        price_catalog:
+                          type: number
+                          description: >-
+                            Price of the item from the catalog before the
+                            discounts.
+                          minimum: 0
+                        tax_class:
+                          type: string
+                          description: Tax class of the product.
+                        tax_lines:
+                          description: Describes the taxes applied to the item.
+                          type: array
+                          minItems: 0
+                          maxItems: 100
+                          items:
+                            type: object
+                            required:
+                              - amount
+                              - rate
+                            properties:
+                              amount:
+                                type: number
+                                description: The tax amount.
+                                minimum: 0
+                              rate:
+                                type: number
+                                description: >-
+                                  The tax rate. Must be in form of ratio between
+                                  0 and 1, not percentage.
+                                minimum: 0
+                              name:
+                                type: string
+                                description: A description of the tax type. Required.
+                              country_code:
+                                description: >-
+                                  The code of the country of the tax in the ISO
+                                  3166 ALPHA-2 format. For example, GB, DE or
+                                  US.
+                                type: string
+                                maxLength: 2
+                        item_condition:
+                          type: string
+                          description: >-
+                            The condition of the item, checked during quality
+                            inspection.
+                        return_reason:
+                          type: string
+                          description: The reason why this item was returned.
+                        return_code:
+                          type: integer
+                          nullable: true
+                          description: The corresponding code of the return reason.
+                        condition_code:
+                          type: integer
+                          nullable: true
+                          description: The corresponding code of the item condition option.
+                  extended_attributes:
+                    type: array
+                    maxItems: 100
+                    description: >-
+                      This is a list of read-only objects that can be used to
+                      display additional information.
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          minLength: 1
+                          maxLength: 100
+                        value:
+                          type: string
+                          maxLength: 8192
+                  is_historical:
+                    type: boolean
+                    description: >-
+                      Set to true, if the return is historical, i.e. it was
+                      processed by an external system.
+                  is_tax_exempt:
+                    type: boolean
+                    description: If true, the return order is tax exempt.
+              example:
+                refunded_amount: 775.19
+                return_id: 1fc4d366-40ca-4e36-b38f-66393bda517a
+                returned_from: 27a39710-4b2d-43fd-b636-5f7aed3073a2
+                currency: USD
+                return_items:
+                  - product_id: '1000031'
+                  - product_id: '1000032'
+        '400':
+          description: The provided data is incorrect.
+        '404':
+          description: The order was not found.
+        '409':
+          description: >-
+            Your return policy does not allow this return, or this return was
+            already requested.
+        '500':
+          description: Internal Server Error.
+      description: >
+        Initiates the return process for item(s) in an order.
+
+
+        Imports a historical return into NewStore when `is_historical` is set to
+        true.
+
+
+        You must specify the condition code for an item when creating a return.
+
+
+        NewStore creates condition codes for your business.
+
+
+        To retrieve the list of condition codes configured for your business,
+        contact
+
+        the support team.
+
+
+        If the refund amount is not provided in the request, it is calculated by
+        the platform:
+
+
+        - If only some items from the order are returned, sum of the item prices
+        is refunded.
+
+        - If the config property ``refund_shipping_cost`` is set to ``True`` and
+        all items in the
+          order are returned, the amount refunded includes the sum of the item prices and the
+          shipping costs.
+        - If the config property ``refund_shipping_cost`` is not set, or set to
+        ``False``,
+          the sum of the item prices is refunded. Shipping costs are not included in this amount,
+          and not refunded.
+      operationId: CreateReturn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: Creates a return for the specified items.
+              type: object
+              required:
+                - items
+                - returned_from
+              properties:
+                is_historical:
+                  type: boolean
+                  description: >-
+                    Set to true, if the return is historical, i.e. it was
+                    processed by an external system.
+                returned_at:
+                  type: string
+                  nullable: true
+                  format: date-time
+                  description: >-
+                    The time when the item was returned. If this property is not
+                    set in the request, it is set to the current time.
+                returned_from:
+                  type: string
+                  minLength: 1
+                  description: >-
+                    The fulfillment_node_id of the location to which the item
+                    was returned.
+                refund_amount:
+                  type: number
+                  nullable: true
+                  description: >-
+                    The amount to be refunded. If this property is not set in
+                    the request, it is calculated automatically.
+                items:
+                  type: array
+                  minLength: 1
+                  items:
+                    type: object
+                    required:
+                      - product_id
+                    properties:
+                      product_id:
+                        type: string
+                        minLength: 1
+                        description: >-
+                          The identifier of the returned product, for example an
+                          SKU number.
+                      return_reason:
+                        type: string
+                        nullable: true
+                      return_code:
+                        type: integer
+                        nullable: true
+                        description: The corresponding code of the return reason.
+                      item_condition:
+                        type: string
+                        nullable: true
+                      condition_code:
+                        type: integer
+                        nullable: true
+                        description: The corresponding code of the item condition option.
+                extended_attributes:
+                  type: array
+                  maxItems: 100
+                  description: >-
+                    This is a list of read-only objects that can be used to
+                    display additional information.
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        minLength: 1
+                        maxLength: 100
+                      value:
+                        type: string
+                        maxLength: 8192
+            examples:
+              item_return:
+                summary: Regular return.
+                value:
+                  items:
+                    - product_id: '1000031'
+                      return_reason: Wrong size
+                      return_code: 1
+                      item_condition: Resell
+                      condition_code: 1
+                    - product_id: '1000032'
+                      return_reason: Damaged
+                      return_code: 2
+                      item_condition: Scrap
+                      condition_code: 2
+                  returned_from: 27a39710-4b2d-43fd-b636-5f7aed3073a2
+              item_return_with_refund_amount:
+                summary: A return with zero refund amount.
+                value:
+                  items:
+                    - product_id: '1000031'
+                    - product_id: '1000032'
+                  refund_amount: 0
+                  returned_from: 27a39710-4b2d-43fd-b636-5f7aed3073a2
+              historical_return:
+                summary: Historical return.
+                value:
+                  items:
+                    - product_id: '841725195271'
+                      return_reason: Damaged
+                      return_code: 1
+                      item_condition: Scrap
+                      condition_code: 2
+                  returned_from: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                  returned_at: '2018-09-28T14:30:06.000Z'
+                  refunded_amount: 503
+                  is_historical: true
+        required: true
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The identifier for the order.
+  /orders/{order_id}/returns/{return_id}:
+    get:
+      summary: Get return
+      security:
+        - newStoreAccessToken: []
+      responses:
+        '200':
+          description: The return with the given uuid.
+          content:
+            application/json:
+              schema:
+                title: An item return
+                type: object
+                required:
+                  - refunded_amount
+                  - return_id
+                  - return_items
+                  - currency
+                properties:
+                  refunded_amount:
+                    type: number
+                    minimum: 0
+                    description: The amount refunded to the customer.
+                  total_refund_amount:
+                    type: number
+                    minimum: 0
+                    description: The total refund amount related to this return.
+                  return_id:
+                    type: string
+                    minLength: 36
+                    maxLength: 36
+                    description: The identifier of the newly created return.
+                  currency:
+                    type: string
+                    minLength: 3
+                    maxLength: 3
+                    description: The currency of the return.
+                  returned_from:
+                    type: string
+                    description: >-
+                      The fulfillment_node_id or store_id of the location to
+                      which the item was returned. It is the identifier provided
+                      in the 'returned_from' field of the 'Create return'
+                      request.
+                  consumer_email:
+                    type: string
+                    description: >-
+                      Contains the email address of the consumer who bought the
+                      items.
+                  consumer_uuid:
+                    type: string
+                    minLength: 1
+                    description: Contains the identifier of the consumer profile.
+                  return_items:
+                    type: array
+                    minItems: 1
+                    items:
+                      type: object
+                      required:
+                        - product_id
+                      properties:
+                        item_type:
+                          type: string
+                          description: >-
+                            Type of the returned item. Can be product or
+                            shipping.
+                          enum:
+                            - product
+                            - shipping
+                        product_id:
+                          type: string
+                          description: >-
+                            The identifier of the returned product, for example
+                            an SKU number.
+                        product_name:
+                          type: string
+                          description: Name of the corresponding product.
+                        price_catalog:
+                          type: number
+                          description: >-
+                            Price of the item from the catalog before the
+                            discounts.
+                          minimum: 0
+                        tax_class:
+                          type: string
+                          description: Tax class of the product.
+                        tax_lines:
+                          description: Describes the taxes applied to the item.
+                          type: array
+                          minItems: 0
+                          maxItems: 100
+                          items:
+                            type: object
+                            required:
+                              - amount
+                              - rate
+                            properties:
+                              amount:
+                                type: number
+                                description: The tax amount.
+                                minimum: 0
+                              rate:
+                                type: number
+                                description: >-
+                                  The tax rate. Must be in form of ratio between
+                                  0 and 1, not percentage.
+                                minimum: 0
+                              name:
+                                type: string
+                                description: A description of the tax type. Required.
+                              country_code:
+                                description: >-
+                                  The code of the country of the tax in the ISO
+                                  3166 ALPHA-2 format. For example, GB, DE or
+                                  US.
+                                type: string
+                                maxLength: 2
+                        item_condition:
+                          type: string
+                          description: >-
+                            The condition of the item, checked during quality
+                            inspection.
+                        return_reason:
+                          type: string
+                          description: The reason why this item was returned.
+                        return_code:
+                          type: integer
+                          nullable: true
+                          description: The corresponding code of the return reason.
+                        condition_code:
+                          type: integer
+                          nullable: true
+                          description: The corresponding code of the item condition option.
+                  extended_attributes:
+                    type: array
+                    maxItems: 100
+                    description: >-
+                      This is a list of read-only objects that can be used to
+                      display additional information.
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          minLength: 1
+                          maxLength: 100
+                        value:
+                          type: string
+                          maxLength: 8192
+                  is_historical:
+                    type: boolean
+                    description: >-
+                      Set to true, if the return is historical, i.e. it was
+                      processed by an external system.
+                  is_tax_exempt:
+                    type: boolean
+                    description: If true, the return order is tax exempt.
+              example:
+                refunded_amount: 1406.75
+                return_id: 76ba2c90-c413-438e-8040-a3585a2db770
+                returned_from: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                currency: USD
+                return_items:
+                  - product_id: '1000061'
+                    item_condition: Sellable
+                    condition_code: 1
+                    return_reason: Too small
+                    return_code: 2
+                  - product_id: '1000221'
+                    item_condition: Scrap
+                    condition_code: 2
+                    return_reason: Damaged
+                    return_code: 1
+        '404':
+          description: The return was not found.
+        '500':
+          description: Internal Server Error.
+      description: Retrieves the specified return.
+      operationId: GetReturn
+    parameters:
+      - name: return_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The identifier for the returns.
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The identifier for the order.
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}

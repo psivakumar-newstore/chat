@@ -1,0 +1,185 @@
+openapi: 3.0.0
+info:
+  title: Payment troubleshoot API
+  description: Use this API to troubleshoot Payment configurations.
+  version: '1'
+servers:
+  - url: https://dodici.x.newstore.net/v1/p
+paths:
+  /troubleshoot/newstore_checkout:
+    post:
+      summary: Troubleshoot NewStore Checkout configuration
+      description: Returns a summary of the NewStore Checkout configuration checks.
+      operationId: postTroubleshootNewStoreCheckout
+      security:
+        - newStoreAccessToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Troubleshoot NewStore Checkout.
+              type: object
+              description: Configuration to troubleshoot NewStore Checkout.
+              properties:
+                cart_token:
+                  type: string
+                  description: Base64 cart token, use one from a NewStore Checkout URL.
+            examples:
+              NewStore Checkout troubleshoot request:
+                value:
+                  cart_token: >-
+                    908BjbhrWAH4x4Wwh7dWv43lsXAf8WJ83tF_c8oeTZypgKe_XUGhQiVLV5Jz66a7H8crg_h39x436cNaPQnokw==
+      responses:
+        '200':
+          description: NewStore Checkout troubleshoot summary.
+          content:
+            application/json:
+              schema:
+                title: NewStore Checkout troubleshoot report.
+                type: object
+                description: Report of the troubleshoot performed for NewStore Checkout.
+                properties:
+                  general:
+                    type: object
+                    properties:
+                      web_drop_in_enabled:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                      encryption_pass_phrase:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                      checkout_api_url:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                      adyen_credentials:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                  adyen:
+                    type: object
+                    properties:
+                      valid_credentials:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                      payment_methods:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                  scheme:
+                    type: object
+                    properties:
+                      is_supported_payment_method:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                  paypal:
+                    type: object
+                    properties:
+                      merchant_identifier:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                      is_supported_payment_method:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                  google_pay:
+                    type: object
+                    properties:
+                      merchant_identifier:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                      is_supported_payment_method:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                  apple_pay:
+                    type: object
+                    properties:
+                      merchant_identifier:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                      is_supported_payment_method:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                      domain_name:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                      certificate:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                      apple_url:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+                      apple_pay_session:
+                        type: string
+                        description: >-
+                          Shows OK if the value is correct or an error
+                          description.
+              examples:
+                NewStoreCheckoutTroubleshootSummary:
+                  value:
+                    general:
+                      web_drop_in_enabled: OK
+                      encryption_pass_phrase: OK
+                      checkout_api_url: OK
+                      adyen_credentials: OK
+                    adyen:
+                      valid_credentials: >-
+                        Error: please check logs from psp_adyen and
+                        newstore_checkout
+                      payment_methods: >-
+                        Error: please check logs from psp_adyen and
+                        newstore_checkout
+                    scheme:
+                      is_supported_payment_method: 'Error: not in the list of supported payment methods'
+                    paypal:
+                      merchant_identifier: 'Error: paypal not configured'
+                      is_supported_payment_method: 'Error: not in the list of supported payment methods'
+                    google_pay:
+                      merchant_identifier: 'Error: google_pay not configured'
+                      is_supported_payment_method: 'Error: not in the list of supported payment methods'
+                    apple_pay:
+                      merchant_identifier: 'Error: apple_pay wallet was not configured'
+                      is_supported_payment_method: 'Error: not in the list of supported payment methods'
+                      domain_name: 'Error: apple_pay wallet was not configured'
+                      certificate: OK
+                      apple_url: 'Error: apple_pay wallet was not configured'
+                      apple_pay_session: >-
+                        Error: could not get an ApplePay session check
+                        newstore_checkout logs
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+x-annotation-crossOriginAllowed: true
+security:
+  - newStoreAccessToken: []

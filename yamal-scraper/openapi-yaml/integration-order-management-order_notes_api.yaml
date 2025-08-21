@@ -1,0 +1,824 @@
+openapi: 3.0.0
+info:
+  title: Order Notes API
+  version: 0.1.0
+  x-audience: external-public
+  x-api-id: order-notes-062023
+  description: >
+    API to create, read, update and delete notes for orders or items in NewStore
+    Omnichannel Cloud.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+security:
+  - newStoreAccessToken: []
+paths:
+  /orders/{order_uuid}/notes:
+    parameters:
+      - name: order_uuid
+        in: path
+        description: Unique ID for an order.
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get notes by order ID
+      operationId: showOrderNote
+      responses:
+        '200':
+          description: Successfully processed.
+          content:
+            application/json:
+              schema:
+                title: Order notes by sales order uuid
+                description: Retrieve all of the order notes associated with an order.
+                type: object
+                required:
+                  - notes
+                properties:
+                  notes:
+                    type: array
+                    minItems: 0
+                    description: A list of order notes.
+                    items:
+                      description: JSON representation of an order note.
+                      title: Order Note
+                      type: object
+                      required:
+                        - id
+                        - order_id
+                        - text
+                        - source
+                        - source_type
+                        - tags
+                        - created_at
+                        - updated_at
+                      properties:
+                        id:
+                          type: string
+                          description: The UUID for this note.
+                        order_id:
+                          type: string
+                          description: The UUID for the order.
+                        item_id:
+                          type: string
+                          description: >-
+                            If this is an item-specific note, the
+                            sales_order_item_uuid of the item.
+                        text:
+                          type: string
+                          minLength: 1
+                          maxLength: 4000
+                          description: The content of this note.
+                        source:
+                          type: string
+                          minLength: 1
+                          maxLength: 256
+                          description: The identifier for the author of the note.
+                        source_type:
+                          type: string
+                          minLength: 1
+                          maxLength: 256
+                          description: The type of the source of the note
+                        tags:
+                          type: array
+                          description: The tags associated with this note.
+                          items:
+                            type: string
+                            minLength: 1
+                            maxLength: 128
+                            description: Tag name
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: The creation timestamp of the note.
+                        updated_at:
+                          type: string
+                          format: date-time
+                          description: The updated timestamp of the note.
+              example:
+                notes:
+                  - id: e38123a3-ffec-4258-b440-33048a899365
+                    order_id: 0dce51af-fcda-4f6b-aca1-2c8ee5e695b3
+                    item_id: 643af430-5ab0-4cf7-96ac-278ac6a92cb0
+                    text: Customer wants to cancel this order.
+                    source: Author 117
+                    tags:
+                      - associate note
+                      - cancellation
+                    created_at: 2012-10-31 15:50:13.793654 +0000 UTC
+                    updated_at: 2012-10-31 15:50:13.793654 +0000 UTC
+        '400':
+          description: There is an error in the url.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes By Order ID Bad Request Error Response
+                description: >-
+                  Error response code for order notes by Order ID and details of
+                  a bad request.
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    description: A list of fields that don't match request schema.
+                    items:
+                      type: string
+                      description: >-
+                        An explanation of fields that don't match schema
+                        definitions.
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+                  request_id:
+                    type: string
+                    description: The id for the failed request.
+              example:
+                message: Invalid order ID in request url.
+        '404':
+          description: The endpoint could not be found.
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes Internal Error Response
+                description: Error response for an internal server error.
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+              example:
+                message: Internal server error.
+        default:
+          description: Unexpected Error
+      description: >
+        Returns all notes associated with the specified order ID in the request
+        URL sorted from newest to oldest.
+
+
+        This method also returns all the notes for the items that are part of
+        the specified order.
+    post:
+      summary: Create order note
+      operationId: createOrderLevelNote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Create a note
+              description: >-
+                Defines the note content tied to an order level note or item
+                level note.
+              type: object
+              required:
+                - text
+                - source
+                - tags
+              properties:
+                text:
+                  type: string
+                  minLength: 1
+                  maxLength: 4000
+                  description: The content of this note.
+                source:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+                  description: >-
+                    The identifier for the author of the note. This field only
+                    supports `user_id`.
+                source_type:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+                  description: The type of the source, e.g. 'user', 'system'
+                tags:
+                  type: array
+                  description: The tags associated with this note.
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 128
+                    description: Tag name.
+      responses:
+        '200':
+          description: Note has been successfully created.
+          content:
+            application/json:
+              schema:
+                title: Response on note creation
+                description: JSON representation of an order note.
+                type: object
+                required:
+                  - id
+                  - order_id
+                  - text
+                  - source
+                  - source_type
+                  - tags
+                  - created_at
+                  - updated_at
+                properties:
+                  id:
+                    type: string
+                    description: The UUID for this note.
+                  order_id:
+                    type: string
+                    description: The UUID for the order.
+                  item_id:
+                    type: string
+                    description: >-
+                      If this is an item-specific note, the
+                      sales_order_item_uuid of the item.
+                  text:
+                    type: string
+                    minLength: 1
+                    maxLength: 4000
+                    description: The content of this note.
+                  source:
+                    type: string
+                    minLength: 1
+                    maxLength: 256
+                    description: The identifier for the author of the note.
+                  source_type:
+                    type: string
+                    minLength: 1
+                    maxLength: 256
+                    description: The type of the source of the note
+                  tags:
+                    type: array
+                    description: The tags associated with this note.
+                    items:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
+                      description: Tag name
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: The creation timestamp of the note.
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: The updated timestamp of the note.
+              example:
+                id: e38123a3-ffec-4258-b440-33048a899365
+                order_id: 0dce51af-fcda-4f6b-aca1-2c8ee5e695b3
+                text: Customer wants to cancel this order.
+                source: Author 117
+                tags:
+                  - associate note
+                  - cancellation
+                created_at: 2012-10-31 15:50:13.793654 +0000 UTC
+                updated_at: 2012-10-31 15:50:13.793654 +0000 UTC
+        '400':
+          description: The request body is invalid.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes By Order ID Bad Request Error Response
+                description: >-
+                  Error response code for order notes by Order ID and details of
+                  a bad request.
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    description: A list of fields that don't match request schema.
+                    items:
+                      type: string
+                      description: >-
+                        An explanation of fields that don't match schema
+                        definitions.
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+                  request_id:
+                    type: string
+                    description: The id for the failed request.
+              example:
+                message: Invalid order ID in request url.
+                messages:
+                  - text is a required field
+                  - source is a required field
+                request_id: '123456'
+        '404':
+          description: The endpoint could not be found.
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes Internal Error Response
+                description: Error response for an internal server error.
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+              example:
+                message: Internal server error.
+        default:
+          description: Unexpected Error
+      description: >
+        Creates a new note that applies to the order ID specified in the request
+        URL. For example,
+
+        create a note for an order that has been cancelled by the customer in
+        the store.
+  /orders/{order_uuid}/items/{item_uuid}/notes:
+    parameters:
+      - name: order_uuid
+        in: path
+        description: >
+          Unique ID for an order. To retrieve the order ID, use the
+
+          [List external
+          orders](/api/integration/order-management/sales_order_api) method.
+        required: true
+        schema:
+          type: string
+      - name: item_uuid
+        in: path
+        description: >
+          Unique ID for an item in an order. To retrieve the item ID, use the
+
+          [List external
+          orders](/api/integration/order-management/sales_order_api) method.
+        required: true
+        schema:
+          type: string
+    post:
+      summary: Create item note
+      operationId: createItemLevelNote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Create a note
+              description: >-
+                Defines the note content tied to an order level note or item
+                level note.
+              type: object
+              required:
+                - text
+                - source
+                - tags
+              properties:
+                text:
+                  type: string
+                  minLength: 1
+                  maxLength: 4000
+                  description: The content of this note.
+                source:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+                  description: >-
+                    The identifier for the author of the note. This field only
+                    supports `user_id`.
+                source_type:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+                  description: The type of the source, e.g. 'user', 'system'
+                tags:
+                  type: array
+                  description: The tags associated with this note.
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 128
+                    description: Tag name.
+      responses:
+        '200':
+          description: Note has been successfully created.
+          content:
+            application/json:
+              schema:
+                title: Response on note creation
+                description: JSON representation of an order note.
+                type: object
+                required:
+                  - id
+                  - order_id
+                  - text
+                  - source
+                  - source_type
+                  - tags
+                  - created_at
+                  - updated_at
+                properties:
+                  id:
+                    type: string
+                    description: The UUID for this note.
+                  order_id:
+                    type: string
+                    description: The UUID for the order.
+                  item_id:
+                    type: string
+                    description: >-
+                      If this is an item-specific note, the
+                      sales_order_item_uuid of the item.
+                  text:
+                    type: string
+                    minLength: 1
+                    maxLength: 4000
+                    description: The content of this note.
+                  source:
+                    type: string
+                    minLength: 1
+                    maxLength: 256
+                    description: The identifier for the author of the note.
+                  source_type:
+                    type: string
+                    minLength: 1
+                    maxLength: 256
+                    description: The type of the source of the note
+                  tags:
+                    type: array
+                    description: The tags associated with this note.
+                    items:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
+                      description: Tag name
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: The creation timestamp of the note.
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: The updated timestamp of the note.
+              example:
+                id: e38123a3-ffec-4258-b440-33048a899365
+                order_id: 0dce51af-fcda-4f6b-aca1-2c8ee5e695b3
+                item_id: 643af430-5ab0-4cf7-96ac-278ac6a92cb0
+                text: Customer wants to cancel this order.
+                source: Author 117
+                tags:
+                  - associate note
+                  - cancellation
+                created_at: 2012-10-31 15:50:13.793654 +0000 UTC
+                updated_at: 2012-10-31 15:50:13.793654 +0000 UTC
+        '400':
+          description: The request body is invalid.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes By Order ID Bad Request Error Response
+                description: >-
+                  Error response code for order notes by Order ID and details of
+                  a bad request.
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    description: A list of fields that don't match request schema.
+                    items:
+                      type: string
+                      description: >-
+                        An explanation of fields that don't match schema
+                        definitions.
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+                  request_id:
+                    type: string
+                    description: The id for the failed request.
+              example:
+                message: Invalid item ID in request url.
+                messages:
+                  - text is a required field
+                  - source is a required field
+                request_id: '123456'
+        '404':
+          description: The endpoint could not be found.
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes Internal Error Response
+                description: Error response for an internal server error.
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+              example:
+                message: Internal server error.
+        default:
+          description: Unexpected Error
+      description: >
+        Creates a new note that applies to the item ID specified in the request
+        URL. For example,
+
+        create a note for an item that a customer wants to cancel after
+        purchasing it in the store.
+  /orders/{order_uuid}/notes/{note_uuid}:
+    parameters:
+      - name: order_uuid
+        in: path
+        description: >
+          Unique ID for an order. To retrieve the order ID, use the
+
+          [List external
+          orders](/api/integration/order-management/sales_order_api) method.
+        required: true
+        schema:
+          type: string
+      - name: note_uuid
+        in: path
+        description: >
+          Unique ID for a note. To retrieve the note ID, use the
+
+          [Get order
+          notes](/api/integration/order-management/order_notes_api#operation/get-order-note)
+          method.
+        required: true
+        schema:
+          type: string
+    patch:
+      summary: Update note
+      operationId: updateNote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Update a note
+              description: Updates the note content tied to a note id.
+              type: object
+              required:
+                - text
+                - source
+                - tags
+              properties:
+                text:
+                  type: string
+                  minLength: 1
+                  maxLength: 4000
+                  description: The content of this note.
+                source:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+                  description: The identifier for the author of the note.
+                source_type:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+                  description: The type of the source of the note.
+                tags:
+                  type: array
+                  description: The tags associated with this note.
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 128
+                    description: Tag name
+      responses:
+        '200':
+          description: Note has been successfully updated.
+          content:
+            application/json:
+              schema:
+                title: Response on note update
+                description: JSON representation of an order note.
+                type: object
+                required:
+                  - id
+                  - order_id
+                  - text
+                  - source
+                  - source_type
+                  - tags
+                  - created_at
+                  - updated_at
+                properties:
+                  id:
+                    type: string
+                    description: The UUID for this note.
+                  order_id:
+                    type: string
+                    description: The UUID for the order.
+                  item_id:
+                    type: string
+                    description: >-
+                      If this is an item-specific note, the
+                      sales_order_item_uuid of the item.
+                  text:
+                    type: string
+                    minLength: 1
+                    maxLength: 4000
+                    description: The content of this note.
+                  source:
+                    type: string
+                    minLength: 1
+                    maxLength: 256
+                    description: The identifier for the author of the note.
+                  source_type:
+                    type: string
+                    minLength: 1
+                    maxLength: 256
+                    description: The type of the source of the note
+                  tags:
+                    type: array
+                    description: The tags associated with this note.
+                    items:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
+                      description: Tag name
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: The creation timestamp of the note.
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: The updated timestamp of the note.
+              example:
+                id: e38123a3-ffec-4258-b440-33048a899365
+                order_id: 0dce51af-fcda-4f6b-aca1-2c8ee5e695b3
+                item_id: 643af430-5ab0-4cf7-96ac-278ac6a92cb0
+                text: Customer wants to cancel this order.
+                source: Author 117
+                tags:
+                  - associate note
+                  - cancellation
+                created_at: 2012-10-31 15:50:13.793654 +0000 UTC
+                updated_at: 2012-10-31 15:50:13.793654 +0000 UTC
+        '400':
+          description: The request body is invalid.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes By Order ID Bad Request Error Response
+                description: >-
+                  Error response code for order notes by Order ID and details of
+                  a bad request.
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    description: A list of fields that don't match request schema.
+                    items:
+                      type: string
+                      description: >-
+                        An explanation of fields that don't match schema
+                        definitions.
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+                  request_id:
+                    type: string
+                    description: The id for the failed request.
+              example:
+                message: Invalid note ID in request url.
+                messages:
+                  - text is a required field
+                  - source is a required field
+                request_id: '123456'
+        '404':
+          description: The endpoint or requested resource could not be found.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes By Order ID Bad Request Error Response
+                description: >-
+                  Error response code for order notes by Order ID and details of
+                  a bad request.
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    description: A list of fields that don't match request schema.
+                    items:
+                      type: string
+                      description: >-
+                        An explanation of fields that don't match schema
+                        definitions.
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+                  request_id:
+                    type: string
+                    description: The id for the failed request.
+              example:
+                message: No note exists for this order ID and note ID
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes Internal Error Response
+                description: Error response for an internal server error.
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+              example:
+                message: Internal server error.
+        default:
+          description: Unexpected Error
+      description: Updates the note with the specified note ID provided in the request URL.
+    delete:
+      summary: Delete note
+      operationId: destroyNote
+      responses:
+        '200':
+          description: Note has been successfully deleted.
+        '400':
+          description: There is an error in the url.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes By Order ID Bad Request Error Response
+                description: >-
+                  Error response code for order notes by Order ID and details of
+                  a bad request.
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    description: A list of fields that don't match request schema.
+                    items:
+                      type: string
+                      description: >-
+                        An explanation of fields that don't match schema
+                        definitions.
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+                  request_id:
+                    type: string
+                    description: The id for the failed request.
+              example:
+                message: Invalid note ID in request url.
+        '404':
+          description: The endpoint or requested resource could not be found.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes By Order ID Bad Request Error Response
+                description: >-
+                  Error response code for order notes by Order ID and details of
+                  a bad request.
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    description: A list of fields that don't match request schema.
+                    items:
+                      type: string
+                      description: >-
+                        An explanation of fields that don't match schema
+                        definitions.
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+                  request_id:
+                    type: string
+                    description: The id for the failed request.
+              example:
+                message: No note exists for this order ID and note ID.
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/problem+json:
+              schema:
+                title: Order Notes Internal Error Response
+                description: Error response for an internal server error.
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error code.
+              example:
+                message: Internal server error.
+        default:
+          description: Unexpected Error
+      description: Deletes the note with the specified note ID provided in the request URL.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

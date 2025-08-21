@@ -1,0 +1,305 @@
+openapi: 3.0.0
+info:
+  title: Availability Config API
+  version: 0.1.0
+  x-audience: external-public
+  x-api-id: availability-config-062023
+  description: >
+    Use this API when ATP information needs to be retrieved from an external
+
+    [order management
+    system](https://docs.newstore.com/docs/glossary#order-management-system).
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /config/availability/webhook:
+    get:
+      summary: Get webhook configuration
+      operationId: showWebhookConfiguration
+      responses:
+        '200':
+          description: Webhook Configuration Setting.
+          content:
+            application/json:
+              example:
+                url: https://lambda.com/
+                api_key: 962b5dfbc57da5448cb4
+                external_identifier: product_id
+                timeout: 15
+              schema:
+                description: The webhook configuration.
+                type: object
+                required:
+                  - url
+                  - api_key
+                  - external_identifier
+                  - timeout
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                    minLength: 1
+                    description: Describes the URL being called from the platform.
+                  api_key:
+                    type: string
+                    minLength: 20
+                    description: Describes API key used for authenticating requests.
+                  external_identifier:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      Describes identifier being used by an integration to look
+                      up ATP information in an external system. Currently only
+                      'product_id' is supported.
+                  timeout:
+                    type: integer
+                    minimum: 5
+                    maximum: 60
+                    description: Defines the timeout for HTTP requests.
+        '204':
+          description: No configuration found.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: internal_server_error
+                message: The request didn't succeed.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the current configuration for requesting ATP information from
+        the external
+
+        order management system.
+    put:
+      summary: Update webhook configuration
+      operationId: replaceWebhookConfiguration
+      requestBody:
+        content:
+          application/json:
+            example:
+              url: https://lambda.com/
+              api_key: 962b5dfbc57da5448cb4
+              external_identifier: product_id
+              timeout: 15
+            schema:
+              description: The webhook configuration.
+              type: object
+              required:
+                - url
+                - api_key
+                - external_identifier
+                - timeout
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  minLength: 1
+                  description: Describes the URL being called from the platform.
+                api_key:
+                  type: string
+                  minLength: 20
+                  description: Describes API key used for authenticating requests.
+                external_identifier:
+                  type: string
+                  minLength: 1
+                  description: >-
+                    Describes identifier being used by an integration to look up
+                    ATP information in an external system. Currently only
+                    'product_id' is supported.
+                timeout:
+                  type: integer
+                  minimum: 5
+                  maximum: 60
+                  description: Defines the timeout for HTTP requests.
+        required: true
+      responses:
+        '200':
+          description: Webhook Configuration Setting.
+          content:
+            application/json:
+              example:
+                url: https://lambda.com/
+                api_key: 962b5dfbc57da5448cb4
+                external_identifier: product_id
+                timeout: 15
+              schema:
+                description: The webhook configuration.
+                type: object
+                required:
+                  - url
+                  - api_key
+                  - external_identifier
+                  - timeout
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                    minLength: 1
+                    description: Describes the URL being called from the platform.
+                  api_key:
+                    type: string
+                    minLength: 20
+                    description: Describes API key used for authenticating requests.
+                  external_identifier:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      Describes identifier being used by an integration to look
+                      up ATP information in an external system. Currently only
+                      'product_id' is supported.
+                  timeout:
+                    type: integer
+                    minimum: 5
+                    maximum: 60
+                    description: Defines the timeout for HTTP requests.
+        '400':
+          description: Bad Request Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: bad_request
+                message: Please provide a URL.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '409':
+          description: Conflict Error.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: internal_server_error
+                message: The request didn't succeed.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        default:
+          description: Unexpected Error
+      description: >
+        Specify that the retailer will use an external
+
+        order management system for using ATP information.
+
+
+        If you want to disable using ATP information from the external OMS,
+        please delete the configuration.
+    delete:
+      summary: Delete webhook configuration
+      operationId: destroyWebhookConfiguration
+      responses:
+        '200':
+          description: Successfully deleted.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: internal_server_error
+                message: The request didn't succeed.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        default:
+          description: Unexpected Error
+      description: >
+        Deletes the current configuration for requesting ATP information from
+        the external
+
+        order management system.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,742 @@
+openapi: 3.0.0
+info:
+  title: Delivery Options configuration API
+  version: v0
+  description: |
+    Manage provider rate configurations and getting offers from carriers.
+  contact:
+    name: team delivery
+tags:
+  - name: Configuration
+    description: configuration for delivery options settings
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /config/delivery/customization_adapter_config:
+    get:
+      tags:
+        - Configuration
+      summary: Get customization adapter config
+      description: >
+        Sets up the ``base_url``, which is a URL prefix of a particular
+        customization adapter (`https://...`)
+
+        used to retrieve provider rates in your business.
+      operationId: get-delivery-customization-adapter-config
+      responses:
+        '200':
+          description: Value was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    description: >-
+                      Configuration needed to use an external adapter to fetch
+                      customized shipping options.
+                    oneOf:
+                      - type: object
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+                    properties:
+                      base_url:
+                        description: Base URL of customization adapter.
+                        type: string
+                        pattern: ^https://
+                    required:
+                      - base_url
+                  updated_at:
+                    oneOf:
+                      - type: string
+                        nullable: false
+                        format: date-time
+                      - nullable: true
+                        enum:
+                          - null
+                required:
+                  - value
+                  - updated_at
+              example:
+                value:
+                  base_url: >-
+                    https://123scfznn9.execute-api.us-east-1.amazonaws.com/sandbox/
+                updated_at: '2021-08-23T12:54:10.381175Z'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    description: A human readable description of the error.
+                    type: string
+                  request_id:
+                    type: string
+    post:
+      tags:
+        - Configuration
+      summary: Set customization adapter config
+      description: >
+        Sets up the ``base_url``, which is a URL prefix of a particular
+        customization adapter (`https://...`)
+
+        used to retrieve provider rates in your business.
+      operationId: set-delivery-customization-adapter-config
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  description: >-
+                    Configuration needed to use an external adapter to fetch
+                    customized shipping options.
+                  properties:
+                    base_url:
+                      description: Base URL of customization adapter.
+                      type: string
+                      pattern: ^https://
+                  required:
+                    - base_url
+              required:
+                - value
+            example:
+              value:
+                base_url: >-
+                  https://123scfznn9.execute-api.us-east-1.amazonaws.com/sandbox/
+      responses:
+        '200':
+          description: Value was successfully updated.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    description: A human readable description of the error.
+                    type: string
+                  request_id:
+                    type: string
+  /config/delivery/packing_time_duration:
+    get:
+      tags:
+        - Configuration
+      summary: Get packing timer duration
+      description: >
+        Retrieves the time for which an order that is packed and ready for
+        pickup is not shipped or
+
+        picked up from the fulfillment location.
+
+
+        This time allows the store to ensure that the order is ready
+
+        for pickup when the shipping partner or customer arrives at the
+        location.
+      operationId: get-packing-time-duration
+      responses:
+        '200':
+          description: Value was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    description: Time needed to pack an order (seconds).
+                    oneOf:
+                      - type: integer
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+                  updated_at:
+                    oneOf:
+                      - type: string
+                        nullable: false
+                        format: date-time
+                      - nullable: true
+                        enum:
+                          - null
+                required:
+                  - value
+                  - updated_at
+              example:
+                value: 1085
+                updated_at: '2021-08-23T12:54:05.174571Z'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    description: A human readable description of the error.
+                    type: string
+                  request_id:
+                    type: string
+    post:
+      tags:
+        - Configuration
+      summary: Set packing timer duration
+      description: >
+        Sets the time for which an order that is packed and ready for pickup is
+        not shipped or
+
+        picked up from the fulfillment location.
+
+
+        This time allows the store to ensure that the order is ready
+
+        for pickup when the shipping partner or customer arrives at the
+        location.
+      operationId: set-packing-time-duration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  description: Time needed to pack an order (seconds).
+                  type: integer
+              required:
+                - value
+            example:
+              value: 1085
+      responses:
+        '200':
+          description: Value was successfully updated.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    description: A human readable description of the error.
+                    type: string
+                  request_id:
+                    type: string
+  /config/delivery/set_fix_service_level_shipping_price:
+    get:
+      tags:
+        - Configuration
+      summary: Get shipping price config for split orders
+      description: >
+        Retrieves the configuration to charge the price for split shipment
+        orders.
+
+
+        If set to ``true``, for all split shipment orders in your business, only
+        the shipping price
+
+        for the most expensive shipment in the order is  request is charged to
+        the customer.
+
+        The rest of the shipment prices are ignored.
+
+
+        For more information, see this [business
+        example](/developers/configuration/config-shipping/#config-least-shipping).
+      operationId: get-set-fix-service-level-shipping-price
+      responses:
+        '200':
+          description: Value was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    description: >-
+                      If true, for fulfillment from multiple locations, only the
+                      fulfillment request with the highest shipment price is
+                      charged. The rest of the shipment prices are ignored.
+                    oneOf:
+                      - type: boolean
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+                  updated_at:
+                    oneOf:
+                      - type: string
+                        nullable: false
+                        format: date-time
+                      - nullable: true
+                        enum:
+                          - null
+                required:
+                  - value
+                  - updated_at
+              example:
+                value: true
+                updated_at: '2021-08-23T12:54:06.960785Z'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    description: A human readable description of the error.
+                    type: string
+                  request_id:
+                    type: string
+    post:
+      tags:
+        - Configuration
+      summary: Set shipping price config for split orders
+      description: >
+        Sets the configuration to charge the price for split shipment orders.
+
+
+        If set to ``true``, for all split shipment orders in your business, only
+        the shipping price
+
+        for the most expensive shipment in the order is  request is charged to
+        the customer.
+
+        The rest of the shipment prices are ignored.
+
+
+        For more information, see this [business
+        example](/developers/configuration/config-shipping/#config-least-shipping).
+      operationId: set-set-fix-service-level-shipping-price
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  description: >-
+                    If true, for fulfillment from multiple locations, only the
+                    fulfillment request with the highest shipment price is
+                    charged. The rest of the shipment prices are ignored.
+                  type: boolean
+              required:
+                - value
+            example:
+              value: true
+      responses:
+        '200':
+          description: Value was successfully updated.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    description: A human readable description of the error.
+                    type: string
+                  request_id:
+                    type: string
+  /config/delivery/use_customizable_provider_rates:
+    get:
+      tags:
+        - Configuration
+      summary: Get config for customizable provider rates
+      description: >
+        Retrieves the current configuration to retrieve customizable provider
+        rates from an
+
+        external customization adapter.
+
+
+        To enable this configuration if it is currently disabled,
+
+        use the [Set config for customizable provider
+        rates](#operation/set-delivery-customization-adapter-config) method.
+      operationId: get-use-customizable-provider-rates
+      responses:
+        '200':
+          description: Value was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    description: Toggle to use external adapter to fetch provider rates.
+                    oneOf:
+                      - type: boolean
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+                  updated_at:
+                    oneOf:
+                      - type: string
+                        nullable: false
+                        format: date-time
+                      - nullable: true
+                        enum:
+                          - null
+                required:
+                  - value
+                  - updated_at
+              example:
+                value: true
+                updated_at: '2021-08-23T12:54:05.721904Z'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    description: A human readable description of the error.
+                    type: string
+                  request_id:
+                    type: string
+    post:
+      tags:
+        - Configuration
+      summary: Set config for customizable provider rates
+      description: >
+        Sets the configuration to retrieve customizable provider rates from an
+        external customization
+
+        adapter.
+      operationId: set-use-customizable-provider-rates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  description: Toggle to use external adapter to fetch provider rates.
+                  type: boolean
+              required:
+                - value
+            example:
+              value: true
+      responses:
+        '200':
+          description: Value was successfully updated.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    description: A human readable description of the error.
+                    type: string
+                  request_id:
+                    type: string
+  /config/delivery/use_prioritized_provider_rates:
+    get:
+      tags:
+        - Configuration
+      summary: Get priority of provider rates
+      description: >
+        Retrieves the current configuration for priority of provider rates.
+
+
+        If set to ``true``, provider rates are selected based on what has been
+        configured in the
+
+        fulfillment configuration for your business.
+
+
+        If set to ``false``, provider rates are selected based on what has been
+        configured in the
+
+        ``routes`` property in the fulfillment configuration for your business.
+
+
+        For more information, see this
+        [guide](/developers/tutorials/fulfillment-config).
+      operationId: get-use-prioritized-provider-rates
+      responses:
+        '200':
+          description: Value was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  value:
+                    description: >-
+                      If true, delivery provider rates will be taken from
+                      provider_rates_priority section of the fulfilment config,
+                      otherwise from routes section.
+                    oneOf:
+                      - type: boolean
+                        nullable: false
+                      - nullable: true
+                        enum:
+                          - null
+                  updated_at:
+                    oneOf:
+                      - type: string
+                        nullable: false
+                        format: date-time
+                      - nullable: true
+                        enum:
+                          - null
+                required:
+                  - value
+                  - updated_at
+              example:
+                value: true
+                updated_at: '2021-08-23T12:54:05.858590Z'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    description: A human readable description of the error.
+                    type: string
+                  request_id:
+                    type: string
+    post:
+      tags:
+        - Configuration
+      summary: Set priority of provider rates
+      description: >
+        Sets the priority of priority of provider rates in your business.
+
+
+        If set to ``true``, provider rates are selected based on what has been
+        configured in the
+
+        ``provider_rates_priority`` property in the fulfillment configuration
+        for your business.
+
+
+        If set to ``false``, provider rates are selected based on what has been
+        configured in the
+
+        ``routes`` property in the fulfillment configuration for your business.
+
+
+        For more information, see this
+        [guide](/developers/tutorials/fulfillment-config).
+      operationId: set-use-prioritized-provider-rates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  description: >-
+                    If true, delivery provider rates will be taken from
+                    provider_rates_priority section of the fulfilment config,
+                    otherwise from routes section.
+                  type: boolean
+              required:
+                - value
+            example:
+              value: true
+      responses:
+        '200':
+          description: Value was successfully updated.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    description: A human readable description of the error.
+                    type: string
+                  request_id:
+                    type: string

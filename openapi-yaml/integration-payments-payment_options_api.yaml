@@ -1,0 +1,480 @@
+openapi: 3.0.0
+info:
+  title: Payment Options API
+  description: >-
+    Use this API to retrieve the configured payment and refund options for a
+    specified store in your business.
+  version: '1'
+servers:
+  - url: https://dodici.x.newstore.net/_/v1/org
+paths:
+  /stores/{store_id}/payment_options:
+    parameters:
+      - in: path
+        name: store_id
+        required: true
+        description: >
+          The store identifier in NewStore. Use the
+
+          [List
+          stores](/newstore-cloud/store_operations/store.html#operation/listStores)
+          method to retrieve the store ID.
+        schema:
+          type: string
+    get:
+      summary: List payment options and their configuration
+      description: >-
+        Returns a list of payment options and their required configuration for
+        the specified store.
+
+        To add a payment option for the store, contact the support team.
+      operationId: getPaymentOptions
+      responses:
+        '200':
+          description: The operation was successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stripe:
+                    type: object
+                    description: >-
+                      The content is empty while the implementation is not
+                      finished.
+                  adyen:
+                    type: object
+                    description: The Adyen configuration for the payment option.
+                    properties:
+                      merchant_account:
+                        type: string
+                        description: The merchant account to use with this store.
+                      username:
+                        type: string
+                        description: >-
+                          The username used to authenticate with the Adyen
+                          payment device.
+                      password:
+                        type: string
+                        description: >-
+                          The password used to authenticate with the Adyen
+                          payment device.
+                      environment:
+                        type: string
+                        description: >-
+                          Indicates whether to authenticate against a test or a
+                          live Adyen environment.
+                        enum:
+                          - test
+                          - live
+                      payment_subject:
+                        type: string
+                        description: Payment subject to be attached to transactions.
+                      authorization_type:
+                        type: string
+                        description: >-
+                          Indicates whether to use PreAuth or FinalAuth
+                          authorizations for payment transactions.
+                        enum:
+                          - PreAuth
+                          - FinalAuth
+                      store_id:
+                        type: string
+                        description: Adyen store ID mapped to the given NewStore store ID.
+                    required:
+                      - merchant_account
+                      - username
+                      - password
+                      - environment
+                      - payment_subject
+                      - authorization_type
+                      - store_id
+                  adyen_pay_by_link:
+                    type: object
+                    description: The Adyen Pay by link configuartion for the payment option
+                    properties:
+                      merchant_account:
+                        type: string
+                        description: The merchant account to use with this store.
+                      pay_by_link_endpoint:
+                        type: string
+                        description: The Adyen Pay by link endpoint to use with this store.
+                      username:
+                        type: string
+                        description: >-
+                          The username used to authenticate with the Adyen
+                          payment device.
+                      password:
+                        type: string
+                        description: >-
+                          The password used to authenticate with the Adyen
+                          payment device.
+                      store_id:
+                        type: string
+                        description: Adyen store ID mapped to the given NewStore store ID.
+                  adyen_terminal:
+                    type: object
+                    description: >-
+                      The Adyen Terminal API configuration for the payment
+                      option.
+                    properties:
+                      merchant_account:
+                        type: string
+                        description: The merchant account to use with this store.
+                      company_account:
+                        type: string
+                        description: The comṕany account to use with this store.
+                      terminal_api_url:
+                        type: string
+                        description: The Adyen Terminal API URL to use with this store.
+                      username:
+                        type: string
+                        description: >-
+                          The username used to authenticate with the Adyen
+                          payment device.
+                      password:
+                        type: string
+                        description: >-
+                          The password used to authenticate with the Adyen
+                          payment device.
+                      store_id:
+                        type: string
+                        description: Adyen store ID mapped to the given NewStore store ID.
+                    required:
+                      - merchant_account
+                      - company_account
+                      - terminal_api_url
+                      - username
+                      - password
+                      - store_id
+                  cash:
+                    type: object
+                    description: >-
+                      The content is empty while the implementation is not
+                      finished.
+                  gift_card:
+                    type: object
+                    description: The gift card configuration for the store.
+                    properties:
+                      cash_out_enabled:
+                        type: boolean
+                        description: >-
+                          Whether cashing out gift cards should be enabled for
+                          this store.
+                  newstore_checkout:
+                    type: object
+                    description: >-
+                      The content is empty while the implementation is not
+                      finished.
+                  square:
+                    type: object
+                    description: The square configuration for the payment option.
+                    properties:
+                      client_id:
+                        type: string
+                        description: >-
+                          The ID of the application in the Square Developer
+                          Dashboard.
+                      location_id:
+                        type: string
+                        description: >-
+                          The identifier for the location on the Square platform
+                          that maps to the 'store_id'.
+                    required:
+                      - client_id
+                      - location_id
+                  non_integrated:
+                    type: object
+                    description: >-
+                      Payment methods to further elaborate on the non-integrated
+                      option used.
+                    additionalProperties:
+                      type: object
+                      required:
+                        - label
+                      properties:
+                        label:
+                          type: string
+                  verifone:
+                    type: object
+                    description: >-
+                      The content is empty while the implementation is not
+                      finished.
+              examples:
+                PaymentOptions:
+                  value:
+                    gift_card:
+                      cash_out_enabled: true
+                    adyen_terminal:
+                      merchant_account: Example_POS
+                      company_account: NewStore
+                      username: ws_21132@Company.Example
+                      password: '*******'
+                      terminal_api_url: https://terminal-api-test.adyen.com
+                      store_id: '1201'
+                    square:
+                      client_id: 14211SA54AS
+                      location_id: 001DE
+                    non_integrated:
+                      custom_payment_method:
+                        label: My Payment Method
+        '404':
+          description: The config was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request_id:
+                    type: string
+                    description: >-
+                      An unique identifier for the request, can be used to track
+                      the error in the platform.
+                  error_code:
+                    type: string
+                    description: Identifier of the error reason.
+                  message:
+                    type: string
+                    description: Description of the error.
+              examples:
+                ErrorResponse:
+                  value:
+                    request_id: bab5c739-b259-4f29-b378-6145e0602d45
+                    error_code: config_not_found
+                    message: Payment options not configured.
+  /stores/{store_id}/refund_options:
+    parameters:
+      - in: path
+        name: store_id
+        required: true
+        description: The store identifier in NewStore.
+        schema:
+          type: string
+    get:
+      summary: List refund options and their configuration
+      description: >-
+        Returns a list of refund options and their required configuration for
+        the given store.
+
+        To add a refund option for the store, contact the support team.
+      operationId: getRefundOptions
+      responses:
+        '200':
+          description: The operation was successful.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - original
+                    - gift_card
+                    - e_gift_card
+                    - credit_card
+                    - external
+                    - non_integrated
+              examples:
+                RefundOptions:
+                  value:
+                    - original
+                    - gift_card
+        '404':
+          description: The config was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request_id:
+                    type: string
+                    description: >-
+                      An unique identifier for the request, can be used to track
+                      the error in the platform.
+                  error_code:
+                    type: string
+                    description: Identifier of the error reason.
+                  message:
+                    type: string
+                    description: Description of the error.
+              examples:
+                ErrorResponse:
+                  value:
+                    request_id: bab5c739-b259-4f29-b378-6145e0602d45
+                    error_code: config_not_found
+                    message: Refund options not configured.
+components:
+  schemas:
+    error_response:
+      type: object
+      properties:
+        request_id:
+          type: string
+          description: >-
+            An unique identifier for the request, can be used to track the error
+            in the platform.
+        error_code:
+          type: string
+          description: Identifier of the error reason.
+        message:
+          type: string
+          description: Description of the error.
+    payment_options:
+      type: object
+      properties:
+        stripe:
+          type: object
+          description: The content is empty while the implementation is not finished.
+        adyen:
+          type: object
+          description: The Adyen configuration for the payment option.
+          properties:
+            merchant_account:
+              type: string
+              description: The merchant account to use with this store.
+            username:
+              type: string
+              description: The username used to authenticate with the Adyen payment device.
+            password:
+              type: string
+              description: The password used to authenticate with the Adyen payment device.
+            environment:
+              type: string
+              description: >-
+                Indicates whether to authenticate against a test or a live Adyen
+                environment.
+              enum:
+                - test
+                - live
+            payment_subject:
+              type: string
+              description: Payment subject to be attached to transactions.
+            authorization_type:
+              type: string
+              description: >-
+                Indicates whether to use PreAuth or FinalAuth authorizations for
+                payment transactions.
+              enum:
+                - PreAuth
+                - FinalAuth
+            store_id:
+              type: string
+              description: Adyen store ID mapped to the given NewStore store ID.
+          required:
+            - merchant_account
+            - username
+            - password
+            - environment
+            - payment_subject
+            - authorization_type
+            - store_id
+        adyen_pay_by_link:
+          type: object
+          description: The Adyen Pay by link configuartion for the payment option
+          properties:
+            merchant_account:
+              type: string
+              description: The merchant account to use with this store.
+            pay_by_link_endpoint:
+              type: string
+              description: The Adyen Pay by link endpoint to use with this store.
+            username:
+              type: string
+              description: The username used to authenticate with the Adyen payment device.
+            password:
+              type: string
+              description: The password used to authenticate with the Adyen payment device.
+            store_id:
+              type: string
+              description: Adyen store ID mapped to the given NewStore store ID.
+        adyen_terminal:
+          type: object
+          description: The Adyen Terminal API configuration for the payment option.
+          properties:
+            merchant_account:
+              type: string
+              description: The merchant account to use with this store.
+            company_account:
+              type: string
+              description: The comṕany account to use with this store.
+            terminal_api_url:
+              type: string
+              description: The Adyen Terminal API URL to use with this store.
+            username:
+              type: string
+              description: The username used to authenticate with the Adyen payment device.
+            password:
+              type: string
+              description: The password used to authenticate with the Adyen payment device.
+            store_id:
+              type: string
+              description: Adyen store ID mapped to the given NewStore store ID.
+          required:
+            - merchant_account
+            - company_account
+            - terminal_api_url
+            - username
+            - password
+            - store_id
+        cash:
+          type: object
+          description: The content is empty while the implementation is not finished.
+        gift_card:
+          type: object
+          description: The gift card configuration for the store.
+          properties:
+            cash_out_enabled:
+              type: boolean
+              description: Whether cashing out gift cards should be enabled for this store.
+        newstore_checkout:
+          type: object
+          description: The content is empty while the implementation is not finished.
+        square:
+          type: object
+          description: The square configuration for the payment option.
+          properties:
+            client_id:
+              type: string
+              description: The ID of the application in the Square Developer Dashboard.
+            location_id:
+              type: string
+              description: >-
+                The identifier for the location on the Square platform that maps
+                to the 'store_id'.
+          required:
+            - client_id
+            - location_id
+        non_integrated:
+          type: object
+          description: >-
+            Payment methods to further elaborate on the non-integrated option
+            used.
+          additionalProperties:
+            type: object
+            required:
+              - label
+            properties:
+              label:
+                type: string
+        verifone:
+          type: object
+          description: The content is empty while the implementation is not finished.
+    refund_options:
+      type: array
+      items:
+        type: string
+        enum:
+          - original
+          - gift_card
+          - e_gift_card
+          - credit_card
+          - external
+          - non_integrated
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+x-annotation-crossOriginAllowed: true
+security:
+  - newStoreAccessToken: []

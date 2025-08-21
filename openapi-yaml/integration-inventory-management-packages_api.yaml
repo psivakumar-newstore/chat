@@ -1,0 +1,188 @@
+openapi: 3.0.1
+info:
+  title: Packages
+  contact:
+    name: Team Store Fulfillemnt
+    url: https://apidocs.newstore.io
+    email: team-store-fulfillment@newstore.com
+  description: >
+    Use this API to manage document configuration for in stores functionality
+    for your business.
+  version: '0.1'
+tags:
+  - name: Packages
+    description: >
+      Represents the packages configuration for in stores functionality for your
+      business.
+servers:
+  - url: https://dodici.x.newstore.net
+security:
+  - newStoreAccessToken: []
+paths:
+  /v0/store-fulfillment/configuration/documents_to_print:
+    get:
+      tags:
+        - Get tenant documents to print configuration
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/documentsToPrint'
+              example:
+                9c996bd4-4d2b-4fcf-b590-5e80969186c4:
+                  \*:
+                    - document_type: invoice
+                      number_of_copies: 1
+                      printer_type: document_printer
+                default:
+                  in_store_pickup:
+                    - document_type: invoice
+                      number_of_copies: 1
+                      printer_type: document_printer
+                  \*:
+                    - document_type: invoice
+                      number_of_copies: 1
+                      printer_type: document_printer
+                    - document_type: shipping_label
+                      number_of_copies: 1
+                      printer_type: label_printer
+        '500':
+          description: An internal error occurred.
+      description: Get documents to print configuration for a tenant.
+      operationId: getDocumentsToConfiguration
+      summary: Get documents to print configuration
+    post:
+      tags:
+        - Save tenant documents to print configuration
+      summary: Create documents to print configuration
+      operationId: documentsToPrint
+      description: >
+        Use this endpoint to configure the documents you want to print, in your
+        store.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/documentsToPrint'
+            example:
+              9c996bd4-4d2b-4fcf-b590-5e80969186c4:
+                \*:
+                  - document_type: invoice
+                    number_of_copies: 1
+                    printer_type: document_printer
+              default:
+                in_store_pickup:
+                  - document_type: invoice
+                    number_of_copies: 1
+                    printer_type: document_printer
+                \*:
+                  - document_type: invoice
+                    number_of_copies: 1
+                    printer_type: document_printer
+                  - document_type: shipping_label
+                    number_of_copies: 1
+                    printer_type: label_printer
+      responses:
+        '201':
+          description: Created documents to print configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/documentsToPrint'
+              example:
+                9c996bd4-4d2b-4fcf-b590-5e80969186c4:
+                  \*:
+                    - document_type: invoice
+                      number_of_copies: 1
+                      printer_type: document_printer
+                default:
+                  in_store_pickup:
+                    - document_type: invoice
+                      number_of_copies: 1
+                      printer_type: document_printer
+                  \*:
+                    - document_type: invoice
+                      number_of_copies: 1
+                      printer_type: document_printer
+                    - document_type: shipping_label
+                      number_of_copies: 1
+                      printer_type: label_printer
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    documentsToPrint:
+      title: Documents to print configuration payload
+      required:
+        - default
+      type: object
+      description: >-
+        The store identifier or default documents to print configuration. The
+        key must be `default` or a valid `store_id`
+      additionalProperties:
+        $ref: '#/components/schemas/storeConfig'
+    storeConfig:
+      type: object
+      required:
+        - \*
+        - in_store_pickup
+      description: >-
+        The `in_store_pickup` or `*` documents to print configuration. The key
+        must be `*` or a valid in_store_pickup
+      additionalProperties:
+        $ref: '#/components/schemas/documentListConfiguration'
+    documentListConfiguration:
+      type: array
+      items:
+        $ref: '#/components/schemas/documentConfiguration'
+    documentConfiguration:
+      title: Documents configuration
+      required:
+        - document_type
+        - number_of_copies
+        - printer_type
+      type: object
+      properties:
+        document_type:
+          type: string
+          description: >-
+            Specifie the document to print, in document_type. NewStore supports
+            invoice, packing_slip, return_form, shipping_label, return_label,
+            and in_store_pickup_label.
+        number_of_copies:
+          type: integer
+          description: Specifies how many copies to print.
+        printer_type:
+          type: string
+          description: >-
+            Specifies the type of printer you want to use, in printer_type.
+            Configure documents to be printed using document_printer and labels
+            to be printed using label_printer.
+      example:
+        document_type: invoice
+        number_of_copies: 1
+        printer_type: document_printer
+    error:
+      title: General error format.
+      properties:
+        error_data:
+          type: object
+          description: Information regarding errors in case operation fails.
+          properties:
+            code:
+              type: string
+              description: Custom error code which gives you brief details about the error.
+            description:
+              type: string
+              description: Error description which gives you more details about the error.

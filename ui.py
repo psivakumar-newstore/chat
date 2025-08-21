@@ -1,157 +1,90 @@
-import os
-import json
-import requests
-from pathlib import Path
+# ui.py
 import streamlit as st
-from dotenv import load_dotenv
+import importlib
+import traceback
 
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
-from langchain.memory import ConversationBufferMemory
-from langchain.prompts import PromptTemplate
-from langchain.agents import initialize_agent, AgentType
-from langchain.tools import Tool
-from langchain.chains import ConversationalRetrievalChain
+st.set_page_config(page_title="NewStore Agent", layout="wide")
 
-# --- Load environment ---
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    st.error("❌ OPENAI_API_KEY not found in .env file")
-    st.stop()
-
-# --- Embeddings ---
-embeddings = OpenAIEmbeddings(openai_api_key=api_key)
-
-# --- Load vector DB ---
-db_path = Path("vector_db_chroma")
-if not db_path.exists():
-    st.error("❌ No Chroma DB found. Run load_docs_to_vector_db.py first.")
-    st.stop()
-
-vectorstore = Chroma(persist_directory="vector_db_chroma", embedding_function=embeddings)
-retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 5})
-st.success("✅ Using Chroma vector DB")
-
-# --- Memory ---
-memory = ConversationBufferMemory(
-    memory_key="chat_history",
-    return_messages=True,
-    output_key="answer"
+st.title("🤖 NewStore Agent")
+st.caption(
+    "Type natural language or a Doc Name/Alias from your CSV. "
+    "The agent maps your request to the right method+URL and calls it."
 )
 
-# --- Prompt for retrieval grounding ---
-QA_TEMPLATE = """You are a helpful assistant.
-Use only the following context to answer the question.
-If the answer cannot be found, say: "The documents do not contain enough information."
-
-Context:
-{context}
-
-Question: {question}
-
-Answer:"""
-
-custom_prompt = PromptTemplate.from_template(QA_TEMPLATE)
-
-# --- Retrieval Chain (used as a tool) ---
-retrieval_chain = ConversationalRetrievalChain.from_llm(
-    llm=ChatOpenAI(model="gpt-4o", temperature=0, openai_api_key=api_key),
-    retriever=retriever,
-    memory=memory,
-    return_source_documents=True,
-    output_key="answer",
-    combine_docs_chain_kwargs={"prompt": custom_prompt}
+# Sidebar: Setup (no auto-build at load)
+st.sidebar.header("⚙️ Setup")
+tenant = st.sidebar.text_input("Tenant (subdomain):", value="retailsuccess-sandbox")
+csv_path = st.sidebar.text_input("CSV file path:", value="url_tagged_with_alias.csv")
+headers_json = st.sidebar.text_area(
+    "Default headers JSON (optional):",
+    value=f'{{"x-tenant":"{tenant}"}}',
 )
 
-# --- Tool 1: Retrieval Tool ---
-retriever_tool = Tool(
-    name="DocsRetriever",
-    func=lambda q: retrieval_chain.invoke({"question": q})["answer"],
-    description="Use this to retrieve answers from the document database."
-)
-
-# --- Tool 2: API Calling Tool ---
-def call_api(method, url, params=None, data=None, headers=None):
+def _reload_and_build():
+    """Reload the agent module and build a fresh agent ONLY when user clicks."""
     try:
-        response = requests.request(
-            method=method.upper(),
-            url=url,
-            params=params,
-            json=data,
-            headers=headers,
-            timeout=10
-        )
-        response.raise_for_status()
-        return response.json()
-    except Exception as e:
-        return {"error": str(e)}
+        import agent_with_lambda_tool as awlt
+        awlt = importlib.reload(awlt)
 
-def eval_api_call(json_input_str):
-    try:
-        parsed = json.loads(json_input_str)
-        return call_api(
-            method=parsed.get("method"),
-            url=parsed.get("url"),
-            headers=parsed.get("headers"),
-            params=parsed.get("params"),
-            data=parsed.get("data")
-        )
-    except Exception as e:
-        return {"error": f"Parsing or API call failed: {str(e)}"}
+        # Apply runtime config
+        awlt.set_tenant_base(tenant.strip())
+        awlt.set_csv_path(csv_path.strip())
+        awlt.set_default_headers_json(headers_json.strip())
 
-api_tool = Tool(
-    name="CallAPI",
-    func=eval_api_call,
-    description="""
-    Use this tool to call an external API based on the documentation.
-    Input must be a JSON string like:
-    {
-        "method": "GET",
-        "url": "https://api.example.com/endpoint",
-        "params": {"id": "123"},
-        "headers": {"Authorization": "Bearer TOKEN"},
-        "data": {"key": "value"}
-    }
-    """
+        with st.spinner("Building agent…"):
+            agent_obj = awlt.build_agent()
+        return awlt, agent_obj
+    except Exception as e:
+        st.error("❌ Error while (re)building the agent.")
+        st.code("".join(traceback.format_exc()))
+        return None, None
+
+colA, _ = st.sidebar.columns([1, 3])
+if st.sidebar.button("✅ Apply configuration & (re)load agent", use_container_width=True):
+    mod, agent_obj = _reload_and_build()
+    if agent_obj:
+        st.session_state["agent"] = agent_obj
+        st.session_state["mod"] = mod
+        st.success("Agent is ready.")
+
+# Input row
+user_prompt = st.text_input(
+    "Type your request… (e.g., Get Associate App configuration)",
+    "",
+    placeholder="Try: Get Associate App configuration",
 )
 
-# --- Agent: Use both tools ---
-llm = ChatOpenAI(model="gpt-4o", temperature=0, openai_api_key=api_key)
+c1, c2 = st.columns([1, 1])
+ask = c1.button("Ask", type="primary")
+reload_btn = c2.button("Reload agent")
 
-agent = initialize_agent(
-    tools=[retriever_tool, api_tool],
-    llm=llm,
-    agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
-    memory=memory,
-    verbose=True
-)
+if reload_btn:
+    st.session_state.pop("agent", None)
+    st.session_state.pop("mod", None)
+    st.info("Cleared agent. Click 'Apply configuration' to rebuild.")
 
-# --- Streamlit UI ---
-st.title("🤖 GPT-4o Chatbot + API Agent")
-st.write("Ask questions about your docs, or let the bot call a real API if described.")
+# Only build on demand; if user presses Ask without an agent, warn.
+if ask:
+    if "agent" not in st.session_state:
+        st.warning("Please click **Apply configuration & (re)load agent** first.")
+    elif not user_prompt.strip():
+        st.warning("Please type a request.")
+    else:
+        agent = st.session_state["agent"]
+        try:
+            with st.spinner("Thinking & calling APIs (with timeouts)…"):
+                response = agent.run(user_prompt)
+            st.subheader("Response")
+            st.write(response)
+        except Exception as e:
+            st.error(f"❌ Error while running agent: {e}")
+            st.code("".join(traceback.format_exc()))
 
-user_question = st.chat_input("Type your question (or API action)...")
-
-if user_question:
-    response = agent.run(user_question)
-    st.session_state.setdefault("chat_history", [])
-    st.session_state.chat_history.append({"user": user_question, "bot": str(response)})
-
-# --- Display chat history ---
-if "chat_history" in st.session_state:
-    for chat in st.session_state.chat_history:
-        with st.chat_message("user"):
-            st.markdown(chat["user"])
-        with st.chat_message("assistant"):
-            st.markdown(chat["bot"])
-
-# --- Optional debug sidebar ---
-with st.sidebar:
-    st.write("### 🛠️ Agent Tools")
-    st.write("- DocsRetriever (from Chroma)")
-    st.write("- CallAPI (dynamic REST API caller)")
-
-    st.write("### 🔍 Tip")
-    st.markdown("Ask things like:")
-    st.code("Call the gift card balance API for card 12345", language="markdown")
+# Diagnostics
+st.divider()
+st.subheader("🔎 Diagnostics")
+if "mod" in st.session_state:
+    snap = st.session_state["mod"].debug_snapshot()
+    st.json(snap)
+else:
+    st.info("No agent loaded yet. Configure in the sidebar and click the green button.")

@@ -1,0 +1,1386 @@
+openapi: 3.0.0
+info:
+  title: NewStore SFCC Integration API
+  description: >-
+    <h3>Description</h3>       Provides integration between SalesForce Commerce
+    Cloud and NewStore.
+  version: 1.0.0
+  contact: {}
+tags: []
+servers:
+  - url: https://{tenant}.{stage}.newstore.net/sfcc-api/v1
+    variables:
+      tenant:
+        default: dodici
+      stage:
+        default: x
+        enum:
+          - x
+          - s
+          - p
+components:
+  securitySchemes:
+    OPENAPI_JWT_CONFIG:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    JobConfigMetaDataDTO:
+      type: object
+      properties:
+        job_id:
+          type: string
+        execution_id:
+          type: string
+        site_id:
+          type: string
+        cartridge_version:
+          type: string
+      required:
+        - job_id
+        - execution_id
+        - site_id
+        - cartridge_version
+    CatalogJobConfigDTO:
+      type: object
+      properties:
+        upload_url:
+          type: string
+          example: >-
+            https://s3.us-east-1.amazonaws.com/v.sfcc.newstore.transformation.data/catalog/d0260f24-6101-4d31-91d3-d30b1a616315.zip?X-Amz-Algorithm=...
+          description: >-
+            Pre-signed S3 'putObject' URL where the resulting export should be
+            uploaded by the cartridge.
+      required:
+        - upload_url
+    PricebookJobConfigDTO:
+      type: object
+      properties:
+        upload_url:
+          type: string
+          example: >-
+            https://s3.us-east-1.amazonaws.com/v.sfcc.newstore.transformation.data/pricebook/d0260f24-6101-4d31-91d3-d30b1a616315.zip?X-Amz-Algorithm=...
+          description: >-
+            Pre-signed S3 'putObject' URL where the resulting export should be
+            uploaded by the cartridge.
+      required:
+        - upload_url
+    OrderJobConfigDTO:
+      type: object
+      properties:
+        upload_url:
+          type: string
+      required:
+        - upload_url
+    InventoryJobConfigDTO:
+      type: object
+      properties:
+        upload_url:
+          type: string
+      required:
+        - upload_url
+    AvailabilityNotificationJobConfigMetaDataDTO:
+      type: object
+      properties:
+        job_id:
+          type: string
+        execution_id:
+          type: string
+        site_id:
+          type: string
+        cartridge_version:
+          type: string
+        custom:
+          type: object
+      required:
+        - job_id
+        - execution_id
+        - site_id
+        - cartridge_version
+        - custom
+    AvailabilityJobConfigMetaDataDTO:
+      type: object
+      properties:
+        job_id:
+          type: string
+        execution_id:
+          type: string
+        site_id:
+          type: string
+        cartridge_version:
+          type: string
+        custom:
+          type: object
+      required:
+        - job_id
+        - execution_id
+        - site_id
+        - cartridge_version
+        - custom
+    JobMetaData:
+      type: object
+      properties:
+        job_id:
+          type: string
+        execution_id:
+          type: string
+        site_id:
+          type: string
+        cartridge_version:
+          type: string
+      required:
+        - job_id
+        - execution_id
+        - site_id
+        - cartridge_version
+    JobLinks:
+      type: object
+      properties:
+        logs:
+          type: string
+        input:
+          type: string
+        output:
+          type: string
+        details:
+          type: string
+      required:
+        - logs
+        - input
+        - output
+        - details
+    TransformationJobListResponseDto:
+      type: object
+      properties:
+        uuid:
+          type: string
+        entity:
+          type: string
+          enum:
+            - catalog
+            - pricebook
+            - order
+            - availability
+            - inventory
+        createdAt:
+          type: string
+        status:
+          type: string
+          enum:
+            - pending
+            - running
+            - finished
+            - failed
+            - skipped
+        message:
+          type: string
+        catalogImportId:
+          type: string
+          description: >-
+            Identifier received in the response of Create import job method.
+            Will only be available after the job is in Finished state and for
+            imports of type: Catalog, Pricebook and Inventory.
+        metadata:
+          $ref: '#/components/schemas/JobMetaData'
+        links:
+          $ref: '#/components/schemas/JobLinks'
+      required:
+        - uuid
+        - entity
+        - createdAt
+        - status
+        - message
+        - catalogImportId
+        - metadata
+        - links
+    JobHistoryListResponseDto:
+      type: object
+      properties:
+        jobs:
+          $ref: '#/components/schemas/TransformationJobListResponseDto'
+        nextPage:
+          type: string
+      required:
+        - jobs
+        - nextPage
+    JobStatusHistoryItem:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - pending
+            - running
+            - finished
+            - failed
+            - skipped
+        message:
+          type: string
+        transitionedAt:
+          type: string
+      required:
+        - status
+        - transitionedAt
+    TransformationJobDetailResponseDto:
+      type: object
+      properties:
+        uuid:
+          type: string
+        entity:
+          type: string
+          enum:
+            - catalog
+            - pricebook
+            - order
+            - availability
+            - inventory
+        createdAt:
+          type: string
+        status:
+          type: string
+          enum:
+            - pending
+            - running
+            - finished
+            - failed
+            - skipped
+        message:
+          type: string
+        catalogImportId:
+          type: string
+          description: >-
+            Identifier received in the response of Create import job method.
+            Will only be available after the job is in Finished state and for
+            imports of type: Catalog, Pricebook and Inventory.
+        metadata:
+          $ref: '#/components/schemas/JobMetaData'
+        links:
+          $ref: '#/components/schemas/JobLinks'
+        statusHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobStatusHistoryItem'
+        catalogMappingContext:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: boolean
+              - type: number
+          description: |-
+            MappingContext provided by catalog-locale-manager.
+            Keys provided here can be used as placeholders in Job Config
+      required:
+        - uuid
+        - entity
+        - createdAt
+        - status
+        - message
+        - catalogImportId
+        - metadata
+        - links
+        - statusHistory
+        - catalogMappingContext
+    StoreOCAPICredentialsRequestDTO:
+      type: object
+      properties:
+        client_id:
+          type: string
+          description: >-
+            OCAPI client ID. Note for an SFCC sandbox instance, a value of
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" can be used.
+        client_secret:
+          type: string
+          description: >-
+            OCAPI client secret. Note for an SFCC sandbox instance, a value of
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" can be used.
+      required:
+        - client_id
+        - client_secret
+    RoutingOptionsRequestCatalog:
+      type: object
+      properties:
+        shop_id:
+          type: string
+          description: The shop the products belong to.
+        shop_locale:
+          type: string
+          description: The locale used for the shop, in RFC 5646.
+      required:
+        - shop_id
+        - shop_locale
+    RoutingOptionsRequestPrice:
+      type: object
+      properties:
+        amount:
+          type: number
+          description: Product price value.
+        currency:
+          type: string
+          description: ISO-4217 currency.
+      required:
+        - amount
+        - currency
+    RoutingOptionsRequestItem:
+      type: object
+      properties:
+        is_preorder:
+          type: boolean
+          description: |-
+            Set to true if product can be pre-ordered. This means that
+                the product is in stock and a preorder_start date is set between the
+                current date and the online_from date.
+        online_from:
+          format: date-time
+          type: string
+          description: >-
+            Determines the date-time (inclusive) when the product is available
+            for sale.
+        preorder_start:
+          format: date-time
+          type: string
+          description: >-
+            Determines the date-time (inclusive) when the product is available
+            for pre-order.
+        price:
+          description: Product price information.
+          allOf:
+            - $ref: '#/components/schemas/RoutingOptionsRequestPrice'
+        product_id:
+          type: string
+      required:
+        - product_id
+    RoutingOptionsRequestBag:
+      type: object
+      properties:
+        catalog:
+          description: The catalog containing the products of the order.
+          allOf:
+            - $ref: '#/components/schemas/RoutingOptionsRequestCatalog'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutingOptionsRequestItem'
+      required:
+        - items
+    RoutingOptionsRequestRoutingStrategy:
+      type: object
+      properties:
+        strategy:
+          type: string
+          enum:
+            - default
+            - prerouted
+          description: |2-
+
+                  The default routing strategy that NewStore uses to determine the best fulfillment
+                  location, based on the fulfillment config.
+
+                  The routing strategy used to specify the fulfillment location for the order, and prevent
+                  it from routed based on the fulfillment config. For prerouted, the fulfillment_node_id
+                  and the service_level_identifier specified in the shipping option are required.
+              
+        fulfillment_node_ids:
+          description: |2-
+
+                  The fulfillment node IDs used to generate shipping options. This field is required for
+                  prerouted, and ignored for default.
+                
+          type: array
+          items:
+            type: string
+        service_level_identifier:
+          type: object
+          description: |2-
+
+                  The service level for the shipping options. This field is required for prerouted and
+                  ignored for default.
+              
+      required:
+        - strategy
+    RoutingOptionsRequestShippingAddress:
+      type: object
+      properties:
+        address_line_1:
+          type: string
+        address_line_2:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+          description: Destination country code for the shipment.
+        phone:
+          type: string
+        state:
+          type: string
+        zip_code:
+          type: string
+          description: Destination zip code for the shipment.
+      required:
+        - country
+    RoutingOptionsRequestDTO:
+      type: object
+      properties:
+        shopping_cart:
+          description: An array of flat items from the shopping bag.
+          allOf:
+            - $ref: '#/components/schemas/RoutingOptionsRequestBag'
+        routing_strategy:
+          description: |2-
+
+                  The strategy used to route the order. If no value is specified, the default strategy is
+                  used and the order is routed to the best location based on the fulfillment configuration.
+                
+          allOf:
+            - $ref: '#/components/schemas/RoutingOptionsRequestRoutingStrategy'
+        service_levels:
+          type: array
+          items:
+            type: string
+        shipping_address:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutingOptionsRequestShippingAddress'
+      required:
+        - shopping_cart
+        - routing_strategy
+    RoutingOptionsResponsePriceDTO:
+      type: object
+      properties:
+        value:
+          type: number
+        currency:
+          type: string
+      required:
+        - value
+        - currency
+    RoutingOptionsResponseProductDTO:
+      type: object
+      properties:
+        productId:
+          type: string
+        quantity:
+          type: number
+      required:
+        - productId
+        - quantity
+    RoutingOptionsResponseFulfillmentNodeDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutingOptionsResponseProductDTO'
+        shippingOfferToken:
+          type: string
+        cost:
+          $ref: '#/components/schemas/RoutingOptionsResponsePriceDTO'
+      required:
+        - id
+        - products
+        - shippingOfferToken
+        - cost
+    RoutingOptionResponseDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        deliveryTime:
+          type: string
+        shippingCosts:
+          $ref: '#/components/schemas/RoutingOptionsResponsePriceDTO'
+        fulfillmentNodes:
+          description: >-
+            An option to route products in an order.       This specifies
+            assignments of fulfillment nodes to all products in an order with
+            the service level at which        they can be fulfilled from the
+            fulfillment nodes.
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutingOptionsResponseFulfillmentNodeDTO'
+      required:
+        - id
+        - name
+        - deliveryTime
+        - shippingCosts
+        - fulfillmentNodes
+    RoutingOptionsResponseDTO:
+      type: object
+      properties:
+        items:
+          description: >-
+            The order can be fulfilled from one or more fulfillment locations
+            with different service levels.         This is an array of possible
+            routing options sorted by priority.        Each routing option can
+            point to one or more fulfillment nodes depending if the order is
+            split or not.
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutingOptionResponseDTO'
+      required:
+        - items
+    InStorePickupOptionsRequestBag:
+      type: object
+      properties:
+        product_id:
+          type: string
+          description: The identifier of the product.
+        quantity:
+          type: number
+          description: Number of products with the given product_id in the bag.
+      required:
+        - product_id
+        - quantity
+    InStorePickupOptionsRequestGeo:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - latitude
+        - longitude
+    InStorePickupOptionsRequestAddress:
+      type: object
+      properties:
+        country:
+          type: string
+          description: 'Country code. Currently supported values are: "AU", "US"'
+          example: US
+        postal_code:
+          type: string
+          description: Postal code
+          example: '04864'
+      required:
+        - country
+        - postal_code
+    InStorePickupOptionsRequestLocation:
+      type: object
+      properties:
+        geo:
+          description: >-
+            Represents the coordinates of a location with latitude and
+            longitude.
+          allOf:
+            - $ref: '#/components/schemas/InStorePickupOptionsRequestGeo'
+        address:
+          description: Allows address to be specified as an alternative to lat/lon.
+          allOf:
+            - $ref: '#/components/schemas/InStorePickupOptionsRequestAddress'
+    InStorePickupOptionsRequestOptions:
+      type: object
+      properties:
+        limit:
+          type: number
+          description: Number of pickup options to be returned.
+        search_radius:
+          type: number
+          description: |2-
+
+                  Radius in kilometers of the store search. The results are sorted by proximity to the
+                  reference location. If omitted, searches in all stores available.
+                
+        show_stores_without_atp:
+          type: boolean
+          description: A flag that enables/disables stores without inventory.
+      required:
+        - limit
+        - search_radius
+        - show_stores_without_atp
+    InStorePickupOptionsRequestDTO:
+      type: object
+      properties:
+        bag:
+          type: array
+          items:
+            $ref: '#/components/schemas/InStorePickupOptionsRequestBag'
+        location:
+          description: A reference geo-location. For example, the location of the customer.
+          allOf:
+            - $ref: '#/components/schemas/InStorePickupOptionsRequestLocation'
+        options:
+          description: In-store pickup options request parameters.
+          allOf:
+            - $ref: '#/components/schemas/InStorePickupOptionsRequestOptions'
+      required:
+        - bag
+        - location
+        - options
+    InStorePickupOptionsResponsePrice:
+      type: object
+      properties:
+        currencyCode:
+          type: string
+        price:
+          type: number
+      required:
+        - currencyCode
+        - price
+    InStorePickupOptionsResponseAddressDTO:
+      type: object
+      properties:
+        address1:
+          type: string
+        address2:
+          type: string
+        city:
+          type: string
+        countryCode:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        province:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+      required:
+        - address1
+        - address2
+        - city
+        - countryCode
+        - latitude
+        - longitude
+        - province
+        - state
+        - zipCode
+    InStorePickupOptionsResponsePickupOption:
+      type: object
+      properties:
+        fulfillmentNodeId:
+          type: string
+        storeId:
+          type: string
+        storeName:
+          type: string
+        hasAtp:
+          type: boolean
+        phoneNumber:
+          type: string
+        cost:
+          $ref: '#/components/schemas/InStorePickupOptionsResponsePrice'
+        deliveryTime:
+          type: string
+        distance:
+          type: number
+          description: The distance in "kilometers" from the specified location.
+        shippingOfferToken:
+          type: string
+        address:
+          $ref: '#/components/schemas/InStorePickupOptionsResponseAddressDTO'
+      required:
+        - fulfillmentNodeId
+        - storeId
+        - storeName
+        - hasAtp
+        - phoneNumber
+        - cost
+        - deliveryTime
+        - distance
+        - shippingOfferToken
+        - address
+    InStorePickupOptionsResponseDTO:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InStorePickupOptionsResponsePickupOption'
+      required:
+        - items
+    CatalogMappingConfigImages:
+      type: object
+      properties:
+        include:
+          type: array
+          items:
+            type: string
+        is_swatch_view_type:
+          type: string
+        pathTemplate:
+          type: string
+        placeHolder:
+          type: object
+      required:
+        - include
+        - is_swatch_view_type
+        - pathTemplate
+        - placeHolder
+    CatalogMappingConfigHeaderCategories:
+      type: object
+      properties:
+        shop:
+          type: string
+          example: storefront-catalog-en
+        locale:
+          type: string
+          example: en-us
+        is_master:
+          oneOf:
+            - type: boolean
+              example: true
+            - type: string
+              example: '{{is_master}}'
+              description: Multi-locale replacement placeholder
+      required:
+        - shop
+        - locale
+        - is_master
+    CatalogMappingConfigHeaderProducts:
+      type: object
+      properties:
+        catalog_id:
+          type: string
+          example: storefront-catalog-en
+        locale:
+          type: string
+          example: en-us
+        internal_disable_image_processing:
+          type: boolean
+        is_master:
+          oneOf:
+            - type: boolean
+              example: true
+            - type: string
+              example: '{{is_master}}'
+              description: Multi-locale replacement placeholder
+        searchable_attributes:
+          example:
+            - name: material
+              path: $.material
+              weight: 1
+            - name: color
+              path: $.color
+              weight: 2
+          type: array
+          items:
+            type: string
+        filterable_attributes:
+          example:
+            - name: color
+              path: $.color
+          type: array
+          items:
+            type: string
+      required:
+        - catalog_id
+        - locale
+        - internal_disable_image_processing
+        - is_master
+        - searchable_attributes
+        - filterable_attributes
+    CatalogMappingConfigHeader:
+      type: object
+      properties:
+        categories:
+          $ref: '#/components/schemas/CatalogMappingConfigHeaderCategories'
+        products:
+          $ref: '#/components/schemas/CatalogMappingConfigHeaderProducts'
+      required:
+        - categories
+        - products
+    CatalogMappingConfigCategories:
+      type: object
+      properties:
+        assign_unassigned_to_root:
+          type: boolean
+      required:
+        - assign_unassigned_to_root
+    CatalogMappingConfigClassDTO:
+      type: object
+      properties:
+        languagesPriority:
+          example:
+            - en-us
+            - de-de
+            - x-default
+          type: array
+          items:
+            type: string
+        sitesPriority:
+          example:
+            - RefArch
+          type: array
+          items:
+            type: string
+        images:
+          $ref: '#/components/schemas/CatalogMappingConfigImages'
+        header:
+          $ref: '#/components/schemas/CatalogMappingConfigHeader'
+        properties_mapping:
+          type: object
+        categories:
+          $ref: '#/components/schemas/CatalogMappingConfigCategories'
+      required:
+        - languagesPriority
+        - sitesPriority
+        - images
+        - header
+        - properties_mapping
+        - categories
+    CatalogMappingConfigDTO:
+      type: object
+      properties:
+        sfcc_catalog_id:
+          type: string
+          description: |-
+            The Catalog ID as defined in SalesForce Commerce Cloud.
+                  This ID is read when processing the uploaded input file
+                  and used to retrieve the associated mapping config.
+        config:
+          $ref: '#/components/schemas/CatalogMappingConfigClassDTO'
+      required:
+        - sfcc_catalog_id
+        - config
+    PricebookMappingConfigDTO:
+      type: object
+      properties:
+        config:
+          type: object
+      required:
+        - config
+    AvailabilityMappingConfigDTO:
+      type: object
+      properties:
+        inventory_list_id:
+          type: string
+        config:
+          type: object
+      required:
+        - inventory_list_id
+        - config
+    InventoryMappingConfigDTO:
+      type: object
+      properties:
+        inventory_list_id:
+          type: string
+        config:
+          type: object
+      required:
+        - inventory_list_id
+        - config
+paths:
+  /job_config/catalog:
+    post:
+      operationId: JobConfigController_catalogConfig
+      summary: Create a new Catalog Export job
+      description: >-
+        Create a new Catalog Export job and returns the URL for its input
+        location.
+      tags:
+        - Create and Config a New Job
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobConfigMetaDataDTO'
+      responses:
+        '201':
+          description: Upload URL has been successfully generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogJobConfigDTO'
+        '403':
+          description: ''
+  /job_config/pricebook:
+    post:
+      operationId: JobConfigController_pricebookConfig
+      summary: Create a new Pricebook Export job
+      description: >-
+        Create a new Pricebook Export job and returns the URL for its input
+        location.
+      tags:
+        - Create and Config a New Job
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobConfigMetaDataDTO'
+      responses:
+        '201':
+          description: Upload URL has been successfully generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricebookJobConfigDTO'
+        '403':
+          description: ''
+  /job_config/order:
+    post:
+      operationId: JobConfigController_orderConfig
+      summary: Get job config for an order export
+      description: >-
+        Get job config for an order export. Returns the URL for its input
+        location.
+      tags:
+        - Create and Config a New Job
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobConfigMetaDataDTO'
+      responses:
+        '201':
+          description: Upload URL was successfully generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderJobConfigDTO'
+        '403':
+          description: ''
+  /job_config/inventory:
+    post:
+      operationId: JobConfigController_inventoryConfig
+      summary: Get job config for a inventory import
+      description: Returns the URL for its input location.
+      tags:
+        - Create and Config a New Job
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobConfigMetaDataDTO'
+      responses:
+        '201':
+          description: Upload URL has been successfully generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryJobConfigDTO'
+  /job_config/inventory/callback:
+    post:
+      operationId: JobConfigController_availabilityNotification
+      summary: Inventory import callback
+      description: Notify Callback from SFCC after successful inventory import
+      tags:
+        - Create and Config a New Job
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: >-
+                #/components/schemas/AvailabilityNotificationJobConfigMetaDataDTO
+      responses:
+        '200':
+          description: ''
+  /job_config/availability:
+    post:
+      operationId: JobConfigController_availabilitiesExport
+      summary: Start the availability export from NS
+      description: Start the availability export from NS
+      tags:
+        - Create and Config a New Job
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityJobConfigMetaDataDTO'
+      responses:
+        '200':
+          description: ''
+  /job_history:
+    get:
+      operationId: JobHistoryController_importJobHistory
+      summary: Shows a filterable list of created import jobs.
+      description: >-
+        Returns a JSON object containing a <code>jobs[]</code> list. <br>     
+        If the result has more than one page, the response will also contain a
+        <code>nextPage</code> hash.             <h3>Pagination:</h3>     
+        <p>      If the <code>nextPage</code> hash is returned, it means we have
+        more than one page. <br>      To fetch the next page, call this endpoint
+        again with the hash as a query parameter. <br>       Example:
+        <code>/job_history?nextPage=PASTE_THE_HASH_HERE</code>.      
+        </p>            <h3>Filtering:</h3>      <p>This endpoint supports the
+        following filters:      <ul>        <li>          <code>entity</code>
+        (catalog, pricebook, order, availability, inventory)          Example:
+        <code>/job_history?entity=catalog</code> <br>        </li>       
+        <li>          <code>status</code> (pending, running, finished,
+        failed)          Example: <code>/job_history?status=pending</code>
+        <br>        </li>      </ul></p>    
+      tags:
+        - Job History
+      parameters:
+        - name: entity
+          required: false
+          in: query
+          schema:
+            enum:
+              - catalog
+              - pricebook
+              - order
+              - availability
+              - inventory
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            enum:
+              - pending
+              - running
+              - finished
+              - failed
+              - skipped
+            type: string
+        - name: nextPage
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobHistoryListResponseDto'
+        '400':
+          description: ''
+  /job_history/{uuid}:
+    get:
+      operationId: JobHistoryController_importJob
+      summary: Import job details
+      description: Shows information about a specific import job with a link for its logs.
+      tags:
+        - Job History
+      parameters:
+        - name: uuid
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransformationJobDetailResponseDto'
+        '404':
+          description: Import job not found
+  /job_history/{uuid}/logs:
+    get:
+      operationId: JobHistoryController_importJobHistoryLogs
+      summary: Get import job logs
+      description: Downloads the logs generated by an import job.
+      tags:
+        - Job History
+      parameters:
+        - name: uuid
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+  /job_history/{uuid}/{fileSourceType}:
+    get:
+      operationId: JobHistoryController_importJobHistoryFile
+      summary: Downloads the input file provided.
+      description: >-
+        Redirects to a pre-signed S3 URL to download the desired input or output
+        file.
+      tags:
+        - Job History
+      parameters:
+        - name: uuid
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: fileSourceType
+          required: true
+          in: path
+          schema:
+            enum:
+              - input
+              - output
+            type: string
+      responses:
+        '302':
+          description: Redirects to pre-signed S3 URL
+  /ocapi_credentials:
+    post:
+      operationId: OCAPICredentialsController_storeCredentials
+      summary: Store credentials for OCAPI access
+      description: >-
+        Allows the provided credentials to be stored securely, and then used for
+        calls to OCAPI.
+            Either to read data from the API or to start job executions. The availability import from NewStore to SFCC
+             requires these credentials to be set.
+      tags:
+        - OCAPI credentials
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreOCAPICredentialsRequestDTO'
+      responses:
+        '200':
+          description: ''
+        '401':
+          description: ''
+  /checkout_options/routing_options:
+    post:
+      operationId: CheckoutOptionsController_routingOptions
+      summary: Get routing options from the NewStore Platform.
+      description: Allows to route an order from a store.
+      tags:
+        - Checkout Options
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoutingOptionsRequestDTO'
+      responses:
+        '200':
+          description: The list of possible routing options is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoutingOptionsResponseDTO'
+        '400':
+          description: ''
+  /checkout_options/in_store_pickup_options:
+    post:
+      operationId: CheckoutOptionsController_inStorePickupOptions
+      summary: Get in-store pickup options from the NewStore Platform.
+      description: Allows collecting an order from a store.
+      tags:
+        - Checkout Options
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InStorePickupOptionsRequestDTO'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InStorePickupOptionsResponseDTO'
+        '400':
+          description: Returned if there is an issue with the address data.
+  /mapping_config/catalog:
+    post:
+      operationId: MappingConfigController_catalogConfig
+      summary: Store mapping config for a catalog.
+      description: >-
+        Stores the mapping config for a particular catalog, which then will be
+        used for the transformation from the SFCC XML to NewStore JSON format.
+      tags:
+        - Mapping Config
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogMappingConfigDTO'
+      responses:
+        '201':
+          description: Mapping config was successfully stored.
+        '403':
+          description: ''
+    get:
+      operationId: MappingConfigController_getAllCatalogConfig
+      summary: Get all catalog mapping configurations for a tenant.
+      description: >-
+        Retrives all catalog mapping configurations for a particular tenant.
+        These will be used for the transformation from the SFCC XML to NewStore
+        JSON format.
+      tags:
+        - Mapping Config
+      parameters: []
+      responses:
+        '200':
+          description: Mapping configurations successfully retrieved.
+        '403':
+          description: ''
+  /mapping_config/pricebook:
+    post:
+      operationId: MappingConfigController_pricebookConfig
+      summary: Store mapping config for a pricebook import.
+      description: >-
+        Stores the mapping config for pricebook imports, which then will be used
+        for the transformation from SFCC XML to NewStore JSON.
+      tags:
+        - Mapping Config
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricebookMappingConfigDTO'
+      responses:
+        '201':
+          description: Mapping config was successfully stored.
+        '403':
+          description: ''
+    get:
+      operationId: MappingConfigController_getAllPricebookConfig
+      summary: Get all pricebook mapping configurations for a tenant.
+      description: >-
+        Retrive all pricebook mapping configurations for a particular tenant.
+        These will be used for the transformation from the SFCC XML to NewStore
+        JSON format.
+      tags:
+        - Mapping Config
+      parameters: []
+      responses:
+        '200':
+          description: Pricebook Mapping configurations successfully retrieved.
+        '403':
+          description: ''
+  /mapping_config/availability:
+    post:
+      operationId: MappingConfigController_availabilityConfig
+      summary: Store mapping config for a availability.
+      description: >-
+        Stores the mapping config for a particular availability list, which then
+        will be used for the transformation from NewStore JSON format to SFCC
+        XML.
+      tags:
+        - Mapping Config
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityMappingConfigDTO'
+      responses:
+        '201':
+          description: Mapping config was successfully stored.
+        '403':
+          description: ''
+    get:
+      operationId: MappingConfigController_getAllAvailabilityConfig
+      summary: Get all availability mapping configurations for a tenant.
+      description: >-
+        Retrive all availability mapping configurations for a particular tenant.
+        These will be used for the transformation from the SFCC XML to NewStore
+        JSON format.
+      tags:
+        - Mapping Config
+      parameters: []
+      responses:
+        '200':
+          description: Availability Mapping configurations successfully retrieved.
+        '403':
+          description: ''
+  /mapping_config/inventory:
+    post:
+      operationId: MappingConfigController_inventoryConfig
+      summary: Store mapping config for inventory lists.
+      description: >-
+        Stores the mapping config for a particular inventory list, which then
+        will be used for the transformation from SFCC XML to NewStore JSON
+        format.
+      tags:
+        - Mapping Config
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryMappingConfigDTO'
+      responses:
+        '201':
+          description: Mapping config was successfully stored.
+        '403':
+          description: ''
+    get:
+      operationId: MappingConfigController_getAllInventoryConfig
+      summary: Get all inventory mapping configurations for a tenant.
+      description: >-
+        Retrive all inventory mapping configurations for a particular tenant.
+        These will be used for the transformation from the SFCC XML to NewStore
+        JSON format.
+      tags:
+        - Mapping Config
+      parameters: []
+      responses:
+        '200':
+          description: Inventory Mapping configurations successfully retrieved.
+        '403':
+          description: ''
+  /mapping_script/catalog:
+    post:
+      operationId: MappingScriptController_storeCatalogMapping
+      summary: Store mapping script for a catalog.
+      description: Stores the mapping for a catalog.
+      tags:
+        - Mapping Script
+      parameters:
+        - name: sfcc_catalog_id
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Catalog Mapping script was successfully stored.
+        '403':
+          description: ''
+  /mapping_script/order:
+    post:
+      operationId: MappingScriptController_storeOrderMapping
+      summary: Store mapping script for an order.
+      description: Stores the mapping script for an order.
+      tags:
+        - Mapping Script
+      parameters: []
+      responses:
+        '201':
+          description: Mapping script was successfully stored.
+        '403':
+          description: ''
+    get:
+      operationId: MappingScriptController_getOrderMapping
+      summary: Get the latest order mapping script
+      description: Get the latest order mapping script
+      tags:
+        - Mapping Script
+      parameters: []
+      responses:
+        '200':
+          description: Latest order mapping script
+        '403':
+          description: Client is not authorized to perform this request
+        '404':
+          description: No order mapping file available for download
+        '500':
+          description: Internal server error

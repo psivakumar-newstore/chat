@@ -1,0 +1,683 @@
+openapi: 3.0.0
+info:
+  title: Fulfillment Request API
+  version: v0
+  description: >
+    The API provides access to the fulfillment request. This API allows you to
+    get information
+
+    about fulfillment requests and perform operations on them.
+
+
+    **Note:** Fulfillment requests are immutable. It means that rerouting will
+    create a new
+
+    fulfillment request even if all items in the fulfillment request stay the
+    same.
+  contact:
+    name: Team Routing
+    email: team-routing@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /fulfillment_requests/{order_uuid}:
+    get:
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example:
+                fulfillment_requests:
+                  - fulfillment_request_id: c3b7bea3-997c-40f2-858a-f402491aa1de
+                    created_at: '2021-11-22T12:51:39.30Z'
+                    status: completed
+                    service_level: GROUND
+                    fulfillment_node_id: US01
+                    items:
+                      - item_id: 2770fd96-a43f-46ab-b66e-e088067d7825
+                        product_id: PID1
+                        tracking_code: '12345678'
+                        carrier: USPS
+                        status: shipped
+                      - item_id: 4e0b82b8-ef7d-4f63-8974-17ac22fbf122
+                        product_id: PID2
+                        tracking_code: null
+                        carrier: null
+                        status: rejected
+                  - fulfillment_request_id: f5bd0c3d-77c6-48df-ab10-0fd6124692e8
+                    created_at: '2021-11-24T14:11:10.22Z'
+                    status: completed
+                    service_level: GROUND
+                    fulfillment_node_id: DC01
+                    items:
+                      - item_id: 4e0b82b8-ef7d-4f63-8974-17ac22fbf122
+                        product_id: PID2
+                        tracking_code: 987654321
+                        carrier: fedex
+                        status: shipped
+              schema:
+                description: Fulfillment requests for an order
+                type: object
+                required:
+                  - fulfillment_requests
+                properties:
+                  fulfillment_requests:
+                    description: >-
+                      All fulfillment requests that belongs to the order. Can be
+                      empty if order not routed yet, or if order doesn't exist.
+                    type: array
+                    minItems: 0
+                    maxItems: 2000
+                    items:
+                      description: The fulfillment request.
+                      type: object
+                      required:
+                        - fulfillment_request_id
+                        - created_at
+                        - status
+                        - service_level
+                        - fulfillment_node_id
+                        - items
+                      properties:
+                        fulfillment_request_id:
+                          type: string
+                          minLength: 1
+                          description: The identifier of the fulfillment request.
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Date and time when fulfillment reqyest was created.
+                        status:
+                          type: string
+                          enum:
+                            - dispatched
+                            - acknowledged
+                            - partially_completed
+                            - completed
+                          description: >-
+                            Current status of fulfillment request: dispatched -
+                            fulfillment request was sent to sent to store/DC
+                            services, but wasn't acknowledged yet; acknowledged
+                            - fulfillment request was acknowledged by store/DC
+                            service and will be send to store/DC for
+                            fulfillment; partially_completed - some items of
+                            fulfillment request were already processed
+                            (cancelled, rejected, shipped) but not all of them;
+                            completed - all items of fulfillment request were
+                            processed (cancelled, rejected, shipped).
+                        service_level:
+                          type: string
+                          minLength: 1
+                          description: Service level fulfillment request was routed with.
+                        fulfillment_node_id:
+                          type: string
+                          minLength: 1
+                          description: >-
+                            Fulfillment node where fullfillment request was
+                            routed to.
+                        items:
+                          type: array
+                          minItems: 1
+                          items:
+                            type: object
+                            required:
+                              - item_id
+                              - product_id
+                              - status
+                              - tracking_code
+                              - carrier
+                            properties:
+                              item_id:
+                                type: string
+                                minLength: 1
+                                description: Unique identifier of the line item.
+                              product_id:
+                                type: string
+                                minLength: 1
+                              status:
+                                type: string
+                                enum:
+                                  - dispatched
+                                  - shipped
+                                  - rejected
+                                  - cancelled
+                                description: >-
+                                  Status of this item: dispatched - item was
+                                  routed to a store/DC (check status of
+                                  fulfillment request to see whether DC/store
+                                  service has already accepted this fulfillment
+                                  request or not); shipped - item was marked as
+                                  shipped; rejected - item was rejected by
+                                  fulfillment node and going to be rerouted (or
+                                  was rerouted if fulfillment request already
+                                  completed); cancelled - item was cancelled.
+                              tracking_code:
+                                oneOf:
+                                  - type: string
+                                  - type: 'null'
+                                description: >-
+                                  Tracking code for the item, if it was provided
+                                  after shipment. Otherwise `null`.
+                              carrier:
+                                oneOf:
+                                  - type: string
+                                  - type: 'null'
+                                description: >-
+                                  Carrier for the item, if it was provided
+                                  during after shipment. Otherwise `null`.
+        '400':
+          description: Order has too many fulfillment requests
+          content:
+            application/json:
+              example:
+                fulfillment_requests:
+                  - fulfillment_request_id: c3b7bea3-997c-40f2-858a-f402491aa1de
+                    created_at: '2021-11-22T12:51:39.30Z'
+                    status: completed
+                    service_level: GROUND
+                    fulfillment_node_id: US01
+                    items:
+                      - item_id: 2770fd96-a43f-46ab-b66e-e088067d7825
+                        product_id: PID1
+                        tracking_code: '12345678'
+                        carrier: USPS
+                        status: shipped
+                      - item_id: 4e0b82b8-ef7d-4f63-8974-17ac22fbf122
+                        product_id: PID2
+                        tracking_code: null
+                        carrier: null
+                        status: rejected
+                  - fulfillment_request_id: f5bd0c3d-77c6-48df-ab10-0fd6124692e8
+                    created_at: '2021-11-24T14:11:10.22Z'
+                    status: completed
+                    service_level: GROUND
+                    fulfillment_node_id: DC01
+                    items:
+                      - item_id: 4e0b82b8-ef7d-4f63-8974-17ac22fbf122
+                        product_id: PID2
+                        tracking_code: 987654321
+                        carrier: fedex
+                        status: shipped
+              schema:
+                description: Fulfillment requests for an order
+                type: object
+                required:
+                  - fulfillment_requests
+                properties:
+                  fulfillment_requests:
+                    description: >-
+                      All fulfillment requests that belongs to the order. Can be
+                      empty if order not routed yet, or if order doesn't exist.
+                    type: array
+                    minItems: 0
+                    maxItems: 2000
+                    items:
+                      description: The fulfillment request.
+                      type: object
+                      required:
+                        - fulfillment_request_id
+                        - created_at
+                        - status
+                        - service_level
+                        - fulfillment_node_id
+                        - items
+                      properties:
+                        fulfillment_request_id:
+                          type: string
+                          minLength: 1
+                          description: The identifier of the fulfillment request.
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Date and time when fulfillment reqyest was created.
+                        status:
+                          type: string
+                          enum:
+                            - dispatched
+                            - acknowledged
+                            - partially_completed
+                            - completed
+                          description: >-
+                            Current status of fulfillment request: dispatched -
+                            fulfillment request was sent to sent to store/DC
+                            services, but wasn't acknowledged yet; acknowledged
+                            - fulfillment request was acknowledged by store/DC
+                            service and will be send to store/DC for
+                            fulfillment; partially_completed - some items of
+                            fulfillment request were already processed
+                            (cancelled, rejected, shipped) but not all of them;
+                            completed - all items of fulfillment request were
+                            processed (cancelled, rejected, shipped).
+                        service_level:
+                          type: string
+                          minLength: 1
+                          description: Service level fulfillment request was routed with.
+                        fulfillment_node_id:
+                          type: string
+                          minLength: 1
+                          description: >-
+                            Fulfillment node where fullfillment request was
+                            routed to.
+                        items:
+                          type: array
+                          minItems: 1
+                          items:
+                            type: object
+                            required:
+                              - item_id
+                              - product_id
+                              - status
+                              - tracking_code
+                              - carrier
+                            properties:
+                              item_id:
+                                type: string
+                                minLength: 1
+                                description: Unique identifier of the line item.
+                              product_id:
+                                type: string
+                                minLength: 1
+                              status:
+                                type: string
+                                enum:
+                                  - dispatched
+                                  - shipped
+                                  - rejected
+                                  - cancelled
+                                description: >-
+                                  Status of this item: dispatched - item was
+                                  routed to a store/DC (check status of
+                                  fulfillment request to see whether DC/store
+                                  service has already accepted this fulfillment
+                                  request or not); shipped - item was marked as
+                                  shipped; rejected - item was rejected by
+                                  fulfillment node and going to be rerouted (or
+                                  was rerouted if fulfillment request already
+                                  completed); cancelled - item was cancelled.
+                              tracking_code:
+                                oneOf:
+                                  - type: string
+                                  - type: 'null'
+                                description: >-
+                                  Tracking code for the item, if it was provided
+                                  after shipment. Otherwise `null`.
+                              carrier:
+                                oneOf:
+                                  - type: string
+                                  - type: 'null'
+                                description: >-
+                                  Carrier for the item, if it was provided
+                                  during after shipment. Otherwise `null`.
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: >-
+                  Couldn't get FFRs for an order
+                  'ca9a203a-41f6-46dd-95dc-c2cb3158f68a' due to an internal
+                  error.
+                request_id: ec2f3c9bb016ba971bf6059188771a18
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+      description: >
+        Returns all fulfillment requests created for an order, sorted by
+        creation date in the
+
+        ascending order (earliest first).
+
+
+        If order wasn't found, then the empty list of fulfillment requests will
+        be returned.
+
+
+        If order wasn't routed yet, then the empty list of fulfillment requests
+        will be returned.
+
+
+        **Important:** As for now this API will return fulfillment requests even
+        for orders without
+
+        routing (like in_store_purchase) but this behavior will change soon. And
+        this API will only
+
+        work for orders where routing is needed. So, build your integrations
+        accordingly.
+
+
+        **Important:** Maximum number of fulfillment requests this API will
+        return is **2000**. If
+
+        there are more than **2000** fulfillment requests for the order, then
+        the response will have
+
+        400 status code (although it is actually not a bad request) and **2000**
+        latest (according
+
+        to the creaiton date) fulfillment requests.
+      summary: Get fulfillment requests for an order
+      operationId: get-ffrs-for-order
+    parameters:
+      - name: order_uuid
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Sales order UUID.
+  /fulfillment_request/{ffr_uuid}/set_items_states:
+    parameters:
+      - name: ffr_uuid
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Fulfillment request UUID
+    post:
+      summary: Update the status of order items in a fulfillment request
+      description: >
+        Update the shipment status for items in the specified fulfillment
+        request.
+
+
+        **Important:** Do not confuse this API with
+
+        [Fulfillment Provider
+        API](/newstore-cloud/order_management/dc_fulfillment_node_api.html).
+        For 
+
+        DC orders please use the Fulfillment Provider API.
+
+
+        Items in a fulfillment request can be marked as shipped or rejected.
+        When you use this API you can't mix
+
+        shipment and rejection actions on the same call.
+
+
+        **Important:** If you are doing a partial rejection of items in a
+        fulfillment request, the reroute
+
+        attempt will not happen until all items in the fulfillment request are
+        in a terminal state.
+
+
+        For fulfillment requests which are routed to store fulfillment nodes,
+        the item state update
+
+        will only be accepted if the request has not been picked by a store
+        associate. The change in
+
+        status is only valid for items that are not in a final state (the
+        fulfillment process for the
+
+        item is considered as complete). The remaining items are not
+
+        affected by this change.
+
+
+        **Important**: When you reject items that are currently fulfilled in DC
+        we don't notify DC about items rejection. 
+
+        You are responsible for communicating with DC API to ensure these items
+        will not be shipped.
+
+
+        **Rejection reason**:
+
+
+        To reject a fulfillment request you must provide the rejection reason
+        "rescinded". This will initiate
+
+        a re-routing attempt without any changes to inventory levels.
+
+
+        **Edge Cases:**
+
+        - If your organization's settings allows rerouting by setting
+        `reroute_to_rejected_fulfillment_nodes` (
+
+        described in this 
+
+        [API](https://docs.newstore.net/api/configuration/inventory-fulfillment/logistic_order_config#operation/set-reroute-to-rejected-fulfillment-nodes))
+
+        to `true`, rejected fulfillment nodes will be downgraded in priority
+        during the routing process. If all possible
+
+        nodes for a given `location_group` in [routing
+        configuration](https://docs.newstore.net/api/integration/delivery/routing_ruleset_api#operation/get-routing-rules)
+
+        are exhausted, it will take the first available fulfillment node as part
+        of the mechanism, resulting in a
+
+        potential route to the same location on further attempts.
+
+        - Setting `reroute_to_rejected_fulfillment_nodes` to `false`,
+        fulfillment nodes will be ignored during future
+
+        routing attempts. If all fulfillment nodes are rejected and you don't
+        want to reroute to these nodes, the
+
+        rejected items will be put on hold.
+
+
+        **Important**: The platform emits a separate event for each line item
+        that is marked as
+
+        shipped, and not a single event for all items. This should be considered
+        when reconciling these
+
+        events in the ERP you are using to manage such events.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Mark fulfillment request items as shipped, rejected, etc.
+              type: object
+              properties:
+                line_items:
+                  type: array
+                  description: >-
+                    List of fulfillment request items with target state that a
+                    user wants to change.
+                  items:
+                    type: object
+                    description: Line item
+                    properties:
+                      item_id:
+                        description: Sales order item UUID.
+                        type: string
+                        format: uuid
+                      state:
+                        type: string
+                        description: >-
+                          New state that should be applied to this item defined
+                          by sales order item UUID.
+                        enum:
+                          - shipped
+                          - rejected
+                    required:
+                      - item_id
+                      - state
+                tracking_code:
+                  type: string
+                  description: >-
+                    Tracking code applied to items, which state is being changed
+                    to `shipped`.
+                  minLength: 1
+                carrier:
+                  type: string
+                  description: >-
+                    Carrier used to ship items, which state is being changed to
+                    `shipped`.
+                  minLength: 1
+                associate_id:
+                  type: string
+                  description: >-
+                    Identifier of the associate who is changing the items's
+                    states.
+                  minLength: 1
+                reason:
+                  anyOf:
+                    - description: >-
+                        The rejection reason that was provided when the
+                        fulfillment request was rejected.
+                      enum:
+                        - rescinded
+                    - type: string
+                      description: The reason for updating item status to shipped.
+                      minLength: 1
+                      maxLength: 255
+              required:
+                - line_items
+                - associate_id
+                - reason
+            examples:
+              reject:
+                summary: Payload for marking an item as rejected
+                value:
+                  line_items:
+                    - item_id: af7dd63d-198d-40e9-abbb-e4d723881072
+                      state: rejected
+                  associate_id: 77d6b285-4c2e-4e7f-b6b4-3e6c153e9934
+                  reason: rescinded
+              shipped:
+                summary: Payload for marking an item as shipped
+                value:
+                  line_items:
+                    - item_id: 74ecd211-4bbd-4fee-8806-0607c5f5d69b
+                      state: shipped
+                  tracking_code: 123abc
+                  carrier: UPS
+                  associate_id: 77d6b285-4c2e-4e7f-b6b4-3e6c153e9934
+                  reason: products were shipped outside of NewStore
+        required: true
+      responses:
+        '204':
+          description: Operation succeeded
+        '400':
+          description: Bad Request Error.
+          content:
+            application/json:
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+              example:
+                error_code: bad_request
+                message: >-
+                  Incorrect target state for fulfillment request's items:
+                  'some_weird_state'.
+                request_id: ec2f3c9bb016ba971bf6074098363
+        '404':
+          description: Not found Error.
+          content:
+            application/json:
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+              example:
+                error_code: not_found
+                message: >-
+                  The fulfillment request 57787cdb-3474-47b5-b3ec-7b776731309e
+                  could not be found.
+                request_id: ec2f3c9bb016ba971bf6074098363
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+              example:
+                error_code: internal_server_error
+                message: Couldn't process request due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6074098363
+      operationId: set-states-for-ffr

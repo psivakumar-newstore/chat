@@ -1,0 +1,1397 @@
+openapi: 3.0.0
+info:
+  title: Event stream configuration API
+  version: '1.0'
+servers:
+  - url: https://dodici.x.newstore.net/api/v1/org/integrations
+security:
+  - newStoreAccessToken: []
+paths:
+  /eventstream:
+    get:
+      responses:
+        '200':
+          description: Information about all configured integrations.
+          content:
+            application/json:
+              example:
+                integrations:
+                  - id: erp-netsuite-integration-001
+                    status: running
+                    integration_type: permanent
+                    callback_parameters:
+                      callback_url: https://netsuite.example.com/one/events
+                      api_key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+                  - id: erp-netsuite-integration-002
+                    status: running
+                    integration_type: permanent
+                    starts_at: '2019-01-17T12:00:00Z'
+                    callback_parameters:
+                      callback_url: https://netsuite.example.com/two/events
+                      api_key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+                  - id: sap-integration-001
+                    status: stopped
+                    integration_type: temporary
+                    starts_at: '2019-01-17T12:00:00Z'
+                    ends_at: '2019-02-21T23:59:00Z'
+                    callback_parameters:
+                      callback_url: https://sap01.example.com/two/events
+                      api_key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+                  - id: sap-s3-integration-002
+                    status: stopped
+                    integration_type: permanent
+                    starts_at: '2019-01-17T12:00:00Z'
+                    s3_parameters:
+                      aws_access_key_id: some_s3_access_key_id
+                      aws_secret_access_key: some_s3_secret_key
+                      aws_region: us-east-1
+                      bucket: sap_export
+                      key_prefix: newstore_integration_002
+              schema:
+                title: Integration List
+                type: object
+                description: A list of configured webhook integrations.
+                properties: &ref_9
+                  integrations:
+                    type: array
+                    items:
+                      title: Integration
+                      type: object
+                      oneOf: &ref_1
+                        - type: object
+                          description: Response payload for an S3 integration
+                          required:
+                            - id
+                            - integration_type
+                            - s3_parameters
+                            - status
+                          properties:
+                            id:
+                              description: >-
+                                The identifier for this integration. It must be
+                                a unique value consisting of lowercase
+                                alphabetic characters, numbers and dashes. An
+                                example would be erp-1.
+                              type: string
+                              minLength: 1
+                              maxLength: 50
+                              pattern: ^[a-z0-9-]+$
+                            integration_type:
+                              type: string
+                              description: >-
+                                Type of the integration. Temporary integrations
+                                can not be updated and will be deleted
+                                automatically once the last event has been sent.
+                              enum:
+                                - temporary
+                                - permanent
+                            s3_parameters:
+                              title: S3 Parameters
+                              type: object
+                              description: >-
+                                Configuration parameters for upload to amazon
+                                s3.
+                              required: &ref_17
+                                - aws_region
+                                - bucket
+                              properties: &ref_18
+                                aws_region:
+                                  type: string
+                                  minLength: 1
+                                  description: The aws region.
+                                bucket:
+                                  type: string
+                                  minLength: 1
+                                  description: Name of the amazon s3 storage bucket.
+                                key_prefix:
+                                  type: string
+                                  description: >-
+                                    Optional prefix for the s3 storage key.
+                                    Tenant name is automatically appended and
+                                    does not need to be part of the prefix.
+                                    Examples: 'mycompany-integration-1',
+                                    'mycompany/myproject/nst-events'.
+                                  maxLength: 64
+                                  pattern: ^[a-zA-Z0-9-/_.]*[^/]$
+                            status:
+                              description: >-
+                                Status of the integration. Newly added
+                                integrations will start automatically.
+                              type: string
+                              enum:
+                                - running
+                                - stopped
+                            starts_at:
+                              type: string
+                              format: date-time
+                              description: >-
+                                UTC timestamp from which events are being
+                                emitted. Must not be in the future. Optional for
+                                permanent integrations and mandatory for
+                                temporary integrations.
+                            ends_at:
+                              type: string
+                              format: date-time
+                              description: >-
+                                UTC timestamp until which events are being
+                                emitted. Not available for permanent
+                                integrations. Mandatory for temporary
+                                integrations.
+                            filter_conditions:
+                              type: object
+                              description: >-
+                                Configuration parameters for event- and
+                                entity-type filtering.
+                              anyOf: &ref_0
+                                - required:
+                                    - event_filter
+                                  properties:
+                                    event_filter:
+                                      type: array
+                                      description: >-
+                                        A list of events to listen to (e.g.
+                                        order.created, order.completed,
+                                        return.processed).
+                                      items:
+                                        type: string
+                                - required:
+                                    - entity_filter
+                                  properties:
+                                    entity_filter:
+                                      type: array
+                                      description: >-
+                                        A list of entities to listen to (e.g.
+                                        order, return). By defining this filter
+                                        the integration will receive all events
+                                        of this entity.
+                                      items:
+                                        type: string
+                        - type: object
+                          description: Response payload for a webhook integration
+                          required:
+                            - id
+                            - integration_type
+                            - callback_parameters
+                            - status
+                          properties:
+                            id:
+                              description: >-
+                                The identifier for this integration. It must be
+                                a unique value consisting of lowercase
+                                alphabetic characters, numbers and dashes. An
+                                example would be erp-1.
+                              type: string
+                              minLength: 1
+                              maxLength: 50
+                              pattern: ^[a-z0-9-]+$
+                            integration_type:
+                              type: string
+                              description: >-
+                                Type of the integration. Temporary integrations
+                                can not be updated and will be deleted
+                                automatically once the last event has been sent.
+                              enum:
+                                - temporary
+                                - permanent
+                            callback_parameters:
+                              title: Webhook Parameters
+                              type: object
+                              description: Configuration parameters for webhook's callback.
+                              required: &ref_19
+                                - callback_url
+                              properties: &ref_20
+                                callback_url:
+                                  type: string
+                                  description: >-
+                                    Webhook callback URL. Required in case
+                                    target is 'webhook'.
+                                  format: uri
+                            status:
+                              description: >-
+                                Status of the integration. Newly added
+                                integrations will start automatically.
+                              type: string
+                              enum:
+                                - running
+                                - stopped
+                            starts_at:
+                              type: string
+                              format: date-time
+                              description: >-
+                                UTC timestamp from which events are being
+                                emitted. Must not be in the future. Optional for
+                                permanent integrations and mandatory for
+                                temporary integrations.
+                            ends_at:
+                              type: string
+                              format: date-time
+                              description: >-
+                                UTC timestamp until which events are being
+                                emitted. Not available for permanent
+                                integrations. Mandatory for temporary
+                                integrations.
+                            filter_conditions:
+                              type: object
+                              description: >-
+                                Configuration parameters for event- and
+                                entity-type filtering.
+                              anyOf: *ref_0
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: &ref_2
+                  - error_code
+                  - request_id
+                properties: &ref_3
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+      description: Lists all configured integrations.
+      summary: List registered integrations
+      operationId: listIntegrations
+      tags:
+        - Integration registration
+    post:
+      responses:
+        '200':
+          description: The integration was registered successfully.
+          content:
+            application/json:
+              example:
+                id: sap-integration-001
+                status: running
+                integration_type: temporary
+                starts_at: '2019-01-17T12:00:00Z'
+                ends_at: '2019-02-21T23:59:00Z'
+                callback_parameters: &ref_4
+                  callback_url: https://sap01.example.com/two/events
+                  api_key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+              schema:
+                title: Integration
+                type: object
+                oneOf: *ref_1
+        '400':
+          description: >-
+            Bad request. Also returned when the maximum number of integrations
+            is reached.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '409':
+          description: Conflict. Another integration with the specified ID already exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+      description: >
+        Registers a new integration. You can specify how the events will be sent
+        to you:
+
+        - via the
+        [webhook](/newstore-cloud/event_stream/stream_webhook_sink_hook.html).
+        The events are provided in real time.
+
+        - via file upload to the S3 bucket of your choice. An upload typically
+        occurs every 5 minutes.
+
+
+        By default, you will receive all the events that NewStore can provide.
+
+        To only receive specific events, use the `filter_conditions` property
+
+        to set filters on entities and/or events. To see all entities and
+
+        events, see the [entity
+        model](/docs/development/api/guides/eventstream.html#entity-model).
+
+
+        When you call this method, the integration starts automatically, you do
+        not need to call the [Start
+
+        integration](#operation/startIntegration) method. At most 25
+        integrations can be registered (including
+
+        temporary and stopped integrations).
+
+
+        You can also use this method to replay events by date. To do this, set a
+        start and end date
+
+        when you call this method. The use of an end date registers a
+        _temporary_ integration which will receive
+
+        all events that were created between the start- and end date. After the
+        last event before the end date is published,
+
+        the integration is automatically stopped. You can then use the [Delete
+        integration](#operation/deleteIntegration) method
+
+        to delete the temporary integration. Be aware that deleting the
+        integration will also remove its integration 
+
+        logs and rejected events.
+
+
+        In case of webhook integration, if you use the `api_key` property then
+        every call to the URL set in the
+
+        `callback_url` property includes the line `Authorization: Bearer
+        <api_key>` in its header.
+
+
+        In case of S3 integrations, the events are stored in files with the
+        following format:
+
+        `s3://{bucket}/{key_prefix}/{tenant}/{timestamp}-data-{random_string}.export`,
+        where:
+
+
+        - `bucket` and `key_prefix` are the parameters you specified in
+        `s3_parameters`.
+
+        - `timestamp` is the time, when the file was created on the server, in
+        epoch millis.
+
+
+        Every file contains multiple JSON objects, one per event, delimited by a
+        newline character.
+
+        The events are described with the same schema as in the
+        [webhook](/newstore-cloud/event_stream/stream_webhook_sink_hook.html).
+
+
+        A new file is started every 5 minutes, or when the size of the current
+        file reaches 50 MiB, whichever happens first.
+
+
+        **Note:** The start and end date as well as integration type can not be
+        modified after creation.
+      summary: Register new integration
+      operationId: registerIntegration
+      tags:
+        - Integration registration
+      requestBody:
+        content:
+          application/json:
+            examples:
+              Webhook integration:
+                description: Create a webhook integration
+                value:
+                  id: erp-netsuite-integration-002
+                  integration_type: permanent
+                  starts_at: '2019-01-17T12:00:00Z'
+                  callback_parameters:
+                    callback_url: https://sap01.example.com/two/events
+                    api_key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+              S3 integration:
+                description: Create an S3 integration
+                value:
+                  id: s3-integration-01
+                  integration_type: temporary
+                  s3_parameters:
+                    aws_access_key_id: EXAMPLEACCESSKEYID1
+                    aws_secret_access_key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+                    aws_region: us-west-2
+                    bucket: company_bucket
+                    key_prefix: mycompany-integration-1
+              Webhook integration with filters:
+                description: Create a webhook integration with entity- and event filters
+                value:
+                  id: erp-netsuite-integration-002
+                  integration_type: permanent
+                  starts_at: '2019-01-17T12:00:00Z'
+                  callback_parameters:
+                    callback_url: https://sap01.example.com/two/events
+                    api_key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+                  filter_conditions:
+                    event_filter:
+                      - order.created
+                      - refund_request.issued
+                    entity_filter:
+                      - fulfillment_request
+                      - return
+              Webhook integration with entity filters only:
+                description: Create a webhook integration with entity filters
+                value:
+                  id: erp-netsuite-integration-002
+                  integration_type: permanent
+                  starts_at: '2019-01-17T12:00:00Z'
+                  callback_parameters:
+                    callback_url: https://sap01.example.com/two/events
+                    api_key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+                  filter_conditions:
+                    entity_filter:
+                      - fulfillment_request
+                      - return
+              Webhook integration with event filters only:
+                description: Create a webhook integration with event filters
+                value:
+                  id: erp-netsuite-integration-002
+                  integration_type: permanent
+                  starts_at: '2019-01-17T12:00:00Z'
+                  callback_parameters:
+                    callback_url: https://sap01.example.com/two/events
+                    api_key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+                  filter_conditions:
+                    event_filter:
+                      - order.created
+                      - refund_request.issued
+            schema:
+              title: New Integration
+              type: object
+              description: Payload for a request to add an integration.
+              oneOf: &ref_10
+                - type: object
+                  description: Request payload for adding an S3 integration
+                  required:
+                    - id
+                    - integration_type
+                    - s3_parameters
+                  properties:
+                    id:
+                      description: >-
+                        The identifier for this integration. It must be a unique
+                        value consisting of lowercase alphabetic characters,
+                        numbers and dashes. An example would be erp-1.
+                      type: string
+                      minLength: 1
+                      maxLength: 50
+                      pattern: ^[a-z0-9-]+$
+                    integration_type:
+                      type: string
+                      description: >-
+                        Type of the integration. Temporary integrations can not
+                        be updated and will be deleted automatically once the
+                        last event has been sent.
+                      enum:
+                        - temporary
+                        - permanent
+                    s3_parameters:
+                      title: S3 Parameters
+                      type: object
+                      description: Configuration parameters for upload to amazon s3.
+                      required: &ref_7
+                        - aws_access_key_id
+                        - aws_secret_access_key
+                        - aws_region
+                        - bucket
+                      properties: &ref_8
+                        aws_access_key_id:
+                          type: string
+                          minLength: 1
+                          description: The aws access key to use for authentication.
+                        aws_secret_access_key:
+                          type: string
+                          minLength: 1
+                          description: The aws secret access key to use for authentication.
+                        aws_region:
+                          type: string
+                          minLength: 1
+                          description: The aws region.
+                        bucket:
+                          type: string
+                          minLength: 1
+                          description: Name of the amazon s3 storage bucket.
+                        key_prefix:
+                          type: string
+                          description: >-
+                            Optional prefix for the s3 storage key. Tenant name
+                            is automatically appended and does not need to be
+                            part of the prefix. Examples:
+                            'mycompany-integration-1',
+                            'mycompany/myproject/nst-events'.
+                          maxLength: 64
+                          pattern: ^[a-zA-Z0-9-/_.]*[^/]$
+                    starts_at:
+                      type: string
+                      format: date-time
+                      description: >-
+                        UTC timestamp from which events are being emitted. Must
+                        not be in the future. Optional for permanent
+                        integrations and mandatory for temporary integrations.
+                    ends_at:
+                      type: string
+                      format: date-time
+                      description: >-
+                        UTC timestamp until which events are being emitted. Not
+                        available for permanent integrations. Mandatory for
+                        temporary integrations.
+                    filter_conditions:
+                      type: object
+                      description: >-
+                        Configuration parameters for event- and entity-type
+                        filtering.
+                      anyOf: *ref_0
+                - type: object
+                  description: Request payload for adding a webhook integration
+                  required:
+                    - id
+                    - integration_type
+                    - callback_parameters
+                  properties:
+                    id:
+                      description: >-
+                        The identifier for this integration. It must be a unique
+                        value consisting of lowercase alphabetic characters,
+                        numbers and dashes. An example would be erp-1.
+                      type: string
+                      minLength: 1
+                      maxLength: 50
+                      pattern: ^[a-z0-9-]+$
+                    integration_type:
+                      type: string
+                      description: >-
+                        Type of the integration. Temporary integrations can not
+                        be updated and will be deleted automatically once the
+                        last event has been sent.
+                      enum:
+                        - temporary
+                        - permanent
+                    callback_parameters:
+                      title: Webhook Parameters
+                      type: object
+                      description: Configuration parameters for webhook's callback.
+                      required: &ref_5
+                        - callback_url
+                      properties: &ref_6
+                        callback_url:
+                          type: string
+                          description: >-
+                            Webhook callback URL. Required in case target is
+                            'webhook'.
+                          format: uri
+                        api_key:
+                          type: string
+                          maxLength: 1024
+                          description: Authorization token for the callback URL.
+                    starts_at:
+                      type: string
+                      format: date-time
+                      description: >-
+                        UTC timestamp from which events are being emitted. Must
+                        not be in the future. Optional for permanent
+                        integrations and mandatory for temporary integrations.
+                    ends_at:
+                      type: string
+                      format: date-time
+                      description: >-
+                        UTC timestamp until which events are being emitted. Not
+                        available for permanent integrations. Mandatory for
+                        temporary integrations.
+                    filter_conditions:
+                      type: object
+                      description: >-
+                        Configuration parameters for event- and entity-type
+                        filtering.
+                      anyOf: *ref_0
+        required: true
+  /eventstream/{integration_id}:
+    patch:
+      responses:
+        '200':
+          description: The integration was updated.
+          content:
+            application/json:
+              example:
+                id: sap-integration-001
+                status: running
+                integration_type: temporary
+                starts_at: '2019-01-17T12:00:00Z'
+                ends_at: '2019-02-21T23:59:00Z'
+                callback_parameters: *ref_4
+              schema:
+                title: Integration
+                type: object
+                oneOf: *ref_1
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '404':
+          description: Integration with given ID was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+      description: >
+        Updates the specified integration and returns the updated state.
+
+
+        **Important:** Stop the integration before you update it.
+
+
+        The typical update workflow is:
+
+
+        1. Stop the integration using the [Stop
+        integration](#operation/stopIntegration) method.
+
+        1. Poll the [Get integration](#operation/getIntegration) method until
+        `status` is `stopped`.
+
+        1. Update the integration using the [Update
+        integration](#operation/updateIntegration) method.
+
+        1. Start the integration using the [Start
+        integration](#operation/startIntegration) method.
+      summary: Update the integration
+      operationId: updateIntegration
+      tags:
+        - Integration registration
+      requestBody:
+        content:
+          application/json:
+            example:
+              callback_parameters:
+                callback_url: https://integrator-api.example.com/v0/events
+                api_key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+            schema:
+              title: Update Integration
+              type: object
+              description: Payload for a request to modify an existing webhook integration.
+              not: &ref_11
+                required:
+                  - callback_parameters
+                  - s3_parameters
+              additionalProperties: false
+              properties: &ref_12
+                callback_parameters:
+                  title: Webhook Parameters
+                  type: object
+                  description: Configuration parameters for webhook's callback.
+                  required: *ref_5
+                  properties: *ref_6
+                s3_parameters:
+                  title: S3 Parameters
+                  type: object
+                  description: Configuration parameters for upload to amazon s3.
+                  required: *ref_7
+                  properties: *ref_8
+                filter_conditions:
+                  type: object
+                  description: >-
+                    Configuration parameters for event- and entity-type
+                    filtering.
+                  anyOf: *ref_0
+        required: true
+    get:
+      responses:
+        '200':
+          description: Get details about the requested integration.
+          content:
+            application/json:
+              example:
+                id: sap-integration-001
+                status: running
+                integration_type: temporary
+                starts_at: '2019-01-17T12:00:00Z'
+                ends_at: '2019-02-21T23:59:00Z'
+                callback_parameters: *ref_4
+              schema:
+                title: Integration
+                type: object
+                oneOf: *ref_1
+        '404':
+          description: Integration with given ID was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+      description: Returns details about an existing integration.
+      summary: Get integration details
+      operationId: getIntegration
+      tags:
+        - Integration registration
+    delete:
+      responses:
+        '200':
+          description: Integration was successfully deleted.
+        '404':
+          description: Integration with given ID was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+      description: Deletes an existing integration.
+      summary: Delete the integration
+      operationId: deleteIntegration
+      tags:
+        - Integration registration
+    parameters:
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier of the integration.
+  /eventstream/{integration_id}/_start:
+    post:
+      responses:
+        '200':
+          description: The integration was started.
+          content:
+            application/json:
+              example:
+                id: webhook-integration-1
+                status: running
+                callback_parameters:
+                  callback_url: http://0.0.0.0:12345/eventSuccessful
+                integration_type: permanent
+                starts_at: '2019-07-07T00:00:00Z'
+              schema:
+                title: Integration
+                type: object
+                oneOf: *ref_1
+        '404':
+          description: Integration with given ID was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+      description: >
+        Starts the specified integration. NewStore Omnichannel Cloud starts
+        emitting events
+
+        to the receiving URL.
+
+
+        You can check the status of the integration with the [Get
+        integration](#operation/getIntegration) method.
+
+
+        **Note:** When an integration was stopped, it must be restarted within
+        30 days in order to receive
+
+        all events which occurred while it was stopped. If the integration gets
+        restarted more than 30 days after
+
+        being stopped, it will only receive events which occurred after the
+        point in time when it was restarted.
+      summary: Start the integration
+      operationId: startIntegration
+      tags:
+        - Integration operation
+    parameters:
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier of the integration.
+  /eventstream/{integration_id}/_stop:
+    post:
+      responses:
+        '200':
+          description: The integration was stopped.
+          content:
+            application/json:
+              example:
+                id: webhook-integration-1
+                status: stopped
+                callback_parameters:
+                  callback_url: http://0.0.0.0:12345/eventSuccessful
+                integration_type: permanent
+                starts_at: '2019-07-07T00:00:00Z'
+              schema:
+                title: Integration
+                type: object
+                oneOf: *ref_1
+        '404':
+          description: Integration with given ID was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+      description: >
+        Stops the specified integration. No events are emitted once the
+        integration is stopped.
+
+
+        You can check the status of the integration with the [Get
+        integration](#operation/getIntegration) method.
+      summary: Stop the integration
+      operationId: stopIntegration
+      tags:
+        - Integration operation
+    parameters:
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier of the integration.
+  /eventstream/{integration_id}/logs:
+    get:
+      responses:
+        '200':
+          description: Lists the last 50 log entries of the integration.
+          content:
+            application/json:
+              example:
+                entries:
+                  - action: integration_stopped
+                    reason: Stopped via API.
+                    created_at: '2019-09-13T08:04:00Z'
+                  - action: retry_triggered
+                    reason: >-
+                      Request to URL http://example.com/webhook failed. Reason:
+                      too many requests (HTTP status code 429). Payload:
+                      <payload details>
+                    created_at: '2019-09-12T15:21:00Z'
+                  - action: retry_triggered
+                    reason: >-
+                      Request to URL http://example.com/webhook failed. Reason:
+                      too many requests (HTTP status code 429). Payload:
+                      <payload details>
+                    created_at: '2019-09-12T15:20:00Z'
+                  - action: integration_started
+                    reason: Started via API.
+                    created_at: '2019-09-12T12:00:00Z'
+              schema:
+                title: Integration Log
+                type: object
+                description: A list of log entries of an integration.
+                properties: &ref_13
+                  entries:
+                    type: array
+                    items:
+                      type: object
+                      description: A log entry of an integration.
+                      required:
+                        - created_at
+                        - action
+                        - reason
+                      properties:
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: The UTC time this action happened.
+                        action:
+                          type: string
+                          description: >-
+                            The type of the action (e.g. start, stop or retry of
+                            an integration).
+                        reason:
+                          type: string
+                          minLength: 1
+                          description: The reason why the action occurred.
+        '404':
+          description: Integration with given ID was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+      description: Returns the last 50 integration log entries.
+      summary: Get integration log
+      operationId: listIntegrationLogEntries
+      tags:
+        - Integration operation
+    parameters:
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier of the integration.
+  /eventstream/{integration_id}/rejected_events:
+    get:
+      responses:
+        '200':
+          description: >-
+            Lists all events which have been rejected by the integration.
+            Integrations reject events by sending 400 as response.
+          content:
+            application/json:
+              example:
+                rejected_events:
+                  - created_at: '2019-09-13T08:04:00Z'
+                    id: 1a8a5052-8741-4daf-982e-e0a12990335a
+                  - created_at: '2019-09-13T08:01:00Z'
+                    id: 045cb397-9dca-4305-81e5-4ad0b6ad242c
+                  - created_at: '2019-09-13T06:52:00Z'
+                    id: c35e7a43-cad2-4f2a-8c54-ad1328373b41
+              schema:
+                title: Rejected Event List
+                type: object
+                description: A list of rejected event entries of an integration.
+                properties: &ref_14
+                  rejected_events:
+                    type: array
+                    items:
+                      type: object
+                      description: A rejected event entry of an integration.
+                      required:
+                        - created_at
+                        - id
+                      properties:
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: The UTC time this event was rejected.
+                        id:
+                          type: string
+                          maxLength: 36
+                          minLength: 36
+                          description: The unique identifier of the rejected event.
+        '404':
+          description: Integrations with given ID was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+      description: >
+        Lists the events that were rejected by the integration (HTTP status code
+        400).
+
+
+        Up to 30 rejected events are stored. To delete some events, use the
+        [Delete rejected event method](#operation/deleteRejectedEvent).
+      summary: List rejected events
+      operationId: listRejectedEvents
+      tags:
+        - Rejected events
+    parameters:
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier of the integration.
+  /eventstream/{integration_id}/rejected_events/{event_id}:
+    get:
+      responses:
+        '200':
+          description: The payload of the rejected event.
+          content:
+            application/json:
+              example:
+                tenant: businessname
+                name: order.items_cancelled
+                published_at: '2010-01-01T12:00:00.000Z'
+                payload:
+                  id: 1431b891-c056-4f80-9d34-06479b383417
+                  items:
+                    - id: 8c2a657e-e8c7-4f1b-b6d5-ab27d2ec87a1
+                      product_id: ASDF1000
+                      fulfillment_location_id: US01
+                    - id: 9c027c6f-2918-457e-9051-0c6a349701df
+                      product_id: ASDF1001
+                      fulfillment_location_id: US01
+              schema:
+                title: Rejected Event
+                description: This is the event that was rejected by the integration.
+                type: object
+                required: &ref_15
+                  - tenant
+                  - name
+                  - published_at
+                  - payload
+                properties: &ref_16
+                  tenant:
+                    description: The tenant name.
+                    type: string
+                  name:
+                    description: The name of the external event.
+                    type: string
+                  published_at:
+                    description: UTC timestamp indicating when this event was generated.
+                    format: date-time
+                    type: string
+                  payload:
+                    description: Content of the event defined by the 'name' property.
+                    type: object
+        '404':
+          description: Rejected event or integration with given ID was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+      description: Get the payload of the rejected event.
+      summary: Get rejected event
+      operationId: getRejectedEvent
+      tags:
+        - Rejected events
+    delete:
+      responses:
+        '200':
+          description: Rejected event was successfully deleted.
+        '404':
+          description: Rejected event or integration with given ID was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+      description: >
+        Deletes the rejected event permanently. NewStore stores 30 rejected
+        events so we recommend that you
+
+        delete the rejected events that you have handled.
+
+
+        To list all the rejected events, use the [List rejected events
+        method](#operation/listRejectedEvents).
+      summary: Delete rejected event
+      operationId: deleteRejectedEvent
+      tags:
+        - Rejected events
+    parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier of the rejected event.
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier of the integration.
+  /eventstream/{integration_id}/rejected_events/{event_id}/_retry:
+    post:
+      responses:
+        '200':
+          description: The rejected event was successfully delivered to the integration.
+        '404':
+          description: Rejected event or integration with given ID was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+        '502':
+          description: The integration had a problem processing the rejected even.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Details
+                description: Error response sent if a request failed.
+                required: *ref_2
+                properties: *ref_3
+      description: >
+        Sends the rejected event to the defined endpoint of the integration
+        again.
+
+
+        In case the integration responded with a 200 response code, the rejected
+        event will be automatically
+
+        removed from the rejected event list.
+      summary: Retry rejected event
+      operationId: retryRejectedEvent
+      tags:
+        - Rejected events
+    parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier of the rejected event.
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier of the integration.
+components:
+  schemas:
+    integration_status:
+      title: Integration
+      type: object
+      oneOf: *ref_1
+    integration_list:
+      title: Integration List
+      type: object
+      description: A list of configured webhook integrations.
+      properties: *ref_9
+    new_integration:
+      title: New Integration
+      type: object
+      description: Payload for a request to add an integration.
+      oneOf: *ref_10
+    update_integration:
+      title: Update Integration
+      type: object
+      description: Payload for a request to modify an existing webhook integration.
+      not: *ref_11
+      additionalProperties: false
+      properties: *ref_12
+    integration_log:
+      title: Integration Log
+      type: object
+      description: A list of log entries of an integration.
+      properties: *ref_13
+    rejected_event_list:
+      title: Rejected Event List
+      type: object
+      description: A list of rejected event entries of an integration.
+      properties: *ref_14
+    rejected_event:
+      title: Rejected Event
+      description: This is the event that was rejected by the integration.
+      type: object
+      required: *ref_15
+      properties: *ref_16
+    error_details:
+      type: object
+      title: Error Details
+      description: Error response sent if a request failed.
+      required: *ref_2
+      properties: *ref_3
+    s3_parameters_response:
+      title: S3 Parameters
+      type: object
+      description: Configuration parameters for upload to amazon s3.
+      required: *ref_17
+      properties: *ref_18
+    filter_conditions:
+      type: object
+      description: Configuration parameters for event- and entity-type filtering.
+      anyOf: *ref_0
+    callback_parameters_response:
+      title: Webhook Parameters
+      type: object
+      description: Configuration parameters for webhook's callback.
+      required: *ref_19
+      properties: *ref_20
+    response:
+      title: Integration
+      type: object
+      oneOf: *ref_1
+    get_response:
+      title: Integration List
+      type: object
+      description: A list of configured webhook integrations.
+      properties: *ref_9
+    error_response:
+      type: object
+      title: Error Details
+      description: Error response sent if a request failed.
+      required: *ref_2
+      properties: *ref_3
+    s3_parameters_request:
+      title: S3 Parameters
+      type: object
+      description: Configuration parameters for upload to amazon s3.
+      required: *ref_7
+      properties: *ref_8
+    callback_parameters_request:
+      title: Webhook Parameters
+      type: object
+      description: Configuration parameters for webhook's callback.
+      required: *ref_5
+      properties: *ref_6
+    post_request:
+      title: New Integration
+      type: object
+      description: Payload for a request to add an integration.
+      oneOf: *ref_10
+    patch_by_id_request:
+      title: Update Integration
+      type: object
+      description: Payload for a request to modify an existing webhook integration.
+      not: *ref_11
+      additionalProperties: false
+      properties: *ref_12
+    log_get_response:
+      title: Integration Log
+      type: object
+      description: A list of log entries of an integration.
+      properties: *ref_13
+    get_rejected_events_response:
+      title: Rejected Event List
+      type: object
+      description: A list of rejected event entries of an integration.
+      properties: *ref_14
+    get_rejected_event_response:
+      title: Rejected Event
+      description: This is the event that was rejected by the integration.
+      type: object
+      required: *ref_15
+      properties: *ref_16
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

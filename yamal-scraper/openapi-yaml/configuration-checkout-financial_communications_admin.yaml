@@ -1,0 +1,960 @@
+openapi: 3.0.0
+info:
+  title: Financial communication configuration API
+  description: >
+    Use this API to configure notifications and financial communications that
+    are sent from the
+
+    NewStore platform to customers in your business. This may include receipts
+    and other similar
+
+    financial documents.
+
+
+    **Note**: Financial documents and notifications can be sent to the customer
+    via email or
+
+    through push notifications. Emails contain the relevant financial documents
+    as attachments.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: The local development server
+  - url: https://dodici.x.newstore.net/v1/c
+    description: The sandbox server
+tags:
+  - name: Financial communication configuration
+    description: >-
+      Use this resource to manage the financial communication configuration for
+      your business.
+paths:
+  /config/financial_communications:
+    parameters:
+      - name: request_id
+        in: header
+        schema:
+          type: string
+        description: ID of the request. Generated automatically.
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        description: Tenant name. Substituted automatically from the path.
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+        description: ID of the user. Substituted automatically from the auth token.
+    get:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Financial communication configuration
+      summary: Get financial communication configuration
+      description: >
+        Retrieves the complete financial communication configuration for your
+        business.
+
+
+        The response payload contains the current version of the configuration,
+        the timestamp when
+
+        it was last updated, and who updated it.
+      operationId: getConfig
+      responses:
+        '200':
+          description: Current configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    description: Tenant configuration object.
+                    type: object
+                    title: Financial Communications Tenant Configuration
+                    properties:
+                      notification_options:
+                        type: object
+                        description: Notification options related to financial documents.
+                        required:
+                          - push_notification_channel_type
+                          - options
+                        properties:
+                          push_notification_channel_type:
+                            description: >-
+                              Push notification need a channel (type of
+                              addressing) for where to send notifications. That
+                              can be the internal customer identifier or their
+                              email.
+                            type: string
+                            enum:
+                              - customer_uuid
+                              - email
+                          options:
+                            type: object
+                            description: >-
+                              A map of enabled notifications and their
+                              respective channels.
+                            properties:
+                              gift_card.issued:
+                                type: array
+                                items:
+                                  type: string
+                                  description: Any supported notification type.
+                                  enum:
+                                    - email
+                                    - push_notification
+                              invoice_created:
+                                type: array
+                                items:
+                                  type: string
+                                  description: Any supported notification type.
+                                  enum:
+                                    - email
+                                    - push_notification
+                              refund_note_created:
+                                type: array
+                                items:
+                                  type: string
+                                  description: Any supported notification type.
+                                  enum:
+                                    - email
+                                    - push_notification
+                            required:
+                              - gift_card.issued
+                              - invoice_created
+                              - refund_note_created
+                    required:
+                      - notification_options
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+    patch:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Financial communication configuration
+      summary: Update financial communication configuration
+      description: >
+        Updates the current financial communication configuration for your
+        business.
+      operationId: updateConfig
+      parameters:
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: string
+          description: >
+            Current version of the financial communication configuration.
+
+            Use the [Get financial communication
+            configuration](#operation/getConfig) method to
+
+            retrieve the current configuration.
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            schema:
+              description: Tenant configuration object.
+              type: object
+              title: Financial Communications Tenant Configuration
+              properties:
+                notification_options:
+                  type: object
+                  description: Notification options related to financial documents.
+                  required:
+                    - push_notification_channel_type
+                    - options
+                  properties:
+                    push_notification_channel_type:
+                      description: >-
+                        Push notification need a channel (type of addressing)
+                        for where to send notifications. That can be the
+                        internal customer identifier or their email.
+                      type: string
+                      enum:
+                        - customer_uuid
+                        - email
+                    options:
+                      type: object
+                      description: >-
+                        A map of enabled notifications and their respective
+                        channels.
+                      properties:
+                        gift_card.issued:
+                          type: array
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                        invoice_created:
+                          type: array
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                        refund_note_created:
+                          type: array
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                      required:
+                        - gift_card.issued
+                        - invoice_created
+                        - refund_note_created
+              required:
+                - notification_options
+      responses:
+        '200':
+          description: The updated configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    description: Tenant configuration object.
+                    type: object
+                    title: Financial Communications Tenant Configuration
+                    properties:
+                      notification_options:
+                        type: object
+                        description: Notification options related to financial documents.
+                        required:
+                          - push_notification_channel_type
+                          - options
+                        properties:
+                          push_notification_channel_type:
+                            description: >-
+                              Push notification need a channel (type of
+                              addressing) for where to send notifications. That
+                              can be the internal customer identifier or their
+                              email.
+                            type: string
+                            enum:
+                              - customer_uuid
+                              - email
+                          options:
+                            type: object
+                            description: >-
+                              A map of enabled notifications and their
+                              respective channels.
+                            properties:
+                              gift_card.issued:
+                                type: array
+                                items:
+                                  type: string
+                                  description: Any supported notification type.
+                                  enum:
+                                    - email
+                                    - push_notification
+                              invoice_created:
+                                type: array
+                                items:
+                                  type: string
+                                  description: Any supported notification type.
+                                  enum:
+                                    - email
+                                    - push_notification
+                              refund_note_created:
+                                type: array
+                                items:
+                                  type: string
+                                  description: Any supported notification type.
+                                  enum:
+                                    - email
+                                    - push_notification
+                            required:
+                              - gift_card.issued
+                              - invoice_created
+                              - refund_note_created
+                    required:
+                      - notification_options
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: invalid_request
+                messages:
+                  - Wrong datetime format
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '409':
+          description: The version key is out of date, configuration was updated
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: conflict_version
+                messages:
+                  - The version is out of date
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+    post:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Financial communication configuration
+      summary: Create financial communication configuration
+      description: >
+        Use this method to create a new financial communication configuration
+        and completely replace
+
+        the current configuration for your business.
+      operationId: replaceConfig
+      parameters:
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: string
+          description: >
+            Current version of the financial communication configuration.
+
+            Use the [Get financial communication
+            configuration](#operation/getConfig) method to
+
+            retrieve the current configuration.
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            schema:
+              description: Tenant configuration object.
+              type: object
+              title: Financial Communications Tenant Configuration
+              properties:
+                notification_options:
+                  type: object
+                  description: Notification options related to financial documents.
+                  required:
+                    - push_notification_channel_type
+                    - options
+                  properties:
+                    push_notification_channel_type:
+                      description: >-
+                        Push notification need a channel (type of addressing)
+                        for where to send notifications. That can be the
+                        internal customer identifier or their email.
+                      type: string
+                      enum:
+                        - customer_uuid
+                        - email
+                    options:
+                      type: object
+                      description: >-
+                        A map of enabled notifications and their respective
+                        channels.
+                      properties:
+                        gift_card.issued:
+                          type: array
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                        invoice_created:
+                          type: array
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                        refund_note_created:
+                          type: array
+                          items:
+                            type: string
+                            description: Any supported notification type.
+                            enum:
+                              - email
+                              - push_notification
+                      required:
+                        - gift_card.issued
+                        - invoice_created
+                        - refund_note_created
+              required:
+                - notification_options
+      responses:
+        '200':
+          description: The updated configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    description: Tenant configuration object.
+                    type: object
+                    title: Financial Communications Tenant Configuration
+                    properties:
+                      notification_options:
+                        type: object
+                        description: Notification options related to financial documents.
+                        required:
+                          - push_notification_channel_type
+                          - options
+                        properties:
+                          push_notification_channel_type:
+                            description: >-
+                              Push notification need a channel (type of
+                              addressing) for where to send notifications. That
+                              can be the internal customer identifier or their
+                              email.
+                            type: string
+                            enum:
+                              - customer_uuid
+                              - email
+                          options:
+                            type: object
+                            description: >-
+                              A map of enabled notifications and their
+                              respective channels.
+                            properties:
+                              gift_card.issued:
+                                type: array
+                                items:
+                                  type: string
+                                  description: Any supported notification type.
+                                  enum:
+                                    - email
+                                    - push_notification
+                              invoice_created:
+                                type: array
+                                items:
+                                  type: string
+                                  description: Any supported notification type.
+                                  enum:
+                                    - email
+                                    - push_notification
+                              refund_note_created:
+                                type: array
+                                items:
+                                  type: string
+                                  description: Any supported notification type.
+                                  enum:
+                                    - email
+                                    - push_notification
+                            required:
+                              - gift_card.issued
+                              - invoice_created
+                              - refund_note_created
+                    required:
+                      - notification_options
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: invalid_request
+                messages:
+                  - Wrong datetime format
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '409':
+          description: The version key is out of date, configuration was updated
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: conflict_version
+                messages:
+                  - The version is out of date
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+components:
+  schemas:
+    UpdateRequest:
+      description: Tenant configuration object.
+      type: object
+      title: Financial Communications Tenant Configuration
+      properties:
+        notification_options:
+          type: object
+          description: Notification options related to financial documents.
+          required:
+            - push_notification_channel_type
+            - options
+          properties:
+            push_notification_channel_type:
+              description: >-
+                Push notification need a channel (type of addressing) for where
+                to send notifications. That can be the internal customer
+                identifier or their email.
+              type: string
+              enum:
+                - customer_uuid
+                - email
+            options:
+              type: object
+              description: A map of enabled notifications and their respective channels.
+              properties:
+                gift_card.issued:
+                  type: array
+                  items:
+                    type: string
+                    description: Any supported notification type.
+                    enum:
+                      - email
+                      - push_notification
+                invoice_created:
+                  type: array
+                  items:
+                    type: string
+                    description: Any supported notification type.
+                    enum:
+                      - email
+                      - push_notification
+                refund_note_created:
+                  type: array
+                  items:
+                    type: string
+                    description: Any supported notification type.
+                    enum:
+                      - email
+                      - push_notification
+              required:
+                - gift_card.issued
+                - invoice_created
+                - refund_note_created
+      required:
+        - notification_options
+    ConfigResponse:
+      description: Update configuration response
+      type: object
+      properties:
+        value:
+          description: Tenant configuration object.
+          type: object
+          title: Financial Communications Tenant Configuration
+          properties:
+            notification_options:
+              type: object
+              description: Notification options related to financial documents.
+              required:
+                - push_notification_channel_type
+                - options
+              properties:
+                push_notification_channel_type:
+                  description: >-
+                    Push notification need a channel (type of addressing) for
+                    where to send notifications. That can be the internal
+                    customer identifier or their email.
+                  type: string
+                  enum:
+                    - customer_uuid
+                    - email
+                options:
+                  type: object
+                  description: >-
+                    A map of enabled notifications and their respective
+                    channels.
+                  properties:
+                    gift_card.issued:
+                      type: array
+                      items:
+                        type: string
+                        description: Any supported notification type.
+                        enum:
+                          - email
+                          - push_notification
+                    invoice_created:
+                      type: array
+                      items:
+                        type: string
+                        description: Any supported notification type.
+                        enum:
+                          - email
+                          - push_notification
+                    refund_note_created:
+                      type: array
+                      items:
+                        type: string
+                        description: Any supported notification type.
+                        enum:
+                          - email
+                          - push_notification
+                  required:
+                    - gift_card.issued
+                    - invoice_created
+                    - refund_note_created
+          required:
+            - notification_options
+        version:
+          description: Current Configuration version
+          type: string
+        updated_at:
+          description: RFC3339 date time format with timezone
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+          example: '2021-12-31T23:59:59Z'
+        updated_by:
+          description: Internal User ID
+          type: string
+    Error:
+      description: Error message response
+      properties:
+        error_code:
+          description: |-
+            Error code value. Possible values:
+            * not_found: tenant not found, or tenant key in header is blank;
+            * internal: internal server error;
+            * invalid_request: invalid request;
+            * validation_failed: validation of request failed;
+          type: string
+        messages:
+          type: array
+          items:
+            type: string
+    datetime_tz:
+      description: RFC3339 date time format with timezone
+      type: string
+      pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+      example: '2021-12-31T23:59:59Z'
+    Config:
+      description: Tenant configuration object.
+      type: object
+      title: Financial Communications Tenant Configuration
+      properties:
+        notification_options:
+          type: object
+          description: Notification options related to financial documents.
+          required:
+            - push_notification_channel_type
+            - options
+          properties:
+            push_notification_channel_type:
+              description: >-
+                Push notification need a channel (type of addressing) for where
+                to send notifications. That can be the internal customer
+                identifier or their email.
+              type: string
+              enum:
+                - customer_uuid
+                - email
+            options:
+              type: object
+              description: A map of enabled notifications and their respective channels.
+              properties:
+                gift_card.issued:
+                  type: array
+                  items:
+                    type: string
+                    description: Any supported notification type.
+                    enum:
+                      - email
+                      - push_notification
+                invoice_created:
+                  type: array
+                  items:
+                    type: string
+                    description: Any supported notification type.
+                    enum:
+                      - email
+                      - push_notification
+                refund_note_created:
+                  type: array
+                  items:
+                    type: string
+                    description: Any supported notification type.
+                    enum:
+                      - email
+                      - push_notification
+              required:
+                - gift_card.issued
+                - invoice_created
+                - refund_note_created
+      required:
+        - notification_options
+    notification_option:
+      type: array
+      items:
+        type: string
+        description: Any supported notification type.
+        enum:
+          - email
+          - push_notification
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+x-annotation-crossOriginAllowed: true

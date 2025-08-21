@@ -1,0 +1,1558 @@
+openapi: 3.1.0
+info:
+  title: Logistic Order configuration API
+  version: v0
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /config/routing/cancel_on_conflict:
+    get:
+      summary: Get order cancelation policies
+      description: >
+        Retrieves the configuration based on which it is determined if orders in
+        your business are
+
+        canceled automatically in case of a conflict.
+
+
+        The configuration also contains the reasons for which orders can be
+        canceled automatically.
+
+        For more information about the properties, see the
+        [guide](/developers/configuration/config-insuff-inv).
+      operationId: get-cancel-on-conflict
+      responses:
+        '200':
+          description: Value was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: &ref_12
+                  value:
+                    description: Order cancellation policies.
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      default:
+                        description: >-
+                          Determines whether orders are canceled automatically
+                          in case of a conflict.
+                        type: boolean
+                        default: true
+                      reasons_to_overwrite_default:
+                        description: >-
+                          A list of reasons to prevent an automatic cancelation
+                          of an order (in case default is 'true') or to prevent
+                          an order being in the conflict state.
+                        type: array
+                        minItems: 1
+                        items:
+                          type: string
+                          enum:
+                            - insufficient_stock
+                            - failed_fulfillment_node_mapping
+                            - shipping_offer_update_error
+                            - error
+                            - not_enough_stock_to_create_allocation
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+                required: &ref_13
+                  - value
+                  - updated_at
+              example:
+                value:
+                  default: true
+                  reasons_to_overwrite_default:
+                    - failed_fulfillment_node_mapping
+                    - not_enough_stock_to_create_allocation
+                updated_at: '2021-08-23T12:54:10.381175Z'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: &ref_0
+                  - message
+                  - request_id
+                properties: &ref_1
+                  message:
+                    description: A human readable description of the error.
+                    type: string
+                  request_id:
+                    type: string
+    post:
+      summary: Set order cancelation policies
+      description: >
+        Sets the configuration based on which it is determined if orders in your
+        business are
+
+        canceled automatically in case of a conflict.
+
+
+        The configuration also contains the reasons for which orders can be
+        canceled automatically.
+
+        For more information about the properties, see the
+        [guide](/developers/configuration/config-insuff-inv).
+      operationId: set-cancel-on-conflict
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: &ref_14
+                value:
+                  description: Order cancellation policies.
+                  properties:
+                    default:
+                      description: >-
+                        Determines whether orders are canceled automatically in
+                        case of a conflict.
+                      type: boolean
+                      default: true
+                    reasons_to_overwrite_default:
+                      description: >-
+                        A list of reasons to prevent an automatic cancelation of
+                        an order (in case default is 'true') or to prevent an
+                        order being in the conflict state.
+                      type: array
+                      minItems: 1
+                      items:
+                        type: string
+                        enum:
+                          - insufficient_stock
+                          - failed_fulfillment_node_mapping
+                          - shipping_offer_update_error
+                          - error
+                          - not_enough_stock_to_create_allocation
+              required: &ref_15
+                - value
+            example:
+              value:
+                default: true
+                reasons_to_overwrite_default:
+                  - failed_fulfillment_node_mapping
+                  - not_enough_stock_to_create_allocation
+      responses:
+        '200':
+          description: Value was successfully updated.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required: &ref_2
+                  - messages
+                  - request_id
+                properties: &ref_3
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+  /config/routing/enable_automatic_rerouting:
+    get:
+      summary: Get automatic routing config for on hold orders
+      description: >
+        Retrieves the current configuration that determines if on hold orders
+        are routed to
+
+        fulfillment locations automatically when stock becomes available in
+        these locations.
+      operationId: get-enable-automatic-rerouting
+      responses:
+        '200':
+          description: Value was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: &ref_16
+                  value:
+                    description: >-
+                      Tenant-based release toggle for the automatic rerouting
+                      feature in order to roll it out on a per tenant basis.
+                    type:
+                      - boolean
+                      - 'null'
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+                required: &ref_17
+                  - value
+                  - updated_at
+              example:
+                value: true
+                updated_at: '2021-08-23T12:54:05.721904Z'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+    post:
+      summary: Enable automatic routing config for on hold orders
+      description: >
+        Sets the configuration that determines if on hold orders are routed to
+
+        fulfillment locations automatically when stock becomes available in
+        these locations.
+      operationId: set-enable-automatic-rerouting
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: &ref_18
+                value:
+                  description: >-
+                    Tenant-based release toggle for the automatic rerouting
+                    feature in order to roll it out on a per tenant basis.
+                  type: boolean
+              required: &ref_19
+                - value
+            example:
+              value: true
+      responses:
+        '200':
+          description: Value was successfully updated.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+  /config/routing/reroute_to_rejected_fulfillment_nodes:
+    get:
+      summary: Get automatic routing config for orders to fulfillment locations
+      description: >
+        Retrieves the configuration that determines if orders will be
+        automatically routed to
+
+        fulfillment locations where stock has become available, even if these
+        locations had
+
+        rejected the order fulfillment request earlier, due to insufficient
+        stock at
+
+        these locations.
+      operationId: get-reroute-to-rejected-fulfillment-nodes
+      responses:
+        '200':
+          description: Value was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: &ref_20
+                  value:
+                    description: >-
+                      Tells the routing engine if it should ignore fulfillment
+                      nodes that already rejected the fulfillment request at
+                      hand.
+                    type:
+                      - boolean
+                      - 'null'
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+                required: &ref_21
+                  - value
+                  - updated_at
+              example:
+                value: true
+                updated_at: '2021-08-23T12:54:05.721904Z'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+    post:
+      summary: Enable automatic routing config for orders to fulfillment locations
+      description: >
+        Sets the configuration that determines if orders will be automatically
+        routed to
+
+        fulfillment locations where stock has become available, even if these
+        locations had
+
+        rejected the order fulfillment request earlier, due to insufficient
+        stock at
+
+        these locations.
+      operationId: set-reroute-to-rejected-fulfillment-nodes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: &ref_22
+                value:
+                  description: >-
+                    Tells the routing engine if it should ignore fulfillment
+                    nodes that already rejected the fulfillment request at hand.
+                  type: boolean
+              required: &ref_23
+                - value
+            example:
+              value: true
+      responses:
+        '200':
+          description: Value was successfully updated.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+  /config/routing/skip_shipping_offer_update_for_dc_orders:
+    get:
+      summary: Get shipping offer update config for DC orders
+      description: >
+        Retrieves the current configuration, which determines if NewStore skips
+        updating shipping
+
+        offers when orders are routed to a warehouse or DC for fulfillment. By
+        default, this is set to `true`.
+
+
+        We recommend setting this configuration to ``true``.
+
+
+        Please be aware that having this value set to `true` can cause a
+        fulfillment request routed to DC to have an empty shipping provider
+        field if the tenant is also configured, skipping soft routing on an
+        order injection.
+      operationId: get-skip-shipping-offer-update-for-dc-orders
+      responses:
+        '200':
+          description: Value was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: &ref_24
+                  value:
+                    description: >-
+                      Determines whether an order routed to a DC needs a
+                      shipping offer update.
+                    type:
+                      - boolean
+                      - 'null'
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+                required: &ref_25
+                  - value
+                  - updated_at
+              example:
+                value: true
+                updated_at: '2021-08-23T12:54:05.721904Z'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+    post:
+      summary: Skip shipping offer updates for DC orders
+      description: >
+        Sets the configuration that allows NewStore to skip updating shipping
+        offers when orders
+
+        are routed to a warehouse or DC for fulfillment.
+
+
+        We recommend setting this configuration to ``true``.
+      operationId: set-skip-shipping-offer-update-for-dc-orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: &ref_26
+                value:
+                  description: >-
+                    Determines whether an order routed to a DC needs a shipping
+                    offer update.
+                  type: boolean
+              required: &ref_27
+                - value
+            example:
+              value: true
+      responses:
+        '200':
+          description: Value was successfully updated.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+  /config/routing/uses_external_atp:
+    get:
+      summary: Get config to request external ATP data
+      description: >
+        Specifies if ATP is requested from an external source or from NewStore.
+
+
+        If set to ``true``, NewStore uses ATP from an external availability
+        source such as
+
+        an [external OMS](/product/processes/about-ffment/#external-oms-config).
+
+        If not set or set to ``false``, NewStore retrieves ATP based on
+
+        the stock on hand) for the products.
+      operationId: get-uses-external-atp
+      responses:
+        '200':
+          description: Value was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: &ref_28
+                  value:
+                    description: >-
+                      If true, use availability service to request ATP data;
+                      otherwise use unallocated items count.
+                    type:
+                      - boolean
+                      - 'null'
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+                required: &ref_29
+                  - value
+                  - updated_at
+              example:
+                value: true
+                updated_at: '2021-08-23T12:54:05.721904Z'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+    post:
+      summary: Enable config to request external ATP data
+      description: >
+        Specifies if ATP is requested from an external source or from NewStore.
+
+
+        If set to ``true``, NewStore uses ATP from an external availability
+        source such as
+
+        an [external OMS](/product/processes/about-ffment/#external-oms-config).
+
+        If not set or set to ``false``, NewStore retrieves ATP based on
+
+        the stock on hand for the products.
+      operationId: set-uses-external-atp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: &ref_30
+                value:
+                  description: >-
+                    If true, use availability service to request ATP data;
+                    otherwise use unallocated items count.
+                  type: boolean
+              required: &ref_31
+                - value
+            example:
+              value: true
+      responses:
+        '200':
+          description: Value was successfully updated.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+  /routing/shipments_limit:
+    get:
+      summary: List shipments limits
+      description: >
+        List all shipments limits. This method is limited to return a maximum of
+        10.000 shipments limits per tenant.
+      operationId: get-limit-shipments
+      responses:
+        '200':
+          description: Succesfully returning list of shipments limits
+          content:
+            application/json:
+              example:
+                shipments_limit:
+                  - currency: USD
+                    service_level: EVERYDAY
+                    limit_exceeded_when:
+                      - shipment_count_gt: 1
+                        order_amount_lt: 50
+                  - currency: USD
+                    service_level: EXPRESS
+                    limit_exceeded_when:
+                      - shipment_count_gt: 1
+                        order_amount_lt: 300
+                      - shipment_count_gt: 2
+                        order_amount_lt: 500
+              schema:
+                description: List of all shipments limit rules
+                type: object
+                properties: &ref_32
+                  shipments_limit:
+                    type: array
+                    items:
+                      description: Limit shipment rules for given currency x service level
+                      type: object
+                      required: &ref_4
+                        - currency
+                        - service_level
+                        - limit_exceeded_when
+                      properties: &ref_5
+                        currency:
+                          description: >-
+                            Currency alpha code in ISO 4217 format. Per example
+                            USD, EUR or JPY
+                          type: string
+                          minLength: 3
+                          maxLength: 3
+                        service_level:
+                          description: Shipping service level
+                          type: string
+                        limit_exceeded_when:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              shipment_count_gt:
+                                description: 'Condition: number of shipments greater than'
+                                type: integer
+                                minimum: 0
+                              order_amount_lt:
+                                description: AND order amount less than
+                                type: number
+                                minimum: 0
+                            required:
+                              - shipment_count_gt
+                              - order_amount_lt
+                required: &ref_33
+                  - shipments_limit
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: >-
+                  An unexpected internal server error occurred while processing
+                  shipments limits.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required: &ref_6
+                  - error_code
+                  - message
+                  - request_id
+                properties: &ref_7
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+    post:
+      summary: Update or create a shipment limit
+      description: >
+        Upsert a shipment limit for a (`currency`,`service_level`) pair.
+
+
+        An order will be marked as a conflict if any limit on
+        `limit_exceeded_when` is reached.
+
+
+        It is not allowed to have two limits with the same `shipment_count_gt`
+        value.
+
+
+        The  `order_amount_lt` of a given limit should be greater than or equal
+        to others limits with
+
+        smaller `shipment_count_gt`.
+      operationId: post-limit-shipments
+      requestBody:
+        content:
+          application/json:
+            example:
+              currency: USD
+              service_level: EVERYDAY
+              limit_exceeded_when:
+                - shipment_count_gt: 1
+                  order_amount_lt: 50.01
+                - shipment_count_gt: 2
+                  order_amount_lt: 200.01
+            schema:
+              description: Limit shipment rules for given currency x service level
+              type: object
+              required: *ref_4
+              properties: *ref_5
+        required: true
+      responses:
+        '204':
+          description: Shipment limit was set successfully.
+        '400':
+          description: |
+            Invalid input data
+              * Duplicate `shipment_count_gt` on `limit_exceeded_when` array
+              * Inconsistent `order_amount_lt` value. It should be greater or equal rules with smaller `shipment_count_gt`.
+              * Missing required field
+          content:
+            application/json:
+              example:
+                error_code: invalid_input_data
+                message: >-
+                  order_amount_lt of shipment_count_gt=2 must greater of equal
+                  300 USD.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required: *ref_6
+                properties: *ref_7
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: >-
+                  An unexpected internal server error occurred while processing
+                  shipments limits.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required: *ref_6
+                properties: *ref_7
+  /config/routing/enable_capacity_based_routing:
+    get:
+      summary: Enable capacity based routing feature
+      description: >
+        Retrieves the current configuration that determines if orders are routed
+        to fulfillment locations based on a capacity aware algorithm.
+      operationId: get-enable-capacity-based-routing
+      responses:
+        '200':
+          description: Succesfully returning the value of the capacity based routing toggle
+          content:
+            application/json:
+              example:
+                value: true
+                updated_at: '2021-08-23T12:54:05.721904Z'
+              schema:
+                type: object
+                properties: &ref_34
+                  value:
+                    description: >-
+                      Tenant-based release toggle for the feature of
+                      capacity-based routing.
+                    type:
+                      - boolean
+                      - 'null'
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+                required: &ref_35
+                  - value
+                  - updated_at
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+    post:
+      summary: Update capacity based routing feature toggle
+      description: |
+        Sets the current configuration that determines if orders are routed to
+        fulfillment locations based on a capacity aware algorithm.
+      operationId: post-enable-capacity-based-routing
+      requestBody:
+        content:
+          application/json:
+            example:
+              value: true
+            schema:
+              type: object
+              properties: &ref_36
+                value:
+                  description: >-
+                    Tenant-based release toggle for the feature of
+                    capacity-based routing.
+                  type: boolean
+              required: &ref_37
+                - value
+        required: true
+      responses:
+        '200':
+          description: Value was successfully updated.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required: *ref_2
+                properties: *ref_3
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Internal server error.
+                type: object
+                required: *ref_0
+                properties: *ref_1
+  /routing/insights/order/{order_id}:
+    get:
+      summary: Get routing insights
+      description: >
+        Get insights on routing and shipment details for orders being processed
+        in the NewStore platform.
+
+        This includes details such as:
+
+
+        - Items in the order
+
+        - The fulfillment location that is assigned to fulfill orders
+
+        - The time when the shipment was dispatched from the fulfillment
+        location
+
+        - Order routing strategies
+
+        - Service levels
+
+
+        Data is retained up to 45 days for successfully routed order items.
+        Until order items have been successfully routed, related data is
+        retained indefinitely.
+      operationId: get-insights
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: A sales order UUID or external order ID
+      responses:
+        '200':
+          description: Successfully returning routing insights for the specified order
+          content:
+            application/json:
+              example:
+                insights:
+                  external_id: S52417708
+                  sales_order_id: 4734b6f7-f8b4-5563-8cb2-5625e0d44279
+                  sales_order_item_ids:
+                    - 43892439-ebec-4fa6-875a-bb90a44e31e8
+                    - 61a49a5d-ac8e-48a8-bbd2-4e3ba564d813
+                    - b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3
+                  created_at: '2021-11-16T01:17:11.026310'
+                  sales_order_items:
+                    43892439-ebec-4fa6-875a-bb90a44e31e8:
+                      updated_at: '2021-11-18T15:04:51.403631'
+                      product_id: '406204209452'
+                      routing_status: cancelled
+                      conflict_reason: null
+                      cancellation_reason: cancellation_request
+                      service_levels:
+                        current: Everyday Shipping (1-9 business days)
+                        original: Everyday Shipping (1-9 business days)
+                      strategies:
+                        current:
+                          strategy: manual
+                          fulfillment_node_id: '0980'
+                        original:
+                          strategy: default
+                      fulfillment_locations:
+                        current: '0980'
+                        original: null
+                      correlation:
+                        current_logistic_order_id: ee61b3ad-634d-43b2-bedc-a9910dc33946
+                        current_fulfillment_request_id: 7c50b8f8-a5df-43df-9dac-e0fe45d3eb36
+                        logistic_order_ids:
+                          - 35842663-8f87-4192-ace5-7af6a55130a8
+                          - c6e15aa3-e341-4151-b8b8-09decb12358c
+                          - ee61b3ad-634d-43b2-bedc-a9910dc33946
+                    61a49a5d-ac8e-48a8-bbd2-4e3ba564d813:
+                      updated_at: '2021-11-17T16:14:45.666304'
+                      product_id: '406001514728'
+                      routing_status: processed
+                      conflict_reason: null
+                      cancellation_reason: null
+                      service_levels:
+                        current: Everyday Shipping (1-9 business days)
+                        original: Everyday Shipping (1-9 business days)
+                      strategies:
+                        current:
+                          strategy: default
+                        original:
+                          strategy: default
+                      fulfillment_locations:
+                        current: '0980'
+                        original: null
+                      correlation:
+                        current_logistic_order_id: 7fc3c66e-854c-4ca9-bdbb-b5dc486f1135
+                        current_fulfillment_request_id: 78e66957-f480-409b-8be1-a2cdee05950a
+                        logistic_order_ids:
+                          - 35842663-8f87-4192-ace5-7af6a55130a8
+                          - 7fc3c66e-854c-4ca9-bdbb-b5dc486f1135
+                    b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3:
+                      updated_at: '2021-11-17T16:14:45.666304'
+                      product_id: '406503043931'
+                      routing_status: processed
+                      conflict_reason: null
+                      cancellation_reason: null
+                      service_levels:
+                        current: Everyday Shipping (1-9 business days)
+                        original: Everyday Shipping (1-9 business days)
+                      strategies:
+                        current:
+                          strategy: default
+                        original:
+                          strategy: default
+                      fulfillment_locations:
+                        current: '0980'
+                        original: null
+                      correlation:
+                        current_logistic_order_id: 7fc3c66e-854c-4ca9-bdbb-b5dc486f1135
+                        current_fulfillment_request_id: 78e66957-f480-409b-8be1-a2cdee05950a
+                        logistic_order_ids:
+                          - 35842663-8f87-4192-ace5-7af6a55130a8
+                          - 7fc3c66e-854c-4ca9-bdbb-b5dc486f1135
+                  activities:
+                    - timestamp: '2022-03-13T22:07:14.025397'
+                      type: inventory check
+                      summary: n/a
+                      value:
+                        inventory:
+                          US01: '1'
+                      correlation:
+                        logistic_order_uuid: 35842663-8f87-4192-ace5-7af6a55130a8
+                        sales_order_item_ids:
+                          - 43892439-ebec-4fa6-875a-bb90a44e31e8
+                          - 61a49a5d-ac8e-48a8-bbd2-4e3ba564d813
+                          - b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3
+                        ancestor_logistic_order_uuid: null
+                        service_levels:
+                          current: null
+                          original: Everyday Shipping (1-9 business days)
+                        routing_strategies:
+                          current:
+                            43892439-ebec-4fa6-875a-bb90a44e31e8:
+                              strategy: default
+                            61a49a5d-ac8e-48a8-bbd2-4e3ba564d813:
+                              strategy: default
+                            b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3:
+                              strategy: default
+                          original:
+                            43892439-ebec-4fa6-875a-bb90a44e31e8:
+                              strategy: default
+                            61a49a5d-ac8e-48a8-bbd2-4e3ba564d813:
+                              strategy: default
+                            b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3:
+                              strategy: default
+                        fulfillment_request:
+                          fulfillment_request_id: 5987417f-17f5-431c-9272-ea6cbfefd20a
+                          fulfillment_node_id: null
+                          dispatched_at: null
+                    - timestamp: '2022-03-22T22:07:14.025397'
+                      type: inventory check
+                      summary: n/a
+                      value:
+                        inventory:
+                          US01: '0'
+                      correlation:
+                        logistic_order_uuid: c6e15aa3-e341-4151-b8b8-09decb12358c
+                        sales_order_item_ids:
+                          - 43892439-ebec-4fa6-875a-bb90a44e31e8
+                        ancestor_logistic_order_uuid: 35842663-8f87-4192-ace5-7af6a55130a8
+                        service_levels:
+                          current: null
+                          original: Everyday Shipping (1-9 business days)
+                        routing_strategies:
+                          current:
+                            43892439-ebec-4fa6-875a-bb90a44e31e8:
+                              strategy: manual
+                              fulfillment_node_id: '0980'
+                          original:
+                            43892439-ebec-4fa6-875a-bb90a44e31e8:
+                              strategy: default
+                        fulfillment_request:
+                          fulfillment_request_id: 792a016f-0cf4-4aed-9cd3-21fd4b69e3ee
+                          fulfillment_node_id: null
+                          dispatched_at: null
+                    - timestamp: '2022-03-23T22:07:14.025397'
+                      type: inventory check
+                      summary: n/a
+                      value:
+                        inventory:
+                          '181':
+                            '407001043492': '0'
+                          '880':
+                            '407001043492': '0'
+                          '980':
+                            '407001043492': '0'
+                          '9774':
+                            '407001043492': '0'
+                          '9774082101':
+                            '407001043492': '0'
+                          9754-1:
+                            '407001043492': '0'
+                          EGCFulfillmentCenter:
+                            '407001043492': '0'
+                          EGCFulfillmentDC:
+                            '407001043492': '0'
+                          '0103':
+                            '407001043492': '0'
+                          RegStore8:
+                            '407001043492': '0'
+                          RegStore7:
+                            '407001043492': '0'
+                          181-Test2:
+                            '407001043492': '0'
+                          9754-400:
+                            '407001043492': '0'
+                          181-Test1:
+                            '407001043492': '0'
+                          RegStore1:
+                            '407001043492': '0'
+                          WindsorDC:
+                            '407001043492': '0'
+                          RegStore4:
+                            '407001043492': '0'
+                          RegStore3:
+                            '407001043492': '0'
+                          '0109':
+                            '407001043492': '0'
+                          OutletStore2:
+                            '407001043492': '0'
+                          9754-200:
+                            '407001043492': '0'
+                          WindsorEGCDummyDC:
+                            '407001043492': '0'
+                          OutletStore3:
+                            '407001043492': '0'
+                          OutletStore4:
+                            '407001043492': '0'
+                          Westfield Palm Desert - Dummy1:
+                            '407001043492': '0'
+                          OutletStore5:
+                            '407001043492': '0'
+                          OutletStore7:
+                            '407001043492': '0'
+                          OutletStore8:
+                            '407001043492': '0'
+                          TestDC:
+                            '407001043492': '0'
+                          INVALID-NODE:
+                            '407001043492': '0'
+                          Windsor DC:
+                            '407001043492': '0'
+                          Westfield Palm Desert - Dummy:
+                            '407001043492': '0'
+                          WindsorEGiftCardDC:
+                            '407001043492': '0'
+                          WindsorDigitalGCDummyDC:
+                            '407001043492': '0'
+                          9774-1:
+                            '407001043492': '0'
+                      correlation:
+                        logistic_order_uuid: 7fc3c66e-854c-4ca9-bdbb-b5dc486f1135
+                        sales_order_item_ids:
+                          - 61a49a5d-ac8e-48a8-bbd2-4e3ba564d813
+                          - b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3
+                        ancestor_logistic_order_uuid: 35842663-8f87-4192-ace5-7af6a55130a8
+                        service_levels:
+                          current: Everyday Shipping (1-9 business days)
+                          original: Everyday Shipping (1-9 business days)
+                        routing_strategies:
+                          current:
+                            61a49a5d-ac8e-48a8-bbd2-4e3ba564d813:
+                              strategy: default
+                            b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3:
+                              strategy: default
+                          original:
+                            61a49a5d-ac8e-48a8-bbd2-4e3ba564d813:
+                              strategy: default
+                            b6d40eb0-7dfd-4912-8a32-cdcfd29d49d3:
+                              strategy: default
+                        fulfillment_request:
+                          fulfillment_request_id: 78e66957-f480-409b-8be1-a2cdee05950a
+                          fulfillment_node_id: '0980'
+                          dispatched_at: '2021-11-16T01:17:13.523159'
+              schema:
+                title: Get routing insights
+                description: Routing insights data by sales_order_uuid or external_id
+                type: object
+                properties: &ref_8
+                  insights:
+                    title: Routing insights data
+                    description: Routing insights information for an order
+                    type: object
+                    required: &ref_41
+                      - external_id
+                      - sales_order_id
+                      - sales_order_item_ids
+                      - created_at
+                      - sales_order_items
+                      - activities
+                    properties: &ref_42
+                      external_id:
+                        type: string
+                        minLength: 1
+                      sales_order_id:
+                        type: string
+                        format: uuid
+                        minLength: 1
+                      sales_order_item_ids:
+                        type: array
+                        minItems: 1
+                        items:
+                          type: string
+                          format: uuid
+                      created_at:
+                        type: string
+                        format: date-time
+                      sales_order_items:
+                        title: Sales order items
+                        description: >-
+                          A mapping of sales order item uuid to routing insights
+                          for this item
+                        type: object
+                        patternProperties: &ref_38
+                          ^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}$:
+                            description: >-
+                              Routing insights data for the current sales order
+                              item uuid
+                            type: object
+                            required:
+                              - updated_at
+                              - product_id
+                              - routing_status
+                              - conflict_reason
+                              - service_levels
+                              - strategies
+                              - correlation
+                            properties:
+                              updated_at:
+                                type: string
+                                format: date-time
+                                minLength: 1
+                              product_id:
+                                type: string
+                                minLength: 1
+                              routing_status:
+                                enum:
+                                  - open
+                                  - processed
+                                  - cancelled
+                                  - conflict
+                                  - dispatched
+                                  - ready_for_routing
+                                  - ready_for_rerouting
+                                  - rerouting_initiated
+                                  - voided
+                                  - recalculating_shipments
+                                  - swapped
+                              conflict_reason:
+                                description: >-
+                                  Current conflict reason for this sales order
+                                  item. Empty, if item is not in a conflict
+                                  state
+                                oneOf:
+                                  - type: string
+                                    minLength: 1
+                                  - type: 'null'
+                              service_levels:
+                                type: object
+                                properties:
+                                  current:
+                                    description: >-
+                                      Service level with which the order was
+                                      fulfilled
+                                    oneOf:
+                                      - type: string
+                                        minLength: 1
+                                      - type: 'null'
+                                  original:
+                                    description: >-
+                                      Service level with which the order was
+                                      created
+                                    type: string
+                                    minLength: 1
+                              strategies:
+                                type: object
+                                properties:
+                                  current:
+                                    description: The current routing strategy
+                                    type: object
+                                    required:
+                                      - strategy
+                                    properties:
+                                      strategy:
+                                        enum:
+                                          - external
+                                          - prerouted
+                                          - default
+                                          - manual
+                                      fulfillment_node_id:
+                                        type: string
+                                        minLength: 1
+                                  original:
+                                    description: >-
+                                      The original routing strategy on order
+                                      creation
+                                    type: object
+                                    required:
+                                      - strategy
+                                    properties:
+                                      strategy:
+                                        enum:
+                                          - external
+                                          - prerouted
+                                          - default
+                                          - manual
+                                      fulfillment_node_id:
+                                        type: string
+                                        minLength: 1
+                              correlation:
+                                description: >-
+                                  Correlation information used to interpret
+                                  routing attempts by LO uuids
+                                type: object
+                                required:
+                                  - current_logistic_order_id
+                                  - current_fulfillment_request_id
+                                  - logistic_order_ids
+                                properties:
+                                  current_logistic_order_id:
+                                    description: >-
+                                      The current LO uuid with which this sales
+                                      order item is being routed
+                                    type: string
+                                    format: uuid
+                                    minLength: 1
+                                  current_fulfillment_request_id:
+                                    description: >-
+                                      The current fulfillment request ID to
+                                      which this item belongs to
+                                    oneOf:
+                                      - type: string
+                                        format: uuid
+                                        minLength: 1
+                                      - type: 'null'
+                                  logistic_order_ids:
+                                    description: All LO uuids that this item was a part of
+                                    type: array
+                                    items:
+                                      type: string
+                                      format: uuid
+                                      minLength: 1
+                        additionalProperties: false
+                      activities:
+                        type: array
+                        items:
+                          title: Routing insights activity for sales order
+                          type: object
+                          required: &ref_39
+                            - timestamp
+                            - type
+                            - summary
+                            - value
+                            - correlation
+                          properties: &ref_40
+                            timestamp:
+                              type: string
+                              format: date-time
+                            type:
+                              description: Event type
+                              type: string
+                            summary:
+                              description: Information regarding the event type
+                              type: string
+                            value:
+                              oneOf:
+                                - description: New routing status on a state change
+                                  type: string
+                                - description: >-
+                                    Arbitrary map with routing related data
+                                    stored in DynamoDB. e.g. inventory data
+                                  type: object
+                            correlation:
+                              description: >-
+                                Information regarding which entities were
+                                affected by this event
+                              type: object
+                              required:
+                                - logistic_order_uuid
+                                - sales_order_item_ids
+                                - ancestor_logistic_order_uuid
+                                - service_levels
+                                - routing_strategies
+                                - fulfillment_request
+                              properties:
+                                logistic_order_uuid:
+                                  type: string
+                                  format: uuid
+                                sales_order_item_ids:
+                                  type: array
+                                  items:
+                                    type: string
+                                    format: uuid
+                                ancestor_logistic_order_uuid:
+                                  oneOf:
+                                    - type: string
+                                      format: uuid
+                                    - type: 'null'
+                                service_levels:
+                                  type: object
+                                  properties:
+                                    current:
+                                      description: >-
+                                        Service level with which the order was
+                                        fulfilled
+                                      oneOf:
+                                        - type: string
+                                          minLength: 1
+                                        - type: 'null'
+                                    original:
+                                      description: >-
+                                        Service level with which the order was
+                                        created
+                                      type: string
+                                      minLength: 1
+                                routing_strategies:
+                                  type: object
+                                  properties:
+                                    current:
+                                      description: >-
+                                        The current routing strategy for each
+                                        item id in this LO
+                                      type: object
+                                      patternProperties:
+                                        ^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}$:
+                                          type: object
+                                          required:
+                                            - strategy
+                                          properties:
+                                            strategy:
+                                              enum:
+                                                - external
+                                                - prerouted
+                                                - default
+                                                - manual
+                                            fulfillment_node_id:
+                                              type: string
+                                              minLength: 1
+                                      additionalProperties: false
+                                    original:
+                                      description: >-
+                                        The original routing strategy when order
+                                        was created
+                                      type: object
+                                      patternProperties:
+                                        ^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}$:
+                                          type: object
+                                          required:
+                                            - strategy
+                                          properties:
+                                            strategy:
+                                              enum:
+                                                - external
+                                                - prerouted
+                                                - default
+                                                - manual
+                                            fulfillment_node_id:
+                                              type: string
+                                              minLength: 1
+                                      additionalProperties: false
+                                fulfillment_request:
+                                  description: >-
+                                    Any fulfillment request identifiers for this
+                                    LO uuid
+                                  type: object
+                                  properties:
+                                    fulfillment_request_id:
+                                      oneOf:
+                                        - type: string
+                                          format: uuid
+                                        - type: 'null'
+                                    fulfillment_node_id:
+                                      oneOf:
+                                        - type: string
+                                        - type: 'null'
+                                    dispatched_at:
+                                      oneOf:
+                                        - type: string
+                                          format: date-time
+                                        - type: 'null'
+                required: &ref_9
+                  - insights
+        '404':
+          description: |
+            Not found
+            * No path parameter
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              example:
+                error_code: internal_server_error
+                message: 'Unexpected error encountered on GET insights: please try again'
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required: &ref_10
+                  - error_code
+                  - message
+                  - request_id
+                properties: &ref_11
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    '200':
+      title: Get routing insights
+      description: Routing insights data by sales_order_uuid or external_id
+      type: object
+      properties: *ref_8
+      required: *ref_9
+    '500':
+      description: The error response.
+      type: object
+      required: *ref_10
+      properties: *ref_11
+    cancel_on_conflict_resp:
+      type: object
+      properties: *ref_12
+      required: *ref_13
+    resp_500:
+      title: Internal server error.
+      type: object
+      required: *ref_0
+      properties: *ref_1
+    cancel_on_conflict_req:
+      type: object
+      properties: *ref_14
+      required: *ref_15
+    resp_400:
+      title: Config validation/parsing failed
+      type: object
+      required: *ref_2
+      properties: *ref_3
+    enable_automatic_rerouting_resp:
+      type: object
+      properties: *ref_16
+      required: *ref_17
+    enable_automatic_rerouting_req:
+      type: object
+      properties: *ref_18
+      required: *ref_19
+    reroute_to_rejected_fulfillment_nodes_resp:
+      type: object
+      properties: *ref_20
+      required: *ref_21
+    reroute_to_rejected_fulfillment_nodes_req:
+      type: object
+      properties: *ref_22
+      required: *ref_23
+    skip_shipping_offer_update_for_dc_orders_resp:
+      type: object
+      properties: *ref_24
+      required: *ref_25
+    skip_shipping_offer_update_for_dc_orders_req:
+      type: object
+      properties: *ref_26
+      required: *ref_27
+    uses_external_atp_resp:
+      type: object
+      properties: *ref_28
+      required: *ref_29
+    uses_external_atp_req:
+      type: object
+      properties: *ref_30
+      required: *ref_31
+    set_shipments_limit_req:
+      description: Limit shipment rules for given currency x service level
+      type: object
+      required: *ref_4
+      properties: *ref_5
+    get_shipments_limit_resp_200:
+      description: List of all shipments limit rules
+      type: object
+      properties: *ref_32
+      required: *ref_33
+    shipments_limit_error:
+      description: The error response.
+      type: object
+      required: *ref_6
+      properties: *ref_7
+    enable_capacity_based_routing_resp:
+      type: object
+      properties: *ref_34
+      required: *ref_35
+    enable_capacity_based_routing_req:
+      type: object
+      properties: *ref_36
+      required: *ref_37
+    sales_order_items:
+      title: Sales order items
+      description: A mapping of sales order item uuid to routing insights for this item
+      type: object
+      patternProperties: *ref_38
+      additionalProperties: false
+    activity:
+      title: Routing insights activity for sales order
+      type: object
+      required: *ref_39
+      properties: *ref_40
+    insights:
+      title: Routing insights data
+      description: Routing insights information for an order
+      type: object
+      required: *ref_41
+      properties: *ref_42

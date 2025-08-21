@@ -1,0 +1,336 @@
+components:
+  schemas:
+    ConfigPriorityServiceLevels:
+      items:
+        minLength: 1
+        type: string
+      title: ConfigPriorityServiceLevels
+      type: array
+    ConfigPriorityServiceLevelsSchema:
+      examples:
+        - value:
+            - OVERNIGHT
+            - 2_DAY
+      properties:
+        value:
+          $ref: '#/components/schemas/ConfigPriorityServiceLevels'
+      required:
+        - value
+      title: ConfigPriorityServiceLevelsSchema
+      type: object
+    DocumentTypes:
+      enum:
+        - invoice
+        - packing_slip
+        - shipping_label
+        - return_label
+        - return_form
+      title: DocumentTypes
+      type: string
+    DocumentsConfigSchema:
+      example:
+        default:
+          - invoice
+          - packing_slip
+          - shipping_label
+          - return_label
+          - return_form
+        default_optional:
+          - commercial_invoice
+        in_store_pick_up:
+          - invoice
+          - in_store_pickup_label
+      properties:
+        default:
+          items:
+            $ref: '#/components/schemas/DocumentTypes'
+          title: Default
+          type: array
+        default_optional:
+          anyOf:
+            - items:
+                $ref: '#/components/schemas/OptionalDocumentTypes'
+              type: array
+            - type: 'null'
+          title: Default Optional
+        in_store_pick_up:
+          anyOf:
+            - items:
+                $ref: '#/components/schemas/InStorePickupDocumentTypes'
+              type: array
+            - type: 'null'
+          title: In Store Pick Up
+      required:
+        - default
+      title: DocumentsConfigSchema
+      type: object
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    InStorePickupDocumentTypes:
+      enum:
+        - invoice
+        - in_store_pickup_label
+        - packing_slip
+        - return_form
+      title: InStorePickupDocumentTypes
+      type: string
+    OptionalDocumentTypes:
+      const: commercial_invoice
+      enum:
+        - commercial_invoice
+      title: OptionalDocumentTypes
+      type: string
+    TenantConfigSchema:
+      example:
+        stores:
+          store1:
+            default:
+              - invoice
+              - packing_slip
+              - shipping_label
+            default_optional:
+              - commercial_invoice
+            in_store_pick_up:
+              - invoice
+              - in_store_pickup_label
+          store2:
+            default:
+              - invoice
+              - packing_slip
+              - shipping_label
+            in_store_pick_up:
+              - invoice
+        tenant:
+          default:
+            - invoice
+            - packing_slip
+            - shipping_label
+            - return_label
+            - return_form
+          default_optional:
+            - commercial_invoice
+          in_store_pick_up:
+            - invoice
+            - in_store_pickup_label
+      properties:
+        stores:
+          additionalProperties:
+            $ref: '#/components/schemas/DocumentsConfigSchema'
+          title: Stores
+          type: object
+        tenant:
+          $ref: '#/components/schemas/DocumentsConfigSchema'
+      required:
+        - tenant
+        - stores
+      title: TenantConfigSchema
+      type: object
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+      type: object
+info:
+  title: Documents Configuration
+  version: '1.0'
+openapi: 3.0.2
+paths:
+  /v0/store-fulfillment/config/documents-config:
+    get:
+      operationId: >-
+        get_documents_configuration_v0_store_fulfillment_config_documents_config_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantConfigSchema'
+          description: Successful Response
+        '404':
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Response 404 Get Documents Configuration V0 Store Fulfillment
+                  Config Documents Config Get
+                type: string
+          description: Configuration not yet set
+      summary: Get Documents Configuration
+    put:
+      operationId: >-
+        set_documents_configuration_v0_store_fulfillment_config_documents_config_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentsConfigSchema'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentsConfigSchema'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Set Documents Configuration
+  /v0/store-fulfillment/config/documents-config/store/{store_id}:
+    delete:
+      operationId: >-
+        delete_store_documents_configuration_v0_store_fulfillment_config_documents_config_store__store_id__delete
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            title: Store Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete Store Documents Configuration
+    get:
+      operationId: >-
+        get_store_documents_configuration_v0_store_fulfillment_config_documents_config_store__store_id__get
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            title: Store Id
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentsConfigSchema'
+          description: Successful Response
+        '404':
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Response 404 Get Store Documents Configuration V0 Store
+                  Fulfillment Config Documents Config Store  Store Id  Get
+                type: string
+          description: Configuration not yet set
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Store Documents Configuration
+    put:
+      operationId: >-
+        set_store_documents_configuration_v0_store_fulfillment_config_documents_config_store__store_id__put
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            title: Store Id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentsConfigSchema'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentsConfigSchema'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Set Store Documents Configuration
+  /v0/store-fulfillment/config/priority-service-levels:
+    get:
+      description: >-
+        Returns a list of service levels that are considered to have the most
+        priority to fulfill.
+            The list is sorted most priority first. You can check how priority orders work in [this guide](/product/assoapp/assoapp-store-fulfillment#priority-logic-priority-carrier)
+            All these service levels must exist in your [fulfillment configuration.](https://docs.newstore.net/developers/tutorials/fulfillment-config#tuto-ff-conf-service-levels)
+      operationId: >-
+        get_priority_service_levels_v0_store_fulfillment_config_priority_service_levels_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigPriorityServiceLevels'
+          description: Successful Response
+      summary: Get Priority Service Levels
+    put:
+      description: >-
+        Set a list of service levels to identify Priority Orders, used both for
+        Order assignment to Waves and the Fulfill Priority Orders
+            functionality.
+            In order for this configuration to work properly, those service levels must exist in your
+            [fulfillment configuration.](https://docs.newstore.net/developers/tutorials/fulfillment-config#tuto-ff-conf-service-levels)
+      operationId: >-
+        put_priority_service_levels_v0_store_fulfillment_config_priority_service_levels_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigPriorityServiceLevelsSchema'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Put Priority Service Levels

@@ -1,0 +1,125 @@
+openapi: 3.0.3
+info:
+  title: Assets API
+  version: '1.0'
+  description: The API to manage assets that are available from https://assets.newstore.net
+  contact:
+    name: Team Web Platform
+    url: https://docs.newstore.net/
+servers:
+  - url: https://dodici-demo.p.newstore.net/_/v0
+tags:
+  - name: Upload
+    description: Upload endpoint
+paths:
+  /assets:
+    put:
+      parameters:
+        - in: query
+          name: filename
+          required: true
+          schema:
+            type: string
+          description: >
+            This parameter can either be the path and the file name (to be
+            stored in a particular directory),
+
+            e.g. "fonts/some_font.tiff", or just file name (to store it in the
+            root directory of the tenant),
+
+            e.g. "logo.png".
+          examples:
+            filename:
+              value: logo.png
+            folder:
+              value: fonts/fontA.otf
+        - in: header
+          name: Content-Type
+          schema:
+            type: string
+          description: The Content-Type header has to match the type of the file.
+          required: true
+          example: font/otf
+      summary: Upload an asset
+      description: >
+        Upload an image, icon or font that will be available from
+        https://assets.newstore.net .
+
+        Permitted formats: jpeg, png, tiff, svg, otf, ttf
+      operationId: uploadAsset
+      tags:
+        - Upload
+      requestBody:
+        required: true
+        content:
+          font/otf:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          font/ttf:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          image/jpeg:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          image/png:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          image/svg+xml:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          image/tiff:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          image/bmp:
+            schema:
+              $ref: '#/components/schemas/Asset'
+      responses:
+        '200':
+          description: Returns the URL of the uploaded object
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: |
+            The upload request is malformed.
+          content:
+            application/json:
+              schema:
+                type: string
+    get:
+      summary: Lists the assets from a tenant
+      description: |
+        Lists the assets from a tenant available at https://assets.newstore.net.
+      operationId: listAssets
+      tags:
+        - ListAssets
+      responses:
+        '200':
+          description: Returns a json containing a list of assets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: |
+            The upload request is malformed.
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: |
+            An internal error happened
+          content:
+            application/json:
+              schema:
+                type: string
+components:
+  schemas:
+    Asset:
+      type: string
+      format: binary
+      description: The file in a binary format

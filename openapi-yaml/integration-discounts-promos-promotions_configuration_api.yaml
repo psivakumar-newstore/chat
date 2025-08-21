@@ -1,0 +1,135 @@
+openapi: 3.1.0
+info:
+  title: Promotions Configuration
+  version: '1.0'
+  license:
+    name: NewStore Private
+    url: https://newstore.com
+  contact:
+    name: NewStore Support
+    email: support@newstore.com
+  description: >
+    Use this API to manage promotions configurations in NewStore, such as
+    retrieving, updating or deleting the global exclusion lists.
+servers:
+  - url: https://dodici.s.newstore.net/v0/promotions
+    description: The staging/production server
+security:
+  - newStoreAccessToken: []
+paths:
+  /global-exclusion:
+    get:
+      summary: GET Global Exclusion List
+      responses:
+        '200':
+          $ref: '#/components/responses/GlobalExclusionListResponse'
+        '404':
+          description: global exclusion list not found.
+        '500':
+          description: internal server error
+      operationId: getGlobalExclusion
+      description: Use this method to retrieve global exclusion list.
+    put:
+      summary: Update Global Exclusion List
+      operationId: updateGlobalExclusion
+      responses:
+        '201':
+          $ref: '#/components/responses/GlobalExclusionListResponse'
+        '304':
+          description: no update
+        '404':
+          description: global exclusion list not found
+        '500':
+          description: internal server error
+      description: Use this method to update global exclusion list.
+      requestBody:
+        $ref: '#/components/requestBodies/GlobalExclusionListRequest'
+    delete:
+      summary: Delete Global Exclusion List
+      operationId: deleteGlobalExclusion
+      responses:
+        '204':
+          description: No Content
+        '304':
+          description: no update
+        '404':
+          description: global exclusion list not found
+        '500':
+          description: internal server error
+      description: Use this method to delete global exclusion list.
+components:
+  schemas:
+    GlobalExclusionList:
+      title: Global Exclusion List
+      type: object
+      properties:
+        tenant:
+          type: string
+          description: The tenant name.
+          example: dodici
+          readOnly: true
+        ids:
+          type: array
+          description: A list of global excluded products.
+          example:
+            - P0001
+            - P0002
+          items:
+            type: string
+        createdAt:
+          type: string
+          description: The creation date.
+          example: '2023-05-16T09:52:27.824Z'
+          readOnly: true
+        createdBy:
+          type: string
+          description: The user that created the global exclusion list.
+          example: 25dd570161b05f0cae353a56757f8495
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The last update date.
+          example: '2023-05-19T17:42:49.309Z'
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user that updated the global exclusion list.
+          example: 25dd570161b05f0cae353a56757f8495
+          readOnly: true
+      description: A global exclusion list.
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    GlobalExclusionListResponse:
+      description: A global exclusion list.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GlobalExclusionList'
+          examples:
+            Example 1:
+              value:
+                tenant: dodici
+                ids:
+                  - P0001
+                  - P0002
+                createdAt: '2023-05-16T09:52:27.824Z'
+                createdBy: 25dd570161b05f0cae353a56757f8495
+                updatedAt: '2023-05-19T17:42:49.309Z'
+                updatedBy: 25dd570161b05f0cae353a56757f8495
+  requestBodies:
+    GlobalExclusionListRequest:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GlobalExclusionList'
+          examples:
+            Example 1:
+              value:
+                ids:
+                  - P0001
+                  - P0002

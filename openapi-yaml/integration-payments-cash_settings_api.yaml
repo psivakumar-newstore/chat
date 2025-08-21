@@ -1,0 +1,1203 @@
+openapi: 3.0.0
+info:
+  title: Cash settings
+  description: API for configuring cash transaction types.
+  version: '1.0'
+servers:
+  - url: https://dodici.x.newstore.net/api/v1/org/config
+paths:
+  /cash_transaction_types:
+    get:
+      description: >
+        Returns all possible transaction types together with the corresponding
+        list of reasons.
+
+        The list includes transaction types that have been configured as well as
+        not configured.
+
+        Not configured transaction types contain default values.
+      operationId: listTransactionTypes
+      summary: List transaction types
+      responses:
+        '200':
+          description: |
+            The list of transaction types with the corresponding reasons.
+          content:
+            application/json:
+              examples:
+                DefaultTransactionTypes:
+                  summary: Default transaction types
+                  value:
+                    transaction_types:
+                      add_to_float:
+                        balance_modification: cash_in
+                        enabled: true
+                        affected_report_fields:
+                          - non_sale_cash_in_total
+                          - deposit_total
+                        reasons: []
+                      add_petty_cash:
+                        balance_modification: cash_in
+                        enabled: false
+                        affected_report_fields:
+                          - non_sale_cash_in_total
+                        reasons: []
+                      transfer_in:
+                        balance_modification: cash_in
+                        enabled: true
+                        affected_report_fields:
+                          - non_sale_cash_in_total
+                        reasons: []
+                      adjustment_in:
+                        balance_modification: cash_in
+                        enabled: true
+                        affected_report_fields:
+                          - non_sale_cash_in_total
+                        reasons: []
+                      remove_petty_cash:
+                        balance_modification: cash_out
+                        enabled: true
+                        affected_report_fields:
+                          - non_sale_cash_out_total
+                        reasons: []
+                      cash_pull:
+                        balance_modification: cash_out
+                        enabled: true
+                        affected_report_fields:
+                          - non_sale_cash_out_total
+                        reasons: []
+                      transfer_out:
+                        balance_modification: cash_out
+                        enabled: true
+                        affected_report_fields:
+                          - non_sale_cash_out_total
+                        reasons: []
+                      adjustment_out:
+                        balance_modification: cash_out
+                        enabled: true
+                        affected_report_fields:
+                          - non_sale_cash_out_total
+                        reasons: []
+                      no_sale:
+                        balance_modification: cash_in
+                        enabled: true
+                        affected_report_fields:
+                          - non_sale_cash_in_total
+                          - deposit_total
+                        reasons:
+                          - code: post_office
+                            label: Post office
+                            enabled: true
+                          - code: food
+                            label: Buy snacks
+                            enabled: false
+              schema:
+                type: object
+                title: Transaction Types
+                required:
+                  - transaction_types
+                properties:
+                  transaction_types:
+                    type: object
+                    required:
+                      - add_to_float
+                      - add_petty_cash
+                      - transfer_in
+                      - adjustment_in
+                      - remove_petty_cash
+                      - cash_pull
+                      - transfer_out
+                      - adjustment_out
+                      - no_sale
+                      - gift_card_cash_out
+                    properties:
+                      add_to_float:
+                        type: object
+                        title: Cash transaction type.
+                        required:
+                          - balance_modification
+                          - affected_report_fields
+                          - reasons
+                          - enabled
+                        properties:
+                          balance_modification:
+                            description: >-
+                              Defines how the cash transaction affects the
+                              balance. Example: add_petty_cash is a 'cash_in'.
+                            type: string
+                            enum:
+                              - cash_in
+                              - cash_out
+                              - neutral
+                          affected_report_fields:
+                            description: >-
+                              The report fields affected by an operation with
+                              this transaction type.
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - non_sale_cash_in_total
+                                - non_sale_cash_out_total
+                                - deposit_total
+                          reasons:
+                            description: >-
+                              The list of reasons assigned to the transaction
+                              type.
+                            type: array
+                            items:
+                              type: object
+                              title: Cash transaction reason.
+                              required:
+                                - code
+                                - label
+                                - enabled
+                              properties:
+                                code:
+                                  type: string
+                                  description: >-
+                                    The unique code that will be exposed to
+                                    external consumers.
+                                label:
+                                  description: >-
+                                    The human readable displayable label for the
+                                    reason.
+                                  type: string
+                                enabled:
+                                  description: Defines if the reason is enabled or not.
+                                  type: boolean
+                          enabled:
+                            description: >-
+                              Defines if the transaction type is available for
+                              usage.
+                            type: boolean
+                      add_petty_cash:
+                        type: object
+                        title: Cash transaction type.
+                        required:
+                          - balance_modification
+                          - affected_report_fields
+                          - reasons
+                          - enabled
+                        properties:
+                          balance_modification:
+                            description: >-
+                              Defines how the cash transaction affects the
+                              balance. Example: add_petty_cash is a 'cash_in'.
+                            type: string
+                            enum:
+                              - cash_in
+                              - cash_out
+                              - neutral
+                          affected_report_fields:
+                            description: >-
+                              The report fields affected by an operation with
+                              this transaction type.
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - non_sale_cash_in_total
+                                - non_sale_cash_out_total
+                                - deposit_total
+                          reasons:
+                            description: >-
+                              The list of reasons assigned to the transaction
+                              type.
+                            type: array
+                            items:
+                              type: object
+                              title: Cash transaction reason.
+                              required:
+                                - code
+                                - label
+                                - enabled
+                              properties:
+                                code:
+                                  type: string
+                                  description: >-
+                                    The unique code that will be exposed to
+                                    external consumers.
+                                label:
+                                  description: >-
+                                    The human readable displayable label for the
+                                    reason.
+                                  type: string
+                                enabled:
+                                  description: Defines if the reason is enabled or not.
+                                  type: boolean
+                          enabled:
+                            description: >-
+                              Defines if the transaction type is available for
+                              usage.
+                            type: boolean
+                      transfer_in:
+                        type: object
+                        title: Cash transaction type.
+                        required:
+                          - balance_modification
+                          - affected_report_fields
+                          - reasons
+                          - enabled
+                        properties:
+                          balance_modification:
+                            description: >-
+                              Defines how the cash transaction affects the
+                              balance. Example: add_petty_cash is a 'cash_in'.
+                            type: string
+                            enum:
+                              - cash_in
+                              - cash_out
+                              - neutral
+                          affected_report_fields:
+                            description: >-
+                              The report fields affected by an operation with
+                              this transaction type.
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - non_sale_cash_in_total
+                                - non_sale_cash_out_total
+                                - deposit_total
+                          reasons:
+                            description: >-
+                              The list of reasons assigned to the transaction
+                              type.
+                            type: array
+                            items:
+                              type: object
+                              title: Cash transaction reason.
+                              required:
+                                - code
+                                - label
+                                - enabled
+                              properties:
+                                code:
+                                  type: string
+                                  description: >-
+                                    The unique code that will be exposed to
+                                    external consumers.
+                                label:
+                                  description: >-
+                                    The human readable displayable label for the
+                                    reason.
+                                  type: string
+                                enabled:
+                                  description: Defines if the reason is enabled or not.
+                                  type: boolean
+                          enabled:
+                            description: >-
+                              Defines if the transaction type is available for
+                              usage.
+                            type: boolean
+                      adjustment_in:
+                        type: object
+                        title: Cash transaction type.
+                        required:
+                          - balance_modification
+                          - affected_report_fields
+                          - reasons
+                          - enabled
+                        properties:
+                          balance_modification:
+                            description: >-
+                              Defines how the cash transaction affects the
+                              balance. Example: add_petty_cash is a 'cash_in'.
+                            type: string
+                            enum:
+                              - cash_in
+                              - cash_out
+                              - neutral
+                          affected_report_fields:
+                            description: >-
+                              The report fields affected by an operation with
+                              this transaction type.
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - non_sale_cash_in_total
+                                - non_sale_cash_out_total
+                                - deposit_total
+                          reasons:
+                            description: >-
+                              The list of reasons assigned to the transaction
+                              type.
+                            type: array
+                            items:
+                              type: object
+                              title: Cash transaction reason.
+                              required:
+                                - code
+                                - label
+                                - enabled
+                              properties:
+                                code:
+                                  type: string
+                                  description: >-
+                                    The unique code that will be exposed to
+                                    external consumers.
+                                label:
+                                  description: >-
+                                    The human readable displayable label for the
+                                    reason.
+                                  type: string
+                                enabled:
+                                  description: Defines if the reason is enabled or not.
+                                  type: boolean
+                          enabled:
+                            description: >-
+                              Defines if the transaction type is available for
+                              usage.
+                            type: boolean
+                      remove_petty_cash:
+                        type: object
+                        title: Cash transaction type.
+                        required:
+                          - balance_modification
+                          - affected_report_fields
+                          - reasons
+                          - enabled
+                        properties:
+                          balance_modification:
+                            description: >-
+                              Defines how the cash transaction affects the
+                              balance. Example: add_petty_cash is a 'cash_in'.
+                            type: string
+                            enum:
+                              - cash_in
+                              - cash_out
+                              - neutral
+                          affected_report_fields:
+                            description: >-
+                              The report fields affected by an operation with
+                              this transaction type.
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - non_sale_cash_in_total
+                                - non_sale_cash_out_total
+                                - deposit_total
+                          reasons:
+                            description: >-
+                              The list of reasons assigned to the transaction
+                              type.
+                            type: array
+                            items:
+                              type: object
+                              title: Cash transaction reason.
+                              required:
+                                - code
+                                - label
+                                - enabled
+                              properties:
+                                code:
+                                  type: string
+                                  description: >-
+                                    The unique code that will be exposed to
+                                    external consumers.
+                                label:
+                                  description: >-
+                                    The human readable displayable label for the
+                                    reason.
+                                  type: string
+                                enabled:
+                                  description: Defines if the reason is enabled or not.
+                                  type: boolean
+                          enabled:
+                            description: >-
+                              Defines if the transaction type is available for
+                              usage.
+                            type: boolean
+                      transfer_out:
+                        type: object
+                        title: Cash transaction type.
+                        required:
+                          - balance_modification
+                          - affected_report_fields
+                          - reasons
+                          - enabled
+                        properties:
+                          balance_modification:
+                            description: >-
+                              Defines how the cash transaction affects the
+                              balance. Example: add_petty_cash is a 'cash_in'.
+                            type: string
+                            enum:
+                              - cash_in
+                              - cash_out
+                              - neutral
+                          affected_report_fields:
+                            description: >-
+                              The report fields affected by an operation with
+                              this transaction type.
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - non_sale_cash_in_total
+                                - non_sale_cash_out_total
+                                - deposit_total
+                          reasons:
+                            description: >-
+                              The list of reasons assigned to the transaction
+                              type.
+                            type: array
+                            items:
+                              type: object
+                              title: Cash transaction reason.
+                              required:
+                                - code
+                                - label
+                                - enabled
+                              properties:
+                                code:
+                                  type: string
+                                  description: >-
+                                    The unique code that will be exposed to
+                                    external consumers.
+                                label:
+                                  description: >-
+                                    The human readable displayable label for the
+                                    reason.
+                                  type: string
+                                enabled:
+                                  description: Defines if the reason is enabled or not.
+                                  type: boolean
+                          enabled:
+                            description: >-
+                              Defines if the transaction type is available for
+                              usage.
+                            type: boolean
+                      adjustment_out:
+                        type: object
+                        title: Cash transaction type.
+                        required:
+                          - balance_modification
+                          - affected_report_fields
+                          - reasons
+                          - enabled
+                        properties:
+                          balance_modification:
+                            description: >-
+                              Defines how the cash transaction affects the
+                              balance. Example: add_petty_cash is a 'cash_in'.
+                            type: string
+                            enum:
+                              - cash_in
+                              - cash_out
+                              - neutral
+                          affected_report_fields:
+                            description: >-
+                              The report fields affected by an operation with
+                              this transaction type.
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - non_sale_cash_in_total
+                                - non_sale_cash_out_total
+                                - deposit_total
+                          reasons:
+                            description: >-
+                              The list of reasons assigned to the transaction
+                              type.
+                            type: array
+                            items:
+                              type: object
+                              title: Cash transaction reason.
+                              required:
+                                - code
+                                - label
+                                - enabled
+                              properties:
+                                code:
+                                  type: string
+                                  description: >-
+                                    The unique code that will be exposed to
+                                    external consumers.
+                                label:
+                                  description: >-
+                                    The human readable displayable label for the
+                                    reason.
+                                  type: string
+                                enabled:
+                                  description: Defines if the reason is enabled or not.
+                                  type: boolean
+                          enabled:
+                            description: >-
+                              Defines if the transaction type is available for
+                              usage.
+                            type: boolean
+                      cash_pull:
+                        type: object
+                        title: Cash transaction type.
+                        required:
+                          - balance_modification
+                          - affected_report_fields
+                          - reasons
+                          - enabled
+                        properties:
+                          balance_modification:
+                            description: >-
+                              Defines how the cash transaction affects the
+                              balance. Example: add_petty_cash is a 'cash_in'.
+                            type: string
+                            enum:
+                              - cash_in
+                              - cash_out
+                              - neutral
+                          affected_report_fields:
+                            description: >-
+                              The report fields affected by an operation with
+                              this transaction type.
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - non_sale_cash_in_total
+                                - non_sale_cash_out_total
+                                - deposit_total
+                          reasons:
+                            description: >-
+                              The list of reasons assigned to the transaction
+                              type.
+                            type: array
+                            items:
+                              type: object
+                              title: Cash transaction reason.
+                              required:
+                                - code
+                                - label
+                                - enabled
+                              properties:
+                                code:
+                                  type: string
+                                  description: >-
+                                    The unique code that will be exposed to
+                                    external consumers.
+                                label:
+                                  description: >-
+                                    The human readable displayable label for the
+                                    reason.
+                                  type: string
+                                enabled:
+                                  description: Defines if the reason is enabled or not.
+                                  type: boolean
+                          enabled:
+                            description: >-
+                              Defines if the transaction type is available for
+                              usage.
+                            type: boolean
+                      no_sale:
+                        type: object
+                        title: Cash transaction type.
+                        required:
+                          - balance_modification
+                          - affected_report_fields
+                          - reasons
+                          - enabled
+                        properties:
+                          balance_modification:
+                            description: >-
+                              Defines how the cash transaction affects the
+                              balance. Example: add_petty_cash is a 'cash_in'.
+                            type: string
+                            enum:
+                              - cash_in
+                              - cash_out
+                              - neutral
+                          affected_report_fields:
+                            description: >-
+                              The report fields affected by an operation with
+                              this transaction type.
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - non_sale_cash_in_total
+                                - non_sale_cash_out_total
+                                - deposit_total
+                          reasons:
+                            description: >-
+                              The list of reasons assigned to the transaction
+                              type.
+                            type: array
+                            items:
+                              type: object
+                              title: Cash transaction reason.
+                              required:
+                                - code
+                                - label
+                                - enabled
+                              properties:
+                                code:
+                                  type: string
+                                  description: >-
+                                    The unique code that will be exposed to
+                                    external consumers.
+                                label:
+                                  description: >-
+                                    The human readable displayable label for the
+                                    reason.
+                                  type: string
+                                enabled:
+                                  description: Defines if the reason is enabled or not.
+                                  type: boolean
+                          enabled:
+                            description: >-
+                              Defines if the transaction type is available for
+                              usage.
+                            type: boolean
+                      gift_card_cash_out:
+                        type: object
+                        title: Cash transaction type.
+                        required:
+                          - balance_modification
+                          - affected_report_fields
+                          - reasons
+                          - enabled
+                        properties:
+                          balance_modification:
+                            description: >-
+                              Defines how the cash transaction affects the
+                              balance. Example: add_petty_cash is a 'cash_in'.
+                            type: string
+                            enum:
+                              - cash_in
+                              - cash_out
+                              - neutral
+                          affected_report_fields:
+                            description: >-
+                              The report fields affected by an operation with
+                              this transaction type.
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - non_sale_cash_in_total
+                                - non_sale_cash_out_total
+                                - deposit_total
+                          reasons:
+                            description: >-
+                              The list of reasons assigned to the transaction
+                              type.
+                            type: array
+                            items:
+                              type: object
+                              title: Cash transaction reason.
+                              required:
+                                - code
+                                - label
+                                - enabled
+                              properties:
+                                code:
+                                  type: string
+                                  description: >-
+                                    The unique code that will be exposed to
+                                    external consumers.
+                                label:
+                                  description: >-
+                                    The human readable displayable label for the
+                                    reason.
+                                  type: string
+                                enabled:
+                                  description: Defines if the reason is enabled or not.
+                                  type: boolean
+                          enabled:
+                            description: >-
+                              Defines if the transaction type is available for
+                              usage.
+                            type: boolean
+  /cash_transaction_types/{code}:
+    parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          enum:
+            - add_to_float
+            - add_petty_cash
+            - transfer_in
+            - adjustment_in
+            - remove_petty_cash
+            - cash_pull
+            - transfer_out
+            - adjustment_out
+            - no_sale
+            - gift_card_cash_out
+          type: string
+        description: Code of the transaction type
+    put:
+      description: |
+        Configures a transaction type.
+      operationId: configureTransactionType
+      summary: Configure transaction type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              TransactionType:
+                summary: Configure transaction type
+                value:
+                  balance_modification: cash_in
+                  enabled: true
+                  affected_report_fields:
+                    - non_sale_cash_in_total
+                    - deposit_total
+            schema:
+              type: object
+              title: Transaction Type
+              required:
+                - balance_modification
+                - affected_report_fields
+                - enabled
+              properties:
+                balance_modification:
+                  description: Defines how the cash transaction affects the balance.
+                  type: string
+                  enum:
+                    - cash_in
+                    - cash_out
+                    - neutral
+                affected_report_fields:
+                  description: List of report fields affected by the cash transaction.
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - non_sale_cash_in_total
+                      - non_sale_cash_out_total
+                      - deposit_total
+                enabled:
+                  description: Defines if the transaction type is available for usage.
+                  type: boolean
+      responses:
+        '200':
+          description: |
+            The transaction type was successfully configured.
+        '400':
+          description: |
+            Bad request.
+          content:
+            application/json:
+              examples:
+                BadRequest:
+                  summary: Invalid request
+                  value:
+                    error_code: invalid_body
+                    message: The request provided is invalid.
+                    request_id: '123.4567'
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    minLength: 1
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              examples:
+                InternalError:
+                  summary: Internal error
+                  value:
+                    error_code: unexpected_error
+                    message: Internal error has happened.
+                    request_id: '123.4567'
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    minLength: 1
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+  /cash_transaction_types/{code}/reasons:
+    parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          enum:
+            - add_to_float
+            - add_petty_cash
+            - transfer_in
+            - adjustment_in
+            - remove_petty_cash
+            - cash_pull
+            - transfer_out
+            - adjustment_out
+            - no_sale
+            - gift_card_cash_out
+          type: string
+        description: Code of the transaction type
+    post:
+      operationId: createReason
+      summary: Create reason
+      description: >
+        Creates a reason code for the transaction type, including a label that
+        is displayed in NewStore Associate App
+
+        to the associate.
+
+        Transaction types need to be explicitly configured through the Configure
+        transaction type endpoint before
+
+        reasons can be added for it.
+
+
+        If no reason codes are specified for a transaction type, the label of
+        the transaction type
+
+        itself is displayed in Associate App.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              ReasonPostOffice:
+                summary: Post office
+                value:
+                  code: post_office
+                  label: Post office
+            schema:
+              type: object
+              title: Reason
+              required:
+                - code
+                - label
+              properties:
+                code:
+                  type: string
+                  minLength: 1
+                  description: >-
+                    The unique reason code that will be exposed to external
+                    consumers.
+                label:
+                  description: The label for the reason.
+                  minLength: 1
+                  type: string
+      responses:
+        '200':
+          description: |
+            The reason was successfully created.
+        '400':
+          description: |
+            Bad request.
+          content:
+            application/json:
+              examples:
+                BadRequest:
+                  summary: Invalid request
+                  value:
+                    error_code: invalid_body
+                    message: The request provided is invalid.
+                    request_id: '123.4567'
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    minLength: 1
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+        '404':
+          description: |
+            The transaction type not configured.
+          content:
+            application/json:
+              examples:
+                NotConfigured:
+                  summary: Transaction type not configured
+                  value:
+                    error_code: transaction_type_not_configured
+                    message: Transaction type not configured
+                    request_id: '123.4567'
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    minLength: 1
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+        '409':
+          description: |
+            The provided reason_code already exists.
+          content:
+            application/json:
+              examples:
+                AlreadyExists:
+                  summary: reason_code already exists
+                  value:
+                    error_code: reason_already_exists
+                    message: Reason already exists.
+                    request_id: '123.4567'
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    minLength: 1
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              examples:
+                InternalError:
+                  summary: Internal error
+                  value:
+                    error_code: unexpected_error
+                    message: Internal error has happened.
+                    request_id: '123.4567'
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    minLength: 1
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+  /cash_transaction_types/{code}/reasons/{reason_code}:
+    parameters:
+      - name: reason_code
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Code of the transaction reason
+      - name: code
+        in: path
+        required: true
+        schema:
+          enum:
+            - add_to_float
+            - add_petty_cash
+            - transfer_in
+            - adjustment_in
+            - remove_petty_cash
+            - cash_pull
+            - transfer_out
+            - adjustment_out
+            - no_sale
+            - gift_card_cash_out
+          type: string
+        description: Code of the transaction type
+    patch:
+      operationId: changeReason
+      summary: Update reason
+      description: |
+        Updates the specified reason code and label.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              ReasonPostOffice:
+                summary: Post office
+                value:
+                  label: Post office
+                  enabled: false
+            schema:
+              type: object
+              title: Reason
+              required:
+                - label
+              properties:
+                label:
+                  description: The label for the reason.
+                  minLength: 1
+                  type: string
+                enabled:
+                  description: Defines if the reason is enabled or not.
+                  type: boolean
+      responses:
+        '200':
+          description: |
+            The reason was successfully changed.
+        '400':
+          description: |
+            Bad request.
+          content:
+            application/json:
+              examples:
+                BadRequest:
+                  summary: Invalid request
+                  value:
+                    error_code: invalid_body
+                    message: The request provided is invalid.
+                    request_id: '123.4567'
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    minLength: 1
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+        '404':
+          description: |
+            Reason not found.
+          content:
+            application/json:
+              examples:
+                NotFound:
+                  summary: Reason not found
+                  value:
+                    error_code: reason_not_found
+                    message: Reason not found.
+                    request_id: '123.4567'
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    minLength: 1
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              examples:
+                InternalError:
+                  summary: Internal error
+                  value:
+                    error_code: unexpected_error
+                    message: Internal error has happened.
+                    request_id: '123.4567'
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    minLength: 1
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}
+x-annotation-crossOriginAllowed: true
+security:
+  - newStoreAccessToken: []

@@ -1,0 +1,1037 @@
+openapi: 3.0.0
+info:
+  title: Checkout configuration
+  description: >
+    Use this API to configure and manage checkout process in the NewStore
+    platform. This includes
+
+    [manager
+    approvals](/docs/assoapp/using-assoapp.html#managing-order-approvals),
+
+    enabling automatic promotions,
+    [refunds](/docs/processes/about-payments.html#about-refunds),
+
+    and other features in the platform.
+
+
+    For more information, see the
+
+    [configuration
+    guide](/docs/development/configuration/config-checkout.html#configuring-checkout-operations).
+  version: 1.0.1
+servers:
+  - url: http://localhost:8000
+    description: The local development server
+  - url: https://dodici.x.newstore.net/v1/c
+    description: The sandbox server
+tags:
+  - name: Checkout configuration
+paths:
+  /config/checkout:
+    parameters:
+      - name: request_id
+        in: header
+        schema:
+          type: string
+      - name: tenant
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: user-id
+        in: header
+        schema:
+          type: string
+    get:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Checkout configuration
+      summary: Get checkout configuration
+      description: >
+        Retrieves the current checkout configuration set up for your business.
+        The response payload
+
+        also contains the current version of the configuration, the timestamp
+        when it was
+
+        last updated, and who updated it.
+      operationId: getConfig
+      responses:
+        '200':
+          description: Current configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    title: Checkout Tenant Configuration
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      enable_manager_approval:
+                        type: boolean
+                        description: >-
+                          Defines if the manager approval feature is enabled or
+                          not.
+                      gift_wrapping:
+                        type: object
+                        properties:
+                          message_enabled:
+                            type: boolean
+                            description: >-
+                              Indicates whether the consumer can add a
+                              personalized message to the order.
+                          price:
+                            type: number
+                            description: >-
+                              The price of the gift wrapping service, for one
+                              order.
+                          tax_code:
+                            type: string
+                            description: The string name of a payment method to refund to.
+                        required:
+                          - message_enabled
+                          - price
+                          - tax_code
+                      i18n:
+                        type: object
+                        description: Internationalization configuration for checkout.
+                        properties:
+                          default_customer_locale:
+                            type: string
+                            description: >-
+                              Locale in the form of BCP 47 Language Tag, e.g.
+                              en-US. Used as customer language for injected
+                              orders if it is not provided in the request.
+                        required:
+                          - default_customer_locale
+                      big_sales_order:
+                        type: object
+                        description: >-
+                          Determines how many items an in-store order is limited
+                          to.
+                        properties:
+                          hard_limit_for_big_orders:
+                            type: number
+                            description: >-
+                              The maximum number of items an in-store order can
+                              contain. Is set to "100" by default. We do not
+                              recommend  setting it to a higher number than 240
+                              - order placement may fail.
+                        required:
+                          - hard_limit_for_big_orders
+                      refund_payment_methods:
+                        type: array
+                        items:
+                          type: string
+                          description: The string name of a payment method to refund to.
+                      refund_payment_methods_for_blind_return:
+                        type: array
+                        items:
+                          type: string
+                          description: The string name of a payment method to refund to.
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request, configuration version
+                      was not specified;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request, configuration version
+                      was not specified;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+    patch:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Checkout configuration
+      summary: Update checkout configuration
+      description: |
+        Updates the current checkout configuration for your business.
+      operationId: updateConfig
+      parameters:
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            schema:
+              title: Checkout Tenant Configuration
+              description: Tenant configuration object.
+              type: object
+              properties:
+                enable_manager_approval:
+                  type: boolean
+                  description: Defines if the manager approval feature is enabled or not.
+                gift_wrapping:
+                  type: object
+                  properties:
+                    message_enabled:
+                      type: boolean
+                      description: >-
+                        Indicates whether the consumer can add a personalized
+                        message to the order.
+                    price:
+                      type: number
+                      description: The price of the gift wrapping service, for one order.
+                    tax_code:
+                      type: string
+                      description: The string name of a payment method to refund to.
+                  required:
+                    - message_enabled
+                    - price
+                    - tax_code
+                i18n:
+                  type: object
+                  description: Internationalization configuration for checkout.
+                  properties:
+                    default_customer_locale:
+                      type: string
+                      description: >-
+                        Locale in the form of BCP 47 Language Tag, e.g. en-US.
+                        Used as customer language for injected orders if it is
+                        not provided in the request.
+                  required:
+                    - default_customer_locale
+                big_sales_order:
+                  type: object
+                  description: Determines how many items an in-store order is limited to.
+                  properties:
+                    hard_limit_for_big_orders:
+                      type: number
+                      description: >-
+                        The maximum number of items an in-store order can
+                        contain. Is set to "100" by default. We do not
+                        recommend  setting it to a higher number than 240 -
+                        order placement may fail.
+                  required:
+                    - hard_limit_for_big_orders
+                refund_payment_methods:
+                  type: array
+                  items:
+                    type: string
+                    description: The string name of a payment method to refund to.
+                refund_payment_methods_for_blind_return:
+                  type: array
+                  items:
+                    type: string
+                    description: The string name of a payment method to refund to.
+      responses:
+        '200':
+          description: The updated configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    title: Checkout Tenant Configuration
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      enable_manager_approval:
+                        type: boolean
+                        description: >-
+                          Defines if the manager approval feature is enabled or
+                          not.
+                      gift_wrapping:
+                        type: object
+                        properties:
+                          message_enabled:
+                            type: boolean
+                            description: >-
+                              Indicates whether the consumer can add a
+                              personalized message to the order.
+                          price:
+                            type: number
+                            description: >-
+                              The price of the gift wrapping service, for one
+                              order.
+                          tax_code:
+                            type: string
+                            description: The string name of a payment method to refund to.
+                        required:
+                          - message_enabled
+                          - price
+                          - tax_code
+                      i18n:
+                        type: object
+                        description: Internationalization configuration for checkout.
+                        properties:
+                          default_customer_locale:
+                            type: string
+                            description: >-
+                              Locale in the form of BCP 47 Language Tag, e.g.
+                              en-US. Used as customer language for injected
+                              orders if it is not provided in the request.
+                        required:
+                          - default_customer_locale
+                      big_sales_order:
+                        type: object
+                        description: >-
+                          Determines how many items an in-store order is limited
+                          to.
+                        properties:
+                          hard_limit_for_big_orders:
+                            type: number
+                            description: >-
+                              The maximum number of items an in-store order can
+                              contain. Is set to "100" by default. We do not
+                              recommend  setting it to a higher number than 240
+                              - order placement may fail.
+                        required:
+                          - hard_limit_for_big_orders
+                      refund_payment_methods:
+                        type: array
+                        items:
+                          type: string
+                          description: The string name of a payment method to refund to.
+                      refund_payment_methods_for_blind_return:
+                        type: array
+                        items:
+                          type: string
+                          description: The string name of a payment method to refund to.
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request, configuration version
+                      was not specified;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: invalid_request
+                messages:
+                  - Wrong datetime format
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request, configuration version
+                      was not specified;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '409':
+          description: The version key is out of date, configuration was updated
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request, configuration version
+                      was not specified;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: conflict_version
+                messages:
+                  - The version is out of date
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request, configuration version
+                      was not specified;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+    post:
+      security:
+        - newStoreAccessToken: []
+      tags:
+        - Checkout configuration
+      summary: Replace checkout configuration
+      description: >
+        Use this method to create a new checkout configuration and completely
+        replace the current
+
+        configuration for your business.
+      operationId: replaceConfig
+      parameters:
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The updated config value
+        content:
+          application/json:
+            schema:
+              title: Checkout Tenant Configuration
+              description: Tenant configuration object.
+              type: object
+              properties:
+                enable_manager_approval:
+                  type: boolean
+                  description: Defines if the manager approval feature is enabled or not.
+                gift_wrapping:
+                  type: object
+                  properties:
+                    message_enabled:
+                      type: boolean
+                      description: >-
+                        Indicates whether the consumer can add a personalized
+                        message to the order.
+                    price:
+                      type: number
+                      description: The price of the gift wrapping service, for one order.
+                    tax_code:
+                      type: string
+                      description: The string name of a payment method to refund to.
+                  required:
+                    - message_enabled
+                    - price
+                    - tax_code
+                i18n:
+                  type: object
+                  description: Internationalization configuration for checkout.
+                  properties:
+                    default_customer_locale:
+                      type: string
+                      description: >-
+                        Locale in the form of BCP 47 Language Tag, e.g. en-US.
+                        Used as customer language for injected orders if it is
+                        not provided in the request.
+                  required:
+                    - default_customer_locale
+                big_sales_order:
+                  type: object
+                  description: Determines how many items an in-store order is limited to.
+                  properties:
+                    hard_limit_for_big_orders:
+                      type: number
+                      description: >-
+                        The maximum number of items an in-store order can
+                        contain. Is set to "100" by default. We do not
+                        recommend  setting it to a higher number than 240 -
+                        order placement may fail.
+                  required:
+                    - hard_limit_for_big_orders
+                refund_payment_methods:
+                  type: array
+                  items:
+                    type: string
+                    description: The string name of a payment method to refund to.
+                refund_payment_methods_for_blind_return:
+                  type: array
+                  items:
+                    type: string
+                    description: The string name of a payment method to refund to.
+      responses:
+        '200':
+          description: The updated configuration
+          content:
+            application/json:
+              schema:
+                description: Update configuration response
+                type: object
+                properties:
+                  value:
+                    title: Checkout Tenant Configuration
+                    description: Tenant configuration object.
+                    type: object
+                    properties:
+                      enable_manager_approval:
+                        type: boolean
+                        description: >-
+                          Defines if the manager approval feature is enabled or
+                          not.
+                      gift_wrapping:
+                        type: object
+                        properties:
+                          message_enabled:
+                            type: boolean
+                            description: >-
+                              Indicates whether the consumer can add a
+                              personalized message to the order.
+                          price:
+                            type: number
+                            description: >-
+                              The price of the gift wrapping service, for one
+                              order.
+                          tax_code:
+                            type: string
+                            description: The string name of a payment method to refund to.
+                        required:
+                          - message_enabled
+                          - price
+                          - tax_code
+                      i18n:
+                        type: object
+                        description: Internationalization configuration for checkout.
+                        properties:
+                          default_customer_locale:
+                            type: string
+                            description: >-
+                              Locale in the form of BCP 47 Language Tag, e.g.
+                              en-US. Used as customer language for injected
+                              orders if it is not provided in the request.
+                        required:
+                          - default_customer_locale
+                      big_sales_order:
+                        type: object
+                        description: >-
+                          Determines how many items an in-store order is limited
+                          to.
+                        properties:
+                          hard_limit_for_big_orders:
+                            type: number
+                            description: >-
+                              The maximum number of items an in-store order can
+                              contain. Is set to "100" by default. We do not
+                              recommend  setting it to a higher number than 240
+                              - order placement may fail.
+                        required:
+                          - hard_limit_for_big_orders
+                      refund_payment_methods:
+                        type: array
+                        items:
+                          type: string
+                          description: The string name of a payment method to refund to.
+                      refund_payment_methods_for_blind_return:
+                        type: array
+                        items:
+                          type: string
+                          description: The string name of a payment method to refund to.
+                  version:
+                    description: Current Configuration version
+                    type: string
+                  updated_at:
+                    description: RFC3339 date time format with timezone
+                    type: string
+                    pattern: >-
+                      ^\d{4}-\d{2}-\d{2}[T
+                      ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+                    example: '2021-12-31T23:59:59Z'
+                  updated_by:
+                    description: Internal User ID
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request, configuration version
+                      was not specified;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: invalid_request
+                messages:
+                  - Wrong datetime format
+        '404':
+          description: Tenant or service not found
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request, configuration version
+                      was not specified;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: not_found
+                messages:
+                  - tenant not found
+        '409':
+          description: The version key is out of date, configuration was updated
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request, configuration version
+                      was not specified;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                error_code: conflict_version
+                messages:
+                  - The version is out of date
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                description: Error message response
+                properties:
+                  error_code:
+                    description: >-
+                      Error code value. Possible values:
+
+                      * not_found: tenant not found, or tenant key in header is
+                      blank;
+
+                      * internal: internal server error;
+
+                      * invalid_request: invalid request, configuration version
+                      was not specified;
+
+                      * validation_failed: validation of request failed;
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+components:
+  schemas:
+    UpdateRequest:
+      title: Checkout Tenant Configuration
+      description: Tenant configuration object.
+      type: object
+      properties:
+        enable_manager_approval:
+          type: boolean
+          description: Defines if the manager approval feature is enabled or not.
+        gift_wrapping:
+          type: object
+          properties:
+            message_enabled:
+              type: boolean
+              description: >-
+                Indicates whether the consumer can add a personalized message to
+                the order.
+            price:
+              type: number
+              description: The price of the gift wrapping service, for one order.
+            tax_code:
+              type: string
+              description: The string name of a payment method to refund to.
+          required:
+            - message_enabled
+            - price
+            - tax_code
+        i18n:
+          type: object
+          description: Internationalization configuration for checkout.
+          properties:
+            default_customer_locale:
+              type: string
+              description: >-
+                Locale in the form of BCP 47 Language Tag, e.g. en-US. Used as
+                customer language for injected orders if it is not provided in
+                the request.
+          required:
+            - default_customer_locale
+        big_sales_order:
+          type: object
+          description: Determines how many items an in-store order is limited to.
+          properties:
+            hard_limit_for_big_orders:
+              type: number
+              description: >-
+                The maximum number of items an in-store order can contain. Is
+                set to "100" by default. We do not recommend  setting it to a
+                higher number than 240 - order placement may fail.
+          required:
+            - hard_limit_for_big_orders
+        refund_payment_methods:
+          type: array
+          items:
+            type: string
+            description: The string name of a payment method to refund to.
+        refund_payment_methods_for_blind_return:
+          type: array
+          items:
+            type: string
+            description: The string name of a payment method to refund to.
+    ConfigResponse:
+      description: Update configuration response
+      type: object
+      properties:
+        value:
+          title: Checkout Tenant Configuration
+          description: Tenant configuration object.
+          type: object
+          properties:
+            enable_manager_approval:
+              type: boolean
+              description: Defines if the manager approval feature is enabled or not.
+            gift_wrapping:
+              type: object
+              properties:
+                message_enabled:
+                  type: boolean
+                  description: >-
+                    Indicates whether the consumer can add a personalized
+                    message to the order.
+                price:
+                  type: number
+                  description: The price of the gift wrapping service, for one order.
+                tax_code:
+                  type: string
+                  description: The string name of a payment method to refund to.
+              required:
+                - message_enabled
+                - price
+                - tax_code
+            i18n:
+              type: object
+              description: Internationalization configuration for checkout.
+              properties:
+                default_customer_locale:
+                  type: string
+                  description: >-
+                    Locale in the form of BCP 47 Language Tag, e.g. en-US. Used
+                    as customer language for injected orders if it is not
+                    provided in the request.
+              required:
+                - default_customer_locale
+            big_sales_order:
+              type: object
+              description: Determines how many items an in-store order is limited to.
+              properties:
+                hard_limit_for_big_orders:
+                  type: number
+                  description: >-
+                    The maximum number of items an in-store order can contain.
+                    Is set to "100" by default. We do not recommend  setting it
+                    to a higher number than 240 - order placement may fail.
+              required:
+                - hard_limit_for_big_orders
+            refund_payment_methods:
+              type: array
+              items:
+                type: string
+                description: The string name of a payment method to refund to.
+            refund_payment_methods_for_blind_return:
+              type: array
+              items:
+                type: string
+                description: The string name of a payment method to refund to.
+        version:
+          description: Current Configuration version
+          type: string
+        updated_at:
+          description: RFC3339 date time format with timezone
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+          example: '2021-12-31T23:59:59Z'
+        updated_by:
+          description: Internal User ID
+          type: string
+    Error:
+      description: Error message response
+      properties:
+        error_code:
+          description: >-
+            Error code value. Possible values:
+
+            * not_found: tenant not found, or tenant key in header is blank;
+
+            * internal: internal server error;
+
+            * invalid_request: invalid request, configuration version was not
+            specified;
+
+            * validation_failed: validation of request failed;
+          type: string
+        messages:
+          type: array
+          items:
+            type: string
+    datetime_tz:
+      description: RFC3339 date time format with timezone
+      type: string
+      pattern: ^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(Z|((\+|-)?\d{2}:\d{2}))$
+      example: '2021-12-31T23:59:59Z'
+    Config:
+      title: Checkout Tenant Configuration
+      description: Tenant configuration object.
+      type: object
+      properties:
+        enable_manager_approval:
+          type: boolean
+          description: Defines if the manager approval feature is enabled or not.
+        gift_wrapping:
+          type: object
+          properties:
+            message_enabled:
+              type: boolean
+              description: >-
+                Indicates whether the consumer can add a personalized message to
+                the order.
+            price:
+              type: number
+              description: The price of the gift wrapping service, for one order.
+            tax_code:
+              type: string
+              description: The string name of a payment method to refund to.
+          required:
+            - message_enabled
+            - price
+            - tax_code
+        i18n:
+          type: object
+          description: Internationalization configuration for checkout.
+          properties:
+            default_customer_locale:
+              type: string
+              description: >-
+                Locale in the form of BCP 47 Language Tag, e.g. en-US. Used as
+                customer language for injected orders if it is not provided in
+                the request.
+          required:
+            - default_customer_locale
+        big_sales_order:
+          type: object
+          description: Determines how many items an in-store order is limited to.
+          properties:
+            hard_limit_for_big_orders:
+              type: number
+              description: >-
+                The maximum number of items an in-store order can contain. Is
+                set to "100" by default. We do not recommend  setting it to a
+                higher number than 240 - order placement may fail.
+          required:
+            - hard_limit_for_big_orders
+        refund_payment_methods:
+          type: array
+          items:
+            type: string
+            description: The string name of a payment method to refund to.
+        refund_payment_methods_for_blind_return:
+          type: array
+          items:
+            type: string
+            description: The string name of a payment method to refund to.
+    GiftWrapping:
+      type: object
+      properties:
+        message_enabled:
+          type: boolean
+          description: >-
+            Indicates whether the consumer can add a personalized message to the
+            order.
+        price:
+          type: number
+          description: The price of the gift wrapping service, for one order.
+        tax_code:
+          type: string
+          description: The string name of a payment method to refund to.
+      required:
+        - message_enabled
+        - price
+        - tax_code
+    I18n:
+      type: object
+      description: Internationalization configuration for checkout.
+      properties:
+        default_customer_locale:
+          type: string
+          description: >-
+            Locale in the form of BCP 47 Language Tag, e.g. en-US. Used as
+            customer language for injected orders if it is not provided in the
+            request.
+      required:
+        - default_customer_locale
+    BigSalesOrder:
+      type: object
+      description: Determines how many items an in-store order is limited to.
+      properties:
+        hard_limit_for_big_orders:
+          type: number
+          description: >-
+            The maximum number of items an in-store order can contain. Is set to
+            "100" by default. We do not recommend  setting it to a higher number
+            than 240 - order placement may fail.
+      required:
+        - hard_limit_for_big_orders
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+x-annotation-crossOriginAllowed: true

@@ -1,0 +1,320 @@
+openapi: 3.0.1
+info:
+  title: Shipping rules API
+  description: >
+    Upload a CSV file describing routing rules. This file is usually generated
+    by exporting a Google
+
+    spreadsheet table, which has the following structure:
+
+
+    | Routes      |                        |                     
+    |                             | | ZIP codes |         |     | | Location
+    groups |         |     | | Service levels priority |
+
+    |-------------|------------------------|----------------------|-----------------------------|-|-----------|---------|-----|-|-----------------|---------|-----|-|-------------------------|
+
+    | **Country** | **Destination region** | **Shipping options** | **Location
+    group priority** | | **DR1**   | **DR2** | ... | | **LG1**         | **LG2**
+    | ... | | SL1                     |
+
+    | CC1         | DR1                    | ...                  |
+    LG1                         | | 111222    | 3333*   | ... | |
+    001             | 100     | ... | | SL2                     |
+
+    | CC1         | DR2                    | ...                  | LG2, LG3,
+    LG4               | | 124*      | 444*    | ... | | 002             |
+    111     | ... | | ...                     |
+
+    | ...         | ...                    | ...                  |
+    ...                         | | ...       | ...     | ... | |
+    ...             | ...     | ... | | ...                     |
+
+
+    where
+
+
+    - CC1, CC2, ... are ISO 3166-1 alpha-2 -- two-letter country codes,
+
+    - DR1, DR2, ... are customer-defined destination regions,
+
+    - LG1, LG2, ... are customer-defined location groups,
+
+    - each ZIP code in a destination region set may use an asterisk (`*`) which
+    stands for 0 or more
+      arbitrary digits,
+    - each `Location group priority` field may contain a list of location groups
+    with elements separated
+      by a comma (`,`),
+    - each location group issued in `Location group priority` should have a
+    corresponding definition in
+      the `Location group` column;
+    - `Service levels priority` block is optional.
+
+
+    See [this CSV file](/docs/_static/order_sourcing_rules.csv) for a complete
+    sample.
+  version: v0
+  contact:
+    name: Team Routing
+    email: team-routing@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/api/v1/org/config
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /fulfillment/routing_configuration:
+    post:
+      summary: Upload routing rules as a CSV file
+      description: |
+        Upload a CSV file describing routing rules.
+      operationId: upload-routing-rules
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: string
+              format: binary
+        required: true
+      responses:
+        '201':
+          description: >-
+            The CSV file with rules was successfully uploaded and new rules are
+            applied.
+        '400':
+          description: >-
+            Bad value for Content-Length header, or invalid structure of the
+            uploaded CSV file.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    enum:
+                      - content_length_http_header_not_found
+                      - content_too_large
+                      - invalid_body
+                      - invalid_content_type
+                      - invalid_csv_format
+                      - invalid_http_header
+                      - not_found
+                      - resource_already_exists
+                      - unexpected_error
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+              examples:
+                invalid_header:
+                  summary: Cannot parse Content-Length HTTP header.
+                  value:
+                    error_code: invalid_http_header
+                    message: Cannot parse Content-Length HTTP header.
+                    request_id: 3233d29d-9553-4133-8f1b-8622415f42ba
+                invalid_csv_format:
+                  summary: CSV file parsing failed.
+                  value:
+                    error_code: invalid_csv_format
+                    message: Cell A1 should contain 'Routes'.
+                    request_id: 3233d29d-9553-4133-8f1b-8622415f42ba
+        '403':
+          description: Forbidden action.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    enum:
+                      - content_length_http_header_not_found
+                      - content_too_large
+                      - invalid_body
+                      - invalid_content_type
+                      - invalid_csv_format
+                      - invalid_http_header
+                      - not_found
+                      - resource_already_exists
+                      - unexpected_error
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+              example:
+                error_code: forbidden
+                message: >-
+                  You must enable feature toggle in order to use this
+                  functionality.
+                request_id: 3233d29d-9553-4133-8f1b-8622415f42ba
+        '411':
+          description: HTTP header Content-Length is not set.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    enum:
+                      - content_length_http_header_not_found
+                      - content_too_large
+                      - invalid_body
+                      - invalid_content_type
+                      - invalid_csv_format
+                      - invalid_http_header
+                      - not_found
+                      - resource_already_exists
+                      - unexpected_error
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+              example:
+                error_code: content_length_http_header_not_found
+                message: HTTP header Content-Length is absent.
+                request_id: 3233d29d-9553-4133-8f1b-8622415f42ba
+        '413':
+          description: Provided CSV file is too large. Current limit is 10 MiB.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    enum:
+                      - content_length_http_header_not_found
+                      - content_too_large
+                      - invalid_body
+                      - invalid_content_type
+                      - invalid_csv_format
+                      - invalid_http_header
+                      - not_found
+                      - resource_already_exists
+                      - unexpected_error
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+              example:
+                error_code: content_too_large
+                message: >-
+                  the provided CSV file is too large; current limit is 10485760
+                  bytes
+                request_id: 3233d29d-9553-4133-8f1b-8622415f42ba
+        '415':
+          description: The API allows CSV files only.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    enum:
+                      - content_length_http_header_not_found
+                      - content_too_large
+                      - invalid_body
+                      - invalid_content_type
+                      - invalid_csv_format
+                      - invalid_http_header
+                      - not_found
+                      - resource_already_exists
+                      - unexpected_error
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+              example:
+                error_code: invalid_content_type
+                message: Only text/cvs content type is supported.
+                request_id: 3233d29d-9553-4133-8f1b-8622415f42ba
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    description: A code describing the error.
+                    type: string
+                    enum:
+                      - content_length_http_header_not_found
+                      - content_too_large
+                      - invalid_body
+                      - invalid_content_type
+                      - invalid_csv_format
+                      - invalid_http_header
+                      - not_found
+                      - resource_already_exists
+                      - unexpected_error
+                  message:
+                    description: A human-readable error message.
+                    type: string
+                  request_id:
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+                    type: string
+              example:
+                error_code: unexpected_error
+                message: Internal error has occurred.
+                request_id: 3233d29d-9553-4133-8f1b-8622415f42ba

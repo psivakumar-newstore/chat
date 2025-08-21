@@ -1,0 +1,400 @@
+openapi: 3.1.0
+info:
+  title: Associate App Customization Configuration API
+  description: >
+    Use this API to retrieve and update the current customization configuration
+    for NewStore Associate App set up
+
+    for your business.
+  version: v1
+servers:
+  - url: https://{tenant}.p.newstore.net/api/v1/associate-app
+    description: Production environment
+    variables:
+      tenant:
+        default: dodici-demo
+  - url: https://{tenant}.s.newstore.net/api/v1/associate-app
+    description: Staging environment
+    variables:
+      tenant:
+        default: dodici
+paths:
+  /customization-config:
+    get:
+      operationId: getCustomizationsConfig
+      description: >
+        Returns the current customization configuration for the NewStore
+        Associate App in your business.
+      summary: Get NewStore Associate App customization configuration
+      security: []
+      responses:
+        '200':
+          description: Customization configuration for the Associate App.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/list-customizations'
+  /customization-config/{customization_id}:
+    get:
+      operationId: getCustomizationConfig
+      description: |
+        Returns the configuration of a specific customization.
+      summary: Retrieve specific NewStore Associate App customization configuration
+      security:
+        - newStoreAccessToken: []
+      parameters:
+        - required: true
+          schema:
+            title: Id of a particular customization
+          name: customization_id
+          in: path
+      responses:
+        '200':
+          description: Returns the configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customization'
+    put:
+      operationId: putCustomizationConfig
+      description: >
+        Updates and replaces the customization configuration values for a given
+        id.
+      summary: Update NewStore Associate App customization configuration
+      security:
+        - newStoreAccessToken: []
+      parameters:
+        - required: true
+          schema:
+            title: Id of a particular customization
+          name: customization_id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/customization'
+      responses:
+        '200':
+          description: Returns the new value of the configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customization'
+        '400':
+          description: Invalid request payload. Request body could not be parsed properly.
+        '422':
+          description: >-
+            Invalid schema. Received configuration is not valid against the
+            configuration schema.
+    delete:
+      operationId: deleteCustomizationConfig
+      description: |
+        Removes a customization configuration.
+      summary: Update NewStore Associate App customization configuration
+      security:
+        - newStoreAccessToken: []
+      parameters:
+        - required: true
+          schema:
+            title: Id of a particular customization
+          name: customization_id
+          in: path
+      responses:
+        '200':
+          description: The customization was successfully removed.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    add-id:
+      required:
+        - id
+      type: object
+      properties:
+        id:
+          type: string
+    deeplink:
+      $id: deeplink.json
+      type: object
+      required:
+        - label
+        - enabled
+        - slot
+        - type
+        - url
+      additionalProperties: false
+      properties:
+        label:
+          type: string
+        enabled:
+          type: boolean
+        slot:
+          type: string
+        type:
+          enum:
+            - deeplink
+        url:
+          type: string
+    webview:
+      $id: webview.json
+      type: object
+      required:
+        - label
+        - enabled
+        - slot
+        - type
+        - url
+      additionalProperties: false
+      properties:
+        label:
+          type: string
+        enabled:
+          type: boolean
+        slot:
+          type: string
+        type:
+          enum:
+            - webview
+        url:
+          type:
+            - string
+            - 'null'
+          pattern: ^https?://[^#]+$
+          example: >-
+            https://nom.cdn.web-platform.c.s.newstore.net/__remotes/team-mobile-platform/associate-app-config-nom/demo-app/external_api.html
+        title:
+          type: string
+          description: The title shown above the webview in the app
+          example: Customer details
+        caption:
+          type: string
+          description: >-
+            The caption shown on the button or menu item which triggers the
+            webview
+          example: Show customer details
+        identity_provider:
+          type:
+            - string
+            - 'null'
+          description: >-
+            Name of the identity provider which will be used to provide an
+            external identity for the webview. This needs to match the name
+            provided in the associate app config api.
+        managed:
+          type:
+            - boolean
+            - 'null'
+          description: Whether this customization is externally managed or not.
+        meta:
+          type:
+            - object
+            - 'null'
+          description: Metadata that can be used in the specific customization type.
+    textInput:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - accessor
+        - type
+      properties:
+        id:
+          type: string
+        accessor:
+          description: path to the correct data in the slot context
+          type: string
+        label:
+          type: string
+        type:
+          enum:
+            - textInput
+        is_required:
+          type: boolean
+        validation:
+          type: object
+          properties:
+            regex:
+              type: string
+            max_length:
+              type:
+                - integer
+                - 'null'
+            min_length:
+              type:
+                - integer
+                - 'null'
+      example:
+        id: 25358918-b824-48e4-a506-67a658eff789
+        accessor: address_line_1
+        label: Address line 1
+        type: textInput
+        is_required: false
+        validation:
+          max_length: 200
+    singleSelect:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - accessor
+        - type
+        - options
+      properties:
+        id:
+          type: string
+        accessor:
+          type: string
+        label:
+          type: string
+        type:
+          enum:
+            - singleSelect
+        options:
+          type: array
+          items:
+            type: string
+    switchInput:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - accessor
+        - type
+      properties:
+        id:
+          type: string
+        accessor:
+          type: string
+        description:
+          type: string
+        label:
+          type: string
+        is_required:
+          type: boolean
+        type:
+          enum:
+            - switchInput
+        link:
+          type: string
+    text:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - accessor
+        - type
+        - label
+      properties:
+        id:
+          type: string
+        accessor:
+          type: string
+        label:
+          type: string
+        type:
+          enum:
+            - text
+    datePicker:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - accessor
+        - type
+        - label
+        - mode
+        - format
+      properties:
+        id:
+          type: string
+        accessor:
+          type: string
+        label:
+          type: string
+        is_required:
+          type: boolean
+        type:
+          enum:
+            - datePicker
+        mode:
+          enum:
+            - full
+            - year
+            - month
+            - day
+            - month-day
+            - year-month
+        format:
+          type: string
+          description: >-
+            date format like `yyyy-MM-dd`, `yyyy-MM` or `dd.MM.yyyy`. Detailed
+            description: https://date-fns.org/docs/format
+    widget:
+      $id: widget.json
+      type: object
+      required:
+        - label
+        - enabled
+        - slot
+        - type
+        - components
+      additionalProperties: false
+      properties:
+        label:
+          type: string
+        enabled:
+          type: boolean
+        slot:
+          type: string
+          example: customer_profile_extended_attributes
+        type:
+          enum:
+            - widget
+        components:
+          type: array
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/textInput'
+              - $ref: '#/components/schemas/singleSelect'
+              - $ref: '#/components/schemas/switchInput'
+              - $ref: '#/components/schemas/text'
+              - $ref: '#/components/schemas/datePicker'
+    list-customizations:
+      type: object
+      additionalProperties: false
+      properties:
+        customizations:
+          type: array
+          description: Array containing customizations
+          items:
+            anyOf:
+              - allOf:
+                  - title: deeplink
+                  - $ref: '#/components/schemas/add-id'
+                  - $ref: '#/components/schemas/deeplink'
+              - allOf:
+                  - title: webview
+                  - $ref: '#/components/schemas/add-id'
+                  - $ref: '#/components/schemas/webview'
+              - allOf:
+                  - title: widget
+                  - $ref: '#/components/schemas/add-id'
+                  - $ref: '#/components/schemas/widget'
+      definitions:
+        add-id:
+          required:
+            - id
+          type: object
+          properties:
+            id:
+              type: string
+    customization:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/deeplink'
+        - $ref: '#/components/schemas/webview'
+        - $ref: '#/components/schemas/widget'

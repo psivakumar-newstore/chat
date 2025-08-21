@@ -1,0 +1,657 @@
+openapi: 3.1.0
+info:
+  title: Availabilities Export API
+  version: 1.0.0
+  x-audience: external-public
+  x-api-id: availabilities-export-062023
+  description: >
+    Represents the available to promise (ATP) quantity for products.
+
+
+    ATP is calculated by subtracting the sum of all allocations, reservations,
+    and safety
+
+    stock quantity, from the stock on hand. At NewStore, ATP is also the sum of
+    the
+
+    current ATP and future ATP.
+
+
+    Use this resource to perform a global ATP export for all fulfillment
+    locations, or export ATP for a channel
+
+    (a group of fulfillment locations). The exported ATP for a channel is the
+    combined ATP of all fulfillment
+
+    locations in the channel.
+
+
+    **Notes**:
+
+
+    - Each ATP export includes the external identifiers for the referenced
+    product ID.
+
+    - If no value is provided for the `last_updated_at` property during the
+      [export](#operation/get-atp-for-channel),
+      the ATP is recalculated from the current ATP information and exported.
+    - If the ATP for a product has not changed in any location after the
+    `last_updated_at` value
+      specified during the export, no results are returned.
+    - For an [ATP export for a channel](#operation/start-channel-atp-export), if
+    the
+      ATP for a product has changed in a location after the `last_updated_at` value specified
+      during the export, the updated ATP of the whole channel is exported, and not just the
+      updated ATP of the location. See the following example.
+    - The `last_updated_at` value **is not a timestamp**. Instead, it is an
+    increasing integer number which changes with every ATP update in the
+    NewStore platform.
+
+
+    For example, if the ATP for a product is `3` in *Store A* and `4` in *Store
+    B*, the combined ATP exported by
+
+    the resource is `7`. If ATP for *Store A* changes to `0` and the ATP for
+    *Store B* stays the same, the exported
+
+    ATP is `4`, and not `0`.
+
+
+    This resource contains the following sub-resources:
+
+
+    - `bulk`: Represents an ATP export job for the channel.
+
+    - `groups`: Represents a group of fulfillment locations for which you can
+    start an export ATP job.
+
+
+    For example, a group of fulfillment locations can represent a region or a
+    channel in your business.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+security:
+  - newStoreAccessToken: []
+paths:
+  /availabilities/bulk:
+    post:
+      summary: Start global ATP export
+      operationId: createGlobalAtpExport
+      requestBody:
+        content:
+          application/json:
+            example:
+              last_updated_at: 59837741
+            schema:
+              $ref: '#/components/schemas/post_availabilities_export'
+        required: true
+      responses:
+        '201':
+          description: >
+            Success. The response contains the identifier of the created bulk
+            export job.
+
+
+            To retrieve the exported ATP, use the
+
+            [Get ATP for channel](#operation/get-atp-for-channel) method.
+          content:
+            application/json:
+              example:
+                availability_export_id: 34vj3g4i325k23hkrnekrnkq
+              schema:
+                $ref: '#/components/schemas/post_availabilities_export_response'
+        '400':
+          description: The body of request is invalid.
+        '500':
+          description: An error occurred on the server.
+        default:
+          description: Unexpected Error
+      description: |
+        Starts an export of the ATP quantities in all fulfillment locations.
+
+        To retrieve the exported ATP, use the
+        [Get ATP for channel](#operation/get-atp-for-channel) method.
+  /availabilities/bulk/{group_name_or_availability_export_id}:
+    post:
+      summary: Start ATP export for channel
+      operationId: createChannelAtpExport
+      requestBody:
+        content:
+          application/json:
+            example:
+              last_updated_at: 59837741
+            schema:
+              $ref: '#/components/schemas/post_availabilities_export'
+        required: true
+      responses:
+        '201':
+          description: >
+            Success. The response contains the `availability_export_id` for the
+            created bulk export job.
+
+
+            To retrieve the exported ATP, specify the `availability_export_id`
+            in your request to
+
+            [Get ATP by channel](#operation/get-atp-for-channel).
+          content:
+            application/json:
+              example:
+                availability_export_id: 34vj3g4i325k23hkrnekrnkq
+              schema:
+                $ref: '#/components/schemas/post_availabilities_export_response'
+        '400':
+          description: The request body is invalid.
+        '404':
+          description: The requested group in {group_name} was not found.
+        '500':
+          description: An error occurred on the server.
+        default:
+          description: Unexpected Error
+      description: |
+        Starts an export job of the ATP, for a group of fulfillment locations.
+        To retrieve the exported ATP, use the
+        [Get ATP for channel](#operation/get-atp-for-channel) method.
+      parameters:
+        - name: group_name_or_availability_export_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            The identifier for the fulfillment location group for which you want
+            to start an
+
+            ATP export. See [Create a fulfillment location
+            group](#operation/create-fulfillment-location-group).
+    get:
+      summary: Get ATP for channel
+      operationId: showAtpForChannel
+      responses:
+        '200':
+          description: The response body contains details of the exported ATP.
+          content:
+            application/json:
+              example:
+                state: processing
+                received_at: '1972-02-17T19:10:54.203Z'
+                last_updated_at: 59837741
+                link: >-
+                  https://www.example.com/availability_export-9ab5dd34-0d76-4b25-b13f-f246e5da1f75.zip
+              schema:
+                $ref: >-
+                  #/components/schemas/get_availabilities_export_result_by_availability_export_id_response
+        '404':
+          description: |
+            The provided `availability_export_id` does not exist.
+        default:
+          description: Unexpected Error
+      description: >
+        Returns the result of the ATP export job for the provided
+        `availability_export_id`.
+
+
+        As part of the response payload, the `link` property contains a secure
+        link that points to
+
+        a zip file containing the availability data.
+
+        The zip file contains a file named `availabilty.json`, which contains
+        the availability data.
+
+
+        **Important:** Copying or pasting the link may damage it. The link to
+        the archive expires after a week.
+
+
+        For a [global ATP export](#operation/start-global-atp-export), see the
+
+        [schema](https://pub-b97923717dc242e893f329de9e610502.r2.dev/non-grouped_atp_export_zipfile.json)
+
+        for the payload of the `availabilty.json` file.
+
+
+        For an [ATP export for a channel](#operation/start-channel-atp-export),
+        the
+
+        [schema](https://pub-b97923717dc242e893f329de9e610502.r2.dev/grouped_atp_export_zipfile.json)
+
+        of the `availabilty.json` file is similar to that of a global ATP
+        export, but also includes the
+
+        `last_updated_at` and `group_revision` properties.
+
+
+        The zip file has a naming pattern of `availability_export-<export_id>`,
+        where `<export_id>` refers
+
+        to the unique ID corresponding to the ATP export request that produced
+        the zip file.
+      parameters:
+        - name: group_name_or_availability_export_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: >
+            The identifier for the bulk export job contained in the response to
+            the
+
+            [Start global ATP export](#operation/start-global-atp-export) or the
+
+            [Start ATP export for channel](#operation/start-channel-atp-export)
+            methods.
+  /availabilities/groups:
+    get:
+      summary: List of fulfillment location groups
+      operationId: showFulfillmentLocationGroups
+      responses:
+        '200':
+          description: Success. The response contains the identifier for the group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_export_availability_groups_response'
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/problem+json:
+              example:
+                error_code: unexpected_error
+                message: Internal error has occurred.
+                request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error'
+        default:
+          description: Unexpected Error
+      description: >-
+        Returns all fulfillment location groups for which you can start an ATP
+        export.
+    post:
+      summary: Create fulfillment location group
+      operationId: createFulfillmentLocationGroup
+      requestBody:
+        content:
+          application/json:
+            example:
+              group_name: group_name
+              fulfillment_nodes:
+                - FulfillmentNode01
+                - FulfillmentNode02
+            schema:
+              $ref: '#/components/schemas/fulfillment_node_group'
+        required: true
+      responses:
+        '200':
+          description: |
+            Success.
+            Use the `group_name` contained in the response, in your request to
+            [Start ATP export by channel](#operation/start-channel-atp-export).
+          content:
+            application/json:
+              example:
+                group_name: group_name
+                fulfillment_nodes:
+                  - FulfillmentNode01
+                  - FulfillmentNode02
+              schema:
+                $ref: '#/components/schemas/fulfillment_node_group'
+        '400':
+          description: The request body is invalid.
+          content:
+            application/problem+json:
+              example:
+                messages:
+                  - group_name is required
+                  - fulfillment_nodes is required
+                request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/post_availabilities_groups_error_response'
+        '409':
+          description: A group with this name already exists.
+          content:
+            application/problem+json:
+              example:
+                error_code: fulfillment_node_group_already_exists
+                message: Fulfillment node group 'group_name' already exists.
+                request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/post_conflict_error_response'
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/problem+json:
+              example:
+                error_code: unexpected_error
+                message: Internal error has occurred.
+                request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error'
+        default:
+          description: Unexpected Error
+      description: |
+        Creates a group of fulfillment locations.
+
+        Use the `group_name` contained in the response, in your request to
+        [Start ATP export by channel](#operation/start-channel-atp-export).
+  /availabilities/groups/{group_name}:
+    put:
+      summary: Update fulfillment location group
+      operationId: replaceFulfillmentLocationGroup
+      requestBody:
+        content:
+          application/json:
+            example:
+              group_name: group_name
+              fulfillment_nodes:
+                - FulfillmentNode01
+                - FulfillmentNode02
+            schema:
+              $ref: '#/components/schemas/fulfillment_nodes'
+        required: true
+      responses:
+        '200':
+          description: |
+            Success.
+            The response contains the group with the updates.
+          content:
+            application/json:
+              example:
+                group_name: group_name
+                fulfillment_nodes:
+                  - FulfillmentNode01
+                  - FulfillmentNode02
+              schema:
+                $ref: '#/components/schemas/fulfillment_node_group'
+        '400':
+          description: The request body is invalid.
+          content:
+            application/problem+json:
+              example:
+                messages:
+                  - group_name is required
+                  - fulfillment_nodes is required
+                request_id: '123.4567'
+              schema:
+                $ref: >-
+                  #/components/schemas/patch_availabilities_groups_error_response
+        '404':
+          description: The requested group in {group_name} was not found.
+          content:
+            application/problem+json:
+              example:
+                error_code: fulfillment_node_group_not_found
+                message: Fulfillment node group 'group_name' was not found.
+                request_id: '123.4567'
+              schema:
+                $ref: >-
+                  #/components/schemas/patch_availabilities_groups_not_found_error_response
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/problem+json:
+              example:
+                error_code: unexpected_error
+                message: Internal error has occurred.
+                request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error'
+        default:
+          description: Unexpected Error
+      description: |
+        Updates the details of the specified fulfillment location group.
+    delete:
+      summary: Delete fulfillment location group
+      operationId: destroyFulfillmentLocationGroup
+      responses:
+        '200':
+          description: Success.
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/problem+json:
+              example:
+                error_code: unexpected_error
+                message: Internal error has occurred.
+                request_id: '123.4567'
+              schema:
+                $ref: '#/components/schemas/error'
+        default:
+          description: Unexpected Error
+      description: |
+        Deletes the specified fulfillment location group.
+    parameters:
+      - name: group_name
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the fulfillment location group.
+
+          Use the [List fulfillment location groups
+          method](#operation/list-fulfillment-location-groups)
+
+          to retrieve the ID.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    post_availabilities_export:
+      title: Post Availabilities Export
+      description: POST schema for starting availabilities export
+      type: object
+      properties:
+        last_updated_at:
+          type:
+            - integer
+            - 'null'
+          description: >-
+            A full availability export is performed when this value is not
+            provided. When this value is provided the export will not contain
+            availabilities that were updated before the provided value. You can
+            use the value of the 'last_updated_at' property of the response
+            provided by the /availabilities/bulk GET method.
+    post_availabilities_export_response:
+      title: Post Availabilities Export
+      description: POST schema for answer of starting availabilities export
+      type: object
+      properties:
+        availability_export_id:
+          type: string
+          description: >-
+            ID of the created export job. Use this ID in GET request to get
+            status of the export and export result
+    get_availabilities_export_result_by_availability_export_id_response:
+      title: Exported ATP response
+      description: Schema for the response sent when ATP export data is requested.
+      type: object
+      required:
+        - state
+        - received_at
+      properties:
+        state:
+          type: string
+          description: The state of the export job
+          enum:
+            - received
+            - processing
+            - failed
+            - finished
+        failure_reason:
+          type: string
+          description: The reason why an export job failed.
+          minLength: 1
+        received_at:
+          type: string
+          format: date-time
+          description: >-
+            The UTC timestamp generated by the NewStore system that indicates
+            when the corresponding export request was received.
+        completed_at:
+          type: string
+          format: date-time
+          description: >-
+            The UTC timestamp that indicates when the corresponding export
+            request was completed.
+        last_updated_at:
+          type: integer
+          description: >-
+            A monotonically increasing integer that marks the highest update
+            sequence number of all data present in the export. In cases when
+            there are no ATP updates in the export, this value is set to zero.
+            This value can be used in the 'last_updated_at' property in a
+            successive POST body to /availabilities/bulk endpoint to limit the
+            export data to contain only availabilities that were updated after
+            the provided value.
+        link:
+          type: string
+          description: >-
+            Secure link to the uploaded archive containing availability data.
+            WARNING - Copying or pasting this link may damage it. The link to
+            the archive expires after a week. The link points to a zip file
+            containing a file named `availabilty.json`. The zip file has a
+            naming pattern of 'availability_export-<export_id>', where
+            '<export_id>' refers to the unique ID corresponding to the ATP
+            export request that produced the zip file.
+          format: uri
+    fulfillment_node_group:
+      title: Fulfillment location group
+      description: Schema to group fulfilment nodes
+      type: object
+      required:
+        - group_name
+        - fulfillment_nodes
+      properties:
+        group_name:
+          type: string
+          description: >-
+            The identifier for the fulfillment location group that can be used
+            to request availabilities for a group of fulfilment nodes.
+          pattern: ^[-_0-9a-zA-Z]+$
+        fulfillment_nodes:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            description: >-
+              List of fulfillment node identifiers for the locations included in
+              this group.
+    get_export_availability_groups_response:
+      title: Fulfillment location groups response
+      description: >-
+        Schema for the response sent when fulfillment location groups are
+        requested.
+      type: object
+      required:
+        - availability_groups
+      properties:
+        availability_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/fulfillment_node_group'
+    error:
+      type: object
+      required:
+        - error_code
+        - message
+        - request_id
+      properties:
+        error_code:
+          description: A code describing the error.
+          type: string
+          minLength: 1
+        message:
+          description: A human-readable error message.
+          type: string
+        request_id:
+          description: >-
+            Unique request identifier which caused the error. Can be used to
+            further debug the root causes of this error.
+          type: string
+    post_availabilities_groups_error_response:
+      type: object
+      title: Error Response
+      description: Error response sent for bad requests.
+      required:
+        - messages
+      properties:
+        error_code:
+          type: string
+          description: Custom error code which gives you more details about the error.
+        messages:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            description: List of errors based on request.
+        request_id:
+          type: string
+    post_conflict_error_response:
+      type: object
+      title: Error Response for conflict
+      description: Error response send if a request failed due to an conflict error.
+      required:
+        - message
+      properties:
+        error_code:
+          type: string
+          description: Custom error code which gives you more details about the error.
+        message:
+          type: string
+          description: Contains the reason of the error.
+        request_id:
+          type: string
+    fulfillment_nodes:
+      title: Fulfillment nodes
+      description: Schema of fulfilment nodes
+      type: object
+      required:
+        - fulfillment_nodes
+      properties:
+        fulfillment_nodes:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            description: List of fulfillment node identifiers.
+    patch_availabilities_groups_error_response:
+      type: object
+      title: Error Response
+      description: Error response sent for bad requests.
+      required:
+        - messages
+      properties:
+        error_code:
+          type: string
+          description: Custom error code which gives you more details about the error.
+        messages:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            description: List of errors based on request.
+        request_id:
+          type: string
+    patch_availabilities_groups_not_found_error_response:
+      type: object
+      title: Error Response when Fulfillment Node Group is not found
+      description: Error response sent if a request failed due to a not found error.
+      required:
+        - message
+      properties:
+        error_code:
+          type: string
+          description: Custom error code which gives you more details about the error.
+        message:
+          type: string
+          description: Contains the reason of the error.
+        request_id:
+          type: string

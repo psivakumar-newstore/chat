@@ -1,0 +1,1260 @@
+openapi: 3.0.0
+info:
+  title: Shipping Provider Webhooks
+  version: v0
+  contact:
+    name: team delivery
+  description: >
+    Manage deliveries or shipments in the NewStore platform using these
+    webhooks.
+
+
+    To learn how NewStore integrates with a shipping provider, see the
+    [guide](/developers/guides/shipment).
+servers:
+  - url: https://example.com/newstore_api/v0
+tags:
+  - name: Shipments
+    description: >
+      Represents the shipment(s) created once an order with delivery is being
+      placed.
+
+      Depending on the provider, a shipment is generally pre-booked (also called
+      a delivery promise),
+
+      then booked, and finally tracked.
+
+
+      As an integrator, implement the methods of this resource to integrate a
+      shipping provider
+
+      such as UPS with NewStore Cloud.
+
+
+      The integration of a shipment provider also uses the [Shipping
+      offers](#tag/Shipping-offers) resource. For more
+
+      information about the integration, see [Integrating a shipping
+      provider](/developers/guides/shipment).
+
+
+      **Note:** The validity of a shipping offer token can vary based on the
+      shipping provider and
+
+      shipping offer. For `in-store pickup` orders, a shipping offer token does
+      not expire.
+  - name: Shipping offers
+    description: >
+      Represents the shipping offers presented to the customer during the
+      checkout step, for example 
+
+      `Standard delivery` or `Next-day delivery`.
+
+
+      As an integrator, implement the methods of this resource to integrate a
+      shipping provider
+
+      with NewStore Omnichannel Cloud.
+
+
+      The integration of a shipment provider also uses the
+      [Shipments](#tag/Shipments) resource. For more
+
+      information about the integration, see [Integrating a shipping
+      provider](/developers/guides/shipment).
+
+
+      **Note:** The validity of a shipping offer token can vary based on the
+      shipping provider
+
+      and shipping offer. For `in-store pickup` orders, a shipping offer token
+      does not expire.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: apiKey
+      in: header
+      name: Authorization
+paths:
+  /shipments:
+    post:
+      tags:
+        - Shipments
+      responses:
+        '201':
+          description: The shipment was successfully booked.
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Response from an adapter after NewStore sent a shipment
+                  booking request.
+                type: object
+                anyOf:
+                  - required:
+                      - tracking_code
+                      - label_url
+                  - required:
+                      - return_tracking_code
+                      - return_label_url
+                properties:
+                  tracking_code:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      Tracking code of the shipment. The tracking code is used
+                      to identify the shipment. You can also use this property
+                      to track the return if only the return was requested from
+                      this shipping provider ('booking_method' property of the
+                      booking request).
+                  label_url:
+                    type: string
+                    description: >-
+                      URL of the shipping label. Use this URL to retrieve and
+                      print the label. You can also use this property to point
+                      to the return label if only the return was requested from
+                      this shipping provider ('booking_method' property of the
+                      booking request).
+                  tracking_url:
+                    type: string
+                    description: >-
+                      Tracking URL pointing to the shipment provider's website,
+                      displaying live information about the shipment's location.
+                      You also can use this property to point to the return's
+                      location if only the return was requested from this
+                      shipping provider ('booking_method' property of the
+                      booking request).
+                  commercial_invoice_url:
+                    type: string
+                    description: >-
+                      URL to the commercial invoice document for international
+                      shipments.
+                  offer:
+                    type: string
+                    description: >-
+                      A serialized value used to identify the Booked Shipment
+                      directly. NewStore does NOT inspect this value and will
+                      only send it back to the adapter when needed. Required for
+                      ScanForms and Shipment Cancellation. The value must be a
+                      direct reference to the booked shipment. As an example,
+                      Easypost uses a shipment id and rate id to identify the
+                      booked shipment. The offer value here should then contain
+                      such value. For other carriers, please adapt and use an
+                      identifier that allows to directly reference the shipment.
+                      If the tracking code is all you have, you may use it,
+                      however it might not be optimal.
+                  cost:
+                    description: >-
+                      Estimate of the cost of the delivery (and potential
+                      return) charged by the shipping provider.
+                    type: object
+                    required:
+                      - price
+                      - currency
+                    properties:
+                      price:
+                        description: >-
+                          Monetary value for shipping (and potential return) and
+                          handling. Must be an integer or float.
+                        type: number
+                      currency:
+                        description: >-
+                          Currency of the price of this shipment (and potential
+                          return), in ISO 4217 alphabetic code.
+                        type: string
+                        maxLength: 3
+                        minLength: 3
+                  return_tracking_code:
+                    type: string
+                    description: >-
+                      The tracking code of the return. Use this property only if
+                      the shipping and the return of the package are requested
+                      to the same shipping provider ('booking_method' property
+                      of the booking request), otherwise, use the
+                      'tracking_code' property.
+                  return_label_url:
+                    type: string
+                    description: >-
+                      URL of the return label. Use this URL to retrieve and
+                      print the label. Use this property only if the shipping
+                      and the return of the package are requested to the same
+                      shipping provider ('booking_method' property of the
+                      booking request), otherwise, use the 'label_url' property.
+                  return_tracking_url:
+                    type: string
+                    description: >-
+                      Tracking URL pointing to the return provider's website,
+                      displaying live information about the return's location.
+                      Use this property only if the shipping and the return of
+                      the package are requested to the same shipping provider
+                      ('booking_method' property of the booking request),
+                      otherwise, use the 'tracking_url' property.
+                  return_commercial_invoice_url:
+                    type: string
+                    description: >-
+                      URL to the commercial invoice document for international
+                      shipments.
+                  return_offer:
+                    type: string
+                    description: Same as offer, but for return shipments.
+                  return_cost:
+                    description: >-
+                      Estimate of the cost of the return delivery (and potential
+                      return) charged by the shipping provider.
+                    type: object
+                    required:
+                      - price
+                      - currency
+                    properties:
+                      price:
+                        description: >-
+                          Monetary value for shipping (and potential return) and
+                          handling. Must be an integer or float.
+                        type: number
+                      currency:
+                        description: >-
+                          Currency of the price of this shipment (and potential
+                          return), in ISO 4217 alphabetic code.
+                        type: string
+                        maxLength: 3
+                        minLength: 3
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error returned from the adapter.
+                description: Error returned from the adapter.
+                required:
+                  - data
+                  - message
+                  - type
+                properties:
+                  type:
+                    description: >-
+                      List of possible error types in the payload received from
+                      the adapter.
+                    type: string
+                    enum:
+                      - carrier_unavailable
+                      - customs_error
+                      - delivery_validation_error
+                      - invalid_delivery_window
+                      - label_creation_pending
+                      - sender_address_error
+                      - sender_address_not_serviced
+                      - shipping_address_error
+                      - shipping_address_not_serviced
+                      - timeout
+                      - unexpected_error
+                      - carrier_account_configuration_error
+                  message:
+                    description: The error reason.
+                    type: string
+                    nullable: true
+                  data:
+                    description: Object containing the error information.
+                    anyOf:
+                      - type: object
+                        nullable: true
+                      - description: >-
+                          Error raised when an ITN property is missing or wrong,
+                          inside a request sent to the adapter.
+                        type: object
+                        required:
+                          - reason
+                        properties:
+                          reason:
+                            description: >-
+                              Identifies if the error is related to a missing
+                              ITN or a wrong ITN.
+                            type: string
+                            enum:
+                              - missing_itn
+                              - wrong_itn
+                      - description: >-
+                          Error raised when the data sent to the adapter is
+                          incorrect. Typical errors include: wrong format, data
+                          not found, missing parameters, or invalid data.
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties:
+                            type: string
+      description: Books a shipment based on an offer received by the provider.
+      summary: Book shipment
+      operationId: book-shipment
+      requestBody:
+        content:
+          application/json:
+            example:
+              rate: FEDEX_GROUND
+              demand_location_id: US01
+              fulfillment_node_id: US02
+              carrier_code: FEDEX
+              external_order_id: '981475723'
+              booking_method: shipping_and_return
+              sender_address:
+                first_name: John
+                last_name: Doe
+                phone: 202-555-0186
+                country_code: US
+                city: New York
+                zip_code: '10001'
+                address_line_1: 2635 Simons Hollow Road
+                state: New York
+              shipping_address:
+                first_name: James
+                last_name: Navarrete
+                phone: 520-466-2640
+                country_code: US
+                city: Arizona City
+                zip_code: '85223'
+                address_line_1: 2035 Parkway Drive
+                state: AZ
+              items:
+                - identifier:
+                    EPC: 32WE4335
+                - identifier:
+                    EPC: 473UC75279
+                  price:
+                    amount: 15.4
+                    currency: USD
+                  weight:
+                    amount: 350
+                    unit: g
+            schema:
+              title: >-
+                Request sent to a shipping adapter to book a time slot offered
+                by a shipping provider.
+              type: object
+              required:
+                - rate
+                - carrier_code
+                - external_order_id
+                - booking_method
+                - sender_address
+                - shipping_address
+                - items
+              properties:
+                offer:
+                  type: string
+                  minLength: 1
+                  description: >-
+                    The serialized value used to identify the Option to be
+                    booked directly. It is the same value as returned from
+                    /shipping_offers endpoint. Your implementation must be able
+                    to use this value as it is, handling any decoding or parsing
+                    if necessary.
+                rate:
+                  type: string
+                  maxLength: 256
+                  description: >-
+                    Identifier of the rate, examples are 'FEDEX_GROUND' or
+                    'DHL_WUNSCHZEIT'.
+                carrier_code:
+                  type: string
+                  maxLength: 256
+                  description: >-
+                    Identifier of the shipping carrier, examples are 'FEDEX' or
+                    'DELIV'.
+                external_order_id:
+                  type: string
+                  minLength: 1
+                  description: External identifier of the order to be shipped.
+                booking_method:
+                  type: string
+                  description: Type of shipments to book.
+                  enum:
+                    - only_shipping
+                    - only_return
+                    - shipping_and_return
+                sender_address:
+                  description: Address of the sender.
+                  type: object
+                  required:
+                    - first_name
+                    - last_name
+                    - country_code
+                    - city
+                    - address_line_1
+                    - phone
+                  allOf:
+                    - description: Base address object
+                      type: object
+                      properties:
+                        country_code:
+                          description: >-
+                            Country code for this address. Must be <a
+                            href='http://www.iso.org/iso/country_codes.htm'>ISO-3166
+                            reference</a>
+                          type: string
+                          minLength: 2
+                          maxLength: 2
+                        city:
+                          type: string
+                          maxLength: 256
+                        company:
+                          type: string
+                          maxLength: 256
+                        first_name:
+                          type: string
+                          maxLength: 256
+                        last_name:
+                          type: string
+                          maxLength: 256
+                        zip_code:
+                          type: string
+                          maxLength: 32
+                        state:
+                          type: string
+                        address_line_1:
+                          type: string
+                          maxLength: 256
+                        address_line_2:
+                          type: string
+                          maxLength: 256
+                        phone:
+                          type: string
+                          maxLength: 256
+                    - properties:
+                        email:
+                          type: string
+                          description: Email address.
+                          maxLength: 256
+                        phone:
+                          type: string
+                          description: Phone number.
+                          maxLength: 256
+                shipping_address:
+                  description: Address of the consumer.
+                  type: object
+                  required:
+                    - first_name
+                    - last_name
+                    - country_code
+                    - city
+                    - address_line_1
+                    - phone
+                  allOf:
+                    - description: Base address object
+                      type: object
+                      properties:
+                        country_code:
+                          description: >-
+                            Country code for this address. Must be <a
+                            href='http://www.iso.org/iso/country_codes.htm'>ISO-3166
+                            reference</a>
+                          type: string
+                          minLength: 2
+                          maxLength: 2
+                        city:
+                          type: string
+                          maxLength: 256
+                        company:
+                          type: string
+                          maxLength: 256
+                        first_name:
+                          type: string
+                          maxLength: 256
+                        last_name:
+                          type: string
+                          maxLength: 256
+                        zip_code:
+                          type: string
+                          maxLength: 32
+                        state:
+                          type: string
+                        address_line_1:
+                          type: string
+                          maxLength: 256
+                        address_line_2:
+                          type: string
+                          maxLength: 256
+                        phone:
+                          type: string
+                          maxLength: 256
+                    - properties:
+                        email:
+                          type: string
+                          description: Email address.
+                          maxLength: 256
+                        phone:
+                          type: string
+                          description: Phone number.
+                          maxLength: 256
+                package_option:
+                  description: Specifications of the package.
+                  type: object
+                  required:
+                    - weight
+                  properties:
+                    weight:
+                      type: object
+                      required:
+                        - amount
+                        - unit
+                      properties:
+                        amount:
+                          type: number
+                          minimum: 0
+                          exclusiveMinimum: true
+                          description: >-
+                            Shipping weight of the package without its content.
+                            Integer or float.
+                        unit:
+                          type: string
+                          enum:
+                            - lb
+                            - oz
+                            - kg
+                            - g
+                          description: >-
+                            Unit of the shipping weight. It is your
+                            responsibility to convert values if necessary: if a
+                            carrier only uses kilograms, then you must convert
+                            values from this unit.
+                    dimensions:
+                      type: object
+                      required:
+                        - length
+                        - width
+                        - height
+                        - unit
+                      properties:
+                        length:
+                          type: number
+                          minimum: 0
+                          exclusiveMinimum: true
+                          description: Length of the package. Integer or float.
+                        width:
+                          type: number
+                          minimum: 0
+                          exclusiveMinimum: true
+                          description: Width of the package. Integer or float.
+                        height:
+                          type: number
+                          minimum: 0
+                          exclusiveMinimum: true
+                          description: Height of the package. Integer or float.
+                        unit:
+                          type: string
+                          description: >-
+                            Unit of all the dimensions of the package. It is
+                            your responsibility to convert values if necessary:
+                            if a carrier only uses centimeters, then you must
+                            convert values from this unit.
+                          enum:
+                            - mm
+                            - cm
+                            - m
+                            - in
+                            - ft
+                items:
+                  type: array
+                  description: >-
+                    List of the identifiers of the products contained in the
+                    package.
+                  items:
+                    description: Description of the item.
+                    type: object
+                    properties:
+                      customs_info:
+                        type: object
+                        required:
+                          - description
+                          - hs_number
+                          - origin_country
+                        properties:
+                          description:
+                            type: string
+                            description: >-
+                              Short product description for a customs
+                              declaration.
+                          hs_number:
+                            type: string
+                            description: >-
+                              Harmonized System number used by customs
+                              authorities to identify products for applicable
+                              duties and taxes. The first 6 digits of the
+                              hts_number.
+                            maxLength: 6
+                            minLength: 6
+                          origin_country:
+                            type: string
+                            description: >-
+                              Country where the product has been manufactured,
+                              examples are 'US' or 'DE'.
+                            minLength: 2
+                          hts_number:
+                            type: string
+                            description: >-
+                              Harmonized Tariff System number used by customs
+                              authorities to identify products for applicable
+                              duties and taxes.
+                            maxLength: 10
+                            minLength: 10
+                      identifier:
+                        description: SKU, EAN, or EPC of the item being shipped.
+                        type: object
+                        properties:
+                          product_id:
+                            type: string
+                            description: Identifier of the product.
+                        additionalProperties:
+                          type: string
+                          description: 'Additional external identifiers like: SKU 123'
+                      price:
+                        type: object
+                        required:
+                          - amount
+                          - currency
+                        properties:
+                          amount:
+                            type: number
+                            minimum: 0
+                            description: >-
+                              Monetary value of one unit of the item. Integer or
+                              float.
+                          currency:
+                            type: string
+                            minLength: 3
+                            maxLength: 3
+                            description: Currency of the value in ISO-4217 alphabetic code.
+                      weight:
+                        type: object
+                        required:
+                          - amount
+                          - unit
+                        properties:
+                          amount:
+                            type: number
+                            minimum: 0
+                            description: Weight of one unit of the item. Integer or float.
+                          unit:
+                            type: string
+                            enum:
+                              - lb
+                              - oz
+                              - kg
+                              - g
+                            description: >-
+                              Unit in which the weight is given. It is your
+                              responsibility to convert values if necessary: if
+                              a carrier only uses kilograms, then you must
+                              convert values from this unit.
+                      dimensions:
+                        type: object
+                        required:
+                          - length
+                          - width
+                          - height
+                          - unit
+                        properties:
+                          height:
+                            type: number
+                            minimum: 0
+                            exclusiveMinimum: true
+                            description: Height of the product. Integer or float.
+                          length:
+                            type: number
+                            minimum: 0
+                            exclusiveMinimum: true
+                            description: Length of the product. Integer or float.
+                          unit:
+                            type: string
+                            description: >-
+                              Unit of all the dimensions of the product. It is
+                              your responsibility to convert values if
+                              necessary: if a carrier only uses centimeters,
+                              then you must convert values from this unit.
+                            enum:
+                              - mm
+                              - cm
+                              - m
+                              - in
+                              - ft
+                          width:
+                            type: number
+                            minimum: 0
+                            exclusiveMinimum: true
+                            description: Width of the product. Integer or float.
+                demand_location_id:
+                  type: string
+                  maxLength: 256
+                  description: >-
+                    Represents the location where the order was placed, examples
+                    are 'DC01' or 'US01'.
+                fulfillment_node_id:
+                  type: string
+                  maxLength: 256
+                  description: >-
+                    Represents the location from where the order will be
+                    shipped, examples are 'DC02' or 'US02'.
+                customs_info:
+                  type: object
+                  required:
+                    - customs_signer
+                  properties:
+                    customs_signer:
+                      type: string
+                      description: >-
+                        Name of the person who certifies that the information
+                        provided in the customs form is accurate.
+        required: true
+  /shipments/{tracking_code}/_cancel:
+    post:
+      tags:
+        - Shipments
+      responses:
+        '200':
+          description: >-
+            DEPRECATED: use 204 instead. The shipment was successfully canceled
+            or has already been canceled.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+        '204':
+          description: >-
+            The shipment was successfully canceled or has already been canceled,
+            no response body necessary.
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum:
+                      - delivery_error
+                  message:
+                    type: string
+        '404':
+          description: The provided tracking code could not be found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum:
+                      - delivery_not_found
+        '409':
+          description: Shipment has already been delivered and cannot be canceled.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum:
+                      - already_delivered
+      description: >
+        Cancels a shipment. Canceling a shipment is only possible before it
+        reaches the `in_transit` status.
+
+
+        To retrieve the status of the shipment, use the
+
+        [List shipments
+        method](/api/integration/delivery/delivery_api/#tag/Delivery/operation/list-shipments).
+      summary: Cancel shipment
+      operationId: cancel-shipment
+    parameters:
+      - name: tracking_code
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The tracking code for the delivery/shipment that needs to be
+          cancelled. The tracking code is provided
+
+          by the shipping provider to NewStore Omnichannel Cloud when a shipment
+          is booked.
+  /shipping_offers:
+    post:
+      tags:
+        - Shipping offers
+      responses:
+        '201':
+          description: Successfully created Shipping Offers.
+          content:
+            application/json:
+              schema:
+                title: Shipping options with quotes and delivery estimates.
+                type: array
+                items:
+                  description: Shipping options with quotes and delivery estimates.
+                  type: object
+                  additionalProperties: false
+                  required:
+                    - offer
+                    - provider_rate
+                    - delivery_estimate
+                    - quote
+                  properties:
+                    offer:
+                      type: string
+                      description: >-
+                        A serialized value used to identify the Option directly.
+                        NewStore does NOT inspect this value and will only send
+                        it back to the adapter when needed. Required for
+                        ScanForms and Shipment Cancellation. The value must be a
+                        direct reference to the Option. As an example, Easypost
+                        uses a shipment id and rate id to identify the Option.
+                        The offer value here should then contain such value. For
+                        other carriers, please adapt and use an identifier that
+                        allows to directly reference the Option.
+                    provider_rate:
+                      type: string
+                      maxLength: 256
+                      description: >-
+                        Identifier of the rate, examples are 'FEDEX_GROUND' or
+                        'DHL_WUNSCHZEIT'.
+                    service_level:
+                      type: string
+                      maxLength: 256
+                      description: >-
+                        Identifier of the service level, examples are 'GROUND'
+                        or 'EXPRESS'.
+                    delivery_estimate:
+                      type: object
+                      required:
+                        - starts_at
+                        - ends_at
+                        - expires_at
+                      properties:
+                        starts_at:
+                          type: string
+                          description: >-
+                            The UTC start date-time of the delivery window for
+                            this delivery option: YYYY-MM-DDThh:mm:ss.sssZ
+                          format: date-time
+                        ends_at:
+                          type: string
+                          description: >-
+                            The UTC end date-time of the delivery window for
+                            this delivery option: YYYY-MM-DDThh:mm:ss.sssZ
+                          format: date-time
+                        expires_at:
+                          type: string
+                          format: date-time
+                          description: >-
+                            The UTC date-time when the offer expires:
+                            YYYY-MM-DDThh:mm:ss.sssZ
+                    quote:
+                      description: >-
+                        Estimate of the cost of the delivery charged by the
+                        shipping provider.
+                      type: object
+                      required:
+                        - price
+                        - currency
+                      properties:
+                        price:
+                          description: >-
+                            Monetary value for shipping and handling. Integer or
+                            float.
+                          type: number
+                        currency:
+                          description: >-
+                            Currency of the price of this shipment, in ISO 4217
+                            alphabetic code, examples are 'USD' or 'EUR'.
+                          type: string
+                          maxLength: 3
+                          minLength: 3
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error returned from the adapter.
+                description: Error returned from the adapter.
+                required:
+                  - data
+                  - message
+                  - type
+                properties:
+                  type:
+                    description: >-
+                      List of possible error types in the payload received from
+                      the adapter.
+                    type: string
+                    enum:
+                      - carrier_unavailable
+                      - customs_error
+                      - delivery_validation_error
+                      - invalid_delivery_window
+                      - label_creation_pending
+                      - sender_address_error
+                      - sender_address_not_serviced
+                      - shipping_address_error
+                      - shipping_address_not_serviced
+                      - timeout
+                      - unexpected_error
+                      - carrier_account_configuration_error
+                  message:
+                    description: The error reason.
+                    type: string
+                    nullable: true
+                  data:
+                    description: Object containing the error information.
+                    anyOf:
+                      - type: object
+                        nullable: true
+                      - description: >-
+                          Error raised when an ITN property is missing or wrong,
+                          inside a request sent to the adapter.
+                        type: object
+                        required:
+                          - reason
+                        properties:
+                          reason:
+                            description: >-
+                              Identifies if the error is related to a missing
+                              ITN or a wrong ITN.
+                            type: string
+                            enum:
+                              - missing_itn
+                              - wrong_itn
+                      - description: >-
+                          Error raised when the data sent to the adapter is
+                          incorrect. Typical errors include: wrong format, data
+                          not found, missing parameters, or invalid data.
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties:
+                            type: string
+      description: >
+        Requests shipping offers, including quotes and delivery windows.
+
+
+        **IMPLEMENTATION NOTE:** both `service_level` and `provider_rate` are
+        supposed to be of the same value
+
+        as requested. Although it is permitted to set different values, NewStore
+        does not apply any filtering
+
+        at the moment. **To guarantee that your integration will always be able
+        to generate options in the future,
+
+        please make sure to set those values according to the requested
+        parameters.**
+      summary: Request shipping offers
+      operationId: request-shipping-offers
+      requestBody:
+        content:
+          application/json:
+            example:
+              sender_address:
+                country_code: US
+                city: New York
+                zip_code: '10013'
+                address_line_1: 4139 Rosewood Lanesunt
+                state: New York
+              shipping_address:
+                country_code: US
+                city: New York
+                zip_code: '10001'
+                address_line_1: 2635 Simons Hollow Road
+                state: New York
+              deliverables:
+                - quantity: 1
+                  item:
+                    identifier:
+                      product_id: '123'
+                      sku: '123'
+                - quantity: 1
+                  item:
+                    identifier:
+                      product_id: '123'
+                      sku: '123'
+              ready_by: '2018-03-04T10:29:05Z'
+              service_level: sameday
+              provider_rate: deliv
+            schema:
+              title: Get shipping options
+              type: object
+              required:
+                - sender_address
+                - shipping_address
+                - deliverables
+                - ready_by
+                - provider_rate
+                - service_level
+              properties:
+                customs_info:
+                  type: object
+                  description: >-
+                    used only for international shipments (ex: different
+                    sender/shipping country code, military address...)
+                  required:
+                    - customs_signer
+                  properties:
+                    customs_signer:
+                      type: string
+                      description: >-
+                        A name of the person who is certifying that the
+                        information provided on the customs form is accurate
+                sender_address:
+                  description: Address of the sender.
+                  type: object
+                  required:
+                    - country_code
+                  properties:
+                    country_code:
+                      description: >-
+                        Country code for this address. Must be <a
+                        href='http://www.iso.org/iso/country_codes.htm'>ISO-3166
+                        reference</a>
+                      type: string
+                      minLength: 2
+                      maxLength: 2
+                    city:
+                      type: string
+                      maxLength: 256
+                    company:
+                      type: string
+                      maxLength: 256
+                    first_name:
+                      type: string
+                      maxLength: 256
+                    last_name:
+                      type: string
+                      maxLength: 256
+                    zip_code:
+                      type: string
+                      maxLength: 32
+                    state:
+                      type: string
+                    address_line_1:
+                      type: string
+                      maxLength: 256
+                    address_line_2:
+                      type: string
+                      maxLength: 256
+                    phone:
+                      type: string
+                      maxLength: 256
+                shipping_address:
+                  description: Address of the consumer.
+                  type: object
+                  required:
+                    - country_code
+                  properties:
+                    country_code:
+                      description: >-
+                        Country code for this address. Must be <a
+                        href='http://www.iso.org/iso/country_codes.htm'>ISO-3166
+                        reference</a>
+                      type: string
+                      minLength: 2
+                      maxLength: 2
+                    city:
+                      type: string
+                      maxLength: 256
+                    company:
+                      type: string
+                      maxLength: 256
+                    first_name:
+                      type: string
+                      maxLength: 256
+                    last_name:
+                      type: string
+                      maxLength: 256
+                    zip_code:
+                      type: string
+                      maxLength: 32
+                    state:
+                      type: string
+                    address_line_1:
+                      type: string
+                      maxLength: 256
+                    address_line_2:
+                      type: string
+                      maxLength: 256
+                    phone:
+                      type: string
+                      maxLength: 256
+                deliverables:
+                  type: array
+                  description: >-
+                    List containing information about the products to be
+                    shipped.
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - item
+                      - quantity
+                    properties:
+                      item:
+                        description: Description of the item.
+                        type: object
+                        properties:
+                          customs_info:
+                            type: object
+                            required:
+                              - description
+                              - hs_number
+                              - origin_country
+                            properties:
+                              description:
+                                type: string
+                                description: >-
+                                  Short product description for a customs
+                                  declaration.
+                              hs_number:
+                                type: string
+                                description: >-
+                                  Harmonized System number used by customs
+                                  authorities to identify products for
+                                  applicable duties and taxes. The first 6
+                                  digits of the hts_number.
+                                maxLength: 6
+                                minLength: 6
+                              origin_country:
+                                type: string
+                                description: >-
+                                  Country where the product has been
+                                  manufactured, examples are 'US' or 'DE'.
+                                minLength: 2
+                              hts_number:
+                                type: string
+                                description: >-
+                                  Harmonized Tariff System number used by
+                                  customs authorities to identify products for
+                                  applicable duties and taxes.
+                                maxLength: 10
+                                minLength: 10
+                          identifier:
+                            description: SKU, EAN, or EPC of the item being shipped.
+                            type: object
+                            properties:
+                              product_id:
+                                type: string
+                                description: Identifier of the product.
+                            additionalProperties:
+                              type: string
+                              description: 'Additional external identifiers like: SKU 123'
+                          price:
+                            type: object
+                            required:
+                              - amount
+                              - currency
+                            properties:
+                              amount:
+                                type: number
+                                minimum: 0
+                                description: >-
+                                  Monetary value of one unit of the item.
+                                  Integer or float.
+                              currency:
+                                type: string
+                                minLength: 3
+                                maxLength: 3
+                                description: >-
+                                  Currency of the value in ISO-4217 alphabetic
+                                  code.
+                          weight:
+                            type: object
+                            required:
+                              - amount
+                              - unit
+                            properties:
+                              amount:
+                                type: number
+                                minimum: 0
+                                description: >-
+                                  Weight of one unit of the item. Integer or
+                                  float.
+                              unit:
+                                type: string
+                                enum:
+                                  - lb
+                                  - oz
+                                  - kg
+                                  - g
+                                description: >-
+                                  Unit in which the weight is given. It is your
+                                  responsibility to convert values if necessary:
+                                  if a carrier only uses kilograms, then you
+                                  must convert values from this unit.
+                          dimensions:
+                            type: object
+                            required:
+                              - length
+                              - width
+                              - height
+                              - unit
+                            properties:
+                              height:
+                                type: number
+                                minimum: 0
+                                exclusiveMinimum: true
+                                description: Height of the product. Integer or float.
+                              length:
+                                type: number
+                                minimum: 0
+                                exclusiveMinimum: true
+                                description: Length of the product. Integer or float.
+                              unit:
+                                type: string
+                                description: >-
+                                  Unit of all the dimensions of the product. It
+                                  is your responsibility to convert values if
+                                  necessary: if a carrier only uses centimeters,
+                                  then you must convert values from this unit.
+                                enum:
+                                  - mm
+                                  - cm
+                                  - m
+                                  - in
+                                  - ft
+                              width:
+                                type: number
+                                minimum: 0
+                                exclusiveMinimum: true
+                                description: Width of the product. Integer or float.
+                      quantity:
+                        type: integer
+                        description: Quantity of this item. Integer or float.
+                        minimum: 1
+                fulfillment_node_id:
+                  description: Unique ID representing the pickup location of the shipment.
+                  type: string
+                ready_by:
+                  type: string
+                  description: >-
+                    Estimate of the time when the package becomes ready for
+                    delivery. It considers the Service Level remorse period, the
+                    packing time duration (configuration set on delivery) and
+                    the store's business hours and earliest and latest pickup
+                    times (if defined), to determine the earliest time an order
+                    can be picked up. Use this property's value to filter
+                    shipping offers from the provider to select manageable
+                    delivery time slots.
+                  format: date-time
+                provider_rate:
+                  type: string
+                  maxLength: 256
+                  description: >-
+                    Identifier of the rate, examples are 'FEDEX_GROUND' or
+                    'DHL_WUNSCHZEIT'.
+                service_level:
+                  type: string
+                  maxLength: 256
+                  description: >-
+                    Identifier of the service level, examples are 'SAME DAY' or
+                    'EXPRESS'.
+        required: true

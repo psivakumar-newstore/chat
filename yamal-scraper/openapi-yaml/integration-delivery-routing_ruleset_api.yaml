@@ -1,0 +1,860 @@
+openapi: 3.1.0
+info:
+  title: Routing ruleset API
+  description: |
+    Define routing rules for your business
+  version: v0
+  contact:
+    name: Team Routing
+    email: team-routing@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /routing/ruleset/example:
+    get:
+      operationId: get-routing-rules-example
+      summary: Get routing rules example
+      description: >
+        Retrieves the current 'fulfillment configuration V1' transformed to
+
+        adhere to the 'Routing Rule' V2 format.  It shows the change in
+
+        value-mapping between V1 and V2.  If already using V2, this endpoint
+
+        is of no use, and will return the current configuration.
+
+        Refer to the 'Response Examples' to see the type of structure to be
+        returned.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                title: Routing ruleset
+                type: object
+                properties: &ref_2
+                  routes:
+                    description: Routing rules specification
+                    type: array
+                    items:
+                      $schema: http://json-schema.org/draft-04/schema#
+                      type: object
+                      properties: &ref_15
+                        fulfilled_by:
+                          description: >-
+                            This configuration mentions the service levels
+                            identifications and which location group will serve
+                            this region
+                          type: object
+                          patternProperties:
+                            (.*)+?:
+                              type: array
+                              items:
+                                description: >-
+                                  Location groups that will be part of this
+                                  routing. The location groups and respective
+                                  locations are described in `location_groups`.
+                                type: string
+                        destination_region:
+                          properties:
+                            country:
+                              description: >-
+                                Country in 2 chars (ISO 3166-1 alpha-2)
+                                definition
+                              type: string
+                              minLength: 2
+                              maxLength: 2
+                              pattern: ([A-Z]){2}
+                            zip_code_region:
+                              description: >-
+                                Region identification that will cover that
+                                routing. Zip code region groups is defined in
+                                `zip_code_regions`.
+                              type: string
+                  sl_levels_priority:
+                    description: >-
+                      Service levels priority. This is ordered according to
+                      which service level will be taken first
+                    type: array
+                    minItems: 1
+                    items:
+                      type: string
+                      minLength: 1
+                  location_groups:
+                    description: Location groups identifiers
+                    type: object
+                    patternProperties:
+                      (.*)+?:
+                        description: >-
+                          The group identification will be used on
+                          routes[].fulfilled_by
+                        type: array
+                        items:
+                          type: string
+                          minLength: 1
+                  zip_code_regions:
+                    description: >-
+                      Zip code groups, in order to facilitate the identification
+                      routes per regions
+                    patternProperties:
+                      (.*)+?:
+                        description: >-
+                          Identification of zip code. It will contain the zip
+                          codes for that specific region
+                        type: array
+                        items:
+                          type: string
+                          minLength: 4
+              example:
+                routes:
+                  - fulfilled_by:
+                      2_DAY:
+                        - >-
+                          2_DAY::aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61
+                      GROUND:
+                        - >-
+                          GROUND::aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61
+                    destination_region:
+                      country: US
+                      zip_code_region: >-
+                        aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61
+                sl_levels_priority:
+                  - GROUND
+                  - 2_DAY
+                location_groups:
+                  2_DAY::aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61:
+                    - DC01
+                    - US15
+                    - US16
+                  GROUND::aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61:
+                    - US01
+                    - US02
+                    - US03
+                zip_code_regions:
+                  aa3093554472fd113135bed5b63e12f84c2e9fe8::df58248c414f342c81e056b40bee12d17a08bf61:
+                    - '*'
+        '404':
+          description: There is no fulfillment configuration set yet.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: &ref_0
+                  title:
+                    type: string
+                  type:
+                    type: string
+                  detail:
+                    type: string
+                required: &ref_1
+                  - title
+                  - type
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+  /routing/ruleset:
+    get:
+      operationId: get-routing-rules
+      summary: Get routing rules
+      description: >
+        Retrieves the current 'Routing Rule V2'. If customer using V1, this
+        endpoint
+
+        is of no use, and will return the error.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                title: Routing ruleset
+                type: object
+                properties: *ref_2
+              example:
+                routes: &ref_3
+                  - fulfilled_by:
+                      2_DAY:
+                        - 2_DAY::WEST
+                      GROUND:
+                        - GROUND::WEST
+                    destination_region:
+                      country: US
+                      zip_code_region: WEST
+                sl_levels_priority: &ref_4
+                  - GROUND
+                  - 2_DAY
+                location_groups: &ref_5
+                  2_DAY::WEST:
+                    - DC01
+                    - US15
+                    - US16
+                  GROUND::WEST:
+                    - US01
+                    - US02
+                    - US03
+                zip_code_regions: &ref_6
+                  WEST:
+                    - '*'
+        '404':
+          description: There is no fulfillment configuration set yet.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+    put:
+      summary: Updates the routing rules
+      description: >
+        This endpoint is used to initially seed the routing rules or to replace
+        it completely
+
+
+        **Note:** 
+
+        - You have the option of defining route entries with a single `country`
+        or multiple `countries` by 
+
+        providing the optional `Content-Type` header with your desired payload
+        version.
+
+        - If you'd like to define multiple countries set the Content-Type header
+        to application/json; version=1. 
+
+        Select the appropriate Content-Type in the the request schema drop-down
+        to see the schema for supporting 
+
+        multiple countries.
+      operationId: put-routing-rules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              title: Routing ruleset
+              type: object
+              properties: *ref_2
+            example:
+              routes: *ref_3
+              sl_levels_priority: *ref_4
+              location_groups: *ref_5
+              zip_code_regions: *ref_6
+          application/json; version=1:
+            schema:
+              title: Routing ruleset
+              type: object
+              properties: &ref_16
+                routes:
+                  description: Routing rules specification
+                  type: array
+                  items:
+                    $schema: http://json-schema.org/draft-04/schema#
+                    type: object
+                    properties: &ref_7
+                      fulfilled_by:
+                        description: >-
+                          This configuration mentions the service levels
+                          identifications and which location group will serve
+                          this region
+                        type: object
+                        patternProperties:
+                          (.*)+?:
+                            type: array
+                            items:
+                              description: >-
+                                Location groups that will be part of this
+                                routing. The location groups and respective
+                                locations are described in `location_groups`.
+                              type: string
+                      destination_region:
+                        properties:
+                          countries:
+                            description: Country in 2 chars (ISO 3166-1 alpha-2) definition
+                            type: array
+                            items:
+                              type: string
+                              minLength: 2
+                              maxLength: 2
+                              pattern: ([A-Z]){2}
+                          zip_code_region:
+                            description: >-
+                              Region identification that will cover that
+                              routing. Zip code region groups is defined in
+                              `zip_code_regions`.
+                            type: string
+                sl_levels_priority:
+                  description: >-
+                    Service levels priority. This is ordered according to which
+                    service level will be taken first
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    minLength: 1
+                location_groups:
+                  description: Location groups identifiers
+                  type: object
+                  patternProperties:
+                    (.*)+?:
+                      description: >-
+                        The group identification will be used on
+                        routes[].fulfilled_by
+                      type: array
+                      items:
+                        type: string
+                        minLength: 1
+                zip_code_regions:
+                  description: >-
+                    Zip code groups, in order to facilitate the identification
+                    routes per regions
+                  patternProperties:
+                    (.*)+?:
+                      description: >-
+                        Identification of zip code. It will contain the zip
+                        codes for that specific region
+                      type: array
+                      items:
+                        type: string
+                        minLength: 4
+            example:
+              routes:
+                - fulfilled_by:
+                    2_DAY:
+                      - 2_DAY::WEST
+                    GROUND:
+                      - GROUND::WEST
+                  destination_region:
+                    countries:
+                      - US
+                    zip_code_region: WEST
+              sl_levels_priority:
+                - GROUND
+                - 2_DAY
+              location_groups:
+                2_DAY::WEST:
+                  - DC01
+                  - US15
+                  - US16
+                GROUND::WEST:
+                  - US01
+                  - US02
+                  - US03
+              zip_code_regions:
+                WEST:
+                  - '*'
+      responses:
+        '201':
+          description: Routing rules updated successfully
+          content:
+            application/json:
+              schema:
+                title: Put routing ruleset response
+                type: object
+                properties: &ref_11
+                  routing_ruleset:
+                    title: Routing ruleset
+                    type: object
+                    properties: *ref_2
+                  fulfillment_config_uri:
+                    type: string
+                    description: Fulfillment Configuration Revision URI
+              example:
+                routing_ruleset: &ref_12
+                  routes:
+                    - fulfilled_by:
+                        2_DAY_PR:
+                          - NJ
+                      destination_region:
+                        country: PR
+                        zip_code_region: All
+                  sl_levels_priority:
+                    - 2_DAY_PR
+                  location_groups:
+                    NJ:
+                      - US_NJ
+                  zip_code_regions:
+                    All:
+                      - '*'
+                fulfillment_config_uri: v0/fulfillment_configuration/revision/13
+            application/json; version=1:
+              schema:
+                title: Put routing ruleset response
+                type: object
+                properties: &ref_13
+                  routing_ruleset:
+                    title: Routing ruleset
+                    type: object
+                    properties: &ref_17
+                      routes:
+                        description: Routing rules specification
+                        type: array
+                        items:
+                          $schema: http://json-schema.org/draft-04/schema#
+                          type: object
+                          properties: *ref_7
+                      sl_levels_priority:
+                        description: >-
+                          Service levels priority. This is ordered according to
+                          which service level will be taken first
+                        type: array
+                        minItems: 1
+                        items:
+                          type: string
+                          minLength: 1
+                      location_groups:
+                        description: Location groups identifiers
+                        type: object
+                        patternProperties:
+                          (.*)+?:
+                            description: >-
+                              The group identification will be used on
+                              routes[].fulfilled_by
+                            type: array
+                            items:
+                              type: string
+                              minLength: 1
+                  fulfillment_config_uri:
+                    type: string
+                    description: Fulfillment Configuration Revision URI
+              example:
+                routing_ruleset: &ref_14
+                  routes:
+                    - fulfilled_by:
+                        2_DAY_PR:
+                          - NJ
+                      destination_region:
+                        countries:
+                          - PR
+                        zip_code_region: All
+                  sl_levels_priority:
+                    - 2_DAY_PR
+                  location_groups:
+                    NJ:
+                      - US_NJ
+                  zip_code_regions:
+                    All:
+                      - '*'
+                fulfillment_config_uri: v0/fulfillment_configuration/revision/13
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+    patch:
+      description: >
+        A convenience endpoint is where you use JSON patch to change parts of
+        routing rules.
+
+
+        **Note:**
+
+        - You have the option of defining route entries with a single `country`
+        or multiple `countries` by 
+
+        providing the optional `Content-Type` header with your desired payload
+        version.
+
+        - If you'd like to define multiple countries set the Content-Type header
+        to application/json; version=1. 
+
+        Select the appropriate Content-Type in the the request schema drop-down
+        to see the schema for supporting 
+
+        multiple countries.
+
+        - To use payload version 1 via the PATCH operation you need to update
+        the route entries from `country` 
+
+        to `countries` via PUT endpoint for compatibility.
+      summary: Patch the routing rules
+      operationId: patch-routing-rules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              title: JSON schema for JSONPatch files
+              type: array
+              definitions: &ref_8
+                path: &ref_18
+                  description: A JSON Pointer path.
+                  type: string
+              items: &ref_9
+                oneOf:
+                  - additionalProperties: false
+                    required:
+                      - value
+                      - op
+                      - path
+                    properties:
+                      path:
+                        description: A JSON Pointer path.
+                        type: string
+                      op:
+                        description: The operation to perform.
+                        type: string
+                        enum:
+                          - add
+                          - replace
+                          - test
+                      value:
+                        description: The value to add, replace or test.
+                  - additionalProperties: false
+                    required:
+                      - op
+                      - path
+                    properties:
+                      path:
+                        description: A JSON Pointer path.
+                        type: string
+                      op:
+                        description: The operation to perform.
+                        type: string
+                        enum:
+                          - remove
+                  - additionalProperties: false
+                    required:
+                      - from
+                      - op
+                      - path
+                    properties:
+                      path:
+                        description: A JSON Pointer path.
+                        type: string
+                      op:
+                        description: The operation to perform.
+                        type: string
+                        enum:
+                          - move
+                          - copy
+                      from:
+                        description: >-
+                          A JSON Pointer path pointing to the location to
+                          move/copy from.
+                        type: string
+            example: &ref_10
+              - op: add
+                path: /location_groups/2_DAY::WEST/-
+                value: US10
+          application/json; version=1:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              title: JSON schema for JSONPatch files
+              type: array
+              definitions: *ref_8
+              items: *ref_9
+            example: *ref_10
+      responses:
+        '200':
+          description: Routing rules updated successfully
+          content:
+            application/json:
+              schema:
+                title: Put routing ruleset response
+                type: object
+                properties: *ref_11
+              example:
+                routing_ruleset: *ref_12
+                fulfillment_config_uri: v0/fulfillment_configuration/revision/13
+            application/json; version=1:
+              schema:
+                title: Put routing ruleset response
+                type: object
+                properties: *ref_13
+              example:
+                routing_ruleset: *ref_14
+                fulfillment_config_uri: v0/fulfillment_configuration/revision/13
+        '400':
+          description: |
+            Bad request.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+  /routing/ruleset/{section}:
+    get:
+      operationId: get-routing-rules-sections
+      summary: Get routing rules section
+      description: >
+        Retrieves a section of the current 'Routing Rule V2'. If customer using
+        V1, this endpoint
+
+        is of no use, and will return the error.
+      parameters:
+        - name: section
+          in: path
+          description: name of the section to retrieve
+          required: true
+          schema:
+            type: string
+            enum:
+              - routes
+              - sl_levels_priority
+              - location_groups
+              - zip_code_regions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                description: Signifies one section of the currently active routing rule
+                type: object
+                oneOf: &ref_19
+                  - properties:
+                      routes:
+                        description: Routing rules specification
+                        type: array
+                        items:
+                          $schema: http://json-schema.org/draft-04/schema#
+                          type: object
+                          properties: *ref_15
+                    required:
+                      - routes
+                    additionalProperties: false
+                  - properties:
+                      sl_levels_priority:
+                        description: >-
+                          Service levels priority. This is ordered according to
+                          which service level will be taken first
+                        type: array
+                        minItems: 1
+                        items:
+                          type: string
+                          minLength: 1
+                    required:
+                      - sl_levels_priority
+                    additionalProperties: false
+                  - properties:
+                      location_groups:
+                        description: Location groups identifiers
+                        type: object
+                        patternProperties:
+                          (.*)+?:
+                            description: >-
+                              The group identification will be used on
+                              routes[].fulfilled_by
+                            type: array
+                            items:
+                              type: string
+                              minLength: 1
+                    required:
+                      - location_groups
+                    additionalProperties: false
+                  - properties:
+                      zip_code_regions:
+                        description: >-
+                          Zip code groups, in order to facilitate the
+                          identification routes per regions
+                        patternProperties:
+                          (.*)+?:
+                            description: >-
+                              Identification of zip code. It will contain the
+                              zip codes for that specific region
+                            type: array
+                            items:
+                              type: string
+                              minLength: 4
+                    required:
+                      - zip_code_regions
+                    additionalProperties: false
+              example:
+                zip_code_regions:
+                  West:
+                    - '90210'
+                    - '90211'
+                    - '90212'
+                    - '90213'
+                  East:
+                    - '10001'
+                    - '10002'
+                    - '10003'
+                    - '10004'
+                    - '10005'
+                  South:
+                    - '33101'
+                    - '33102'
+                    - '33103'
+                    - '33104'
+                    - '33105'
+                    - '33106'
+        '400':
+          description: |
+            Bad request.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/json:
+              schema:
+                title: Problem.json
+                description: Schema for problem.json REST API return type
+                type: object
+                properties: *ref_0
+                required: *ref_1
+              example:
+                title: Missing tenant in request header
+                status: >-
+                  https://newstore.gitlab.io/engineering/routing/services/fulfillment_config/#missing_tenant
+                detail: Could not find a tenant key in the request headers
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    routes:
+      $schema: http://json-schema.org/draft-04/schema#
+      type: object
+      properties: *ref_15
+    routing_rules:
+      title: Routing ruleset
+      type: object
+      properties: *ref_2
+    problem:
+      title: Problem.json
+      description: Schema for problem.json REST API return type
+      type: object
+      properties: *ref_0
+      required: *ref_1
+    routes_v1:
+      $schema: http://json-schema.org/draft-04/schema#
+      type: object
+      properties: *ref_7
+    routing_rules_v1:
+      title: Routing ruleset
+      type: object
+      properties: *ref_16
+    update_routing_ruleset_response:
+      title: Put routing ruleset response
+      type: object
+      properties: *ref_11
+    filtered_routing_rules_v1:
+      title: Routing ruleset
+      type: object
+      properties: *ref_17
+    update_routing_ruleset_response_v1:
+      title: Put routing ruleset response
+      type: object
+      properties: *ref_13
+    path: *ref_18
+    jsonpatch_request:
+      $schema: http://json-schema.org/draft-04/schema#
+      title: JSON schema for JSONPatch files
+      type: array
+      definitions: *ref_8
+      items: *ref_9
+    get_routing_rules_section_sample_response:
+      $schema: http://json-schema.org/draft-04/schema#
+      description: Signifies one section of the currently active routing rule
+      type: object
+      oneOf: *ref_19

@@ -1,0 +1,172 @@
+openapi: 3.0.0
+info:
+  title: Stock configuration API
+  version: 0.1.0
+  x-audience: external-public
+  x-api-id: stock-configuration-062023
+  description: >
+    <a id="reserv"/>Use this API</a>  to configure the time (in seconds), after
+    which a
+
+    [reservation](https://docs.newstore.com/docs/glossary#soft-allocation)
+    expires in the NewStore platform.
+
+
+    When an order is placed in the platform, NewStore reserves the items
+    specified in the order
+
+    for a specified amount of time at a store or DC, so that they can be
+    fulfilled.
+
+
+    For more information, see [order
+    routing](https://docs.newstore.com/docs/about-order-routing).
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /config/stock/reservation_timeout_seconds:
+    get:
+      summary: Get reservation timeout
+      operationId: showReservationTimeoutSeconds
+      responses:
+        '200':
+          description: |
+            Successfully retrieved config.
+          content:
+            application/json:
+              schema:
+                title: Get reservation timeout in seconds
+                description: Gets the tenant configuration for reservation timeout
+                type: object
+                required:
+                  - value
+                  - updated_at
+                properties:
+                  value:
+                    description: >-
+                      Timeout that determines when ATP reservations will be
+                      canceled.
+                    type: integer
+                  updated_at:
+                    type: string
+                    description: >-
+                      Contains datetime in ISO8601 UTC when config updated last
+                      time. Can be null if config value wasn't set yet
+              example:
+                value: 600
+                updated_at: '2021-07-13T20:18:25Z'
+        '404':
+          description: >-
+            Config key doesn't exist (it is not a case when key exists but just
+            not set).
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the current configuration for reservation timeout set up for
+        your business.
+
+
+        The ``value`` property in the response payload contains the timeout
+        value in seconds.
+    post:
+      summary: Set reservation timeout
+      operationId: createReservationTimeoutSeconds
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Set reservation timeout in seconds
+              description: Sets the tenant config for reservation timeout in seconds
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  description: >-
+                    The ATP reservation timeout. After this any unallocated
+                    reservations will be added back into ATP
+                  type: integer
+            example:
+              value: 600
+      responses:
+        '200':
+          description: |
+            Config was updated/created.
+        '400':
+          description: |
+            Incorrect payload for config (validation failed).
+          content:
+            application/problem+json:
+              schema:
+                title: Config validation/parsing failed
+                type: object
+                required:
+                  - messages
+                  - request_id
+                properties:
+                  messages:
+                    type: array
+                    description: A list of validation errors
+                    items:
+                      type: string
+                      description: >-
+                        An validation/parsing error which explains why we can't
+                        set this config
+                  request_id:
+                    type: string
+        '409':
+          description: |
+            Cannot update the configuration due to a race condition.
+        '500':
+          description: |
+            Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                title: Internal error response.
+                type: object
+                required:
+                  - message
+                  - request_id
+                properties:
+                  message:
+                    type: string
+                    description: A human readable description of the error
+                  request_id:
+                    type: string
+        default:
+          description: Unexpected Error
+      description: >
+        Specifies the configuration for reservation timeout set up for your
+        business.
+
+
+        For more information on reservations, see the [parent
+        resource](#reserv).
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,245 @@
+openapi: 3.1.0
+info:
+  title: Loyalty
+  version: '1.0'
+  license:
+    name: NewStore Private
+    url: https://newstore.com
+  contact:
+    name: NewStore Support
+    email: support@newstore.com
+  description: >
+    Use this API to manage loyalty coupons and reward program coupon definitions
+    for your business.
+
+
+    These coupons can later be used via Associate App to offer discounts to
+    customers enrolled in
+
+    the loyalty program. See the
+    [guide](/product/assoapp/using-assoapp/#add-rewards).
+servers:
+  - url: https://dodici.s.newstore.net/v0/promotions
+    description: The staging/production server
+security:
+  - newStoreAccessToken: []
+paths:
+  /loyalty:
+    post:
+      summary: Create Loyalty Coupon
+      operationId: loyalty
+      responses:
+        '201':
+          $ref: '#/components/responses/LoyaltyResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+      description: >
+        Use this method to create coupon codes on the fly to be used with a
+        loyalty program.
+
+
+        **Important**: Loyalty coupons are only valid for 15 minutes.
+
+
+        The type of coupons available for this functionality are of type cart
+        fixed and cart percentage discounts.
+      requestBody:
+        $ref: '#/components/requestBodies/LoyaltyRequest'
+components:
+  schemas:
+    voucher:
+      title: voucher
+      type: object
+      description: A voucher definition
+      examples:
+        - voucherId: 37e6476f-a124-495d-acd7-3ba4e3b0a739
+          name: fixed amount discount - 2000 points
+          discount: 50
+          type: Fixed
+          level: Cart
+          currencies:
+            - code: EUR
+              minimumCartValue: 50
+      properties:
+        voucherId:
+          type: string
+          description: >-
+            The identifier of the corresponding coupon/voucher on the caller’s
+            system.
+        name:
+          type: string
+          description: The name of the voucher. It has to be unique.
+        discount:
+          type: number
+          description: >-
+            The value of the discount, either as fixed amount or percentage
+            (between 0 and 100).
+        type:
+          type: string
+          description: The type of discount. Can be 'Fixed' or 'Percentage'.
+          enum:
+            - Fixed
+            - Percentage
+        level:
+          type: string
+          description: >-
+            The level at which the voucher applied. So far just 'Cart' is
+            supported.
+          enum:
+            - Cart
+        currencies:
+          type: array
+          description: >-
+            A list of conditions on currencies to satisfy in order for the
+            voucher to be applied.
+          items:
+            $ref: '#/components/schemas/Currency'
+        consumers:
+          type: array
+          description: >-
+            Indicates by which consumers the coupon can be used. A list of
+            Customer IDs states that the coupon can be used by the given
+            customer while an empty array states that the coupon can be used by
+            any customer.
+          maxItems: 1000
+          items:
+            type: string
+            example: >-
+              ["2dbb6700-d847-11ed-afa1-0242ac120002","3c8eb0de-d847-11ed-afa1-0242ac120002"]
+    warning:
+      title: warning
+      type: object
+      properties:
+        code:
+          type: string
+          description: A code related to the warning class.
+        ref:
+          type: string
+          description: A reference to the object that caused the warning. Usually the ID.
+        kind:
+          type: string
+          description: The kind of the resource that caused the warning.
+        message:
+          type: string
+          description: A message describing what went wrong.
+      description: A warning stating what went wrong during the operation.
+    Currency:
+      title: Currency
+      type: object
+      description: An object representing a constraint on a currency.
+      examples:
+        - code: EUR
+          minimumCartValue: 50
+      properties:
+        code:
+          type: string
+          description: Currency code.
+          example: EUR
+        minimumCartValue:
+          type: number
+          minimum: 0
+          default: 0
+          description: >-
+            The minimum cart value for a given currency needed to apply the
+            promotion.
+          example: 50
+      required:
+        - code
+        - minimumCartValue
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  requestBodies:
+    LoyaltyRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              vouchers:
+                type: array
+                items:
+                  $ref: '#/components/schemas/voucher'
+          examples:
+            Example 1:
+              value:
+                vouchers:
+                  - voucherId: 37e6476f-a124-495d-acd7-3ba4e3b0a739
+                    name: fixed amount discount - 2000 points
+                    discount: 50
+                    type: Fixed
+                    level: Cart
+                    currencies:
+                      - code: EUR
+                        minimumCartValue: 50
+                    consumers:
+                      - 2dbb6700-d847-11ed-afa1-0242ac120002
+                      - 3c8eb0de-d847-11ed-afa1-0242ac120002
+      description: A loyalty request
+  responses:
+    LoyaltyResponse:
+      description: A loyalty response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              codes:
+                type: array
+                items:
+                  type: string
+              warnings:
+                type: array
+                items:
+                  $ref: '#/components/schemas/warning'
+          examples:
+            Example 1:
+              value:
+                codes:
+                  - CODE1
+                  - CODE2
+                  - CODE3
+                warnings:
+                  - code: voucher_mismatch
+                    ref: 37e6476f-a124-495d-acd7-3ba4e3b0a739
+                    kind: voucher
+                    message: >-
+                      there's a mismatch between the voucher ID and the name of
+                      the voucher
+    Error:
+      description: An error response.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: The error message.
+                readOnly: true
+              status:
+                description: The HTTP status code.
+                type: integer
+                readOnly: true
+              causes:
+                type: array
+                description: A list of causes. It's optional.
+                items:
+                  type: string
+                  readOnly: true
+            required:
+              - message
+              - status
+          examples:
+            Example 1:
+              value:
+                message: not found
+                status: 404
+            Example 2:
+              value:
+                message: internal server error
+                status: 500

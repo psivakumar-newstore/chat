@@ -1,0 +1,1199 @@
+openapi: 3.0.0
+info:
+  title: Refund API (item level)
+  version: 1.0.0
+  x-audience: external-public
+  x-api-id: refund-request-062023
+  description: >
+    Represents a refund request, triggered by a return or appeasement. It can be
+    applied to all or specific
+
+    items of an order. If needed, shipping costs can be refunded as well.
+
+
+    A refund request can be pending, successful, or failed. A successful refund
+    request may depend
+
+    on the captured amount and on previous refunds (pending and successful).
+
+
+    **Related resources:**
+
+    - [Returns](/newstore-cloud/order_management/item_return.html)
+
+    - [External orders](/newstore-cloud/order_management/injection_api.html)
+
+    - [Store and DC orders](/newstore-cloud/order_management/order.html)
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v1/d
+security:
+  - newStoreAccessToken: []
+paths:
+  /orders/{id}/refunds:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The identifier of the order. To retrieve the order ID, use the
+          [List orders](/api/integration/order-management/order_api)
+          method.
+    get:
+      summary: List refund requests
+      operationId: listOrderRefundRefundsRequests
+      responses:
+        '200':
+          description: List of refund requests for order
+          content:
+            application/json:
+              example:
+                refunds:
+                  - id: 28d07ccd-c609-46cf-bd52-c43ef70737d5
+                    revision: 1
+                    created_at: '2018-10-25T10:18:09.815041Z'
+                    updated_at: '2018-10-25T10:18:09.815041Z'
+                    order_id: 91207347-47b6-4b21-b736-5fe9ec82e9ea
+                    amount: 90.3
+                    type: percentage
+                    value: 100
+                    currency: USD
+                    reason_code: 2
+                    reason: Item is damaged
+                    note: The white shirt has yellow stains on it
+                    requested_at: '2018-10-25T10:18:09.783315Z'
+                    user_id: 22IB3UROr1S3Je9hDaRh7f
+                    user_email: johndoe@example.com
+                    status: succeeded
+                    is_historical: false
+                    metadata:
+                      extended_attributes:
+                        - name: somekey1
+                          value: somevalue1
+                        - name: somekey2
+                          value: somevalue2
+                    items:
+                      - type: product
+                        id: 6f38b75f-3fb3-4454-975d-af0cb412f8fa
+                        refund:
+                          net: 60
+                          tax: 6.65
+                          gross: 66.65
+                      - type: shipping
+                        id: 2728c174-719d-47c3-bd5e-51ec470180fe
+                        refund:
+                          net: 22
+                          tax: 1.65
+                          gross: 23.65
+              schema:
+                title: Refunds for order response
+                type: object
+                required:
+                  - refunds
+                properties:
+                  refunds:
+                    type: array
+                    items:
+                      type: object
+                      description: Refund object
+                      title: Refund
+                      required:
+                        - id
+                        - order_id
+                        - amount
+                        - currency
+                      allOf:
+                        - title: Refund request
+                          type: object
+                          required:
+                            - order_id
+                            - amount
+                            - currency
+                          allOf:
+                            - title: Common refund request data.
+                              type: object
+                              properties:
+                                return_id:
+                                  type: string
+                                  description: >-
+                                    Identifier for the corresponding return if
+                                    any.
+                                  maxLength: 36
+                                  minLength: 36
+                                amount:
+                                  type: number
+                                  description: >-
+                                    The monetary amount requested to refund.
+                                    Ensure that the number of decimal places, if
+                                    specified, is valid for the corresponding
+                                    currency. For example, USD will have only 2
+                                    decimal places.
+                                  minimum: 0
+                                value:
+                                  type: number
+                                  description: >-
+                                    The percentage of the refund if the type is
+                                    percentage or the monetary amount if it's
+                                    fixed.
+                                  minimum: 0
+                                type:
+                                  type: string
+                                  enum:
+                                    - percentage
+                                    - fixed
+                                  description: >-
+                                    The type of the refund it's either
+                                    percentage or fixed.
+                                currency:
+                                  type: string
+                                  minLength: 3
+                                  maxLength: 3
+                                  description: The currency this refund was issued in.
+                                reason_code:
+                                  type: integer
+                                  description: >-
+                                    The corresponding code for the return
+                                    reason.
+                                reason:
+                                  type: string
+                                  description: The reason why this refund was requested.
+                                note:
+                                  type: string
+                                  description: Additional note for the refund reason.
+                                email:
+                                  type: string
+                                  format: email
+                                  description: >-
+                                    Customer Email address to which a refund
+                                    note will be sent in case of success. Email
+                                    is not sent for historical refund requests.
+                                requested_at:
+                                  type: string
+                                  format: date-time
+                                  description: The time when the refund was requested.
+                                extended_attributes:
+                                  type: array
+                                  maxItems: 100
+                                  description: >-
+                                    Additional information about the refund
+                                    request passed as metadata, without any
+                                    processing logic associated with it in
+                                    NewStore. For example, the payment provider
+                                    for the refund.
+                                  items:
+                                    type: object
+                                    properties:
+                                      name:
+                                        type: string
+                                        minLength: 1
+                                        maxLength: 100
+                                      value:
+                                        type: string
+                                        maxLength: 8192
+                                items:
+                                  type: array
+                                  minLength: 1
+                                  description: >-
+                                    Contains a list of product/shipping items
+                                    which are part of the refund request. If the
+                                    field is empty, it is omitted.
+                                  items:
+                                    type: object
+                                    required:
+                                      - id
+                                      - type
+                                      - refund
+                                    properties:
+                                      id:
+                                        type: string
+                                        minLength: 36
+                                        maxLength: 36
+                                      type:
+                                        type: string
+                                        enum:
+                                          - product
+                                          - shipping
+                                        description: >-
+                                          The item type, can be 'product' or
+                                          'shipping'.
+                                      refund:
+                                        type: object
+                                        required:
+                                          - gross
+                                        properties:
+                                          gross:
+                                            type: number
+                                            description: >-
+                                              The gross amount of the refund, it's the
+                                              sum of 'net_amount' and 'taxes'.
+                            - properties:
+                                order_id:
+                                  type: string
+                                  description: UUID of the associated SalesOrder.
+                                  maxLength: 36
+                                  minLength: 36
+                                metadata:
+                                  type: object
+                                  description: >-
+                                    An optional metadata that would be passed to
+                                    Payment Account.
+                                strategy:
+                                  description: >-
+                                    The payment strategy to apply when
+                                    processing the request. The strategy is
+                                    being proxied to payment account. Example of
+                                    strategy values: 'ordered', 'gift_card',
+                                    'store_credit'
+                                  type: string
+                                  minLength: 0
+                                  maxLength: 100
+                        - properties:
+                            id:
+                              type: string
+                              description: ID of the Refund.
+                              maxLength: 36
+                              minLength: 36
+                            user_id:
+                              type: string
+                              description: UUID of the associate who requested the refund.
+                              maxLength: 36
+                            user_email:
+                              type: string
+                              description: Email of the employee who requested the refund.
+                            error_code:
+                              type: number
+                              description: >-
+                                An error code in case of fail of refunding
+                                operation.
+                            error_message:
+                              type: string
+                              description: >-
+                                An error message in case of fail of refunding
+                                operation.
+                            status:
+                              type: string
+                              enum:
+                                - pending
+                                - succeeded
+                                - failed
+                              description: Refund operation status.
+                            created_at:
+                              type: string
+                              format: date-time
+                              description: Time when the refund was created.
+                            updated_at:
+                              type: string
+                              format: date-time
+                              description: Time when the refund was last updated.
+                            revision:
+                              type: number
+                              description: The version number of the refund
+                            is_historical:
+                              type: boolean
+                              description: >-
+                                True if the refund request was imported from an
+                                external system and was already processed and
+                                the money was refunded.
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                title: Error Response
+                description: Response information in case of an error
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  messages:
+                    description: List of error messages
+                    type: array
+                    items:
+                      type: string
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the list of refund requests for the specified order ordered
+
+        by ascending creation dates. The list is empty when no refunds have been
+        requested for
+
+        this order.
+
+
+        Use the [Get refund request details](#operation/getRefundRequestDetails)
+        method to get
+
+        more information about each refund request.
+    post:
+      summary: Create refund request
+      operationId: createRefundRequest
+      requestBody:
+        content:
+          application/json:
+            examples:
+              percentage_refund:
+                summary: Payload for creating a percentage based refund request
+                value:
+                  value: 50
+                  currency: USD
+                  type: percentage
+                  reason_code: 2
+                  reason: Item is damaged
+                  note: The white shirt has yellow stains on it
+                  email: johndoe@example.com
+                  is_historical: false
+                  items:
+                    - id: 6f38b75f-3fb3-4454-975d-af0cb412f8fa
+                      type: product
+                    - type: shipping
+              fixed_refund:
+                summary: Payload for creating a refund request with fixed amount
+                value:
+                  value: 15
+                  currency: USD
+                  type: fixed
+                  reason_code: 2
+                  reason: Item is damaged
+                  note: The white shirt has yellow stains on it
+                  email: johndoe@example.com
+                  is_historical: false
+                  items:
+                    - id: 6f38b75f-3fb3-4454-975d-af0cb412f8fa
+                      type: product
+                    - type: shipping
+              historical_refund:
+                summary: Payload for creating a historical refund request
+                value:
+                  value: 100
+                  currency: USD
+                  type: percentage
+                  reason_code: 2
+                  reason: Products damaged or dirty
+                  note: Ripped button
+                  email: jaydoubleyou@example.com
+                  is_historical: true
+                  extended_attributes:
+                    - name: example_paymentprovider
+                      value: example_paymentprovider_value
+                  items:
+                    - id: 6f38b75f-3fb3-4454-975d-af0cb412f8fa
+                      type: product
+                    - type: shipping
+            schema:
+              title: Refund request
+              type: object
+              required:
+                - value
+                - currency
+                - type
+                - items
+              properties:
+                return_id:
+                  type: string
+                  description: Identifier for the corresponding return if any.
+                  maxLength: 36
+                  minLength: 36
+                value:
+                  type: number
+                  description: >-
+                    The percentage of the refund if the type is percentage or
+                    the monetary amount if it's fixed.
+                  minimum: 0
+                type:
+                  type: string
+                  enum:
+                    - percentage
+                    - fixed
+                  description: The type of the refund it's either percentage or fixed.
+                currency:
+                  type: string
+                  minLength: 3
+                  maxLength: 3
+                  description: The currency this refund was issued in.
+                reason_code:
+                  type: integer
+                  description: The corresponding code for the return reason.
+                reason:
+                  type: string
+                  description: The reason why this refund was requested.
+                note:
+                  type: string
+                  description: Additional note for the refund reason.
+                email:
+                  type: string
+                  format: email
+                  description: >-
+                    Customer Email address to which a refund note will be sent
+                    in case of success. Email is not sent for historical refund
+                    requests.
+                requested_at:
+                  type: string
+                  format: date-time
+                  description: The time when the refund was requested.
+                extended_attributes:
+                  type: array
+                  maxItems: 100
+                  description: >-
+                    Additional information about the refund request passed as
+                    metadata, without any processing logic associated with it in
+                    NewStore. For example, the payment provider for the refund.
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        minLength: 1
+                        maxLength: 100
+                      value:
+                        type: string
+                        maxLength: 8192
+                is_historical:
+                  type: boolean
+                  description: >-
+                    Set to true if the refund request was imported from an
+                    external system and was already processed and the money was
+                    refunded.
+                items:
+                  type: array
+                  minItems: 1
+                  description: >-
+                    A list of product and/or shipping items that should be
+                    refunded.
+                  items:
+                    type: object
+                    oneOf:
+                      - required:
+                          - id
+                          - type
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                              - product
+                          id:
+                            type: string
+                            minLength: 36
+                            maxLength: 36
+                            description: The identifier of the item.
+                      - required:
+                          - type
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                              - shipping
+        required: true
+      responses:
+        '201':
+          description: |
+            The refund request was accepted.
+          content:
+            application/json:
+              example:
+                id: 192bb646-fff2-4a2f-bbb5-afcd5c491cc9
+              schema:
+                title: Refund response
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    description: ID of the Refund.
+                    maxLength: 36
+                    minLength: 36
+        '400':
+          description: >
+            The refund request was rejected. This response is typically sent
+            when the requested
+
+            refund value is greater than what can be refunded.
+          content:
+            application/problem+json:
+              example:
+                messages:
+                  - 'amount: amount is required'
+                  - 'currency: currency is required'
+                request_id: 253.2.45
+              schema:
+                type: object
+                title: Error Response
+                description: Response information in case of an error
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  messages:
+                    description: List of error messages
+                    type: array
+                    items:
+                      type: string
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+        '500':
+          description: Internal server Error.
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                title: Error Response
+                description: Response information in case of an error
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  messages:
+                    description: List of error messages
+                    type: array
+                    items:
+                      type: string
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+        default:
+          description: Unexpected Error
+      description: >
+        Creates a refund request to initiate a refund. This call is
+        asynchronous.
+
+        A successful response means that the refund request was accepted and
+        will be executed after there are enough
+
+        captured funds.
+
+
+        **Note:** When the refund request is successful, an email is sent to the
+        customer if you provided their email
+
+        address. No email is sent for historical refund requests.
+
+
+        **Note**: In case of fixed type request the refund amount will be
+        pro-rated across all specified items.
+
+        Example:
+
+        **Request**
+
+
+        Refund 50$ from items:
+
+        | Item ID | Price paid |
+
+        |-|-|
+
+        | Item 1 | $50 |
+
+        | Item 2 | $75 |
+
+        | Item 3 | $25 |
+
+        | **Total** | **$150** |
+
+
+        **Response**
+
+        | Item ID | Refunded amount | Details |
+
+        |-|-|-|
+
+        | Item 1 | $16.67 | 50 / (50 + 75 + 25) * 50 = 16.67 |
+
+        | Item 2 | $25 | 75 / (50 + 75 + 25) * 50 = 25 |
+
+        | Item 3 | $8.33 | 25 / (50 + 75 + 25) * 50 = 8.33 |
+
+        | **Total refund amount** | **$50** |
+  /orders/{id}/refunds/{refund_id}:
+    parameters:
+      - name: refund_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The identifier of the refund.
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The identifier of the order.
+    get:
+      summary: Get refund request
+      operationId: showRefundRequestDetails
+      responses:
+        '200':
+          description: Refund object
+          content:
+            application/json:
+              example:
+                refund:
+                  id: 28d07ccd-c609-46cf-bd52-c43ef70737d5
+                  revision: 1
+                  created_at: '2018-10-25T10:18:09.815041Z'
+                  updated_at: '2018-10-25T10:18:09.815041Z'
+                  order_id: 91207347-47b6-4b21-b736-5fe9ec82e9ea
+                  amount: 90.3
+                  currency: USD
+                  value: 100
+                  type: percentage
+                  reason_code: 2
+                  reason: Item is damaged
+                  note: The white shirt has yellow stains on it
+                  requested_at: '2018-10-25T10:18:09.783315Z'
+                  user_id: 22IB3UROr1S3Je9hDaRh7f
+                  user_email: johndoe@example.com
+                  status: succeeded
+                  refund_level: item_level
+                  is_historical: false
+                  metadata:
+                    extended_attributes:
+                      - name: somekey1
+                        value: somevalue1
+                      - name: somekey2
+                        value: somevalue2
+                  items:
+                    - type: product
+                      id: 6f38b75f-3fb3-4454-975d-af0cb412f8fa
+                      refund:
+                        net: 60
+                        tax: 6.65
+                        gross: 66.65
+                    - type: shipping
+                      id: 2728c174-719d-47c3-bd5e-51ec470180fe
+                      refund:
+                        net: 22
+                        tax: 1.65
+                        gross: 23.65
+              schema:
+                title: Refund
+                type: object
+                required:
+                  - refund
+                properties:
+                  refund:
+                    type: object
+                    properties:
+                      order_id:
+                        type: string
+                        description: UUID of the associated SalesOrder.
+                        maxLength: 36
+                        minLength: 36
+                      metadata:
+                        type: object
+                        description: >-
+                          An optional metadata that would be passed to Payment
+                          Account.
+                      strategy:
+                        description: >-
+                          The payment strategy to apply when processing the
+                          request. The strategy is being proxied to payment
+                          account. Example of strategy values: 'ordered',
+                          'gift_card', 'store_credit'
+                        type: string
+                        minLength: 0
+                        maxLength: 100
+                      id:
+                        type: string
+                        description: ID of the Refund.
+                        maxLength: 36
+                        minLength: 36
+                      user_id:
+                        type: string
+                        description: UUID of the associate who requested the refund.
+                        maxLength: 36
+                      user_email:
+                        type: string
+                        description: Email of the employee who requested the refund.
+                      error_code:
+                        type: number
+                        description: An error code in case of fail of refunding operation.
+                      error_message:
+                        type: string
+                        description: >-
+                          An error message in case of fail of refunding
+                          operation.
+                      status:
+                        type: string
+                        enum:
+                          - pending
+                          - succeeded
+                          - failed
+                        description: Refund operation status.
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: Time when the refund was created.
+                      updated_at:
+                        type: string
+                        format: date-time
+                        description: Time when the refund was last updated.
+                      revision:
+                        type: number
+                        description: The version number of the refund
+                      is_historical:
+                        type: boolean
+                        description: >-
+                          True if the refund request was imported from an
+                          external system and was already processed and the
+                          money was refunded.
+                      return_id:
+                        type: string
+                        description: Identifier for the corresponding return if any.
+                        maxLength: 36
+                        minLength: 36
+                      amount:
+                        type: number
+                        description: The monetary amount requested to refund.
+                        minimum: 0
+                      value:
+                        type: number
+                        description: >-
+                          The percentage of the refund if the type is percentage
+                          or the monetary amount if it's fixed.
+                        minimum: 0
+                      type:
+                        type: string
+                        enum:
+                          - percentage
+                          - fixed
+                        description: >-
+                          The type of the refund it's either percentage or
+                          fixed.
+                      currency:
+                        type: string
+                        minLength: 3
+                        maxLength: 3
+                        description: The currency this refund was issued in.
+                      reason_code:
+                        type: integer
+                        description: The corresponding code for the return reason.
+                      reason:
+                        type: string
+                        description: The reason why this refund was requested.
+                      note:
+                        type: string
+                        description: Additional note for the refund reason.
+                      email:
+                        type: string
+                        format: email
+                        description: >-
+                          Customer Email address to which a refund note will be
+                          sent in case of success. Email is not sent for
+                          historical refund requests.
+                      requested_at:
+                        type: string
+                        format: date-time
+                        description: The time when the refund was requested.
+                      extended_attributes:
+                        type: array
+                        maxItems: 100
+                        description: >-
+                          Additional information about the refund request passed
+                          as metadata, without any processing logic associated
+                          with it in NewStore. For example, the payment provider
+                          for the refund.
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              minLength: 1
+                              maxLength: 100
+                            value:
+                              type: string
+                              maxLength: 8192
+                      refund_level:
+                        type: string
+                        enum:
+                          - order_level
+                          - item_level
+                        description: Level of the processed refund.
+                      items:
+                        type: array
+                        minLength: 1
+                        description: >-
+                          Contains a list of product/shipping items which are
+                          part of the refund request. If the field is empty, it
+                          is omitted.
+                        items:
+                          type: object
+                          required:
+                            - id
+                            - type
+                            - refund
+                          properties:
+                            id:
+                              type: string
+                              minLength: 36
+                              maxLength: 36
+                            type:
+                              type: string
+                              enum:
+                                - product
+                                - shipping
+                              description: The item type, can be 'product' or 'shipping'.
+                            refund:
+                              type: object
+                              required:
+                                - gross
+                              properties:
+                                gross:
+                                  type: number
+                                  description: >-
+                                    The gross amount of the refund, it's the sum
+                                    of 'net_amount' and 'taxes'.
+        '404':
+          description: Cannot get refund with specified id
+          content:
+            application/problem+json:
+              example:
+                error_code: refund_not_found
+                message: >-
+                  Cannot find refund with ID
+                  28d07ccd-c609-46cf-bd52-c43ef70737d51
+                request_id: 123.1.82
+              schema:
+                type: object
+                title: Refund not found
+                description: Response information in case refund was not found
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  messages:
+                    description: List of error messages
+                    type: array
+                    items:
+                      type: string
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                title: Error Response
+                description: Response information in case of an error
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  messages:
+                    description: List of error messages
+                    type: array
+                    items:
+                      type: string
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+              example:
+                request_id: bab5c739-b259-4f29-b378-6145e0602d45
+                error_code: unexpected_error
+                message: Something bad happened.
+        default:
+          description: Unexpected Error
+      description: >
+        Retrieves the refund request details of the provided refund request
+        identifier, for the
+
+        specified order.
+  /orders/{id}/refunds/_calculate:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: |
+          The identifier of the order. To retrieve the order ID, use the
+          [List orders](/api/integration/order-management/order_api)
+          method.
+    post:
+      summary: Calculate refund amount
+      operationId: createCalculateRefundAmount
+      requestBody:
+        content:
+          application/json:
+            example:
+              value: 50
+              items:
+                - type: product
+                  id: 927c702a-3cb1-48c1-9189-554bf9d0fde7
+                - type: shipping
+            schema:
+              description: >-
+                The request for calculating the refund amount for the given
+                items.
+              type: object
+              required:
+                - value
+                - items
+              properties:
+                value:
+                  type: number
+                  description: >-
+                    The percentage value that should be applied as a refund,
+                    e.g. 50.0 means a 50% refund will be applied.
+                items:
+                  type: array
+                  description: >-
+                    A list of product and/or shipping items that should be
+                    refunded.
+                  minLength: 1
+                  items:
+                    type: object
+                    oneOf:
+                      - required:
+                          - id
+                          - type
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                              - product
+                          id:
+                            type: string
+                            minLength: 36
+                            maxLength: 36
+                            description: The identifier of the item.
+                      - required:
+                          - type
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                              - shipping
+        required: true
+      responses:
+        '200':
+          description: >
+            Returns the calculated refund amount along wiht the list of all
+            items included in the refund.
+          content:
+            application/json:
+              example:
+                refund:
+                  gross: 120
+                items:
+                  - id: 927c702a-3cb1-48c1-9189-554bf9d0fde7
+                    type: product
+                    refund:
+                      gross: 96
+                  - id: 7b1d4a63-c97f-4ca9-8771-9464c1d86fea
+                    type: shipping
+                    refund:
+                      gross: 12
+                  - id: 3e679ff2-296c-4886-aa8e-c85124621d3a
+                    type: shipping
+                    refund:
+                      gross: 12
+              schema:
+                description: >-
+                  The response of the calculated refund amount for a list of
+                  items.
+                type: object
+                required:
+                  - refund
+                  - items
+                properties:
+                  refund:
+                    description: >-
+                      The refund object holding information about the net amount
+                      and taxes of the refund.
+                    type: object
+                    required:
+                      - gross
+                    properties:
+                      gross:
+                        type: number
+                        description: >-
+                          The gross amount of the refund, it's the sum of
+                          'net_amount' and 'taxes'.
+                  items:
+                    type: array
+                    minLength: 1
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - type
+                        - refund
+                      properties:
+                        type:
+                          type: string
+                          enum:
+                            - product
+                            - shipping
+                          description: >-
+                            The type of the line item, can be either 'product'
+                            or 'shipping'.
+                        id:
+                          type: string
+                          minLength: 36
+                          maxLength: 36
+                          description: The identifier of the item.
+                        refund:
+                          description: >-
+                            The refund object holding information about the net
+                            amount and taxes of the refund.
+                          type: object
+                          required:
+                            - gross
+                          properties:
+                            gross:
+                              type: number
+                              description: >-
+                                The gross amount of the refund, it's the sum of
+                                'net_amount' and 'taxes'.
+        '400':
+          description: >
+            The calculation request was rejected. This response is typically
+            sent when
+
+            payload is malformed or if an order-level refund request already
+            exists.
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                title: Error Response
+                description: Response information in case of an error
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  messages:
+                    description: List of error messages
+                    type: array
+                    items:
+                      type: string
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+        '404':
+          description: The order can't be found
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                title: Error Response
+                description: Response information in case of an error
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  messages:
+                    description: List of error messages
+                    type: array
+                    items:
+                      type: string
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+        '500':
+          description: Internal server Error.
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                title: Error Response
+                description: Response information in case of an error
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  messages:
+                    description: List of error messages
+                    type: array
+                    items:
+                      type: string
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier which caused the error. Can be
+                      used to further debug the root causes of this error.
+        default:
+          description: Unexpected Error
+      description: >
+        Calculates the total refund amount for the requested items (product or
+        shipping) that will be applied
+
+        when creating a refund request.
+
+        The amount is rounded according to the currency the customer used to pay
+        the order.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+x-annotation-crossOriginAllowed: true

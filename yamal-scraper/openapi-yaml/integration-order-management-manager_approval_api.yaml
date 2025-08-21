@@ -1,0 +1,336 @@
+openapi: 3.0.3
+info:
+  title: Manager approval
+  version: 1.0.0
+  description: >
+    Manager approval API
+
+
+    Represents a set of rules which triggers a mandatory approval request within
+    the order fulfillment
+
+    process, typically during [checkout in NewStore Associate
+    App](/docs/assoapp/using-assoapp.html#managing-order-approvals).
+
+    For example `cash_payment_rule` or `discount_rule`.
+servers:
+  - url: http://localhost:8000
+    description: localhost
+  - url: https://dodici.x.newstore.net/v1/c
+    description: The sandbox server
+  - url: https://dodici.s.newstore.net/v1/c
+    description: The staging server
+paths:
+  /manager_approval:
+    get:
+      responses:
+        '200':
+          description: Rules are returned successfully.
+          content:
+            application/json:
+              example:
+                rules:
+                  - label: unique_name
+                    description: eaxample description
+                    criteria:
+                      - name: payment_method
+                        value: cash
+              schema:
+                description: List of manager approval rules
+                properties:
+                  rules:
+                    description: List of rules.
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Rule'
+        '500':
+          $ref: '#/components/responses/500'
+      description: |
+        Retrieves all manager approval rules.
+      summary: List approval rules
+      operationId: list-approval-rules
+    post:
+      responses:
+        '201':
+          description: The rule has been created successfully.
+          content:
+            application/json:
+              examples:
+                success_response:
+                  $ref: '#/components/examples/success_response'
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          $ref: '#/components/responses/400'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+      description: >
+        Creates a rule containing the criteria that determines if an order needs
+        approval before it can be placed
+
+        by an associate via NewStore Associate App.
+
+
+        You can use the following criteria to set approval rules:
+
+
+        | Criterion name      | Type              |
+
+        |---------------------|-------------------|
+
+        |`has_discount`       | Boolean           |
+
+        |`discount_value`     | Number            |
+
+        |`discount_percentage`| Number            |
+
+        |`discount_level`     | `order` or `item` |
+
+        |`payment_method`     | String            |
+
+        |`is_return`          | Boolean           |
+
+        |`is_blind_return`    | Boolean           |
+
+        |`refund_value`       | Number            |
+
+        |`has_tax_exemption`  | Boolean           |
+
+        |`order_value`        | Number            |
+
+
+        Available values of the `payment_method` field are: `cash`,
+        `credit_card`, `manual_credit_card`, `gift_card`, and `non_integrated`.
+
+
+        **Note:** NewStore Associate App allows the associate to apply discounts
+        either on `order` level or on
+
+        `item` level using the `discount_level` property. If no value for
+        `discount_level` is specified, it is set
+
+        to `order` by default.
+
+
+        You can apply a fixed discount amount to an order or item(s) using the
+        `discount_value` property.
+
+
+        If an order or item matches or exceeds the criteria specified in the
+        approval rules, the
+
+        order will need approval on the app.
+      summary: Create approval rule
+      operationId: create-approval-rule
+      requestBody:
+        content:
+          application/json:
+            examples:
+              order_level_discount:
+                $ref: '#/components/examples/order_level_discount'
+              item_level_discount:
+                $ref: '#/components/examples/item_level_discount'
+              fixed_value_discount:
+                $ref: '#/components/examples/fixed_value_discount'
+            schema:
+              $ref: '#/components/schemas/Rule'
+        required: true
+  /manager_approval/{label}:
+    put:
+      responses:
+        '200':
+          description: The rule has been updated successfully.
+          content:
+            application/json:
+              examples:
+                success_response:
+                  $ref: '#/components/examples/success_response'
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+      description: |
+        Updates the specified approval rule.
+
+        **Note:** Requires the `/{label}` to identify the rule
+      summary: Update approval rule
+      operationId: update-approval-rule
+      requestBody:
+        content:
+          application/json:
+            example:
+              summary: Order level discount approval
+              description: |
+                Orders with a discount of 80% or more need approval on the app.
+              value: &ref_0
+                label: RestrictDiscountsAbove80Percent
+                description: Discounts equal or above 80%
+                criteria:
+                  - name: has_discount
+                    value: 'true'
+                  - name: discount_percentage
+                    value: '80'
+                  - name: discount_level
+                    value: order
+            schema:
+              $ref: '#/components/schemas/Rule'
+        required: true
+    delete:
+      responses:
+        '200':
+          description: The rule has been deleted successfully.
+          content:
+            application/json:
+              examples:
+                success_response:
+                  $ref: '#/components/examples/success_response'
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+      description: |
+        Deletes the specified rule.
+
+        **Note:** Requires the `/{label}` to identify the rule
+      summary: Delete approval rule
+      operationId: delete-approval-rule
+    parameters:
+      - name: label
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The unique identifier of a manager approval rule.
+components:
+  schemas:
+    Response:
+      description: Message response
+      properties:
+        successful:
+          description: A flag indicating if the request was successful or not.
+          type: boolean
+        message:
+          description: A human readable descriptive message in case of an error.
+          type: string
+    Rule:
+      description: Manager approval rule
+      properties:
+        label:
+          description: A unique rule name.
+          type: string
+        description:
+          description: A shrot human readable description of the rule.
+          type: string
+        criteria:
+          description: List of criteria.
+          type: array
+          items:
+            $ref: '#/components/schemas/Criteria'
+    Criteria:
+      description: Manager approval rule
+      properties:
+        name:
+          description: Criteria name.
+          type: string
+        value:
+          description: Criteria value.
+          type: string
+  examples:
+    success_response:
+      summary: Success response
+      value:
+        successful: true
+        message: ''
+    order_level_discount:
+      summary: Order level discount approval
+      description: |
+        Orders with a discount of 80% or more need approval on the app.
+      value: *ref_0
+    item_level_discount:
+      summary: Item level discount approval
+      description: >
+        If an item in an order has a discount of 40% or more, the order needs
+        approval
+
+        on the app.
+      value:
+        label: RestrictDiscountsAbove40PercentOnItems
+        description: Discounts equal or above 40% on an item in an order
+        criteria:
+          - name: has_discount
+            value: 'true'
+          - name: discount_percentage
+            value: '40'
+          - name: discount_level
+            value: item
+    fixed_value_discount:
+      summary: Fixed value discount approval
+      description: >
+        If an item in an order has a discount of $50 or more, the order needs
+        approval
+
+        on the app.
+      value:
+        label: RestrictDiscountsAbove50USDOnItems
+        description: Discounts equal or above $50 on an item in an order
+        criteria:
+          - name: has_discount
+            value: 'true'
+          - name: discount_value
+            value: '50'
+          - name: discount_level
+            value: item
+  responses:
+    '400':
+      description: Bad Request - Request data is invalid.
+      content:
+        application/json:
+          example:
+            successful: false
+            message: invalid request
+          schema:
+            $ref: '#/components/schemas/Response'
+    '404':
+      description: The rule wasn't found.
+      content:
+        application/json:
+          example:
+            successful: false
+            message: not found
+          schema:
+            $ref: '#/components/schemas/Response'
+    '409':
+      description: Conflict, requested rule label already exists.
+      content:
+        application/json:
+          example:
+            successful: false
+            message: conflict
+          schema:
+            $ref: '#/components/schemas/Response'
+    '500':
+      description: An internal error occurred.
+      content:
+        application/json:
+          example:
+            successful: false
+            message: internal error
+          schema:
+            $ref: '#/components/schemas/Response'
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

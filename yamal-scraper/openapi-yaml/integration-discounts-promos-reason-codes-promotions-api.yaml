@@ -1,0 +1,628 @@
+openapi: 3.0.3
+info:
+  title: Reason Codes
+  version: 1.0.0
+  description: >-
+    Use this API to manage Reason Codes for discount discretionry or price
+    override.
+  x-audience: external-public
+  x-api-id: reason-codes-3634359717
+  x-domain-gateway-integration:
+    serviceName: reason-codes
+    lambda:
+      arn: '{{.lambdaArn}}'
+  contact:
+    name: Team Products Prices Promotions
+    url: https://www.newstore.com
+    email: team-product-prices-promotions@newstore.com
+servers:
+  - url: https://{tenant}.{environment}.newstore.net/promotions
+    variables:
+      tenant:
+        default: dodici
+        description: The tenant name
+      environment:
+        default: s
+        description: The staging/production environment (s or p)
+tags:
+  - name: Reason Codes
+    description: Reason Codes API.
+security:
+  - oauth:
+      - promotions:reason-codes:read
+      - promotions:reason-codes:write
+paths:
+  /reason-codes:
+    get:
+      description: Retrieves reason codes per locale
+      summary: List Reason Codes
+      security:
+        - oauth:
+            - promotions:reason-codes:read
+      operationId: listReasonCodes
+      tags:
+        - Reason Codes
+      parameters:
+        - name: Accept-Language
+          in: header
+          description: >-
+            The locale of reason codes. if not present all codes from all
+            locales are returned.
+          schema:
+            type: string
+            description: >-
+              The locale of the reason code, pattern is
+              '(^[a-z]{2}-[A-Za-z]{2}$)'
+        - name: feature
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: &ref_3
+              - DISCOUNT
+              - OVERRIDE
+            description: Indicates the feature of the reason code.
+            default: DISCOUNT
+      responses:
+        '200':
+          description: Retrieves reason codes per locale
+          content:
+            application/json:
+              schema:
+                type: object
+                required: &ref_4
+                  - codes
+                properties: &ref_5
+                  codes:
+                    type: array
+                    items:
+                      type: object
+                      required: &ref_11
+                        - code
+                        - locale
+                        - name
+                      properties: &ref_12
+                        code:
+                          type: string
+                          description: >-
+                            An identifier of the reason code, pattern is
+                            '^[^+=%]+$'
+                          maxLength: 256
+                        name:
+                          type: string
+                        locale:
+                          type: string
+                          description: >-
+                            The locale of the reason code, pattern is
+                            '(^[a-z]{2}-[A-Za-z]{2}$)'
+                      example: &ref_13
+                        code: DFT
+                        name: defect
+                        locale: en-us
+        '400':
+          description: Locale does not match regex
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: &ref_0
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+                required: &ref_1
+                  - message
+                  - request_id
+                example: &ref_2
+                  message: Invalid parameter.
+                  request_id: ec2f3c9bb016ba971bf6
+        '401':
+          description: Unauthorized request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '403':
+          description: Forbidden request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '404':
+          description: When no reason codes exist for the tenant or for the given locale
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        default:
+          description: Error response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+    post:
+      description: Creates a new reason code
+      summary: Create a Reason Code
+      security:
+        - oauth:
+            - promotions:reason-codes:write
+      operationId: createReasonCode
+      tags:
+        - Reason Codes
+      parameters:
+        - name: Accept-Language
+          in: header
+          description: The locale that the reasons codes belong to.
+          schema:
+            type: string
+            description: >-
+              The locale of the reason code, pattern is
+              '(^[a-z]{2}-[A-Za-z]{2}$)'
+            default: en-US
+        - name: feature
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: *ref_3
+            description: Indicates the feature of the reason code.
+            default: DISCOUNT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: &ref_14
+                code:
+                  type: string
+                  description: An identifier of the reason code, pattern is '^[^+=%]+$'
+                  maxLength: 256
+                name:
+                  type: string
+                  description: The name of the reason code.
+              required: &ref_15
+                - code
+                - name
+              example: &ref_16
+                code: DFT
+                name: defect
+      responses:
+        '201':
+          description: Reason code was created
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '401':
+          description: Unauthorized request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '403':
+          description: Forbidden request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '409':
+          description: Reason code already exist
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        default:
+          description: Error response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+  /reason-codes/{code}:
+    get:
+      description: Retrieves a reason code with all localisations
+      summary: Get a Reason Code
+      security:
+        - oauth:
+            - promotions:reason-codes:read
+      operationId: showReasonCode
+      tags:
+        - Reason Codes
+      parameters:
+        - name: code
+          in: path
+          required: true
+          description: An identifier of a reason code.
+          schema:
+            type: string
+            description: An identifier of the reason code, pattern is '^[^+=%]+$'
+            maxLength: 256
+        - name: feature
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: *ref_3
+            description: Indicates the feature of the reason code.
+            default: DISCOUNT
+      responses:
+        '200':
+          description: Retrieves reason code with all localisations
+          content:
+            application/json:
+              schema:
+                type: object
+                required: &ref_6
+                  - localizations
+                  - code
+                properties: &ref_7
+                  localizations:
+                    type: array
+                    items:
+                      type: object
+                      required: &ref_8
+                        - locale
+                        - name
+                      properties: &ref_9
+                        name:
+                          type: string
+                          description: The name of the reason code.
+                        locale:
+                          type: string
+                          description: >-
+                            The locale of the reason code, pattern is
+                            '(^[a-z]{2}-[A-Za-z]{2}$)'
+                      example: &ref_10
+                        name: defect
+                        locale: en-us
+                  code:
+                    type: string
+                    description: An identifier of the reason code, pattern is '^[^+=%]+$'
+                    maxLength: 256
+        '401':
+          description: Unauthorized request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '403':
+          description: Forbidden request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '404':
+          description: Reason code does not exist
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        default:
+          description: Error response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+    patch:
+      description: Update the name of the reason code.
+      summary: Update a Reason Code
+      security:
+        - oauth:
+            - promotions:reason-codes:write
+      operationId: updateReasonCode
+      tags:
+        - Reason Codes
+      parameters:
+        - name: code
+          in: path
+          required: true
+          description: An identifier of a reason code.
+          schema:
+            type: string
+            description: An identifier of the reason code, pattern is '^[^+=%]+$'
+            maxLength: 256
+        - name: Accept-Language
+          in: header
+          description: The locale of the reason code.
+          schema:
+            type: string
+            description: >-
+              The locale of the reason code, pattern is
+              '(^[a-z]{2}-[A-Za-z]{2}$)'
+            default: en-US
+        - name: feature
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: *ref_3
+            description: Indicates the feature of the reason code.
+            default: DISCOUNT
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: &ref_17
+                name:
+                  type: string
+                  description: The name of the reason code.
+              required: &ref_18
+                - name
+              example: &ref_19
+                name: defect
+      responses:
+        '204':
+          description: The reason code was updated.
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '401':
+          description: Unauthorized request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '403':
+          description: Forbidden request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '404':
+          description: Reason code does not exist
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        default:
+          description: Error response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+    delete:
+      description: Delete a reason code
+      summary: Delete a Reason Code
+      security:
+        - oauth:
+            - promotions:reason-codes:write
+      operationId: destroyReasonCode
+      tags:
+        - Reason Codes
+      parameters:
+        - name: code
+          in: path
+          required: true
+          description: An identifier of a reason code.
+          schema:
+            type: string
+            description: An identifier of the reason code, pattern is '^[^+=%]+$'
+            maxLength: 256
+        - name: Accept-Language
+          in: header
+          description: The locale of the reason code.
+          schema:
+            type: string
+            description: >-
+              The locale of the reason code, pattern is
+              '(^[a-z]{2}-[A-Za-z]{2}$)'
+            default: en-US
+        - name: feature
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: *ref_3
+            description: Indicates the feature of the reason code.
+            default: DISCOUNT
+      responses:
+        '204':
+          description: The reason code was deleted.
+        '401':
+          description: Unauthorized request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '403':
+          description: Forbidden request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '404':
+          description: Reason code does not exist
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+        default:
+          description: Error response
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties: *ref_0
+                required: *ref_1
+                example: *ref_2
+components:
+  schemas:
+    Code:
+      type: string
+      description: An identifier of the reason code, pattern is '^[^+=%]+$'
+      maxLength: 256
+    Locale:
+      type: string
+      description: The locale of the reason code, pattern is '(^[a-z]{2}-[A-Za-z]{2}$)'
+    LocaleWithDefault:
+      type: string
+      description: The locale of the reason code, pattern is '(^[a-z]{2}-[A-Za-z]{2}$)'
+      default: en-US
+    ListResponse:
+      type: object
+      required: *ref_4
+      properties: *ref_5
+    GetResponse:
+      type: object
+      required: *ref_6
+      properties: *ref_7
+    Localization:
+      type: object
+      required: *ref_8
+      properties: *ref_9
+      example: *ref_10
+    LocalizedReasonCode:
+      type: object
+      required: *ref_11
+      properties: *ref_12
+      example: *ref_13
+    ReasonCodeInit:
+      type: object
+      properties: *ref_14
+      required: *ref_15
+      example: *ref_16
+    ReasonCodePatch:
+      type: object
+      properties: *ref_17
+      required: *ref_18
+      example: *ref_19
+    ErrorResponse:
+      type: object
+      properties: *ref_0
+      required: *ref_1
+      example: *ref_2
+    Feature:
+      type: string
+      enum: *ref_3
+      description: Indicates the feature of the reason code.
+      default: DISCOUNT
+  securitySchemes:
+    oauth:
+      flows:
+        clientCredentials:
+          scopes:
+            promotions:reason-codes:read: Grants privileges to list reason codes
+            promotions:reason-codes:write: Grants privileges to create and update reason codes
+          tokenUrl: >-
+            https://id.{stage}.newstore.net/auth/realms/{tenant}/protocol/openid-connect/token
+      type: oauth2

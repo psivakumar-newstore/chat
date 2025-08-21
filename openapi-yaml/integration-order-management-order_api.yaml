@@ -1,0 +1,174 @@
+openapi: 3.0.0
+info:
+  title: Order API
+  version: v0
+  description: >
+    This API allows you to retrieve order level information. Currently, the API
+    allows you to
+
+    retrieve a list of up to 2000 fulfillment requests for an order.
+
+
+    This includes fulfillment requests from a store or DC.
+
+
+    You can also use this resource to check the status of each item in the
+    fulfillment request, and
+
+    perform a reconciliation with your ERP.
+
+
+    To accept, reject, or retrieve the status of fulfillment requests, see the
+
+    [Fulfillment provider
+    API](/newstore-cloud/order_management/dc_fulfillment_node_api.html).
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - newStoreAccessToken: []
+paths:
+  /order/{order_uuid}/fulfillment_requests:
+    get:
+      responses:
+        '200':
+          description: Successfully processed.
+          content:
+            application/json:
+              examples:
+                successfully_search_fulfillment_requests:
+                  summary: Successfully returned fulfillment requests
+                  description: >
+                    Sample response when a search for fulfillment requests is
+                    successful.
+
+                    A list of fulfillment requests are returned for the order
+                    ID.
+                  value:
+                    fulfillment_requests:
+                      - line_items:
+                          - item_id: 5b7d3e35-321e-984a-8b9c-d16bc31bfb
+                            product_id: 35510TshirtXXXL
+                            status: shipped
+                        id: 4447-4ff9-b7e6-f4019a9f3bec
+                        fulfillment_node_id: NYC_001
+                        service_level: IN_STORE_HANDOVER
+                        created_at: '2012-04-23T18:25:43.511Z'
+                failed_search_fulfillment_requests:
+                  summary: Failed search
+                  description: >
+                    Sample response when a search for fulfillment requests is
+                    unsuccessful. When
+                     fulfillment requests are not returned, the API returns an empty list.
+                  value:
+                    fulfillment_requests: []
+              schema:
+                title: Fulfillment Requests By Sales Order ID
+                description: >-
+                  The list of fulfillment requests for an order, and the status
+                  of items in each fulfillment request.
+                type: object
+                properties:
+                  fulfillment_requests:
+                    description: The list of fulfillment requests.
+                    type: array
+                    maxItems: 2000
+                    items:
+                      type: object
+                      properties:
+                        line_items:
+                          description: >-
+                            The list of items in the fulfillment requests and
+                            information about each item.
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              item_id:
+                                type: string
+                                description: The identifier of the item.
+                              product_id:
+                                type: string
+                                description: The identifier of the product.
+                              status:
+                                type: string
+                                description: >-
+                                  The current state of the item. This can be
+                                  either dispatched, canceled, shipped, or
+                                  rejected.
+                            required:
+                              - item_id
+                              - product_id
+                              - status
+                        id:
+                          type: string
+                          description: The identifier of the fulfillment request.
+                        fulfillment_node_id:
+                          type: string
+                          description: The fulfillment node of the fulfillment request.
+                        service_level:
+                          type: string
+                          description: The service level of the fulfillment request.
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Time when the fulfillment request was created.
+                required:
+                  - fulfillment_requests
+        '400':
+          description: The request body is invalid.
+          content:
+            application/json:
+              schema:
+                title: Fulfillment Requests By Order ID Bad Request Error Response
+                description: >-
+                  Error response code for fulfillment request items by Order ID
+                  and details of a bad request.
+                type: object
+                required:
+                  - error_code
+                properties:
+                  error_code:
+                    type: string
+                    description: A unique identifier for the error code.
+                  error_description:
+                    type: string
+                    description: A human readable description of the error code.
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/json:
+              schema:
+                title: Fulfillment Requests By Order ID Internal Error Response
+                description: >-
+                  Error response code for fulfillment request items by Order ID
+                  and details for an internal error.
+                type: object
+                required:
+                  - error_code
+                properties:
+                  error_code:
+                    type: string
+                    description: A unique identifier for the error code.
+                  error_description:
+                    type: string
+                    description: A human readable description of the error code.
+      description: >
+        Returns a list of up to 2000 fulfillment requests for an order. Use this
+        method to check
+
+        the status of items in a fulfillment request for an order ID.
+      summary: List fulfillment requests for an order
+      operationId: list-fulfillment-request-for-order
+    parameters:
+      - name: order_uuid
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique ID for an order.

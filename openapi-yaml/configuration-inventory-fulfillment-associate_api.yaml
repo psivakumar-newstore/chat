@@ -1,0 +1,1265 @@
+openapi: 3.0.1
+info:
+  title: Associate (Deprecated)
+  contact:
+    name: Team Store Fulfillment
+    url: https://docs.newstore.net
+    email: team-store-fulfillment@newstore.com
+  description: >-
+    API responsible for handling internal operations that manage fulfillment
+    orders routed to a store. Please note that this API is deprecated.
+  version: '0.1'
+  license:
+    name: Proprietary. All rights reserved.
+    url: https://newstore.com/
+tags:
+  - name: Store fulfillment configuration
+    description: |
+      Use this resource to configure store timer configuration.
+  - name: Store fulfillment requests
+    description: >
+      Use this resource to manage orders that are currently in the process of
+      being fulfilled by a store or are in
+
+      transit from or to a store.
+servers:
+  - url: https://dodici.x.newstore.net/v0/d
+paths:
+  /fulfillment_associate/_reassign:
+    post:
+      tags:
+        - Store fulfillment requests
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Something wrong happened to the request.
+          content:
+            application/json:
+              schema:
+                description: Information related to the error.
+                title: Error from provider rates request
+                example:
+                  error:
+                    code: associates_in_different_stores
+                    description: >-
+                      Chosen associates are not assigned to the same store,
+                      choose another associate.
+                    extended_attributes: {}
+                type: object
+                properties:
+                  error:
+                    description: Error object.
+                    type: object
+                    properties:
+                      code:
+                        description: Identifier of the error type.
+                        type: string
+                      description:
+                        description: Error description.
+                        type: string
+                      extended_attributes:
+                        description: Any additional information that could be useful.
+                        type: object
+                    required:
+                      - code
+                      - description
+                required:
+                  - error
+        '404':
+          description: Associate to be assigned was not found.
+          content:
+            application/json:
+              schema:
+                description: Information related to the error.
+                title: Error from provider rates request
+                example:
+                  error:
+                    code: user_not_found
+                    description: 'Failed to find associate with id: 33JB3UROr1S3Je9hDaRh7f.'
+                    extended_attributes: {}
+                type: object
+                properties:
+                  error:
+                    description: Error object.
+                    type: object
+                    properties:
+                      code:
+                        description: Identifier of the error type.
+                        type: string
+                      description:
+                        description: Error description.
+                        type: string
+                      extended_attributes:
+                        description: Any additional information that could be useful.
+                        type: object
+                    required:
+                      - code
+                      - description
+                required:
+                  - error
+        '500':
+          description: An internal error occurred.
+          content:
+            application/json:
+              schema:
+                description: Information related to the error.
+                title: Error from provider rates request
+                type: object
+                properties:
+                  error:
+                    description: Error object.
+                    type: object
+                    properties:
+                      code:
+                        description: Identifier of the error type.
+                        type: string
+                      description:
+                        description: Error description.
+                        type: string
+                      extended_attributes:
+                        description: Any additional information that could be useful.
+                        type: object
+                    required:
+                      - code
+                      - description
+                required:
+                  - error
+      description: >-
+        Reassign the list of open fulfillment logistic orders to another
+        associate.
+      summary: Reassign orders to new associate
+      operationId: reassignOrders
+      requestBody:
+        content:
+          application/json:
+            example:
+              current_associate_id: 22IB3UROr1S3Je9hDaRh7f
+              new_associate_id: 33JB3UROr1S3Je9hDaRh7f
+            schema:
+              title: >-
+                Reassign all open FulfillmentLogisticOrders to another
+                associate.
+              type: object
+              properties:
+                current_associate_id:
+                  type: string
+                new_associate_id:
+                  type: string
+              required:
+                - current_associate_id
+                - new_associate_id
+        required: true
+  /fulfillment_logistic_orders/{fulfillment_request_id}/accept:
+    post:
+      tags:
+        - Store fulfillment requests
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Accept store fulfillment request
+      operationId: acceptStoreFulfillmentRequest
+      description: |
+        Use this method to accept a fulfillment request.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                itn:
+                  description: The box's itn, needed for easypost, if order>$2500
+                  type: string
+      responses:
+        '201':
+          description: >-
+            The request is successful. Changes in NOM may take a few seconds to
+            appear.
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment_logistic_orders/{fulfillment_request_id}/decline:
+    post:
+      tags:
+        - Store fulfillment requests
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Decline store fulfillment request
+      operationId: declineStoreFulfillmentRequest
+      description: |
+        Use this method to decline a fulfillment request.
+      responses:
+        '201':
+          description: >-
+            The request is successful. Changes in NOM may take a few seconds to
+            appear.
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment_logistic_orders/{fulfillment_request_id}/mispick:
+    post:
+      tags:
+        - Store fulfillment requests
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Mispick store fulfillment request
+      operationId: mispickStoreFulfillmentRequest
+      description: |
+        Use this method to mispick a fulfillment request.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mispicked_items:
+                  description: >-
+                    A list of objects, containing mispicked item product_id and
+                    mispicked_quantity
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      mispicked_quantity:
+                        description: Number of mispicked products.
+                        type: integer
+                      product_id:
+                        description: The identifier for the product.
+                        type: string
+                    required:
+                      - product_id
+                      - mispicked_quantity
+      responses:
+        '201':
+          description: >-
+            The request is successful. Changes in NOM may take a few seconds to
+            appear.
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment_logistic_orders/{fulfillment_request_id}/mispack:
+    post:
+      tags:
+        - Store fulfillment requests
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Mispack store fulfillment request
+      operationId: mispackStoreFulfillmentRequest
+      description: |
+        Use this method to mispack a fulfillment request.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mispacked_items:
+                  description: >-
+                    A list of objects, containing mispacked item product_id and
+                    mispacked_quantity
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      mispacked_quantity:
+                        description: Number of mispacked products.
+                        type: integer
+                      product_id:
+                        description: The identifier for the product.
+                        type: string
+                    required:
+                      - product_id
+                      - mispacked_quantity
+      responses:
+        '201':
+          description: >-
+            The request is successful. Changes in NOM may take a few seconds to
+            appear.
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment_logistic_orders/{fulfillment_request_id}/start_packing:
+    post:
+      tags:
+        - Store fulfillment requests
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Start packing store fulfillment request
+      operationId: startPackingStoreFulfillmentRequest
+      description: |
+        Use this method to start packing a fulfillment request.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scanned_order_items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      external_identifier:
+                        $ref: '#/components/schemas/externalIdentifier'
+                      itn:
+                        type: string
+                      order_item_uuid:
+                        maxLength: 36
+                        minLength: 36
+                        type: string
+                    required:
+                      - order_item_uuid
+                      - external_identifier
+                itn:
+                  description: The box's itn, needed for easypost, if order>$2500
+                  type: string
+      responses:
+        '201':
+          description: >-
+            The request is successful. Changes in NOM may take a few seconds to
+            appear.
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment_logistic_orders/{fulfillment_request_id}/finish_packing:
+    post:
+      tags:
+        - Store fulfillment requests
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Finish packing store fulfillment request
+      operationId: finishPackingStoreFulfillmentRequest
+      description: |
+        Use this method to finish packing a fulfillment request.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                boxes:
+                  description: >-
+                    A list of boxes for the packing step. Each box can contain
+                    multiple items.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      index:
+                        description: The box's order index number
+                        type: integer
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            external_identifier:
+                              $ref: '#/components/schemas/externalIdentifier'
+                            order_item_uuid:
+                              maxLength: 36
+                              minLength: 36
+                              type: string
+                          required:
+                            - external_identifier
+                            - order_item_uuid
+                      itn:
+                        description: The box's itn, needed for easypost, if order>$2500
+                        type: string
+                      package_option_uuid:
+                        description: The selected package option UUID
+                        maxLength: 36
+                        minLength: 36
+                        type: string
+                    required:
+                      - items
+                      - index
+                itn:
+                  description: The box's itn, needed for easypost, if order>$2500
+                  type: string
+      responses:
+        '201':
+          description: >-
+            The request is successful. Changes in NOM may take a few seconds to
+            appear.
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment_logistic_orders/{fulfillment_request_id}/ready_for_pickup:
+    post:
+      tags:
+        - Store fulfillment requests
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Finish packing store fulfillment request
+      operationId: readyForPickupPackingStoreFulfillmentRequest
+      description: |
+        Use this method to mark a fulfillment request as ready for pickup
+      responses:
+        '201':
+          description: >-
+            The request is successful. Changes in NOM may take a few seconds to
+            appear.
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment_logistic_orders/{fulfillment_request_id}/confirm_handover:
+    post:
+      tags:
+        - Store fulfillment requests
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Finish packing store fulfillment request
+      operationId: confirmHandoverPackingStoreFulfillmentRequest
+      description: |
+        Use this method to confirm handover on a fulfillment request
+      responses:
+        '201':
+          description: >-
+            The request is successful. Changes in NOM may take a few seconds to
+            appear.
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment_logistic_orders/{fulfillment_request_id}/cancel_item/{sales_order_item_uuid}:
+    post:
+      deprecated: true
+      tags:
+        - Store fulfillment requests
+      summary: >-
+        DEPRECATED, OLD FLOW ONLY. Cancel item for the given fulfillment request
+        id
+      description: >
+        Removes the specified item from the order and rejects the item that are
+        part of the store fulfillment request.
+
+
+        To cancel items that are part of orders fulfilled by a
+        [DC](/docs/glossary.html#term-DC), use
+
+        [this API](/newstore-cloud/newstore.html#fulfillment-requests) instead.
+      operationId: cancelItem
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+        - name: sales_order_item_uuid
+          in: path
+          description: The identifier of the order item in NewStore.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Represents a succesful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Flags the result as successful.
+        '400':
+          description: User input is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment_logistic_orders/{fulfillment_request_id}/mark_as_shipped:
+    patch:
+      tags:
+        - Store fulfillment requests
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Update shipping status
+      operationId: markOrderAsShipped
+      description: >
+        Marks some or all items in a fulfillment request assigned to a store as
+        shipped.
+
+
+        When an order cannot be fulfilled in a store because of external reasons
+        such as the failure of a shipment provider API,
+
+        the retailer usually ships the items manually. However, this data is not
+        processed in NewStore, which leads to order
+
+        data that is not in sync for the retailer.
+
+
+        Use this endpoint to manually mark such shipments that have been done
+        outside of NewStore as shipped, and keep the order
+
+        and routing data in sync with the real world.
+
+
+        **Important**: Using this method overrides system workflow rules and the
+        actual status of the shipment, and marks the
+
+        specified items as shipped.
+
+
+        To update the shipping status of orders that are fulfilled by a
+        [DC](/docs/glossary.html#term-DC), use
+
+        [this
+        method](/newstore-cloud/newstore.html#/shipment-update-shipping-status)
+        instead.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tracking_code
+                - provider
+              properties:
+                tracking_code:
+                  type: string
+                  format: str
+                  description: The tracking code sent by your shipment provider.
+                  example: '9999999999'
+                provider:
+                  type: string
+                  description: >-
+                    The name of your shipping provider. The shipping provider
+                    you specify here must be configured for your business. For
+                    more information on how to configure shipping providers, see
+                    the
+                    [docs](/docs/development/configuration/config-shipping.html#adding-shipping-providers).
+                  example: FedEx
+      responses:
+        '201':
+          description: The order is successfully marked as shipped.
+        '400':
+          description: User input is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment_logistic_order/{fulfillment_request_id}/_force_cancel:
+    post:
+      tags:
+        - Store fulfillment requests
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Cancel store fulfillment request
+      operationId: cancelStoreFulfillmentRequest
+      description: >
+        Use this method to cancel a fulfillment request that has been routed to
+        a store for fulfillment.
+
+
+        This method does not consider the current status of the items that are
+        part of the fulfillment request, or
+
+        how far they have progressed in the order fulfillment process.
+
+
+        Use this method to cancel items in an order that:
+
+
+        - Are not possible to fulfill because of a fulfillment error.
+
+        - The customer decided to cancel after placing their order.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: >-
+            The request for cancellation is successful. Changes in NOM may take
+            a few seconds to appear.
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment-requests/{fulfillment_request_id}/shipment:
+    post:
+      tags:
+        - Store Fulfillment shipment
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Book (or retry) shipment for this fulfillment
+      operationId: bookFulfillmentRequestShipment
+      description: >
+        Use this method to book or retry shipment for a fulfillment request that
+        was routed to a store.
+
+
+        This method does not consider the current status of the items that are
+        part of the fulfillment request, or
+
+        how far they have progressed in the order fulfillment process.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: >-
+            The request was received and will be processed asynchronously. Get
+            the resource for updates.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - accepted
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    get:
+      tags:
+        - Store Fulfillment shipment
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Retrieves shipment status for this shipment
+      operationId: getBookFulfillmentRequestShipment
+      description: >
+        Use this method to book or retry shipment for a fulfillment request that
+        was routed to a store.
+
+
+        This method does not consider the current status of the items that are
+        part of the fulfillment request, or
+
+        how far they have progressed in the order fulfillment process.
+      responses:
+        '200':
+          description: Book shipment status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - accepted
+                      - requested
+                      - booked
+                      - failed
+                  label_url:
+                    type: string
+                    description: Shipping Label URL that points to a printable document.
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /fulfillment-requests/{fulfillment_request_id}/documents:
+    get:
+      tags:
+        - Store Fulfillment shipment
+      parameters:
+        - name: fulfillment_request_id
+          in: path
+          description: |
+            The identifier of the fulfillment request id.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 631dfeb6-4743-44b3-87ce-fda62b596760
+      summary: Retrieves documents for this shipment
+      operationId: getFulfillmentRequestDocuments
+      description: >
+        Use this method to retrieve printable documents for a fulfillment
+        request that
+
+        was routed to a store.
+      responses:
+        '200':
+          description: Book shipment status.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - status
+                  properties:
+                    document:
+                      type: string
+                      enum:
+                        - shipping_label
+                        - invoice
+                    status:
+                      type: string
+                      enum:
+                        - pending
+                        - available
+                        - failed
+                    url:
+                      type: string
+                      description: Shipping Label URL that points to a printable document.
+        '400':
+          description: User input is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /configuration/pending_timer_duration:
+    get:
+      tags:
+        - Store fulfillment configuration
+      summary: Get pending timer duration for a tenant
+      operationId: getPendingTimer
+      description: |
+        Retrieves the pending timer duration for the retailer. This timer is the
+        waiting time to respond to a fulfillment request. 
+        See the [guide](/docs/fulapp/fulapp-orders.html#fulfilling-orders).
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Duration seconds
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - Store fulfillment configuration
+      summary: Set pending timer duration configuration for a tenant.
+      operationId: setPendingTimerDuration
+      description: >
+        Use this method to set a fulfillment timer for the retailer. This timer
+        is the
+
+        waiting time for an associate to respond to a fulfillment request before
+        it is
+
+        routed to another associate. See the
+        [guide](/docs/fulapp/fulapp-orders.html#fulfilling-orders).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: integer
+              description: Duration seconds
+              minimum: 1
+      responses:
+        '200':
+          description: The request for configuring pending timer duration is successful.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Duration seconds
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /configuration/book_delivery_in_advance:
+    get:
+      tags:
+        - Store fulfillment configuration
+      summary: Check advance delivery booking
+      operationId: getbookDeliveryInAdvance
+      description: |
+        Checks if the delivery for the order should be booked in advance.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+                description: True or False
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - Store fulfillment configuration
+      summary: Book delivery in advance
+      operationId: setbookDeliveryInAdvance
+      description: |
+        Specifies that the delivery should be booked in advance.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: boolean
+              description: True or False
+      responses:
+        '200':
+          description: The request for book delivery in advance is successfull.
+          content:
+            application/json:
+              schema:
+                type: boolean
+                description: True or False
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /configuration/packing_timer_duration:
+    get:
+      tags:
+        - Store fulfillment configuration
+      summary: Get packing timer duration
+      operationId: getPackingTimerDuration
+      description: >
+        Retrives the packing timer duration configured for the retailer. 
+
+        This timer is the waiting time displayed to an associate
+
+        during the
+        [packing](/docs/fulapp/fulapp-orders.html#picking-order-items) stage of
+        fulfillment.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Duration seconds
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - Store fulfillment configuration
+      summary: Set packing timer duration
+      operationId: setPackingTimerDuration
+      description: >
+        Specifies the packing timer duration configured for the retailer. 
+
+        This timer is the waiting time displayed to an associate
+
+        during the
+        [packing](/docs/fulapp/fulapp-orders.html#picking-order-items) stage of
+        fulfillment.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: integer
+              description: Duration seconds
+              minimum: 1
+      responses:
+        '200':
+          description: The request for configuring packing timer duration is successfull.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Duration seconds
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /configuration/duration_per_item:
+    get:
+      tags:
+        - Store fulfillment configuration
+      summary: Get picking timer for an item
+      operationId: getdurationperitem
+      description: >
+        Retrieves the duration of the timer configured for the retailer.
+
+        The timer is displayed to the associate 
+
+        in NewStore Fulfillment App, during the
+        [picking](/docs/fulapp/fulapp-orders.html#picking-order-items) 
+
+        stage of order fulfillment for each item.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Duration seconds
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - Store fulfillment configuration
+      summary: Set picking timer for an item
+      operationId: setdurationperitem
+      description: >
+        Specifies the duration of the timer configured for the retailer.
+
+        The timer is displayed to the associate 
+
+        in NewStore Fulfillment App, during the
+        [picking](/docs/fulapp/fulapp-orders.html#picking-order-items) 
+
+        stage of order fulfillment for each item.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: integer
+              description: Duration seconds
+              minimum: 1
+      responses:
+        '200':
+          description: The request for configuring duration per item is successfull.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Duration seconds
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /configuration/stores:
+    get:
+      tags:
+        - Get store configuration
+      summary: Get relation between stores and package_options
+      operationId: getStorePackageOptionsConfiguration
+      description: >
+        Use this method to get relation between stores and package_options for a
+        tenant.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/storeConfiguration'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - Update store configuration
+      summary: Set relation between stores and package_options
+      operationId: setStorePackageOptionsConfiguration
+      description: >
+        Use this method to set relation between stores and package_options for a
+        tenant.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/storeConfiguration'
+      responses:
+        '200':
+          description: The request for configuring stores is successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/storeConfiguration'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /configuration/packages:
+    get:
+      tags:
+        - Get packages configuration
+      summary: Get package options
+      operationId: getPackagesConfiguration
+      description: |
+        Use this method to get package options for a tenant.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/packagesConfiguration'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - Update packages configuration
+      summary: Set package options
+      operationId: setPackagesConfiguration
+      description: |
+        Use this method to set package options for a tenant.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/packagesConfiguration'
+      responses:
+        '200':
+          description: The request for configuring packages is successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/packagesConfiguration'
+        '400':
+          description: Something is wrong with the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+components:
+  schemas:
+    error:
+      title: General error format.
+      properties:
+        error_data:
+          type: object
+          description: Information about errors if the operation fails.
+          properties:
+            code:
+              type: string
+              description: Custom error code which gives you brief details about the error.
+            description:
+              type: string
+              description: Error description which gives you more details about the error.
+    storeConfiguration:
+      title: Store configuration format
+      type: object
+      properties:
+        stores:
+          type: array
+          items:
+            type: object
+            properties:
+              store_id:
+                type: string
+                description: ID of the store
+              package_options:
+                type: array
+                description: Package option IDs of the store
+                items:
+                  type: string
+              default_package:
+                type: string
+                description: ID of the default package option
+    packagesConfiguration:
+      title: package configuration format
+      type: object
+      required:
+        - uuid
+        - weight_unit
+      properties:
+        packages:
+          type: array
+          items:
+            type: object
+            properties:
+              uuid:
+                type: string
+                description: uuid of the package
+                example: 07403398-4dbc-4434-80e4-56f176008d4b
+              name:
+                type: string
+                description: name of the package
+                example: L
+              weight:
+                type: number
+                description: weight of the package
+                example: 1.74
+              weight_unit:
+                type: string
+                description: weight_unit of the package
+                example: lb
+              length:
+                type: number
+                description: length of the package
+                example: 42.55
+              width:
+                type: number
+                description: width of the package
+                example: 53.34
+              height:
+                type: number
+                description: height of the package
+                example: 19.91
+              length_unit:
+                type: string
+                description: length_unit of the package
+                example: cm
+    externalIdentifier:
+      description: This object can contain the product item identifier used by a costumer
+      type: object
+      properties:
+        EAN:
+          type: string
+        EPC:
+          type: string
+        SKU:
+          type: string
+      required:
+        - EAN
+        - EPC
+        - SKU

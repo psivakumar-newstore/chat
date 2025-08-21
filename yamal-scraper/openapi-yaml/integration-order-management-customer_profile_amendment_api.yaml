@@ -1,0 +1,184 @@
+openapi: 3.0.0
+info:
+  title: Customer Profile Updates API
+  version: 0.1.0
+  x-audience: external-public
+  x-api-id: customer-profile-updates-062023
+  description: >
+    Use this <a id="res">resource</a> to manage customer profiles that are
+    associated with orders
+
+    in the NewStore platform.
+
+
+    Using this API, you can create a request to update the customer profile
+    information for specified
+
+    orders, and add details such as an updated name or external ID, email, or
+    internal customer ID to the order.
+
+    The order details in the NewStore platform are updated in the background,
+    with an
+
+    update rate limit of 20,000 orders/hour.
+
+
+    Once updated, the orders are listed for the associated customer profile in
+    NOM or Associate App.
+
+
+    **Important**:.
+
+    - There is no validation check for the profile details in the platform, and
+    no external events
+      are emitted. When using this API, ensure that the correct details are being updated
+      for the order and associated customer, and that you reconcile these changes in any external
+      systems that require these modifications.
+    - Ensure that the customer profile exists in the platform before you add the
+    details to an
+      associated order via this API.
+  contact:
+    name: team-order-management
+    email: team-order-management@newstore.com
+servers:
+  - url: https://dodici.x.newstore.net/v0
+security:
+  - newStoreAccessToken: []
+paths:
+  /customer_profile_amendment:
+    post:
+      summary: Update customer profile for order
+      operationId: createCustomerProfileAmendmentRequest
+      requestBody:
+        content:
+          application/json:
+            example:
+              consumer_id: 8e0e99a2-a2ad-4328-9e59-2769aca7687a
+              display_id: 92292500-c666-4c8f-b54b-7a9c1bc427c8
+              email: newstore@test.com
+              orders:
+                - eb0441ef-52f0-47b9-a2d7-420232e17a0c
+                - fd6c4dc5-651e-46ba-b157-b943579a5dc3
+            schema:
+              title: Customer profile amendment request.
+              type: object
+              required:
+                - consumer_id
+                - display_id
+                - email
+                - orders
+              properties:
+                consumer_id:
+                  type: string
+                  description: >-
+                    The internal id of the consumer profile which should be used
+                    to override the existing data. E.g.
+                    0f18d068-8bf6-4126-a5b3-e00270f9f5d8.
+                  minLength: 1
+                display_id:
+                  type: string
+                  description: >-
+                    The public id of the consumer profile which should be used
+                    to override the existing data. E.g. GDOLV9NG.
+                  minLength: 1
+                email:
+                  type: string
+                  description: >-
+                    The new email address which should be used to override the
+                    existing data.
+                  minLength: 1
+                  format: email
+                orders:
+                  type: array
+                  description: >-
+                    A list of internal order ids for which the data should be
+                    updated.
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: string
+                    description: >-
+                      The internal sales order id of the order for which the
+                      customer profile information should be updated, e.g.
+                      af085733-6f0d-49ef-b078-9708e662ae92.
+        required: true
+      responses:
+        '201':
+          description: Customer profile amendment request captured.
+        '400':
+          description: Bad Request Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: bad_request
+                message: Value provided should be a string.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/problem+json:
+              example:
+                error_code: internal_server_error
+                message: Couldn't process request due to an internal error.
+                request_id: ec2f3c9bb016ba971bf6074098363
+              schema:
+                description: The error response.
+                type: object
+                required:
+                  - error_code
+                  - message
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    minLength: 1
+                    description: The specific code of the error.
+                  message:
+                    type: string
+                    minLength: 1
+                    description: A message explaining the error.
+                  request_id:
+                    type: string
+                    minLength: 1
+                    description: >-
+                      The identifier of the request, which can be used for
+                      tracing.
+        default:
+          description: Unexpected Error
+      description: >
+        Updates the customer profile information for the specified order.
+
+
+        For information about the limitations of this method, refer to the
+        [parent resource](#res).
+
+
+        **Note**: The profile update is not persisted in the GraphQL API.
+components:
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

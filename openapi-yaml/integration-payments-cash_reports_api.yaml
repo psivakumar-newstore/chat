@@ -1,0 +1,308 @@
+openapi: 3.0.0
+info:
+  title: Cash Drawer Reports API
+  description: >
+    The cash reports API is intended to provide access to cash drawer reports.
+    This API is used
+
+    to retrieve cash reports that can be viewed in
+    [NOM](/product/nomapp/nom-store-op/#nom-cash-mgmt).
+  version: '0'
+servers:
+  - url: https://dodici.x.newstore.net/_/v0
+paths:
+  /cash_reports/daily_summaries:
+    get:
+      responses:
+        '200':
+          description: The list of daily cash summary reports.
+          content:
+            application/json:
+              examples:
+                DailyReports:
+                  value:
+                    reports:
+                      - cash_drawer:
+                          name: Not a shoe box
+                          currency: USD
+                          status: closed
+                        store:
+                          name: 5th Avenue
+                        opened_at: '2020-01-24T09:00:22.656Z'
+                        closed_at: '2020-01-24T18:00:00.656Z'
+                        deposit_total: 600
+                        variance_total: -45.78
+                        sales_total: 300
+                        returns_total: -43.22
+                        non_sale_cash_in_total: 14.32
+                        non_sale_cash_out_total: -21.43
+                        open_float: 100
+                        end_of_day_count: 700
+                        opened_by:
+                          id: 22IB3UROr1S3Je9hDaRh7f
+                        closed_by:
+                          id: 22IB3UROr1S3Je9hDaRh7f
+                    pagination_info:
+                      count: 1
+                      total: 20
+                      offset: 1
+                    field_ranges:
+                      opened_at:
+                        min: 1590672630272
+                        max: 1472431030000
+                        type: range
+                      variance_total:
+                        min: -1000
+                        max: 300
+                        type: range
+                      store.name:
+                        type: range
+                        values:
+                          - Giovana Dodici
+                          - New York
+                          - Hannover
+              schema:
+                type: object
+                title: The list of cash drawer summary reports.
+                required:
+                  - reports
+                  - pagination_info
+                  - field_ranges
+                properties:
+                  pagination_info:
+                    type: object
+                    properties:
+                      count:
+                        description: Contains the count of the contained array.
+                        type: integer
+                      total:
+                        description: Contains the total count of documents.
+                        type: integer
+                      offset:
+                        description: Contains the current offset.
+                        type: integer
+                  reports:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - cash_drawer
+                        - store
+                      properties:
+                        cash_drawer:
+                          description: >-
+                            Attributes of the cash drawer where the events
+                            happened.
+                          type: object
+                          properties:
+                            name:
+                              description: >-
+                                The name of the cash drawer where the events
+                                happened.
+                              type: string
+                            currency:
+                              type: string
+                              description: >-
+                                The currency used in the cash transactions,
+                                using ISO-4217 Currency Code.
+                              minLength: 3
+                              maxLength: 3
+                            status:
+                              description: >-
+                                The current cash drawer status, can be open or
+                                closed.
+                              type: string
+                              enum:
+                                - open
+                                - closed
+                        store:
+                          description: >-
+                            Attributes of the store where the cash drawer is
+                            assigned to.
+                          type: object
+                          properties:
+                            name:
+                              description: The name of the store.
+                              type: string
+                        opened_at:
+                          description: The time when the drawer was activated.
+                          type: string
+                          format: date-time
+                        closed_at:
+                          description: The time when the drawer was deactivated.
+                          type: string
+                          format: date-time
+                        deposit_total:
+                          description: >-
+                            The sum of all transactions that are changing the
+                            float amount.
+                          type: number
+                          multipleOf: 0.01
+                          minLength: 1
+                        variance_total:
+                          description: The balance of reconciliation transactions.
+                          type: number
+                          multipleOf: 0.01
+                          minLength: 1
+                        sales_total:
+                          description: The sum of cash transactions triggered by sales.
+                          type: number
+                          multipleOf: 0.01
+                          minLength: 1
+                        returns_total:
+                          description: The sum of cash transactions triggered by returns.
+                          type: number
+                          multipleOf: 0.01
+                          minLength: 1
+                        non_sale_cash_in_total:
+                          description: >-
+                            The sum of cash non sale transactions adding money
+                            to the drawer.
+                          type: number
+                          multipleOf: 0.01
+                          minLength: 1
+                        non_sale_cash_out_total:
+                          description: >-
+                            The sum of cash non sale transactions removing money
+                            from the drawer.
+                          type: number
+                          multipleOf: 0.01
+                          minLength: 1
+                        open_float:
+                          description: The cash amount in the drawer after activation.
+                          type: number
+                          multipleOf: 0.01
+                          minLength: 1
+                        end_of_day_count:
+                          description: >-
+                            The counted amount before the cash drawer was
+                            deactivated.
+                          type: number
+                          multipleOf: 0.01
+                          minLength: 1
+                        opened_by:
+                          type: object
+                          description: >-
+                            Attributes of the associate who activated the cash
+                            drawer.
+                          properties:
+                            id:
+                              description: >-
+                                Identifier of the associate that activated the
+                                cash drawer.
+                              type: string
+                        closed_by:
+                          type: object
+                          description: >-
+                            Attributes of the associate that deactivated the
+                            cash drawer.
+                          properties:
+                            id:
+                              description: >-
+                                Identifier of the associate that deactivated the
+                                cash drawer.
+                              type: string
+                  field_ranges:
+                    type: object
+                    required:
+                      - opened_at
+                      - variance_total
+                      - store.name
+                    properties:
+                      opened_at:
+                        type: object
+                        properties:
+                          min:
+                            type: number
+                          max:
+                            type: number
+                          type:
+                            type: string
+                      variance_total:
+                        type: object
+                        properties:
+                          min:
+                            type: number
+                          max:
+                            type: number
+                          type:
+                            type: string
+                      store.name:
+                        type: object
+                        properties:
+                          values:
+                            type: array
+                            items:
+                              type: string
+                          type:
+                            type: string
+        '400':
+          description: Bad request data.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+      description: Retrieves a list of all daily cash summary reports in the system.
+      summary: List daily cash summary reports
+      operationId: listDailyCashSummaryReports
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}
+x-annotation-crossOriginAllowed: true
+security:
+  - newStoreAccessToken: []

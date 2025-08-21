@@ -1,0 +1,3974 @@
+openapi: 3.0.0
+info:
+  title: Cash Drawer API
+  version: '0'
+  description: >
+    Use this API to record sale transactions using a cash drawer, or track the
+    opening and closing
+
+    of a cash drawer in the store.
+servers:
+  - url: https://dodici.x.newstore.net/_/v0
+paths:
+  /cash_drawer_config/stores/{store_id}:
+    parameters:
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the store. To retrieve the store ID, use the
+
+          [List
+          stores](/newstore-cloud/store_operations/store.html#operation/listStores)
+          method.
+    put:
+      description: |
+        Adds or updates the cash drawer configuration for the store.
+      operationId: insertConfiguration
+      summary: Add or update cash drawer configuration
+      requestBody:
+        content:
+          application/json:
+            examples:
+              StoreCashDrawer:
+                value:
+                  cash_drawer_type: integrated
+                  cash_management_enabled: true
+            schema:
+              type: object
+              title: Store Cash Drawer Configuration.
+              required:
+                - cash_drawer_type
+                - cash_management_enabled
+              properties:
+                cash_drawer_type:
+                  type: string
+                  description: >-
+                    The kind of cash drawer used by the store, whether
+                    integrated or not.
+                  enum:
+                    - integrated
+                    - non_integrated
+                cash_management_enabled:
+                  type: boolean
+                  description: >-
+                    Defines if the cash management feature will be enabled or
+                    not in the store.
+        required: true
+      responses:
+        '200':
+          description: The store's cash drawer config was successfully updated.
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: User is not allowed to change the store config.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: Store not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: >
+            Store config cannot be updated.
+
+
+            **Error codes**
+
+            - `missing_configured_drawer`: Returned when the user tries to
+            enable the cash feature but there's no configured drawer available.
+
+            - `active_cash_drawer_found`: Returned when the user tries to change
+            the integration type or disable the feature and at least one cash
+            drawer is still active.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+    get:
+      description: |
+        Get the cash drawer configuration for the store.
+      summary: Get cash drawer configuration
+      operationId: getConfiguration
+      responses:
+        '200':
+          description: The store's cash drawer config was successfully retrieved.
+          content:
+            application/json:
+              examples:
+                CashDrawerConfig:
+                  value:
+                    cash_drawer_type: integrated
+                    cash_management_enabled: true
+              schema:
+                type: object
+                title: Store Cash Drawer Configuration.
+                required:
+                  - cash_drawer_type
+                  - cash_management_enabled
+                properties:
+                  cash_drawer_type:
+                    type: string
+                    description: >-
+                      The kind of cash drawer used by the store, whether
+                      integrated or not.
+                    enum:
+                      - integrated
+                      - non_integrated
+                  cash_management_enabled:
+                    type: boolean
+                    description: >-
+                      Defines if the cash management feature will be enabled or
+                      not in the store.
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: Store not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawer_config/transaction_types:
+    get:
+      description: >
+        Returns all possible transaction types together with the corresponding
+        list of reasons.
+
+        The list includes both configured and not configured transaction types.
+      summary: List transaction types
+      operationId: listTransactionTypes
+      responses:
+        '200':
+          description: |
+            The list of transaction types with the corresponding reasons.
+          content:
+            application/json:
+              examples:
+                TransactionTypesResponse:
+                  value:
+                    transaction_types:
+                      adjustment_out:
+                        status: not_allowed
+                      no_sale:
+                        status: configured
+                        configuration:
+                          balance_modification: cash_in
+                          reasons:
+                            - code: post_office
+                              label: Post office
+                            - code: food
+                              label: Buy snacks
+              schema:
+                type: object
+                title: Transaction Types
+                required:
+                  - transaction_types
+                properties:
+                  transaction_types:
+                    type: object
+                    properties:
+                      add_to_float:
+                        title: Cash transaction type.
+                        type: object
+                        required:
+                          - status
+                        properties:
+                          status:
+                            type: string
+                            description: >-
+                              The current lifecycle rule for this transaction
+                              type.
+                            enum:
+                              - not_configured
+                              - not_allowed
+                              - configured
+                          configuration:
+                            type: object
+                            description: >-
+                              The groupping strategy for the transaction type
+                              and the customized list of reasons.
+                            required:
+                              - balance_modification
+                              - reasons
+                            properties:
+                              balance_modification:
+                                description: >-
+                                  Defines how the cash transaction affects the
+                                  balance. Example: add_petty_cash is a
+                                  'cash_in'.
+                                type: string
+                                enum:
+                                  - cash_in
+                                  - cash_out
+                                  - neutral
+                              reasons:
+                                description: >-
+                                  The list of enabled reasons assigned to the
+                                  transaction type.
+                                type: array
+                                items:
+                                  type: object
+                                  title: Cash transaction reason.
+                                  required:
+                                    - code
+                                    - label
+                                  properties:
+                                    code:
+                                      type: string
+                                      description: >-
+                                        The unique code that will be exposed to
+                                        external consumers.
+                                    label:
+                                      description: >-
+                                        The human readable displayable label for
+                                        the reason.
+                                      type: string
+                      add_petty_cash:
+                        title: Cash transaction type.
+                        type: object
+                        required:
+                          - status
+                        properties:
+                          status:
+                            type: string
+                            description: >-
+                              The current lifecycle rule for this transaction
+                              type.
+                            enum:
+                              - not_configured
+                              - not_allowed
+                              - configured
+                          configuration:
+                            type: object
+                            description: >-
+                              The groupping strategy for the transaction type
+                              and the customized list of reasons.
+                            required:
+                              - balance_modification
+                              - reasons
+                            properties:
+                              balance_modification:
+                                description: >-
+                                  Defines how the cash transaction affects the
+                                  balance. Example: add_petty_cash is a
+                                  'cash_in'.
+                                type: string
+                                enum:
+                                  - cash_in
+                                  - cash_out
+                                  - neutral
+                              reasons:
+                                description: >-
+                                  The list of enabled reasons assigned to the
+                                  transaction type.
+                                type: array
+                                items:
+                                  type: object
+                                  title: Cash transaction reason.
+                                  required:
+                                    - code
+                                    - label
+                                  properties:
+                                    code:
+                                      type: string
+                                      description: >-
+                                        The unique code that will be exposed to
+                                        external consumers.
+                                    label:
+                                      description: >-
+                                        The human readable displayable label for
+                                        the reason.
+                                      type: string
+                      transfer_in:
+                        title: Cash transaction type.
+                        type: object
+                        required:
+                          - status
+                        properties:
+                          status:
+                            type: string
+                            description: >-
+                              The current lifecycle rule for this transaction
+                              type.
+                            enum:
+                              - not_configured
+                              - not_allowed
+                              - configured
+                          configuration:
+                            type: object
+                            description: >-
+                              The groupping strategy for the transaction type
+                              and the customized list of reasons.
+                            required:
+                              - balance_modification
+                              - reasons
+                            properties:
+                              balance_modification:
+                                description: >-
+                                  Defines how the cash transaction affects the
+                                  balance. Example: add_petty_cash is a
+                                  'cash_in'.
+                                type: string
+                                enum:
+                                  - cash_in
+                                  - cash_out
+                                  - neutral
+                              reasons:
+                                description: >-
+                                  The list of enabled reasons assigned to the
+                                  transaction type.
+                                type: array
+                                items:
+                                  type: object
+                                  title: Cash transaction reason.
+                                  required:
+                                    - code
+                                    - label
+                                  properties:
+                                    code:
+                                      type: string
+                                      description: >-
+                                        The unique code that will be exposed to
+                                        external consumers.
+                                    label:
+                                      description: >-
+                                        The human readable displayable label for
+                                        the reason.
+                                      type: string
+                      adjustment_in:
+                        title: Cash transaction type.
+                        type: object
+                        required:
+                          - status
+                        properties:
+                          status:
+                            type: string
+                            description: >-
+                              The current lifecycle rule for this transaction
+                              type.
+                            enum:
+                              - not_configured
+                              - not_allowed
+                              - configured
+                          configuration:
+                            type: object
+                            description: >-
+                              The groupping strategy for the transaction type
+                              and the customized list of reasons.
+                            required:
+                              - balance_modification
+                              - reasons
+                            properties:
+                              balance_modification:
+                                description: >-
+                                  Defines how the cash transaction affects the
+                                  balance. Example: add_petty_cash is a
+                                  'cash_in'.
+                                type: string
+                                enum:
+                                  - cash_in
+                                  - cash_out
+                                  - neutral
+                              reasons:
+                                description: >-
+                                  The list of enabled reasons assigned to the
+                                  transaction type.
+                                type: array
+                                items:
+                                  type: object
+                                  title: Cash transaction reason.
+                                  required:
+                                    - code
+                                    - label
+                                  properties:
+                                    code:
+                                      type: string
+                                      description: >-
+                                        The unique code that will be exposed to
+                                        external consumers.
+                                    label:
+                                      description: >-
+                                        The human readable displayable label for
+                                        the reason.
+                                      type: string
+                      remove_petty_cash:
+                        title: Cash transaction type.
+                        type: object
+                        required:
+                          - status
+                        properties:
+                          status:
+                            type: string
+                            description: >-
+                              The current lifecycle rule for this transaction
+                              type.
+                            enum:
+                              - not_configured
+                              - not_allowed
+                              - configured
+                          configuration:
+                            type: object
+                            description: >-
+                              The groupping strategy for the transaction type
+                              and the customized list of reasons.
+                            required:
+                              - balance_modification
+                              - reasons
+                            properties:
+                              balance_modification:
+                                description: >-
+                                  Defines how the cash transaction affects the
+                                  balance. Example: add_petty_cash is a
+                                  'cash_in'.
+                                type: string
+                                enum:
+                                  - cash_in
+                                  - cash_out
+                                  - neutral
+                              reasons:
+                                description: >-
+                                  The list of enabled reasons assigned to the
+                                  transaction type.
+                                type: array
+                                items:
+                                  type: object
+                                  title: Cash transaction reason.
+                                  required:
+                                    - code
+                                    - label
+                                  properties:
+                                    code:
+                                      type: string
+                                      description: >-
+                                        The unique code that will be exposed to
+                                        external consumers.
+                                    label:
+                                      description: >-
+                                        The human readable displayable label for
+                                        the reason.
+                                      type: string
+                      cash_pull:
+                        title: Cash transaction type.
+                        type: object
+                        required:
+                          - status
+                        properties:
+                          status:
+                            type: string
+                            description: >-
+                              The current lifecycle rule for this transaction
+                              type.
+                            enum:
+                              - not_configured
+                              - not_allowed
+                              - configured
+                          configuration:
+                            type: object
+                            description: >-
+                              The groupping strategy for the transaction type
+                              and the customized list of reasons.
+                            required:
+                              - balance_modification
+                              - reasons
+                            properties:
+                              balance_modification:
+                                description: >-
+                                  Defines how the cash transaction affects the
+                                  balance. Example: add_petty_cash is a
+                                  'cash_in'.
+                                type: string
+                                enum:
+                                  - cash_in
+                                  - cash_out
+                                  - neutral
+                              reasons:
+                                description: >-
+                                  The list of enabled reasons assigned to the
+                                  transaction type.
+                                type: array
+                                items:
+                                  type: object
+                                  title: Cash transaction reason.
+                                  required:
+                                    - code
+                                    - label
+                                  properties:
+                                    code:
+                                      type: string
+                                      description: >-
+                                        The unique code that will be exposed to
+                                        external consumers.
+                                    label:
+                                      description: >-
+                                        The human readable displayable label for
+                                        the reason.
+                                      type: string
+                      transfer_out:
+                        title: Cash transaction type.
+                        type: object
+                        required:
+                          - status
+                        properties:
+                          status:
+                            type: string
+                            description: >-
+                              The current lifecycle rule for this transaction
+                              type.
+                            enum:
+                              - not_configured
+                              - not_allowed
+                              - configured
+                          configuration:
+                            type: object
+                            description: >-
+                              The groupping strategy for the transaction type
+                              and the customized list of reasons.
+                            required:
+                              - balance_modification
+                              - reasons
+                            properties:
+                              balance_modification:
+                                description: >-
+                                  Defines how the cash transaction affects the
+                                  balance. Example: add_petty_cash is a
+                                  'cash_in'.
+                                type: string
+                                enum:
+                                  - cash_in
+                                  - cash_out
+                                  - neutral
+                              reasons:
+                                description: >-
+                                  The list of enabled reasons assigned to the
+                                  transaction type.
+                                type: array
+                                items:
+                                  type: object
+                                  title: Cash transaction reason.
+                                  required:
+                                    - code
+                                    - label
+                                  properties:
+                                    code:
+                                      type: string
+                                      description: >-
+                                        The unique code that will be exposed to
+                                        external consumers.
+                                    label:
+                                      description: >-
+                                        The human readable displayable label for
+                                        the reason.
+                                      type: string
+                      adjustment_out:
+                        title: Cash transaction type.
+                        type: object
+                        required:
+                          - status
+                        properties:
+                          status:
+                            type: string
+                            description: >-
+                              The current lifecycle rule for this transaction
+                              type.
+                            enum:
+                              - not_configured
+                              - not_allowed
+                              - configured
+                          configuration:
+                            type: object
+                            description: >-
+                              The groupping strategy for the transaction type
+                              and the customized list of reasons.
+                            required:
+                              - balance_modification
+                              - reasons
+                            properties:
+                              balance_modification:
+                                description: >-
+                                  Defines how the cash transaction affects the
+                                  balance. Example: add_petty_cash is a
+                                  'cash_in'.
+                                type: string
+                                enum:
+                                  - cash_in
+                                  - cash_out
+                                  - neutral
+                              reasons:
+                                description: >-
+                                  The list of enabled reasons assigned to the
+                                  transaction type.
+                                type: array
+                                items:
+                                  type: object
+                                  title: Cash transaction reason.
+                                  required:
+                                    - code
+                                    - label
+                                  properties:
+                                    code:
+                                      type: string
+                                      description: >-
+                                        The unique code that will be exposed to
+                                        external consumers.
+                                    label:
+                                      description: >-
+                                        The human readable displayable label for
+                                        the reason.
+                                      type: string
+                      no_sale:
+                        title: Cash transaction type.
+                        type: object
+                        required:
+                          - status
+                        properties:
+                          status:
+                            type: string
+                            description: >-
+                              The current lifecycle rule for this transaction
+                              type.
+                            enum:
+                              - not_configured
+                              - not_allowed
+                              - configured
+                          configuration:
+                            type: object
+                            description: >-
+                              The groupping strategy for the transaction type
+                              and the customized list of reasons.
+                            required:
+                              - balance_modification
+                              - reasons
+                            properties:
+                              balance_modification:
+                                description: >-
+                                  Defines how the cash transaction affects the
+                                  balance. Example: add_petty_cash is a
+                                  'cash_in'.
+                                type: string
+                                enum:
+                                  - cash_in
+                                  - cash_out
+                                  - neutral
+                              reasons:
+                                description: >-
+                                  The list of enabled reasons assigned to the
+                                  transaction type.
+                                type: array
+                                items:
+                                  type: object
+                                  title: Cash transaction reason.
+                                  required:
+                                    - code
+                                    - label
+                                  properties:
+                                    code:
+                                      type: string
+                                      description: >-
+                                        The unique code that will be exposed to
+                                        external consumers.
+                                    label:
+                                      description: >-
+                                        The human readable displayable label for
+                                        the reason.
+                                      type: string
+                      gift_card_cash_out:
+                        title: Cash transaction type.
+                        type: object
+                        required:
+                          - status
+                        properties:
+                          status:
+                            type: string
+                            description: >-
+                              The current lifecycle rule for this transaction
+                              type.
+                            enum:
+                              - not_configured
+                              - not_allowed
+                              - configured
+                          configuration:
+                            type: object
+                            description: >-
+                              The groupping strategy for the transaction type
+                              and the customized list of reasons.
+                            required:
+                              - balance_modification
+                              - reasons
+                            properties:
+                              balance_modification:
+                                description: >-
+                                  Defines how the cash transaction affects the
+                                  balance. Example: add_petty_cash is a
+                                  'cash_in'.
+                                type: string
+                                enum:
+                                  - cash_in
+                                  - cash_out
+                                  - neutral
+                              reasons:
+                                description: >-
+                                  The list of enabled reasons assigned to the
+                                  transaction type.
+                                type: array
+                                items:
+                                  type: object
+                                  title: Cash transaction reason.
+                                  required:
+                                    - code
+                                    - label
+                                  properties:
+                                    code:
+                                      type: string
+                                      description: >-
+                                        The unique code that will be exposed to
+                                        external consumers.
+                                    label:
+                                      description: >-
+                                        The human readable displayable label for
+                                        the reason.
+                                      type: string
+  /cash_drawers:
+    get:
+      description: |
+        Returns the cash drawers assigned to the store.
+      summary: List cash drawers
+      operationId: getCashDrawers
+      parameters:
+        - name: store_id
+          in: query
+          required: true
+          description: |
+            The search term to filter cash drawers by store ID.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The cash drawer list was successfully fetched.
+          content:
+            application/json:
+              examples:
+                CashDrawers:
+                  value:
+                    cash_drawers:
+                      - cash_drawer_id: us70517a
+                        name: Kesha
+                        currency: USD
+                        float: 200
+                        status: active
+                        type: integrated
+                      - cash_drawer_id: de70517b
+                        name: Kesha2
+                        currency: EUR
+                        float: 250
+                        status: inactive
+                        type: integrated
+              schema:
+                type: object
+                title: Cash Drawer List
+                description: Represents a list of cash drawers
+                required:
+                  - cash_drawers
+                properties:
+                  cash_drawers:
+                    type: array
+                    items:
+                      type: object
+                      title: Cash Drawer
+                      description: Represents a cash drawer
+                      required:
+                        - cash_drawer_id
+                        - name
+                        - currency
+                        - float
+                        - status
+                        - type
+                      properties:
+                        cash_drawer_id:
+                          type: string
+                          description: >-
+                            The ID of the cash drawer. For example it can be a
+                            barcode for integrated cash drawers or a generated
+                            ID for non-integrated ones.
+                          minLength: 1
+                        name:
+                          type: string
+                          description: Name of the cash drawer.
+                        currency:
+                          type: string
+                          description: Currency of the cash drawer.
+                        float:
+                          type: number
+                          multipleOf: 0.01
+                          description: Default float of the cash drawer.
+                        status:
+                          type: string
+                          description: Status of the cash drawer, either active/inactive.
+                        type:
+                          type: string
+                          description: >-
+                            The kind of cash drawer, whether it is integrated or
+                            not.
+                          enum:
+                            - integrated
+                            - non_integrated
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+    post:
+      description: |
+        Creates a new cash drawer assigned to a store.
+      summary: Add cash drawer
+      operationId: addCashDrawer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              CreateCashDrawer:
+                value:
+                  cash_drawer_id: 4G9OZ
+                  name: Not a shoe box
+                  currency: USD
+                  float: 250
+                  store_id: 7c9f2605-9fb3-5444-8fee-47fe51608efe
+                  type: integrated
+            schema:
+              type: object
+              title: Create a new cash drawer.
+              required:
+                - cash_drawer_id
+                - name
+                - currency
+                - float
+                - store_id
+                - type
+              properties:
+                cash_drawer_id:
+                  description: >-
+                    The external ID of the cash drawer. For example it can be a
+                    barcode for integrated cash drawers or a generated ID for
+                    non-integrated ones.
+                  type: string
+                  minLength: 1
+                name:
+                  description: The human readable name of the cash drawer.
+                  type: string
+                  minLength: 1
+                currency:
+                  type: string
+                  description: >-
+                    The default currency of the cash drawer, using ISO-4217
+                    Currency Code.
+                  minLength: 3
+                  maxLength: 3
+                float:
+                  type: number
+                  description: The default float amount for the cash drawer.
+                  multipleOf: 0.01
+                  minLength: 1
+                store_id:
+                  type: string
+                  description: The store ID where the drawer is installed.
+                  minLength: 1
+                  maxLength: 256
+                type:
+                  type: string
+                  description: The kind of cash drawer, whether it is integrated or not.
+                  enum:
+                    - integrated
+                    - non_integrated
+      responses:
+        '200':
+          description: The cash drawer was successfully created.
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: Associate is not allowed to add a cash drawer to the store.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: Store does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: Cash drawer already exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawers/{drawer_id}:
+    parameters:
+      - name: drawer_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the cash drawer. To retrieve the ID of the cash
+          drawer assigned
+
+          to the store, use the [List cash
+          drawers](/newstore-cloud/payment/cash_drawer.html#operation/getCashDrawers)
+          method.
+    patch:
+      description: |
+        Update the cash drawer configuration.
+      summary: Update cash drawer
+      operationId: updateCashDrawer
+      requestBody:
+        content:
+          application/json:
+            examples:
+              UpdateCashDrawer:
+                value:
+                  name: Not a shoe box
+                  float: 250
+            schema:
+              type: object
+              title: Update cash drawer.
+              required:
+                - name
+                - float
+              properties:
+                name:
+                  description: The human readable name of the cash drawer.
+                  type: string
+                  minLength: 1
+                float:
+                  type: number
+                  description: The default float amount for the cash drawer.
+                  multipleOf: 0.01
+                  minLength: 1
+        required: true
+      responses:
+        '200':
+          description: The cash drawer was successfully updated.
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: Associate is not allowed to modify the cash drawer.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer or store not found.
+
+            **Error codes**
+            - `cash_drawer_not_found`: Cash Drawer does not exist.
+            - `store_not_found`: Store does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: >
+            Cash drawer cannot be updated.
+
+
+            **Error codes**
+
+            - `decommissioned_cash_drawer`: A decommissioned cash drawer can not
+            be updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+    get:
+      description: |
+        Returns the cash drawer configuration.
+      summary: Get cash drawer
+      operationId: getCashDrawer
+      responses:
+        '200':
+          description: The cash drawer was successfully retrieved.
+          content:
+            application/json:
+              examples:
+                GetCashDrawer:
+                  value:
+                    cash_drawer_id: de70517a
+                    name: Kesha
+                    currency: USD
+                    float: 200
+                    status: active
+                    type: integrated
+              schema:
+                type: object
+                title: Cash Drawer
+                description: Represents a cash drawer
+                required:
+                  - cash_drawer_id
+                  - name
+                  - currency
+                  - float
+                  - status
+                  - type
+                properties:
+                  cash_drawer_id:
+                    type: string
+                    description: >-
+                      The ID of the cash drawer. For example it can be a barcode
+                      for integrated cash drawers or a generated ID for
+                      non-integrated ones.
+                    minLength: 1
+                  name:
+                    type: string
+                    description: Name of the cash drawer.
+                  currency:
+                    type: string
+                    description: Currency of the cash drawer.
+                  float:
+                    type: number
+                    multipleOf: 0.01
+                    description: Default float of the cash drawer.
+                  status:
+                    type: string
+                    description: Status of the cash drawer, either active/inactive.
+                  type:
+                    type: string
+                    description: The kind of cash drawer, whether it is integrated or not.
+                    enum:
+                      - integrated
+                      - non_integrated
+        '404':
+          description: |
+            Cash drawer not found.
+
+            **Error code**
+            - `cash_drawer_not_found`: Cash drawer does not exist."
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+    delete:
+      description: |
+        Decommission a cash drawer from a store.
+      summary: Decommission cash drawer
+      operationId: decommissionCashDrawer
+      responses:
+        '200':
+          description: The cash drawer was successfully decommissioned.
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: |
+            Associate is not allowed to decommission the cash drawer.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer not found.
+
+            **Error code**
+            - `cash_drawer_not_found`: Cash drawer does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: >
+            Cash drawer cannot be decommissioned.
+
+
+            **Error codes**
+
+            - `no_commissioned_cash_drawer_remaining`: |
+
+            The cash management feature is enabled so at least one cash drawer
+            needs to remain commissioned.
+
+            - `active_cash_drawer`: Can not decommission an active drawer.
+
+            - `decommissioned_cash_drawer`: The cash drawer is already
+            decommissioned.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawers/{drawer_id}/_sale:
+    parameters:
+      - name: drawer_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the cash drawer. To retrieve the ID of the cash
+          drawer assigned
+
+          to the store, use the [List cash
+          drawers](/newstore-cloud/payment/cash_drawer.html#operation/getCashDrawers)
+          method.
+    post:
+      description: |
+        Creates a draft cash transaction.
+      summary: Start cash sale or return transaction
+      operationId: initiateTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              InitiateTransaction:
+                value:
+                  order_id: 9533082b-aaca-487b-95c6-d97ad8581bee
+                  amount:
+                    value: 45
+                    currency: USD
+                  given:
+                    value: 50
+                    currency: USD
+            schema:
+              type: object
+              title: Create a draft cash transaction.
+              required:
+                - order_id
+                - amount
+                - given
+              properties:
+                order_id:
+                  description: The order ID for which the cash transaction is initiated.
+                  type: string
+                  minLength: 1
+                amount:
+                  description: >-
+                    The amount expected to be cashed in. A negative amount can
+                    be specified in case of a return.
+                  title: Monetary amount object.
+                  type: object
+                  required:
+                    - value
+                    - currency
+                  properties:
+                    value:
+                      type: number
+                      multipleOf: 0.01
+                      minLength: 1
+                    currency:
+                      type: string
+                      description: >-
+                        The currency for the transaction, using ISO-4217
+                        Currency Code.
+                      minLength: 3
+                      maxLength: 3
+                given:
+                  description: >-
+                    The amount actually handed over by the customer to the store
+                    associate.
+                  title: Monetary amount object.
+                  type: object
+                  required:
+                    - value
+                    - currency
+                  properties:
+                    value:
+                      type: number
+                      multipleOf: 0.01
+                      minLength: 1
+                    currency:
+                      type: string
+                      description: >-
+                        The currency for the transaction, using ISO-4217
+                        Currency Code.
+                      minLength: 3
+                      maxLength: 3
+      responses:
+        '200':
+          description: The transaction was successfully initiated.
+          content:
+            application/json:
+              examples:
+                InitiateCashTransactionResponse:
+                  value:
+                    transaction_id: 11a96e22-0275-418d-9035-7c5ad4b6050e
+                    change:
+                      value: 5
+                      currency: USD
+              schema:
+                type: object
+                title: A new draft cash transaction.
+                required:
+                  - transaction_id
+                  - change
+                properties:
+                  transaction_id:
+                    description: The unique ID of the cash transaction.
+                    type: string
+                    minLength: 1
+                  change:
+                    description: >-
+                      The change amount that the associate should give back to
+                      the customer.
+                    title: Monetary amount object.
+                    type: object
+                    required:
+                      - value
+                      - currency
+                    properties:
+                      value:
+                        type: number
+                        multipleOf: 0.01
+                        minLength: 1
+                      currency:
+                        type: string
+                        description: >-
+                          The currency for the transaction, using ISO-4217
+                          Currency Code.
+                        minLength: 3
+                        maxLength: 3
+        '400':
+          description: >
+            Something was wrong with the request.
+
+
+            **Error codes**
+
+            * `invalid_amount_error`: Returned when the given amount is smaller
+            than
+
+            the sale amount
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: |
+            Associate is not allowed to perform this operation.
+
+            **Error code**
+            * `permission_error`
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer not found
+
+            **Error code**
+            * `cash_drawer_not_found`: Cash drawer does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: >
+            The transaction cannot be initiated.
+
+
+            **Error codes**
+
+            * `inactive_cash_drawer`: Can not perform this operation on an
+            inactive drawer
+
+            * `currency_mismatch`: Returned when the currency of the transaction
+            does not match the currency of the drawer.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawers/{drawer_id}/_non_sale:
+    parameters:
+      - name: drawer_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the cash drawer. To retrieve the ID of the cash
+          drawer assigned
+
+          to the store, use the [List cash
+          drawers](/newstore-cloud/payment/cash_drawer.html#operation/getCashDrawers)
+          method.
+    post:
+      description: >
+        Creates a draft cash transaction, such as to adjust the float or bill
+        exchange.
+      summary: Start non-sale transaction
+      operationId: initiateNonSaleTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              InitiateNonSaleTransaction:
+                value:
+                  transaction_type: remove_petty_cash
+                  reason_code: post_office
+                  amount_out:
+                    value: 50
+                    currency: USD
+            schema:
+              type: object
+              title: Create a draft cash transaction.
+              required:
+                - transaction_type
+              anyOf:
+                - required:
+                    - amount_in
+                - required:
+                    - amount_out
+              properties:
+                transaction_type:
+                  type: string
+                  description: The type of the non-sale transaction.
+                  enum:
+                    - add_to_float
+                    - add_petty_cash
+                    - transfer_in
+                    - adjustment_in
+                    - remove_petty_cash
+                    - cash_pull
+                    - transfer_out
+                    - adjustment_out
+                    - no_sale
+                    - gift_card_cash_out
+                reason_code:
+                  type: string
+                  minLength: 1
+                  description: The reason code of the non-sale transaction.
+                amount_in:
+                  description: The amount that will be added to the cash drawer.
+                  title: Monetary amount object.
+                  type: object
+                  required:
+                    - value
+                    - currency
+                  properties:
+                    value:
+                      type: number
+                      multipleOf: 0.01
+                      minLength: 1
+                    currency:
+                      type: string
+                      description: >-
+                        The currency for the transaction, using ISO-4217
+                        Currency Code.
+                      minLength: 3
+                      maxLength: 3
+                amount_out:
+                  description: The amount that will be removed from the cash drawer.
+                  title: Monetary amount object.
+                  type: object
+                  required:
+                    - value
+                    - currency
+                  properties:
+                    value:
+                      type: number
+                      multipleOf: 0.01
+                      minLength: 1
+                    currency:
+                      type: string
+                      description: >-
+                        The currency for the transaction, using ISO-4217
+                        Currency Code.
+                      minLength: 3
+                      maxLength: 3
+      responses:
+        '200':
+          description: The transaction was successfully initiated.
+          content:
+            application/json:
+              examples:
+                InitiateNonSaleTransactionResponse:
+                  value:
+                    transaction_id: 11a96e22-0275-418d-9035-7c5ad4b6050e
+              schema:
+                type: object
+                title: A new draft cash transaction.
+                required:
+                  - transaction_id
+                properties:
+                  transaction_id:
+                    description: The unique ID of the cash transaction.
+                    type: string
+                    minLength: 1
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: |
+            Associate is not allowed to perform this operation.
+
+            **Error code**
+            * `permission_error`
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer not found.
+
+            **Error code**
+            * `cash_drawer_not_found`: Cash drawer does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: >
+            The transaction cannot be initiated.
+
+
+            **Error codes**
+
+            * `inactive_cash_drawer`: Can not perform this operation on an
+            inactive drawer
+
+            * `currency_mismatch`: Returned when the currency of the transaction
+            does not match the currency of the drawer.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawers/{drawer_id}/_count:
+    parameters:
+      - name: drawer_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the cash drawer. To retrieve the ID of the cash
+          drawer assigned
+
+          to the store, use the [List cash
+          drawers](/newstore-cloud/payment/cash_drawer.html#operation/getCashDrawers)
+          method.
+    post:
+      description: |
+        Initiates the process of counting the cash in a cash drawer.
+      summary: Perform a cash count
+      operationId: performCashCount
+      requestBody:
+        content:
+          application/json:
+            examples:
+              InitiateCount:
+                value:
+                  reason: end_of_day_balance
+            schema:
+              type: object
+              title: Create a draft record of a cash count.
+              required:
+                - reason
+              properties:
+                reason:
+                  type: string
+                  description: The reason why the associate is performing the cash count.
+                  enum:
+                    - intra_day_balance
+                    - end_of_day_balance
+        required: true
+      responses:
+        '200':
+          description: The cash count process was accepted.
+          content:
+            application/json:
+              examples:
+                InitiateCountResponse:
+                  value:
+                    count_id: fbe79ca6-3801-47e9-bd1a-f20de995c5f6
+              schema:
+                type: object
+                title: A new draft record of a cash count.
+                required:
+                  - count_id
+                properties:
+                  count_id:
+                    description: The unique ID of the cash count.
+                    type: string
+                    minLength: 1
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: |
+            Associate is not allowed to perform this operation.
+
+            **Error code**
+            * `permission_error`
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer not found.
+
+            **Error Code**
+            * `cash_drawer_not_found`: Cash drawer does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: >
+            Invalid cash drawer state.
+
+
+            **Error codes**
+
+            * `inactive_cash_drawer`: Can not perform this operation on an
+            inactive drawer
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '500':
+          description: >
+            Internal server error.
+
+
+            **Error codes**
+
+            * `invalid_transactions_stored`: Invalid transactions stored in the
+            database.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawers/{drawer_id}/_track_activity:
+    parameters:
+      - name: drawer_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the cash drawer. To retrieve the ID of the cash
+          drawer assigned
+
+          to the store, use the [List cash
+          drawers](/newstore-cloud/payment/cash_drawer.html#operation/getCashDrawers)
+          method.
+    post:
+      description: |
+        Register a change in the cash drawer state.
+      summary: Track cash drawer activity
+      operationId: trackCashDrawerActivity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              TrackActivity:
+                value:
+                  timestamp: '2019-10-11T10:11:17Z'
+                  event: open
+                  correlation: transaction
+                  correlation_id: 11a96e22-0275-418d-9035-7c5ad4b6050e
+            schema:
+              type: object
+              title: Register a change in the cash drawer state.
+              required:
+                - timestamp
+                - event
+                - correlation
+                - correlation_id
+              properties:
+                timestamp:
+                  description: The time when this activity happened.
+                  type: string
+                  format: date-time
+                event:
+                  type: string
+                  description: The event on the cash drawer.
+                  enum:
+                    - open
+                    - close
+                correlation:
+                  type: string
+                  description: The reason for the event.
+                  enum:
+                    - transaction
+                    - count
+                correlation_id:
+                  description: The ID of the related count or transaction operation.
+                  type: string
+                  minLength: 1
+      responses:
+        '200':
+          description: The transaction was successfully registered.
+          content:
+            application/json:
+              examples:
+                TrackActivityResponse:
+                  value:
+                    event_id: 11a96e22-0275-418d-9035-7c5ad4b6050e
+              schema:
+                type: object
+                title: A new cash drawer activity.
+                required:
+                  - event_id
+                properties:
+                  event_id:
+                    description: The unique ID of the cash drawer activity event.
+                    type: string
+                    minLength: 1
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: Associate is not allowed to use the cash drawer.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer not found.
+
+            **Error code**
+            * `cash_drawer_not_found`: Cash drawer does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawers/{drawer_id}/_activate:
+    parameters:
+      - name: drawer_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the cash drawer. To retrieve the ID of the cash
+          drawer assigned
+
+          to the store, use the [List cash
+          drawers](/newstore-cloud/payment/cash_drawer.html#operation/getCashDrawers)
+          method.
+    post:
+      description: |
+        Enables the specified cash drawer for daily usage.
+      summary: Activate cash drawer
+      operationId: activatesCashDrawer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              ActivateCashDrawer:
+                value:
+                  float_amount:
+                    value: 49.99
+                    currency: USD
+            schema:
+              type: object
+              title: Activates a cash drawer
+              required:
+                - float_amount
+              properties:
+                float_amount:
+                  description: The float amount that will be inserted into the drawer.
+                  title: Monetary amount object.
+                  type: object
+                  required:
+                    - value
+                    - currency
+                  properties:
+                    value:
+                      type: number
+                      multipleOf: 0.01
+                      minLength: 1
+                    currency:
+                      type: string
+                      description: >-
+                        The currency for the transaction, using ISO-4217
+                        Currency Code.
+                      minLength: 3
+                      maxLength: 3
+      responses:
+        '200':
+          description: The cash drawer was successfully activated.
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: |
+            Associate is not allowed to perform this operation.
+
+            **Error code**
+            * `permission_error`
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer not found.
+
+            **Error Code**
+            * `cash_drawer_not_found`: Cash drawer does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: |
+            Cash drawer is already active.
+
+            **Error code**
+            * `active_cash_drawer`: The cash drawer is already active.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawers/{drawer_id}/_deactivate:
+    parameters:
+      - name: drawer_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the cash drawer. To retrieve the ID of the cash
+          drawer assigned
+
+          to the store, use the [List cash
+          drawers](/newstore-cloud/payment/cash_drawer.html#operation/getCashDrawers)
+          method.
+    post:
+      description: |
+        Disables the specified cash drawer for daily usage.
+      summary: Deactivate cash drawer
+      operationId: deactivateCashDrawer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              Deactivate:
+                value:
+                  count_id: 3533082b-aaca-487b-95c6-d97ad8581bee
+            schema:
+              type: object
+              title: Deactivates a cash drawer
+              required:
+                - count_id
+              properties:
+                count_id:
+                  description: The ID of the related end of day count operation
+                  type: string
+                  minLength: 1
+      responses:
+        '200':
+          description: The cash drawer was successfully deactivated.
+        '400':
+          description: |
+            Something was wrong with the request.
+
+            **Error code**
+            * `count_not_found`: Could not find a completed count.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: |
+            Associate is not allowed to perform this operation.
+
+            **Error code**
+            * `permission_error`
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer or completed count not found.
+
+            **Error code**
+            * `cash_drawer_not_found`: Cash drawer does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: |
+            Cash drawer cannot be deactivated.
+
+            **Error code**
+            * `inactive_cash_drawer`: The cash drawer is already inactive.
+            * `invalid_count_reason`: The count reason is invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawers/{drawer_id}/daily_reports:
+    parameters:
+      - name: drawer_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the cash drawer. To retrieve the ID of the cash
+          drawer assigned
+
+          to the store, use the [List cash
+          drawers](/newstore-cloud/payment/cash_drawer.html#operation/getCashDrawers)
+          method.
+    get:
+      description: Represents all cash reports generated for the cash drawer.
+      summary: List daily cash reports
+      operationId: dailyCashReports
+      responses:
+        '200':
+          description: The list of daily reports.
+          content:
+            application/json:
+              examples:
+                DailyReports:
+                  value:
+                    reports:
+                      - activation_timestamp: '2020-01-24T09:00:22.656Z'
+                        open_float:
+                          value: 300
+                          currency: USD
+                        net_cash_in:
+                          value: 200
+                          currency: USD
+                        net_cash_out:
+                          value: 100
+                          currency: USD
+                        net_non_sale_cash_in:
+                          value: 100
+                          currency: USD
+                        net_non_sale_cash_out:
+                          value: 100
+                          currency: USD
+                        net_sales:
+                          value: 200
+                          currency: USD
+                        net_returns:
+                          value: 100
+                          currency: USD
+                        variance_total:
+                          value: 100
+                          currency: USD
+                        end_of_day_count:
+                          value: 500
+                          currency: USD
+                        deposit_total:
+                          value: -200.49
+                          currency: USD
+                        deactivation_timestamp: '2020-01-24T18:00:00.656Z'
+                    pagination_info:
+                      count: 1
+                      total: 20
+                      offset: 1
+              schema:
+                type: object
+                title: The list of cash drawer summary reports.
+                required:
+                  - reports
+                  - pagination_info
+                properties:
+                  pagination_info:
+                    type: object
+                    properties:
+                      count:
+                        description: Contains the count of the contained array.
+                        type: integer
+                      total:
+                        description: Contains the total count of documents.
+                        type: integer
+                      offset:
+                        description: Contains the current offset.
+                        type: integer
+                  reports:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - activation_timestamp
+                      properties:
+                        activation_timestamp:
+                          description: The time when the drawer was activated.
+                          type: string
+                          format: date-time
+                        open_float:
+                          description: >-
+                            The actual amount in the cash drawer after
+                            activation.
+                          title: Monetary amount object.
+                          type: object
+                          required:
+                            - value
+                            - currency
+                          properties:
+                            value:
+                              type: number
+                              multipleOf: 0.01
+                              minLength: 1
+                            currency:
+                              type: string
+                              description: >-
+                                The currency for the transaction, using ISO-4217
+                                Currency Code.
+                              minLength: 3
+                              maxLength: 3
+                        net_cash_in:
+                          description: DEPRECATED. Use net_sales instead.
+                          title: Monetary amount object.
+                          type: object
+                          required:
+                            - value
+                            - currency
+                          properties:
+                            value:
+                              type: number
+                              multipleOf: 0.01
+                              minLength: 1
+                            currency:
+                              type: string
+                              description: >-
+                                The currency for the transaction, using ISO-4217
+                                Currency Code.
+                              minLength: 3
+                              maxLength: 3
+                        net_cash_out:
+                          description: DEPRECATED. Use net_returns instead.
+                          title: Monetary amount object.
+                          type: object
+                          required:
+                            - value
+                            - currency
+                          properties:
+                            value:
+                              type: number
+                              multipleOf: 0.01
+                              minLength: 1
+                            currency:
+                              type: string
+                              description: >-
+                                The currency for the transaction, using ISO-4217
+                                Currency Code.
+                              minLength: 3
+                              maxLength: 3
+                        net_sales:
+                          description: The sum of sale transactions.
+                          title: Monetary amount object.
+                          type: object
+                          required:
+                            - value
+                            - currency
+                          properties:
+                            value:
+                              type: number
+                              multipleOf: 0.01
+                              minLength: 1
+                            currency:
+                              type: string
+                              description: >-
+                                The currency for the transaction, using ISO-4217
+                                Currency Code.
+                              minLength: 3
+                              maxLength: 3
+                        net_returns:
+                          description: The sum of return transactions.
+                          title: Monetary amount object.
+                          type: object
+                          required:
+                            - value
+                            - currency
+                          properties:
+                            value:
+                              type: number
+                              multipleOf: 0.01
+                              minLength: 1
+                            currency:
+                              type: string
+                              description: >-
+                                The currency for the transaction, using ISO-4217
+                                Currency Code.
+                              minLength: 3
+                              maxLength: 3
+                        net_non_sale_cash_in:
+                          description: >-
+                            The sum of non sale transactions that are adding
+                            money to the cash drawer.
+                          title: Monetary amount object.
+                          type: object
+                          required:
+                            - value
+                            - currency
+                          properties:
+                            value:
+                              type: number
+                              multipleOf: 0.01
+                              minLength: 1
+                            currency:
+                              type: string
+                              description: >-
+                                The currency for the transaction, using ISO-4217
+                                Currency Code.
+                              minLength: 3
+                              maxLength: 3
+                        net_non_sale_cash_out:
+                          description: >-
+                            The sum of non sale transactions that are removing
+                            money from the cash drawer.
+                          title: Monetary amount object.
+                          type: object
+                          required:
+                            - value
+                            - currency
+                          properties:
+                            value:
+                              type: number
+                              multipleOf: 0.01
+                              minLength: 1
+                            currency:
+                              type: string
+                              description: >-
+                                The currency for the transaction, using ISO-4217
+                                Currency Code.
+                              minLength: 3
+                              maxLength: 3
+                        variance_total:
+                          description: The balance of reconciliation transactions.
+                          title: Monetary amount object.
+                          type: object
+                          required:
+                            - value
+                            - currency
+                          properties:
+                            value:
+                              type: number
+                              multipleOf: 0.01
+                              minLength: 1
+                            currency:
+                              type: string
+                              description: >-
+                                The currency for the transaction, using ISO-4217
+                                Currency Code.
+                              minLength: 3
+                              maxLength: 3
+                        deposit_total:
+                          description: >-
+                            The sum of all transactions that are changing the
+                            float amount.
+                          title: Monetary amount object.
+                          type: object
+                          required:
+                            - value
+                            - currency
+                          properties:
+                            value:
+                              type: number
+                              multipleOf: 0.01
+                              minLength: 1
+                            currency:
+                              type: string
+                              description: >-
+                                The currency for the transaction, using ISO-4217
+                                Currency Code.
+                              minLength: 3
+                              maxLength: 3
+                        end_of_day_count:
+                          description: >-
+                            The counted amount before the cash drawer was
+                            deactivated.
+                          title: Monetary amount object.
+                          type: object
+                          required:
+                            - value
+                            - currency
+                          properties:
+                            value:
+                              type: number
+                              multipleOf: 0.01
+                              minLength: 1
+                            currency:
+                              type: string
+                              description: >-
+                                The currency for the transaction, using ISO-4217
+                                Currency Code.
+                              minLength: 3
+                              maxLength: 3
+                        deactivation_timestamp:
+                          description: The time when the drawer was deactivated.
+                          type: string
+                          format: date-time
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer not found.
+
+            **Error code**
+            * `cash_drawer_not_found`: Cash drawer does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '500':
+          description: An error occurred on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawers/{drawer_id}/transactions/{transaction_id}:
+    parameters:
+      - name: transaction_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier for the transaction.
+      - name: drawer_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the cash drawer. To retrieve the ID of the cash
+          drawer assigned
+
+          to the store, use the [List cash
+          drawers](/newstore-cloud/payment/cash_drawer.html#operation/getCashDrawers)
+          method.
+    post:
+      description: >
+        Concludes a sale or exchange transaction, either by completing or
+        canceling it.
+      summary: Finish cash sale or exchange transaction
+      operationId: finishTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              FinishCashTransaction:
+                value:
+                  status: completed
+            schema:
+              type: object
+              title: Concludes a transaction, either by completing or canceling it.
+              required:
+                - status
+              properties:
+                status:
+                  description: The desired final status of the transaction.
+                  type: string
+                  enum:
+                    - completed
+                    - canceled
+      responses:
+        '200':
+          description: The transaction was successfully concluded.
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: |
+            Associate is not allowed to perform this operation.
+
+            **Error code**
+            * `permission_error`
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer or transaction not found.
+
+            **Error code**
+            * `cash_drawer_not_found`: Cash drawer does not exist.
+            * `not_found_error`: Transaction was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: >
+            Conflict.
+
+
+            **Error codes**
+
+            * `inactive_cash_drawer`: Can not perform this operation on an
+            inactive cash drawer.
+
+            * `invalid_transaction_state`: The transaction is not in a draft
+            state.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawers/{drawer_id}/counts/{count_id}:
+    parameters:
+      - name: count_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier for the cash count.
+      - name: drawer_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the cash drawer. To retrieve the ID of the cash
+          drawer assigned
+
+          to the store, use the [List cash
+          drawers](/newstore-cloud/payment/cash_drawer.html#operation/getCashDrawers)
+          method.
+    patch:
+      description: |
+        Update a cash count with the counted amount.
+      summary: Record a cash count
+      operationId: recordCashCount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              RecordCashCount:
+                value:
+                  counted_amount:
+                    value: 99.99
+                    currency: USD
+            schema:
+              type: object
+              title: Record a cash count.
+              required:
+                - counted_amount
+              properties:
+                counted_amount:
+                  description: The amount that was counted by the associate.
+                  title: Monetary amount object.
+                  type: object
+                  required:
+                    - value
+                    - currency
+                  properties:
+                    value:
+                      type: number
+                      multipleOf: 0.01
+                      minLength: 1
+                    currency:
+                      type: string
+                      description: >-
+                        The currency for the transaction, using ISO-4217
+                        Currency Code.
+                      minLength: 3
+                      maxLength: 3
+      responses:
+        '200':
+          description: The cash count was successfully updated.
+          content:
+            application/json:
+              examples:
+                RecordCashCountResponse:
+                  value:
+                    discrepancy: true
+                    expected_amount:
+                      value: 101.99
+                      currency: USD
+                    discrepancy_amount:
+                      value: -1.99
+                      currency: USD
+              schema:
+                type: object
+                title: Record a cash count response.
+                required:
+                  - discrepancy
+                properties:
+                  discrepancy:
+                    description: >-
+                      Whether or not a discrepancy exists between the amount
+                      that was counted and the expected amount.
+                    type: boolean
+                  expected_amount:
+                    description: >-
+                      The amount that is expected to be in the cash drawer
+                      according to the recorded transactions. The
+                      expose_count_expected_amount tenant configuration
+                      determines whether or not this object is returned.
+                    title: Monetary amount object.
+                    type: object
+                    required:
+                      - value
+                      - currency
+                    properties:
+                      value:
+                        type: number
+                        multipleOf: 0.01
+                        minLength: 1
+                      currency:
+                        type: string
+                        description: >-
+                          The currency for the transaction, using ISO-4217
+                          Currency Code.
+                        minLength: 3
+                        maxLength: 3
+                  discrepancy_amount:
+                    description: >-
+                      The difference between the expected amount and the counted
+                      amount. It is omitted in case there is no discrepancy. It
+                      is also omitted depending on the
+                      expose_count_expected_amount tenant configuration.
+                    title: Monetary amount object.
+                    type: object
+                    required:
+                      - value
+                      - currency
+                    properties:
+                      value:
+                        type: number
+                        multipleOf: 0.01
+                        minLength: 1
+                      currency:
+                        type: string
+                        description: >-
+                          The currency for the transaction, using ISO-4217
+                          Currency Code.
+                        minLength: 3
+                        maxLength: 3
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: |
+            Associate is not allowed to perform this operation.
+
+            **Error code**
+            * `permission_error`
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer or count not found.
+
+            **Error codes**
+            * `cash_drawer_not_found`: Cash drawer does not exist.
+            * `not_found_error`: Count was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: >
+            The cash count can not be updated.
+
+
+            **Error codes**
+
+            * `new_transactions_added`: New transactions were added since count
+            started.
+
+            * `currency_mismatch`: Draft count has a different currency.
+
+            * `inactive_cash_drawer`: Can not perform this operation on an
+            inactive cash drawer.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_drawers/{drawer_id}/counts/{count_id}/{action}:
+    parameters:
+      - name: action
+        in: path
+        required: true
+        schema:
+          enum:
+            - _recount
+            - _submit
+            - _cancel
+          type: string
+        description: The specific cash count action to perform.
+      - name: count_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The identifier for the cash count.
+      - name: drawer_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: >
+          The identifier for the cash drawer. To retrieve the ID of the cash
+          drawer assigned
+
+          to the store, use the [List cash
+          drawers](/newstore-cloud/payment/cash_drawer.html#operation/getCashDrawers)
+          method.
+    post:
+      description: |
+        Initiates a recount, submits the final count, or cancels the cash count.
+      summary: Set cash count action
+      operationId: setCashCountAction
+      responses:
+        '200':
+          description: The action was accepted.
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '403':
+          description: |
+            Associate is not allowed to perform this operation.
+
+            **Error code**
+            * `permission_error`
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '404':
+          description: |
+            Cash drawer or count not found.
+
+            **Error codes**
+            * `cash_drawer_not_found`: Cash drawer does not exist.
+            * `not_found_error`: Count was not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '409':
+          description: >
+            The cash count can not be submitted/canceled/recounted.
+
+
+            **Error codes**
+
+            * `invalid_state_error`: The count is not in the expected state.
+                If the action is _recount, then the count is expected to be in state counted.
+                If the action is _submit, then the count is expected to be in state counted.
+                If the action is _cancel, then the count is expected to be in state draft or counted.
+            * `new_transactions_added`: New transactions were added since the
+            count started.
+
+            * `inactive_cash_drawer`: Can not perform this operation on an
+            inactive cash drawer.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+  /cash_reports/transaction_report:
+    get:
+      description: |
+        Returns a report of cash transactions per store
+      summary: Report of cash transactions per store
+      operationId: getTransactionReport
+      parameters:
+        - name: store-id
+          in: query
+          required: true
+          description: |
+            The search term to filter cash transactions by store ID.
+          schema:
+            type: string
+        - name: start-time
+          in: query
+          required: true
+          description: >
+            RFC3339 formatted time string to define cash transaction time-period
+            start.
+          schema:
+            type: string
+            example: '2022-01-01T00:00:00Z'
+        - name: end-time
+          in: query
+          required: true
+          description: >
+            RFC3339 formatted time string to define cash transaction time-period
+            end.
+          schema:
+            type: string
+            example: '2022-01-01T23:59:59Z'
+        - name: offset
+          in: query
+          required: true
+          description: |
+            Pagination offset.
+          schema:
+            type: number
+            example: 0
+        - name: limit
+          in: query
+          required: true
+          description: |
+            Amount of items taken after offset, max 100.
+          schema:
+            type: number
+            example: 10
+        - name: transaction-type
+          in: query
+          required: false
+          description: |
+            The transaction type by which we should filter transaction types.
+          schema:
+            type: string
+            enum:
+              - sale
+              - float_adjustment
+              - reconciliation
+              - end_of_day_withdrawal
+              - add_to_float
+              - add_petty_cash
+              - transfer_in
+              - adjustment_in
+              - remove_petty_cash
+              - cash_pull
+              - transfer_out
+              - adjustment_out
+              - no_sale
+              - gift_card_cash_out
+      responses:
+        '200':
+          description: The cash transaction report was successfully fetched.
+          content:
+            application/json:
+              examples:
+                TransactionReport:
+                  value:
+                    transactionReport:
+                      - cashDrawerStatus: active
+                        cashDrawerName: Drawer_1
+                        cashDrawerId: fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1
+                        currency: USD
+                        createdAt: '2022-09-01T08:10:01.665654Z'
+                        transactionType: float_adjustment
+                        associateId: fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1
+                        associateName: Bob McMuffin
+                        orderId: ''
+                        externalOrderId: ''
+                        reasonCode: '1080'
+                        amountBalance: 100
+                        storeId: adc335d0-9902-47f7-bc8e-216ddcfd4d11
+                      - cashDrawerStatus: active
+                        cashDrawerName: Drawer_1
+                        cashDrawerId: fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1
+                        currency: USD
+                        createdAt: '2022-09-01T08:10:01.665654Z'
+                        transactionType: sale
+                        associateId: fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1
+                        associateName: Bob McMuffin
+                        orderId: 4d7d3ec4-ae2e-4321-8f9d-686c44806642
+                        externalOrderId: AB000001234
+                        reasonCode: '1080'
+                        amountBalance: 100
+                        storeId: adc335d0-9902-47f7-bc8e-216ddcfd4d11
+                      - cashDrawerStatus: inactive
+                        cashDrawerName: Drawer_1
+                        cashDrawerId: fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1
+                        currency: USD
+                        createdAt: '2022-09-01T21:10:01.665654Z'
+                        transactionType: end_of_day_withdrawal
+                        associateId: fad5fdb6-eea4-4f4e-b32d-c9d1a2ac3ce1
+                        associateName: Bob McMuffin
+                        orderId: ''
+                        externalOrderId: ''
+                        reasonCode: '1082'
+                        amountBalance: 100
+                        storeId: adc335d0-9902-47f7-bc8e-216ddcfd4d11
+                    total: 100
+              schema:
+                type: object
+                title: A report of cash transactions.
+                required:
+                  - cashDrawerStatus
+                  - cashDrawerName
+                  - cashDrawerId
+                  - currency
+                  - createdAt
+                  - transactionType
+                  - associateId
+                  - reasonCode
+                  - amountBalance
+                  - storeId
+                properties:
+                  cashDrawerStatus:
+                    description: Whether the cash drawer is active or not.
+                    type: string
+                    enum:
+                      - inactive, active
+                  cashDrawerName:
+                    description: Descriptive name of the cash drawer.
+                    type: string
+                  cashDrawerId:
+                    description: The unique ID of the cash drawer.
+                    type: string
+                  currency:
+                    description: Currency of the cash drawer.
+                    type: string
+                  createdAt:
+                    type: string
+                    description: When the drawer was created (RFC3339).
+                  transactionType:
+                    type: string
+                    description: Describes the general type of the cash event.
+                    enum:
+                      - sale
+                      - float_adjustment
+                      - reconciliation
+                      - end_of_day_withdrawal
+                      - add_to_float
+                      - add_petty_cash
+                      - transfer_in
+                      - adjustment_in
+                      - remove_petty_cash
+                      - cash_pull
+                      - transfer_out
+                      - adjustment_out
+                      - no_sale
+                      - gift_card_cash_out
+                  associateId:
+                    description: The ID of the store associate.
+                    type: string
+                    minLength: 1
+                  associateName:
+                    description: The name of the associate.
+                    type: string
+                    minLength: 1
+                  orderId:
+                    description: >-
+                      The internal order ID for which the cash transaction is
+                      initiated. This Id is meant only for internal use. Not
+                      defined for non-sale transactions.
+                    type: string
+                  externalOrderId:
+                    description: >-
+                      The external order ID for which the cash transaction is
+                      initiated. This Id can be shared with our tenants. Not
+                      defined for non-sale transactions.
+                    type: string
+                  reasonCode:
+                    description: >-
+                      The reason of the transaction. Not defined in case of a
+                      sale transaction.
+                    type: string
+                  amountBalance:
+                    description: The difference between amount_in and amount_out.
+                    type: object
+                    properties:
+                      value:
+                        type: number
+                        multipleOf: 0.01
+                        minLength: 1
+                      currency:
+                        type: string
+                        description: >-
+                          The currency for the transaction, using ISO-4217
+                          Currency Code.
+                        minLength: 3
+                        maxLength: 3
+                  storeId:
+                    type: string
+                    description: The store ID where the drawer is installed.
+                    minLength: 1
+                    maxLength: 256
+        '400':
+          description: Something was wrong with the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                title: Error Response
+                description: Error response sent if a request failed.
+                required:
+                  - error_code
+                  - request_id
+                properties:
+                  error_code:
+                    type: string
+                    description: >-
+                      Custom error code which provides more details about the
+                      error.
+                  message:
+                    type: string
+                    description: Contains the reason of the error.
+                  request_id:
+                    type: string
+                    description: >-
+                      Unique request identifier. Can be used to further debug
+                      the root causes of this error.
+components:
+  schemas: {}
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    newStoreAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}
+security:
+  - newStoreAccessToken: []
